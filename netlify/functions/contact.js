@@ -1,0 +1,187 @@
+const nodemailer = require('nodemailer');
+const { check, validationResult } = require('express-validator');
+require('dotenv').config();
+
+
+// Create validation rules (these will be applied manually since this is a serverless function)
+const validationRules = [
+  { field: 'name', validate: (value) => value && value.trim().length > 0, message: 'Name is required' },
+  { field: 'email', validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), message: 'Valid email is required' },
+  { field: 'subject', validate: (value) => value && value.trim().length > 0, message: 'Subject is required' },
+  { field: 'message', validate: (value) => value && value.trim().length > 10, message: 'Message must be at least 10 characters' },
+];
+
+// Honeypot check for basic spam protection
+const isSpam = (data) => {
+  return data.honeypot && data.honeypot.length > 0;
+};
+
+// Create a transporter
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+};
+
+// Sanitize input to prevent XSS
+const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+// Basic in-memory rate limiter (limited effectiveness in serverless)
+const rateLimit = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 5;
+
+exports.handler = async (event, context) => {
+  // Only allow POST method
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ message: 'Method not allowed' }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+
+  // --- Rate Limiting Check ---
+  const ip = event.headers['client-ip'] || event.headers['x-forwarded-for'] || event.requestContext?.identity?.sourceIp;
+  const now = Date.now();
+
+  // Clean up old entries
+  rateLimit.forEach((timestamps, key) => {
+    rateLimit.set(key, timestamps.filter(timestamp => timestamp > now - RATE_LIMIT_WINDOW_MS));
+  });
+
+  const timestamps = rateLimit.get(ip) || [];
+
+  if (timestamps.length >= MAX_REQUESTS_PER_WINDOW) {
+    return {
+      statusCode: 429, // Too Many Requests
+      body: JSON.stringify({ success: false, message: 'Too many requests. Please try again later.' }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+
+  timestamps.push(now);
+  rateLimit.set(ip, timestamps);
+  // ---------------------------
+
+  // Parse the request body
+  let data;
+  try {
+    data = JSON.parse(event.body);
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'Invalid request body' }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+
+  // Check for spam using honeypot
+  if (isSpam(data)) {
+    // Return 200 OK to not let the spammer know their attempt was detected
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, message: 'Form submitted successfully' }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+
+  // Validate the input
+  const errors = [];
+  validationRules.forEach((rule) => {
+    if (!rule.validate(data[rule.field])) {
+      errors.push({ field: rule.field, message: rule.message });
+    }
+  });
+
+  // If there are validation errors, return them
+  if (errors.length > 0) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, errors }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+
+  // Sanitize the inputs
+  const name = sanitizeInput(data.name);
+  const email = sanitizeInput(data.email);
+  const subject = sanitizeInput(data.subject);
+  const message = sanitizeInput(data.message);
+
+  // Create the email
+  const emailContent = `
+    <h1>New Contact Form Submission</h1>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Subject:</strong> ${subject}</p>
+    <p><strong>Message:</strong> ${message}</p>
+  `;
+
+  // Send the email
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: `"Dennis Carroll Website" <${process.env.SMTP_USER}>`,
+      to: process.env.RECIPIENT_EMAIL || 'denniscarrollj@gmail.com',
+      subject: `New Contact Form: ${subject}`,
+      html: emailContent,
+      replyTo: email
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        message: 'Thanks for your message! I\'ll get back to you soon.',
+      }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  } catch (error) {
+    console.error('Email sending error:', error);
+    
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        success: false,
+        message: 'There was an error sending your message. Please try again later.',
+      }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    };
+  }
+};

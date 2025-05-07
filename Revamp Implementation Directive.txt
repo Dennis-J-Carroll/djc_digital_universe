@@ -1,0 +1,15 @@
+Personal Site Revamp Implementation Directive
+Project Goal
+Transform your existing Gatsby personal site to incorporate modern design aesthetics with interactive elements, glassmorphic styling, and animated components similar to the API Canvas design.
+Design Elements to Implement
+
+Dark theme with purple and cyan accent colors
+Interactive particle background
+Animated text elements using Framer Motion
+Glassmorphic card components with hover effects
+Gradient CTAs and text highlights
+
+Implementation Steps
+1. Setup & Dependencies
+Install the necessary packages:
+

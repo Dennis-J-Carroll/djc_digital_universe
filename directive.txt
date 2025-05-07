@@ -1,0 +1,391 @@
+Directive
+
+
+
+# If enhancing existing Gatsby site
+npm install framer-motion react-tsparticles tailwindcss @tailwindcss/typography
+
+
+
+You'll want to add the Space Grotesk font to your site by including it in your HTML head:
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+
+2. TailwindCSS Setup
+If you're new to Tailwind, you'll need to configure it. For Gatsby, you'd:
+
+
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/pages/**/*.{js,jsx,ts,tsx}",
+    "./src/components/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: "#0FA0CE",
+        secondary: "#1A1F2C",
+        accent: "#8B5CF6",
+      },
+      fontFamily: {
+        sans: ["Space Grotesk", "sans-serif"],
+      },
+      // Add other theme extensions
+    },
+  },
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+}
+
+
+
+
+3. Component Migration
+The key components you'd want to recreate include:
+
+Particle Background - Creates the interactive dot animation
+Hero Section - With the gradient text and motion effects
+Feature Cards - The glassmorphic cards with icons
+Button Styles - Gradient buttons with hover effects
+
+Let's start with the ParticleBackground component:
+
+
+// src/components/ParticleBackground.js
+import { useCallback } from "react";
+import Particles from "react-tsparticles";
+import { loadFull } from "tsparticles";
+
+export const ParticleBackground = () => {
+  const particlesInit = useCallback(async (engine) => {
+    await loadFull(engine);
+  }, []);
+
+  return (
+    <Particles
+      id="tsparticles"
+      init={particlesInit}
+      options={{
+        background: {
+          color: {
+            value: "transparent",
+          },
+        },
+        fpsLimit: 120,
+        interactivity: {
+          events: {
+            onHover: {
+              enable: true,
+              mode: "grab",
+            },
+          },
+          modes: {
+            grab: {
+              distance: 140,
+              links: {
+                opacity: 0.5,
+              },
+            },
+          },
+        },
+        particles: {
+          color: {
+            value: "#0FA0CE",
+          },
+          links: {
+            color: "#0FA0CE",
+            distance: 150,
+            enable: true,
+            opacity: 0.3,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            outModes: {
+              default: "bounce",
+            },
+            random: true,
+            speed: 1,
+            straight: false,
+          },
+          number: {
+            density: {
+              enable: true,
+              area: 800,
+            },
+            value: 80,
+          },
+          opacity: {
+            value: 0.5,
+          },
+          shape: {
+            type: "circle",
+          },
+          size: {
+            value: { min: 1, max: 3 },
+          },
+        },
+        detectRetina: true,
+      }}
+      className="absolute inset-0 -z-10"
+    />
+  );
+};
+
+
+
+
+
+1. Particle Background Component
+This creates that engaging, interactive background that gives your site depth:
+
+
+
+// components/ParticleBackground.jsx
+import { useCallback } from "react";
+import { Particles } from "react-tsparticles";
+import { loadFull } from "tsparticles";
+
+const ParticleBackground = () => {
+  const particlesInit = useCallback(async (engine) => {
+    await loadFull(engine);
+  }, []);
+
+  return (
+    <Particles
+      id="tsparticles"
+      init={particlesInit}
+      options={{
+        background: {
+          color: {
+            value: "transparent",
+          },
+        },
+        fpsLimit: 120,
+        interactivity: {
+          events: {
+            onHover: {
+              enable: true,
+              mode: "grab",
+            },
+          },
+          modes: {
+            grab: {
+              distance: 140,
+              links: {
+                opacity: 0.5,
+              },
+            },
+          },
+        },
+        particles: {
+          color: {
+            value: "#0FA0CE", // Cyan color - you can customize
+          },
+          links: {
+            color: "#0FA0CE",
+            distance: 150,
+            enable: true,
+            opacity: 0.3,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            outModes: {
+              default: "bounce",
+            },
+            random: true,
+            speed: 1,
+            straight: false,
+          },
+          number: {
+            density: {
+              enable: true,
+              area: 800,
+            },
+            value: 80, // Adjust for more/fewer particles
+          },
+          opacity: {
+            value: 0.5,
+          },
+          shape: {
+            type: "circle",
+          },
+          size: {
+            value: { min: 1, max: 3 },
+          },
+        },
+        detectRetina: true,
+      }}
+      className="absolute inset-0 -z-10"
+    />
+  );
+};
+
+export default ParticleBackground;
+
+
+
+
+ Hero Text Component with Animation
+ 
+ 
+ 
+ // components/HeroText.jsx
+import { motion } from "framer-motion";
+
+const HeroText = () => {
+  return (
+    <div className="text-center mb-12">
+      <motion.h1
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-600"
+      >
+        Your Name or Site Title
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="text-xl text-gray-400 max-w-2xl mx-auto"
+      >
+        Your tagline or brief description goes here
+      </motion.p>
+    </div>
+  );
+};
+
+export default HeroText;
+
+
+
+Feature Card Component (Glassmorphic Effect)
+
+
+// components/FeatureCard.jsx
+import { motion } from "framer-motion";
+
+const FeatureCard = ({ title, description, icon }) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -5 }}
+      className="relative p-6 rounded-xl overflow-hidden backdrop-blur-lg border border-white/10 bg-white/5"
+      style={{
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <div 
+        className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-cyan-500/10 z-0 border border-white/20"
+      />
+      <div className="relative z-10">
+        <div className="w-12 h-12 mb-4 text-cyan-400 flex items-center justify-center rounded-lg bg-white/5">
+          {icon}
+        </div>
+        <h3 className="text-xl font-semibold mb-2 text-white">{title}</h3>
+        <p className="text-gray-300">{description}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+export default FeatureCard;
+
+
+
+
+Main Page Layout
+
+
+// components/Layout.jsx
+import { motion } from "framer-motion";
+import ParticleBackground from "./ParticleBackground";
+import HeroText from "./HeroText";
+import FeatureCard from "./FeatureCard";
+import { Code, Terminal, Zap, Link } from "lucide-react"; // If using Lucide icons
+
+const Layout = ({ children }) => {
+  // Example features - update with your own
+  const features = [
+    {
+      title: "Feature One",
+      description: "Description of your first feature or skill",
+      icon: <Code className="w-6 h-6" />
+    },
+    {
+      title: "Feature Two",
+      description: "Description of your second feature or skill",
+      icon: <Terminal className="w-6 h-6" />
+    },
+    {
+      title: "Feature Three",
+      description: "Description of your third feature or skill",
+      icon: <Zap className="w-6 h-6" />
+    },
+    {
+      title: "Feature Four",
+      description: "Description of your fourth feature or skill",
+      icon: <Link className="w-6 h-6" />
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 text-white overflow-hidden">
+      <ParticleBackground />
+      
+      <main className="container mx-auto px-4 py-20 relative">
+        <HeroText />
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="flex justify-center gap-4 mb-20"
+        >
+          <button className="px-6 py-3 rounded-md bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-medium">
+            Primary CTA
+          </button>
+          <button className="px-6 py-3 rounded-md border border-white/20 bg-transparent hover:bg-white hover:text-black text-white font-medium">
+            Secondary CTA
+          </button>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto"
+        >
+          {features.map((feature, index) => (
+            <FeatureCard 
+              key={index} 
+              title={feature.title} 
+              description={feature.description} 
+              icon={feature.icon} 
+            />
+          ))}
+        </motion.div>
+        
+        {children}
+      </main>
+    </div>
+  );
+};
+
+export default Layout;
+
+
+
+
+
+
+
+
+

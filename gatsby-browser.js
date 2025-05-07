@@ -4,4 +4,9 @@
  * See: https://www.gatsbyjs.com/docs/reference/config-files/gatsby-browser/
  */
 
-// You can delete this file if you're not using it
+// Import Tailwind CSS
+import "./src/styles/tailwind.css"
+
+// Import other global styles
+import "./src/styles/global.css"
+import "./src/styles/futuristic-ui.css"

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow crawling of admin or private areas if they exist
+# Disallow: /admin/
+# Disallow: /private/
+
+# Sitemap location
+Sitemap: https://denniscarroll.com/sitemap.xml
