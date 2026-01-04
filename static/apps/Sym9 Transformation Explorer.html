@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sym9 Transformation Experimentation Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7; /* Warm Off-White */
+            color: #3D352A; /* Dark Brown */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px; /* Adjusted for better view on larger screens */
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; 
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid #EAE0D5; /* Light border */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Softer shadow */
+            padding: 1.5rem; /* p-6 */
+        }
+        .section-title {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            color: #A07C5B; /* Muted Tan/Brown */
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #D4C2AD; /* Light Beige */
+        }
+        label {
+            color: #7B5E4D; /* Darker Muted Brown */
+            font-weight: 500; /* medium */
+        }
+        input[type="number"], select {
+            background-color: #F5F1EA; /* Light beige input */
+            border: 1px solid #D4C2AD;
+            color: #3D352A;
+        }
+        button {
+            background-color: #A07C5B; /* Muted Tan/Brown */
+            color: #FDFBF7; /* Warm Off-White text */
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #7B5E4D; /* Darker Muted Brown on hover */
+        }
+        /* Tooltip styling for Chart.js */
+        .chartjs-tooltip {
+            background-color: #3D352A !important; /* Dark Brown */
+            color: #FDFBF7 !important; /* Warm Off-White */
+            border-radius: 4px !important;
+            padding: 8px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        .chartjs-tooltip-title {
+            font-weight: bold !important;
+            margin-bottom: 4px !important;
+        }
+    </style>
+</head>
+<body class="antialiased text-base leading-relaxed min-h-screen flex flex-col">
+
+    <!-- Application Structure Plan:
+        The SPA is designed for users to experiment with the 'enhanced_adaptive_transform' parameters.
+        It has two main sections:
+        1. Control Panel: Contains input fields for all parameters of the transformation function (initial number, max steps, rule types for step 4 and 6, target attractor). A "Run Simulation" button triggers the transformation. This section is designed for clear input and ease of parameter adjustment.
+        2. Results Display: Shows the output of the simulation. This includes the full transformation path (as text), key metrics like the final value and number of steps taken, and a line chart visualizing the value's change over steps.
+        Rationale: This structure separates input from output, providing a focused workflow for experimentation. The direct mapping of UI controls to function parameters makes the tool intuitive for users familiar with the transformation logic or those wishing to explore its behavior systematically. The chart provides immediate visual feedback on the convergence pattern.
+    -->
+
+    <!-- Visualization & Content Choices:
+        - Input Parameters:
+            - initial_n: Goal: Inform (user input). Method: Number input field.
+            - max_steps: Goal: Inform (user input). Method: Number input field.
+            - rule_step4_type: Goal: Inform (user selection). Method: Dropdown. Options: 'cubic_ft_lt', 'sum27_to_729', 'mod27_div3_if_zero'.
+            - rule_step6_type: Goal: Inform (user selection). Method: Dropdown. Options: 'adaptive_default', 'mul3_mod27', 'contains27_to_mod9'.
+            - target_attractor: Goal: Inform (user input, optional). Method: Number input field.
+        - Output Display:
+            - Transformation Path: Goal: Inform. Method: Text area / preformatted text block. Interaction: Scrollable. Justification: Shows the full sequence of values.
+            - Final Value & Steps: Goal: Inform. Method: Text. Justification: Key summary metrics.
+            - Path Visualization: Goal: Change (show trend over steps). Method: Chart.js Line Chart (Canvas). Interaction: Hover for tooltips. Justification: Visualizes the convergence behavior dynamically.
+        - All Chart.js instances use Canvas, are responsive, implement label wrapping (via wrapLabel function, though x-axis labels are simple numbers here) and the required tooltip configuration.
+    -->
+
+    <header class="py-8 text-center" style="background-color: #A07C5B;">
+        <h1 class="text-3xl md:text-4xl font-bold" style="color: #FDFBF7;">Sym9 Transformation Explorer</h1>
+        <p class="mt-2 text-lg" style="color: #EAE0D5;">Experiment with Symbolic Numerical Field Theory (SNFT) convergence techniques.</p>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8 flex-grow">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <section id="controls" class="lg:col-span-1 card">
+                <h2 class="section-title">Simulation Controls</h2>
+                <form id="simulationForm" class="space-y-4">
+                    <div>
+                        <label for="initial_n" class="block text-sm font-medium">Initial Number (Seed):</label>
+                        <input type="number" id="initial_n" name="initial_n" value="1234" required class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-[#7B5E4D] focus:border-[#7B5E4D]">
+                        <p class="mt-1 text-xs text-gray-500">The starting integer for the transformation.</p>
+                    </div>
+
+                    <div>
+                        <label for="max_steps" class="block text-sm font-medium">Max Steps:</label>
+                        <input type="number" id="max_steps" name="max_steps" value="50" min="1" max="200" class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-[#7B5E4D] focus:border-[#7B5E4D]">
+                        <p class="mt-1 text-xs text-gray-500">Maximum iterations for the simulation.</p>
+                    </div>
+
+                    <div>
+                        <label for="rule_step4_type" class="block text-sm font-medium">Rule for Step 4 (Cubic Gate):</label>
+                        <select id="rule_step4_type" name="rule_step4_type" class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-[#7B5E4D] focus:border-[#7B5E4D]">
+                            <option value="cubic_ft_lt" selected>n - (f³ + l³)</option>
+                            <option value="sum27_to_729">If sum_digits=27, n=729 else n-(f³+l³)</option>
+                            <option value="mod27_div3_if_zero">If n%27=0, n=(n-27)/3 else n-(f³+l³)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Transformation applied specifically at step 4.</p>
+                    </div>
+
+                    <div>
+                        <label for="rule_step6_type" class="block text-sm font-medium">Rule for Step 6 (27-Gate):</label>
+                        <select id="rule_step6_type" name="rule_step6_type" class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-[#7B5E4D] focus:border-[#7B5E4D]">
+                            <option value="adaptive_default" selected>Default (n%27 or sum_digits%27)</option>
+                            <option value="mul3_mod27">n = (n * 3) % 27</option>
+                            <option value="contains27_to_mod9">If '27' in str(n), n = n-(n%9)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Transformation applied specifically at step 6.</p>
+                    </div>
+                    
+                    <div>
+                        <label for="target_attractor" class="block text-sm font-medium">Target Attractor (Optional):</label>
+                        <input type="number" id="target_attractor" name="target_attractor" placeholder="e.g., 90" class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-[#7B5E4D] focus:border-[#7B5E4D]">
+                        <p class="mt-1 text-xs text-gray-500">Simulation stops if this value is reached.</p>
+                    </div>
+
+                    <button type="submit" class="w-full py-2 px-4 rounded-md shadow-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B5E4D]">
+                        Run Simulation
+                    </button>
+                </form>
+            </section>
+
+            <section id="results" class="lg:col-span-2 card">
+                <h2 class="section-title">Simulation Results</h2>
+                <div id="resultsPlaceholder" class="text-gray-500">
+                    <p>Adjust parameters and click "Run Simulation" to see the transformation path and visualization here.</p>
+                </div>
+                <div id="resultsContent" class="hidden">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-1" style="color: #7B5E4D;">Key Metrics:</h3>
+                        <p class="text-sm"><strong>Initial Seed:</strong> <span id="resultInitialN"></span></p>
+                        <p class="text-sm"><strong>Final Value:</strong> <span id="resultFinalValue" class="font-bold text-xl" style="color: #A07C5B;"></span></p>
+                        <p class="text-sm"><strong>Steps Taken:</strong> <span id="resultStepsTaken" class="font-bold text-xl" style="color: #A07C5B;"></span></p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-1" style="color: #7B5E4D;">Transformation Path Visualization:</h3>
+                        <div class="chart-container">
+                            <canvas id="pathChart"></canvas>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 text-center">This chart displays the value of the number at each step of the transformation, illustrating its convergence behavior.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium mb-1" style="color: #7B5E4D;">Full Transformation Path:</h3>
+                        <div id="resultPath" class="p-3 rounded-md text-sm max-h-60 overflow-y-auto" style="background-color: #F5F1EA; border: 1px solid #D4C2AD; white-space: pre-wrap; word-wrap: break-word;"></div>
+                        <p class="mt-1 text-xs text-gray-500">The sequence of values generated during the transformation.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 mt-auto" style="background-color: #3D352A; color: #FDFBF7;">
+        <p class="text-sm">&copy; 2024 SNFT Exploration Tools. All rights reserved.</p>
+        <p class="text-xs mt-1">For experimental and educational purposes.</p>
+    </footer>
+
+    <script>
+        let pathChartInstance = null;
+
+        function getDigitsJS(num) {
+            const sVal = String(Math.abs(num));
+            if (!sVal) return [];
+            return sVal.split('').map(d => parseInt(d));
+        }
+
+        function enhancedAdaptiveTransformJS(initialN, maxSteps, ruleStep4Type, ruleStep6Type, targetAttractor) {
+            let path = [initialN];
+            let currentN = initialN;
+
+            for (let step = 0; step < maxSteps; step++) {
+                if (targetAttractor !== null && currentN === targetAttractor) {
+                    break;
+                }
+
+                const digits = getDigitsJS(currentN);
+
+                if (digits.length === 0) {
+                    break;
+                }
+
+                const f = digits[0];
+                const l = digits[digits.length - 1];
+                const sumAbsDigits = digits.reduce((sum, d) => sum + d, 0);
+                
+                let transformedN = currentN;
+
+                if (step < 4) {
+                    let transformationVal;
+                    if (step % 2 === 0) { // FL
+                        transformationVal = 10 * f + l;
+                    } else { // LF
+                        transformationVal = 10 * l + f;
+                    }
+                    transformedN -= transformationVal;
+                } else if (step === 4) {
+                    if (ruleStep4Type === 'sum27_to_729' && sumAbsDigits === 27) {
+                        transformedN = 729;
+                    } else if (ruleStep4Type === 'mod27_div3_if_zero' && currentN % 27 === 0) {
+                        transformedN = Math.floor((currentN - 27) / 3);
+                    } else { // Default 'cubic_ft_lt'
+                        transformedN -= (Math.pow(f, 3) + Math.pow(l, 3));
+                    }
+                } else if (step === 6) {
+                    if (ruleStep6Type === 'mul3_mod27') {
+                        transformedN = (currentN * 3) % 27;
+                    } else if (ruleStep6Type === 'contains27_to_mod9') {
+                        if (String(Math.abs(currentN)).includes('27')) {
+                            transformedN = currentN - (currentN % 9);
+                        } else { // Fallback to 'adaptive_default'
+                            if (currentN % 27 === 0) {
+                                transformedN = Math.floor((currentN - 27) / 3);
+                            } else {
+                                transformedN -= (sumAbsDigits % 27);
+                            }
+                        }
+                    } else { // Default 'adaptive_default'
+                        if (currentN % 27 === 0) {
+                            transformedN = Math.floor((currentN - 27) / 3);
+                        } else {
+                            transformedN -= (sumAbsDigits % 27);
+                        }
+                    }
+                } else { // Steps > 6 or step 5
+                    let transformationVal;
+                    if (step % 2 === 0) { // FL
+                        transformationVal = 10 * f + l;
+                    } else { // LF
+                        transformationVal = 10 * l + f;
+                    }
+                    transformedN -= transformationVal;
+                }
+                
+                if (transformedN === currentN || path.includes(transformedN)) {
+                    if (transformedN !== currentN && (targetAttractor === null || transformedN !== targetAttractor)) {
+                         path.push(transformedN);
+                    }
+                    break; 
+                }
+                    
+                currentN = transformedN;
+                path.push(currentN);
+            }
+            return path;
+        }
+
+        const tooltipTitleCallback = function(tooltipItems) {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+              return label.join(' ');
+            } else {
+              return String(label); // Ensure it's a string
+            }
+        };
+        
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#3D352A',
+                        font: { size: 11 }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#3D352A',
+                    titleColor: '#FDFBF7',
+                    bodyColor: '#FDFBF7',
+                    callbacks: {
+                        title: tooltipTitleCallback,
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y;
+                            }
+                            return label;
+                        }
+                    },
+                    padding: 10,
+                    titleFont: { weight: 'bold', size: 13 },
+                    bodyFont: { size: 12 },
+                    cornerRadius: 4,
+                    displayColors: true 
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false, // Values can be negative or large
+                    grid: { color: '#EAE0D5' },
+                    ticks: { color: '#3D352A', font: {size: 10} }
+                },
+                x: {
+                    title: { display: true, text: 'Step', color: '#7B5E4D' },
+                    grid: { display: false },
+                    ticks: { color: '#3D352A', font: {size: 10} }
+                }
+            }
+        };
+
+        function wrapLabel(label, maxWidth = 16) {
+            if (typeof label !== 'string' || label.length <= maxWidth) return label;
+            const words = label.split(' ');
+            let currentLine = '';
+            const lines = [];
+            for (const word of words) {
+                if (currentLine.length === 0) {
+                    currentLine = word;
+                } else if ((currentLine + ' ' + word).length <= maxWidth) {
+                    currentLine += ' ' + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine.length > 0) {
+                lines.push(currentLine);
+            }
+            return lines.filter(line => line.length > 0);
+        }
+
+        document.getElementById('simulationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const initialN = parseInt(document.getElementById('initial_n').value);
+            const maxSteps = parseInt(document.getElementById('max_steps').value);
+            const ruleStep4Type = document.getElementById('rule_step4_type').value;
+            const ruleStep6Type = document.getElementById('rule_step6_type').value;
+            const targetAttractorInput = document.getElementById('target_attractor').value;
+            const targetAttractor = targetAttractorInput === '' ? null : parseInt(targetAttractorInput);
+
+            if (isNaN(initialN) || isNaN(maxSteps)) {
+                alert("Please enter valid numbers for Initial Number and Max Steps.");
+                return;
+            }
+
+            const path = enhancedAdaptiveTransformJS(initialN, maxSteps, ruleStep4Type, ruleStep6Type, targetAttractor);
+            
+            document.getElementById('resultsPlaceholder').classList.add('hidden');
+            document.getElementById('resultsContent').classList.remove('hidden');
+
+            document.getElementById('resultInitialN').textContent = initialN;
+            document.getElementById('resultFinalValue').textContent = path[path.length - 1];
+            document.getElementById('resultStepsTaken').textContent = path.length - 1;
+            document.getElementById('resultPath').textContent = path.join(' \u2192 ');
+
+            if (pathChartInstance) {
+                pathChartInstance.destroy();
+            }
+            const pathChartCtx = document.getElementById('pathChart').getContext('2d');
+            pathChartInstance = new Chart(pathChartCtx, {
+                type: 'line',
+                data: {
+                    labels: path.map((_, index) => index),
+                    datasets: [{
+                        label: 'Transformation Value',
+                        data: path,
+                        borderColor: '#A07C5B', // Muted Tan/Brown
+                        backgroundColor: 'rgba(160, 124, 91, 0.1)',
+                        tension: 0.1,
+                        fill: true,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#7B5E4D' // Darker Muted Brown for points
+                    }]
+                },
+                options: commonChartOptions
+            });
+        });
+    </script>
+</body>
+</html>
+

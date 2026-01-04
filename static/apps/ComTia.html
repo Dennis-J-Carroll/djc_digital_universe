@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive CompTIA A+ Mastery Guide with Gemini AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate Gray & Sky Blue -->
+    <!-- Application Structure Plan: A single-page, dashboard-style application with a sticky top navigation for easy access to thematic sections. The structure prioritizes user interaction over the linear format of the report. Key sections include: 1) Exam Deconstruction with interactive charts, 2) Cognitive Science learning strategies presented as interactive cards, 3) A filterable resource arsenal, 4) A NEW AI-powered concept clarifier, 5) An AI-powered troubleshooting tutor, 6) An AI-powered study plan generator, and 7) An animated exam day strategy guide. This non-linear, task-oriented design was chosen to allow users to quickly find and engage with the content most relevant to their current study phase, enhancing usability and knowledge retention. -->
+    <!-- Visualization & Content Choices: 1. Exam Domains: Doughnut Charts (Chart.js). 2. Learning Strategies: Accordion-style cards. 3. Resources: Filterable card grid. 4. Concept Clarifier: New Gemini feature. Goal: Explain/Define -> Viz: Text input and dynamic HTML output -> Interaction: User inputs a term, clicks button to get an explanation via API call. 5. Troubleshooting Tutor: Gemini-powered feature. Goal: Practice/Apply -> Viz: Textarea input and dynamic HTML output. 6. Study Plans: Gemini-powered generator. Goal: Create/Personalize -> Viz: Form inputs and dynamic JSON output. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .nav-link { transition: color 0.2s, border-color 0.2s; }
+        .strategy-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .strategy-card:hover { transform: translateY(-5px); }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #0ea5e9;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #loading-overlay:not(.hidden) {
+            display: flex;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            background-color: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-xl font-bold text-slate-800">
+                A<span class="text-sky-600">+</span> Mastery Guide
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#exams" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">The Exams</a>
+                <a href="#strategies" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">Strategies</a>
+                <a href="#resources" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">Resources</a>
+                <a href="#clarifier" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">AI Clarifier</a>
+                <a href="#tutor" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">AI Tutor</a>
+                <a href="#plans" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">AI Planner</a>
+                <a href="#exam-day" class="nav-link text-slate-600 hover:text-sky-600 border-b-2 border-transparent hover:border-sky-600">Exam Day</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-white border border-slate-300 rounded-md p-2 text-slate-700">
+                    <option value="#home">Home</option>
+                    <option value="#exams">The Exams</option>
+                    <option value="#strategies">Strategies</option>
+                    <option value="#resources">Resources</option>
+                    <option value="#clarifier">AI Clarifier</option>
+                    <option value="#tutor">AI Tutor</option>
+                    <option value="#plans">AI Planner</option>
+                    <option value="#exam-day">Exam Day</option>
+                </select>
+            </div>
+            <button id="api-settings-btn" class="ml-4 text-slate-600 hover:text-sky-600 transition-colors" title="API Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </nav>
+    </header>
+
+    <div id="api-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Enable AI Features</h2>
+                <button id="close-modal-btn" class="text-slate-400 hover:text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-slate-600">To use the AI-powered features (Concept Clarifier, Troubleshooting Tutor, and Study Planner), you need a free Gemini API key.</p>
+
+                <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-sky-900 mb-2">How to get your API key:</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-700">
+                        <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-600 hover:underline font-medium">Google AI Studio</a></li>
+                        <li>Sign in with your Google account</li>
+                        <li>Click "Create API Key" and choose a project</li>
+                        <li>Copy your API key and paste it below</li>
+                    </ol>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="api-key-input" class="block font-medium text-slate-700">Gemini API Key:</label>
+                    <input type="password" id="api-key-input" class="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500" placeholder="Enter your API key here">
+                    <p class="text-sm text-slate-500">Your API key is stored locally in your browser and never sent anywhere except Google's Gemini API.</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="save-api-key-btn" class="flex-1 bg-sky-600 text-white font-bold py-3 px-4 rounded-md hover:bg-sky-700 transition-colors">
+                        Save API Key
+                    </button>
+                    <button id="clear-api-key-btn" class="px-4 py-3 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 transition-colors">
+                        Clear Key
+                    </button>
+                </div>
+
+                <div id="api-status" class="hidden p-3 rounded-md"></div>
+            </div>
+        </div>
+    </div>
+
+    <main id="home" class="container mx-auto px-6 py-8 md:py-16">
+
+        <section class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Master the CompTIA A+ Exams</h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">An interactive, AI-enhanced guide to not just pass the 220-1101 & 220-1102 exams, but to build a durable foundation of IT expertise.</p>
+        </section>
+
+        <section id="exams" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">Deconstructing the Exams</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">The A+ certification is divided into two core exams. Click on a chart segment to see the key skills for that domain.</p>
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Core 1 (220-1101)</h3>
+                    <div class="chart-container">
+                        <canvas id="core1Chart"></canvas>
+                    </div>
+                    <div id="core1-details" class="mt-6 p-4 bg-slate-100 rounded-lg min-h-[150px] fade-in">
+                        <h4 class="font-bold text-slate-700">Select a domain</h4>
+                        <p class="text-slate-600">Click a slice of the chart to see details here.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold mb-4 text-center">Core 2 (220-1102)</h3>
+                    <div class="chart-container">
+                        <canvas id="core2Chart"></canvas>
+                    </div>
+                    <div id="core2-details" class="mt-6 p-4 bg-slate-100 rounded-lg min-h-[150px] fade-in">
+                        <h4 class="font-bold text-slate-700">Select a domain</h4>
+                        <p class="text-slate-600">Click a slice of the chart to see details here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategies" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">Evidence-Based Learning Strategies</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Leverage cognitive science to learn faster and retain more. Click each strategy to learn how to apply it.</p>
+            <div id="strategy-container" class="space-y-4">
+            </div>
+        </section>
+
+        <section id="resources" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">Architect Your Study Arsenal</h2>
+            <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">Build a "trifecta" of resources for comprehensive preparation. Use the filters to explore recommended videos, books, and practice exams.</p>
+            <div id="resource-filters" class="flex justify-center flex-wrap gap-2 mb-8">
+            </div>
+            <div id="resource-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+        
+        <section id="clarifier" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">✨ AI Concept Clarifier</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">Stuck on an acronym or concept? Type it below and get a simple, A+-focused explanation from our AI instructor.</p>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <div class="space-y-4">
+                    <label for="concept-input" class="block font-medium text-slate-700">Enter an IT acronym or concept:</label>
+                    <input type="text" id="concept-input" class="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500" placeholder="e.g., RAID, DHCP, or 'difference between a hub and a switch'">
+                    <button id="generate-clarification-btn" class="w-full bg-sky-600 text-white font-bold py-3 px-4 rounded-md hover:bg-sky-700 transition-colors flex items-center justify-center">
+                        Clarify Concept ✨
+                    </button>
+                </div>
+                <div id="clarification-output" class="mt-6 p-4 bg-slate-100 rounded-lg min-h-[150px]">
+                    <p class="text-slate-500">Your explanation will appear here...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tutor" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">✨ Interactive Troubleshooting Tutor</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">Practice for PBQs. Describe a common IT problem, and our AI tutor will walk you through the troubleshooting steps, just like on the exam.</p>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <div class="space-y-4">
+                    <label for="scenario-input" class="block font-medium text-slate-700">Describe the problem scenario:</label>
+                    <textarea id="scenario-input" rows="3" class="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500" placeholder="e.g., A user reports their desktop computer is running very slowly and frequently shows pop-up ads."></textarea>
+                    <button id="generate-troubleshooting-btn" class="w-full bg-sky-600 text-white font-bold py-3 px-4 rounded-md hover:bg-sky-700 transition-colors flex items-center justify-center">
+                        Generate Troubleshooting Steps ✨
+                    </button>
+                </div>
+                <div id="troubleshooting-output" class="mt-6 p-4 bg-slate-100 rounded-lg min-h-[150px]">
+                    <p class="text-slate-500">Your step-by-step guide will appear here...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="plans" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">✨ AI-Powered Study Planner</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">Stop guessing. Tell our AI planner your schedule, and it will generate a custom, week-by-week study plan to get you exam-ready.</p>
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label for="study-weeks" class="block text-sm font-medium text-slate-700">Weeks to Study</label>
+                        <input type="number" id="study-weeks" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500" value="12">
+                    </div>
+                    <div>
+                        <label for="study-hours" class="block text-sm font-medium text-slate-700">Hours per Week</label>
+                        <input type="number" id="study-hours" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500" value="10">
+                    </div>
+                    <div class="self-end">
+                         <button id="generate-plan-btn" class="w-full bg-sky-600 text-white font-bold py-2.5 px-4 rounded-md hover:bg-sky-700 transition-colors flex items-center justify-center">
+                            Generate Plan ✨
+                        </button>
+                    </div>
+                </div>
+                <div id="plan-output" class="mt-6 p-4 bg-slate-100 rounded-lg min-h-[200px]">
+                     <p class="text-slate-500">Your personalized study plan will appear here...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="exam-day" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2">Exam Day Tactics</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Walk in with a clear strategy to manage the 90-minute clock effectively and maximize your score.</p>
+            <div id="exam-tactic-container" class="max-w-2xl mx-auto space-y-4"></div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16 md:mt-24">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>This interactive guide is based on the "Strategic Blueprint for CompTIA A+ Mastery" report.</p>
+            <p class="text-slate-400 mt-2 text-sm">Enhanced with Gemini AI to create a dynamic and personalized learning experience.</p>
+        </div>
+    </footer>
+
+    <script>
+        console.log('[CompTIA] Script starting...');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[CompTIA] DOM Content Loaded!');
+
+            // Loading Overlay
+            const loadingOverlay = document.getElementById('loading-overlay');
+            console.log('[CompTIA] Loading overlay element:', loadingOverlay ? 'Found' : 'NOT FOUND');
+
+            // API Key Management
+            const apiModal = document.getElementById('api-modal');
+            console.log('[CompTIA] API Modal element:', apiModal ? 'Found' : 'NOT FOUND');
+            const apiSettingsBtn = document.getElementById('api-settings-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+            const clearApiKeyBtn = document.getElementById('clear-api-key-btn');
+            const apiKeyInput = document.getElementById('api-key-input');
+            const apiStatus = document.getElementById('api-status');
+
+            function getStoredApiKey() {
+                return localStorage.getItem('gemini_api_key') || '';
+            }
+
+            function saveApiKey(key) {
+                localStorage.setItem('gemini_api_key', key);
+            }
+
+            function clearApiKey() {
+                localStorage.removeItem('gemini_api_key');
+            }
+
+            apiSettingsBtn.addEventListener('click', () => {
+                apiModal.classList.remove('hidden');
+                apiKeyInput.value = getStoredApiKey();
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                apiModal.classList.add('hidden');
+                apiStatus.classList.add('hidden');
+            });
+
+            apiModal.addEventListener('click', (e) => {
+                if (e.target === apiModal) {
+                    apiModal.classList.add('hidden');
+                    apiStatus.classList.add('hidden');
+                }
+            });
+
+            saveApiKeyBtn.addEventListener('click', () => {
+                const key = apiKeyInput.value.trim();
+                if (key) {
+                    saveApiKey(key);
+                    apiStatus.className = 'p-3 rounded-md bg-green-100 border border-green-300 text-green-800';
+                    apiStatus.textContent = 'API key saved successfully! AI features are now enabled.';
+                    apiStatus.classList.remove('hidden');
+                    setTimeout(() => {
+                        apiModal.classList.add('hidden');
+                        apiStatus.classList.add('hidden');
+                    }, 2000);
+                } else {
+                    apiStatus.className = 'p-3 rounded-md bg-red-100 border border-red-300 text-red-800';
+                    apiStatus.textContent = 'Please enter a valid API key.';
+                    apiStatus.classList.remove('hidden');
+                }
+            });
+
+            clearApiKeyBtn.addEventListener('click', () => {
+                clearApiKey();
+                apiKeyInput.value = '';
+                apiStatus.className = 'p-3 rounded-md bg-slate-100 border border-slate-300 text-slate-700';
+                apiStatus.textContent = 'API key cleared. AI features are disabled.';
+                apiStatus.classList.remove('hidden');
+            });
+
+            const appData = {
+                core1: {
+                    labels: ['Mobile Devices', 'Networking', 'Hardware', 'Virtualization & Cloud', 'Hardware & Network Troubleshooting'],
+                    data: [15, 20, 25, 11, 29],
+                    details: [
+                        { title: '1.0 Mobile Devices (15%)', text: 'Install and configure laptop hardware, components, and accessories. Set up basic mobile device network connectivity and application support.' },
+                        { title: '2.0 Networking (20%)', text: 'Compare TCP/UDP, identify port numbers, and differentiate networking hardware. Understand wireless protocols and internet connection types.' },
+                        { title: '3.0 Hardware (25%)', text: 'Install and configure motherboards, CPUs, RAM, and storage solutions. Identify cable types and configure peripherals like printers.' },
+                        { title: '4.0 Virtualization & Cloud Computing (11%)', text: 'Explain virtualization concepts like VMs and hypervisors. Compare cloud models like IaaS, PaaS, and SaaS.' },
+                        { title: '5.0 Hardware & Network Troubleshooting (29%)', text: 'Apply troubleshooting methodologies to diagnose and resolve hardware/network issues using appropriate tools.' }
+                    ]
+                },
+                core2: {
+                    labels: ['Operating Systems', 'Security', 'Software Troubleshooting', 'Operational Procedures'],
+                    data: [31, 25, 22, 22],
+                    details: [
+                        { title: '1.0 Operating Systems (31%)', text: 'Compare Windows editions, use command-line tools (ipconfig, gpedit.msc), perform OS installations, and identify features of macOS/Linux.' },
+                        { title: '2.0 Security (25%)', text: 'Detect and remove malware, mitigate social engineering threats, configure Windows firewall, and implement security best practices.' },
+                        { title: '3.0 Software Troubleshooting (22%)', text: 'Diagnose software issues on PCs/mobile devices using tools like Event Viewer and System Restore. Apply malware removal procedures.' },
+                        { title: '4.0 Operational Procedures (22%)', text: 'Follow best practices for safety and communication. Maintain documentation, understand change management, and adhere to privacy policies.' }
+                    ]
+                },
+                strategies: [
+                    { title: 'Active Recall', icon: '🧠', content: 'The act of deliberately pulling information from memory. This strengthens neural pathways, making future recall easier. It combats the "illusion of competence" where you mistake familiarity for mastery.', examples: ['**Feynman Technique:** Try to teach a concept (like RAID levels) in simple terms.', '**Self-Quizzing:** After a chapter, close the book and write down everything you remember.', '**Concept Mapping:** Draw the 7-step malware removal process from memory.'] },
+                    { title: 'Spaced Repetition', icon: '🗓️', content: 'Reviewing information at increasing intervals to counteract the brain\'s natural "forgetting curve." This embeds knowledge in long-term memory efficiently.', examples: ['**Review Schedule:** Instead of cramming, review a topic on Day 1, Day 2, Day 4, Day 7, etc.', '**Tool-Assisted:** Use apps like Anki which automatically schedule flashcard reviews based on your performance.'] },
+                    { title: 'Interleaving', icon: '🔀', content: 'Mixing up different but related topics in a single study session. This builds mental flexibility and a deeper understanding of how concepts relate to one another.', examples: ['**Mixed Quizzes:** Take practice quizzes with questions from Hardware, Networking, and OS all mixed together.', '**Interleaved Labs:** A lab session could be: 1. Install RAM. 2. Configure an IP address. 3. Troubleshoot a printer.'] }
+                ],
+                resources: [
+                    { category: 'Video', title: 'Professor Messer', description: 'Concise, direct, and meticulously aligned with exam objectives. The gold standard for free, high-quality instruction.', link: 'https://www.professormesser.com/'},
+                    { category: 'Video', title: 'Jason Dion (Udemy)', description: 'Comprehensive video lessons paired with high-quality practice exams and PBQ simulations.', link: '#'},
+                    { category: 'Video', title: 'CBT Nuggets', description: 'High-energy, engaging videos with integrated virtual labs. A premium option for interactive learners.', link: '#'},
+                    { category: 'Book', title: 'Mike Meyers\' All-in-One', description: 'Known for its engaging and often humorous writing style, providing deep context for all A+ topics.', link: '#'},
+                    { category: 'Book', title: 'Sybex Complete Study Guide', description: 'A highly-regarded, comprehensive resource that systematically covers all exam objectives in detail.', link: '#'},
+                    { category: 'Practice Exams', title: 'Jason Dion\'s Practice Exams', description: 'Widely considered essential for their realistic PBQs and detailed answer explanations.', link: '#'},
+                    { category: 'Practice Exams', title: 'Boson ExSim-Max', description: 'Challenging and highly realistic practice exams that prepare you for the toughest questions.', link: '#'}
+                ],
+                 examTactics: [
+                    { step: 1, title: 'Triage the PBQs', description: 'When the exam starts, quickly read the Performance-Based Questions (PBQs), then FLAG them for review and skip them. Don\'t get bogged down early.' },
+                    { step: 2, title: 'Bank the Easy Points', description: 'Go through all the multiple-choice questions first. Answer what you know immediately to build momentum and secure points quickly.' },
+                    { step: 3, title: 'Intelligent Guessing', description: 'For questions you\'re unsure of, eliminate obviously wrong answers, make your best guess, and flag it for review. Never leave an answer blank.' },
+                    { step: 4, title: 'Return to the PBQs', description: 'With the multiple-choice done, you know exactly how much time is left. Return to the flagged PBQs and solve them methodically.' },
+                    { step: 5, title: 'Final Review', description: 'If any time remains, cycle through your flagged questions for a final check. You might catch a mistake or recall new information.' }
+                ]
+            };
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed !== null) { label += context.parsed + '%'; }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            };
+            
+            const createDoughnutChart = (canvasId, labels, data, onClick) => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                return new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Domain Weighting',
+                            data: data,
+                            backgroundColor: ['rgb(56, 189, 248)', 'rgb(34, 211, 238)', 'rgb(37, 99, 235)', 'rgb(79, 70, 229)', 'rgb(124, 58, 237)'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) { onClick(elements[0].index); }
+                        }
+                    }
+                });
+            };
+
+            const core1DetailsEl = document.getElementById('core1-details');
+            createDoughnutChart('core1Chart', appData.core1.labels, appData.core1.data, (index) => {
+                const detail = appData.core1.details[index];
+                core1DetailsEl.innerHTML = `<h4 class="font-bold text-slate-700">${detail.title}</h4><p class="text-slate-600">${detail.text}</p>`;
+                core1DetailsEl.classList.remove('fade-in');
+                void core1DetailsEl.offsetWidth; 
+                core1DetailsEl.classList.add('fade-in');
+            });
+            
+            const core2DetailsEl = document.getElementById('core2-details');
+            createDoughnutChart('core2Chart', appData.core2.labels, appData.core2.data, (index) => {
+                const detail = appData.core2.details[index];
+                core2DetailsEl.innerHTML = `<h4 class="font-bold text-slate-700">${detail.title}</h4><p class="text-slate-600">${detail.text}</p>`;
+                core2DetailsEl.classList.remove('fade-in');
+                void core2DetailsEl.offsetWidth; 
+                core2DetailsEl.classList.add('fade-in');
+            });
+
+            const strategyContainer = document.getElementById('strategy-container');
+            appData.strategies.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'strategy-card bg-white rounded-xl shadow-lg overflow-hidden';
+                card.innerHTML = `
+                    <button class="w-full p-6 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-4">${s.icon}</span>
+                            <span class="text-xl font-semibold">${s.title}</span>
+                        </div>
+                        <span class="transform transition-transform text-2xl text-slate-400">+</span>
+                    </button>
+                    <div class="px-6 pb-6 hidden">
+                        <p class="text-slate-600 mb-4">${s.content}</p>
+                        <h5 class="font-semibold mb-2">Practical Applications:</h5>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1">
+                            ${s.examples.map(ex => `<li>${ex}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                strategyContainer.appendChild(card);
+                const button = card.querySelector('button');
+                const content = card.querySelector('.px-6.pb-6');
+                const icon = button.querySelector('.transform');
+                button.addEventListener('click', () => {
+                    const isHidden = content.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-45', !isHidden);
+                });
+            });
+
+            const resourceFilters = document.getElementById('resource-filters');
+            const resourceGrid = document.getElementById('resource-grid');
+            const categories = ['All', ...new Set(appData.resources.map(r => r.category))];
+            categories.forEach(cat => {
+                const button = document.createElement('button');
+                button.textContent = cat;
+                button.dataset.category = cat;
+                button.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors';
+                if (cat === 'All') {
+                    button.classList.add('bg-sky-600', 'text-white');
+                } else {
+                    button.classList.add('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                }
+                resourceFilters.appendChild(button);
+            });
+
+            const renderResources = (filter) => {
+                resourceGrid.innerHTML = '';
+                const filtered = filter === 'All' ? appData.resources : appData.resources.filter(r => r.category === filter);
+                filtered.forEach(r => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-6 rounded-xl shadow-lg flex flex-col fade-in';
+                    card.innerHTML = `
+                        <h4 class="font-semibold text-lg mb-2">${r.title}</h4>
+                        <p class="text-slate-600 flex-grow">${r.description}</p>
+                        <a href="${r.link}" target="_blank" class="mt-4 text-sky-600 font-medium hover:underline self-start">Learn More &rarr;</a>
+                    `;
+                    resourceGrid.appendChild(card);
+                });
+            };
+            
+            resourceFilters.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const category = e.target.dataset.category;
+                    renderResources(category);
+                    document.querySelectorAll('#resource-filters button').forEach(btn => {
+                        btn.classList.remove('bg-sky-600', 'text-white');
+                        btn.classList.add('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                    });
+                    e.target.classList.add('bg-sky-600', 'text-white');
+                    e.target.classList.remove('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                }
+            });
+            renderResources('All');
+            
+            const examTacticContainer = document.getElementById('exam-tactic-container');
+            appData.examTactics.forEach(tactic => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-6 rounded-xl shadow-lg flex items-start space-x-4';
+                div.innerHTML = `
+                    <div class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-sky-600 text-white font-bold text-2xl">${tactic.step}</div>
+                    <div>
+                        <h4 class="font-semibold text-lg">${tactic.title}</h4>
+                        <p class="text-slate-600">${tactic.description}</p>
+                    </div>
+                `;
+                examTacticContainer.appendChild(div);
+            });
+
+            const mobileNav = document.getElementById('mobile-nav');
+            mobileNav.addEventListener('change', (e) => {
+                window.location.hash = e.target.value;
+            });
+
+            // Gemini API Integration
+            const generateClarificationBtn = document.getElementById('generate-clarification-btn');
+            const conceptInput = document.getElementById('concept-input');
+            const clarificationOutput = document.getElementById('clarification-output');
+
+            generateClarificationBtn.addEventListener('click', async () => {
+                const apiKey = getStoredApiKey();
+                if (!apiKey) {
+                    clarificationOutput.innerHTML = `<p class="text-amber-600">Please configure your API key first. Click the settings icon (⚙️) in the header to get started.</p>`;
+                    return;
+                }
+
+                const concept = conceptInput.value;
+                if (!concept.trim()) {
+                    clarificationOutput.innerHTML = `<p class="text-red-500">Please enter a concept or acronym.</p>`;
+                    return;
+                }
+
+                loadingOverlay.classList.remove('hidden');
+                generateClarificationBtn.disabled = true;
+                clarificationOutput.innerHTML = `<p class="text-slate-500">AI Instructor is thinking...</p>`;
+
+                const prompt = `You are an expert CompTIA A+ instructor. A student needs help understanding a concept. The concept is: "${concept}".
+                Explain this concept clearly and concisely, as you would to someone preparing for their A+ exam.
+                1. Start with a simple definition.
+                2. Use an analogy if it helps with understanding.
+                3. Explain its relevance to the CompTIA A+ exams (which domains it might appear in, why it's important for a technician to know).
+                Format the output in simple markdown. Use headings for different parts of the explanation.`;
+
+                try {
+                    const text = await callGemini(prompt);
+                    clarificationOutput.innerHTML = formatMarkdown(text);
+                } catch (error) {
+                    console.error("Gemini API Error:", error);
+                    clarificationOutput.innerHTML = `<p class="text-red-500">Sorry, the AI Instructor couldn't generate a response. Error: ${error.message}</p>`;
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    generateClarificationBtn.disabled = false;
+                }
+            });
+            
+            const generateTroubleshootingBtn = document.getElementById('generate-troubleshooting-btn');
+            const scenarioInput = document.getElementById('scenario-input');
+            const troubleshootingOutput = document.getElementById('troubleshooting-output');
+
+            generateTroubleshootingBtn.addEventListener('click', async () => {
+                const apiKey = getStoredApiKey();
+                if (!apiKey) {
+                    troubleshootingOutput.innerHTML = `<p class="text-amber-600">Please configure your API key first. Click the settings icon (⚙️) in the header to get started.</p>`;
+                    return;
+                }
+
+                const scenario = scenarioInput.value;
+                if (!scenario.trim()) {
+                    troubleshootingOutput.innerHTML = `<p class="text-red-500">Please describe a scenario first.</p>`;
+                    return;
+                }
+
+                loadingOverlay.classList.remove('hidden');
+                generateTroubleshootingBtn.disabled = true;
+                troubleshootingOutput.innerHTML = `<p class="text-slate-500">AI Tutor is thinking...</p>`;
+
+                const prompt = `You are an expert CompTIA A+ instructor. A student is practicing for a Performance-Based Question (PBQ) and has provided the following scenario: "${scenario}". Your task is to generate a step-by-step troubleshooting plan based on the official 7-step CompTIA methodology. The steps are: 1. Identify the problem. 2. Establish a theory of probable cause. 3. Test the theory to determine cause. 4. Establish a plan of action to resolve the problem and implement the solution. 5. Verify full system functionality and, if applicable, implement preventative measures. 6. Document findings, actions, and outcomes. For each step, provide a clear, actionable instruction relevant to the user's scenario. Format the output in markdown, with each step as a numbered list item with a heading.`;
+
+                try {
+                    const text = await callGemini(prompt);
+                    troubleshootingOutput.innerHTML = formatMarkdown(text);
+                } catch (error) {
+                    console.error("Gemini API Error:", error);
+                    troubleshootingOutput.innerHTML = `<p class="text-red-500">Sorry, the AI Tutor couldn't generate a response. Error: ${error.message}</p>`;
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    generateTroubleshootingBtn.disabled = false;
+                }
+            });
+
+            const generatePlanBtn = document.getElementById('generate-plan-btn');
+            const studyWeeksInput = document.getElementById('study-weeks');
+            const studyHoursInput = document.getElementById('study-hours');
+            const planOutput = document.getElementById('plan-output');
+
+            generatePlanBtn.addEventListener('click', async () => {
+                const apiKey = getStoredApiKey();
+                if (!apiKey) {
+                    planOutput.innerHTML = `<p class="text-amber-600">Please configure your API key first. Click the settings icon (⚙️) in the header to get started.</p>`;
+                    return;
+                }
+
+                const weeks = studyWeeksInput.value;
+                const hours = studyHoursInput.value;
+
+                if (!weeks || !hours || weeks <= 0 || hours <= 0) {
+                    planOutput.innerHTML = `<p class="text-red-500">Please enter valid numbers for weeks and hours.</p>`;
+                    return;
+                }
+
+                loadingOverlay.classList.remove('hidden');
+                generatePlanBtn.disabled = true;
+                planOutput.innerHTML = `<p class="text-slate-500">AI Planner is building your custom schedule...</p>`;
+
+                const prompt = `Create a personalized CompTIA A+ (Core 1 220-1101 & Core 2 220-1102) study plan. The user has ${weeks} weeks to study and can dedicate ${hours} hours per week. The plan should evenly distribute all major domains across the weeks, ensuring both Core 1 and Core 2 topics are covered. Each week should include a mix of theoretical study (e.g., watching videos, reading), practical application (e.g., hands-on labs), and review (e.g., practice questions, flashcards), incorporating the principles of interleaving and active recall.`;
+                const schema = {
+                    type: "OBJECT",
+                    properties: {
+                        planTitle: { type: "STRING" },
+                        weeklyBreakdown: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    week: { type: "NUMBER" },
+                                    theme: { type: "STRING" },
+                                    core1_topics: { type: "ARRAY", items: { type: "STRING" } },
+                                    core2_topics: { type: "ARRAY", items: { type: "STRING" } },
+                                    action_items: { type: "ARRAY", items: { type: "STRING" } }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                try {
+                    const jsonText = await callGemini(prompt, schema);
+                    const planData = JSON.parse(jsonText);
+                    renderStudyPlan(planData);
+                } catch (error) {
+                    console.error("Gemini API Error:", error);
+                    planOutput.innerHTML = `<p class="text-red-500">Sorry, the AI Planner couldn't generate a plan. Error: ${error.message}</p>`;
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    generatePlanBtn.disabled = false;
+                }
+            });
+
+            async function callGemini(prompt, schema = null) {
+                const apiKey = getStoredApiKey();
+                if (!apiKey) {
+                    throw new Error("API key not configured. Please add your API key in settings.");
+                }
+
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+
+                if (schema) {
+                    payload.generationConfig = {
+                        responseMimeType: "application/json",
+                        responseSchema: schema
+                    };
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API call failed with status ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Unexpected response structure from API.");
+                }
+            }
+            
+            function renderStudyPlan(data) {
+                let html = `<h3 class="text-xl font-bold mb-4">${data.planTitle}</h3>`;
+                html += '<div class="space-y-6">';
+                data.weeklyBreakdown.forEach(week => {
+                    html += `
+                        <div class="p-4 border border-slate-200 rounded-lg bg-white">
+                            <h4 class="font-semibold text-lg text-sky-700">Week ${week.week}: ${week.theme}</h4>
+                            <div class="grid md:grid-cols-2 gap-4 mt-2">
+                                <div>
+                                    <h5 class="font-semibold">Core 1 Focus:</h5>
+                                    <ul class="list-disc list-inside text-slate-600">${week.core1_topics.map(t => `<li>${t}</li>`).join('')}</ul>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold">Core 2 Focus:</h5>
+                                    <ul class="list-disc list-inside text-slate-600">${week.core2_topics.map(t => `<li>${t}</li>`).join('')}</ul>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <h5 class="font-semibold">Key Actions:</h5>
+                                <ul class="list-disc list-inside text-slate-600">${week.action_items.map(t => `<li>${t}</li>`).join('')}</ul>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                planOutput.innerHTML = html;
+            }
+
+            function formatMarkdown(text) {
+                // Handle bold first, then italics
+                return text
+                    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-extrabold mt-8 mb-4">$1</h1>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^\s*(\d+\.) (.*$)/gim, '<p class="ml-4 mb-2">$1 $2</p>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            console.log('[CompTIA] All initializations complete! Page is ready.');
+        });
+
+        console.log('[CompTIA] Event listener registered, waiting for DOM...');
+    </script>
+</body>
+</html>

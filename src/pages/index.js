@@ -8,14 +8,6 @@ import FeatureCard from "../components/shared/feature-card"
 import { motion } from "framer-motion"
 
 // Modern Futuristic Icons with teal color
-const DataIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="2" y1="12" x2="22" y2="12"></line>
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-  </svg>
-);
-
 const CodeIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="16 18 22 12 16 6"></polyline>
@@ -44,16 +36,10 @@ const IndexPage = ({ location }) => {
   // Featured work data
   const featuredWork = [
     {
-      title: "Data Science",
-      description: "Exploring patterns and insights using Python and ML tools",
-      icon: <DataIcon />,
-      link: { url: "/data-science", text: "View Projects →" }
-    },
-    {
       title: "Development Projects",
-      description: "Building innovative applications and services",
+      description: "Building innovative applications, interactive tools, and data science projects",
       icon: <CodeIcon />,
-      link: { url: "/Development-projects", text: "View Projects →" }
+      link: { url: "/development-projects", text: "View Projects →" }
     },
     {
       title: "Stories & More",
@@ -84,22 +70,19 @@ const IndexPage = ({ location }) => {
               />
               
               {/* CTA Buttons */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 1.8 }}
                 className="flex flex-wrap justify-center gap-4 mb-16"
               >
-                <Link to="/data-science" className="glow-on-hover btn">
-                  Data Science
-                </Link>
-                <Link to="/Development-projects" className="glow-on-hover btn btn-secondary">
+                <Link to="/development-projects" className="glow-on-hover btn">
                   Development Projects
                 </Link>
-                <Link to="/contact" className="glow-on-hover btn">
+                <Link to="/contact" className="glow-on-hover btn btn-secondary">
                   Contact Me
                 </Link>
-                <Link to="/stories" className="glow-on-hover btn btn-secondary">
+                <Link to="/stories" className="glow-on-hover btn">
                   Stories & More
                 </Link>
               </motion.div>
@@ -111,7 +94,6 @@ const IndexPage = ({ location }) => {
                 transition={{ duration: 1, delay: 2.2 }}
                 className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
               >
-                <span className="text-xs text-gray-400 mb-2">SCROLL</span>
                 <motion.div
                   animate={{ 
                     y: [0, 10, 0],
@@ -143,14 +125,14 @@ const IndexPage = ({ location }) => {
           
       {/* Featured Work Section */}
       <motion.section 
-        className="featured-work py-16 bg-black"
+        className="featured-work py-32 px-8 md:px-20 lg:px-32 bg-gradient-to-b from-black via-black/95 to-gray-900/90 relative overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-          <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-12 text-center gradient-text">
+          <div className="max-w-6xl mx-auto px-4 relative z-10">
+            <h2 className="text-3xl font-bold mb-12 text-center gradient-text break-words">
               Featured Work
             </h2>
             

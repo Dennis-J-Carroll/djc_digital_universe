@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import "./shared.css";
 
 const HeroText = ({ title, description }) => {
   // Animation variants for letter-by-letter animation
@@ -18,10 +19,10 @@ const HeroText = ({ title, description }) => {
   const nameArray = "Dennis J. Carroll".split("");
 
   return (
-    <div className="text-center mb-16">
+    <div className="hero-text-container">
       {/* Main name display with letter animations */}
-      <div className="mb-6 overflow-hidden">
-        <div className="flex justify-center items-center space-x-1 md:space-x-2">
+      <div className="hero-name-container">
+        <div className="hero-name-wrapper">
           {nameArray.map((letter, index) => (
             <motion.span
               key={index}
@@ -29,14 +30,9 @@ const HeroText = ({ title, description }) => {
               initial="hidden"
               animate="visible"
               variants={letterVariants}
-              className={`${letter === " " ? "w-4 md:w-6" : ""} inline-block`}
-              style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: "clamp(2rem, 5vw, 5rem)",
-                fontWeight: "700",
-                color: letter === "J" ? "var(--accent-color)" : "var(--primary-color)",
-                textShadow: letter === "J" ? "var(--accent-glow)" : "var(--neon-glow)",
-              }}
+              className={`hero-letter ${
+                letter === " " ? "space" : letter === "J" ? "accent" : "primary"
+              }`}
             >
               {letter}
             </motion.span>
@@ -49,13 +45,7 @@ const HeroText = ({ title, description }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.2 }}
-        className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent gradient-text slide-in-left"
-        style={{
-          fontFamily: "'Space Grotesk', sans-serif",
-          backgroundImage: "linear-gradient(to right, #008080, #888888)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
+        className="hero-title text-4xl md:text-5xl font-bold mb-6 slide-in-left"
       >
         {title || "Welcome to My Digital Universe"}
       </motion.h1>
@@ -65,11 +55,7 @@ const HeroText = ({ title, description }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.4 }}
-        className="text-xl text-gray-400 max-w-2xl mx-auto slide-in-right"
-        style={{
-          color: "var(--text-secondary)",
-          fontFamily: "'Space Grotesk', sans-serif",
-        }}
+        className="hero-description text-xl max-w-2xl mx-auto slide-in-right"
       >
         {description || "Exploring Data Science, Project Development, Creative Writing, and More"}
       </motion.p>
@@ -77,14 +63,9 @@ const HeroText = ({ title, description }) => {
       {/* Animated underline/divider */}
       <motion.div
         initial={{ width: 0 }}
-        animate={{ width: "150px" }}
+        animate={{width: "250px" }}
         transition={{ duration: 1, delay: 1.6 }}
-        style={{ 
-          height: "3px",
-          background: "linear-gradient(90deg, transparent, var(--primary-color), transparent)",
-          margin: "2rem auto",
-          boxShadow: "var(--neon-glow)"
-        }}
+        className="hero-divider"
       />
     </div>
   );

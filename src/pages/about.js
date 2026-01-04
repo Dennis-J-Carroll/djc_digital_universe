@@ -5,7 +5,7 @@ import Seo from "../components/shared/seo"
 const AboutPage = ({ location }) => {
   return (
     <Layout location={location}>
-      <div className="about-container">
+      <div className="about-container px-8 md:px-12">
         <h1>About Me</h1>
         
         <section className="about-section">

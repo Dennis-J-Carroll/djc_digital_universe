@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: The Self-Correcting AI Loop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Scholarly Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed around a central, interactive diagram of the 6-stage "Self-Correction Loop". This structure was chosen over a linear format to better represent the cyclical and interconnected nature of the framework described in the report. It transforms the user experience from passive reading to active exploration. Users can click any stage of the loop to dynamically load relevant content, including explanatory text and interactive visualizations, into a dedicated content area. This task-oriented, visual navigation is more intuitive and enhances understanding of the overall process. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Table 1 (XAI Method Comparison) -> Goal: Compare -> Viz/Method: Radar Chart (Chart.js/Canvas) -> Interaction: Hover for tooltips -> Justification: Effectively displays multi-dimensional trade-offs (Faithfulness, Causality, etc.) for different methodologies, providing a quick comparative overview.
+        - Report Info: Counterfactual Generation Process -> Goal: Explain -> Viz/Method: Interactive HTML/CSS/JS Diagram -> Interaction: Button click simulates CF generation -> Justification: Makes the abstract concept of finding a minimal change to flip a prediction tangible and easy to grasp.
+        - Report Info: Latent Space Regularization -> Goal: Explain -> Viz/Method: Animated HTML/CSS Diagram -> Interaction: Animation plays on section load -> Justification: Visually demonstrates the geometric concept of improving class separation in the latent space without requiring complex graphics.
+        - Report Info: Overall Framework -> Goal: Organize/Navigate -> Viz/Method: Interactive Flowchart (HTML/CSS/JS) -> Interaction: Click on stages to update content -> Justification: Serves as the primary information architecture, guiding the user through the report's core concepts in a logical, cyclical flow.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 45vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 50vh;
+            }
+        }
+        .loop-item {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .loop-item.active {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .loop-arrow {
+            position: absolute;
+            font-size: 2rem;
+            color: #9ca3af;
+        }
+        .content-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bg-warm-neutral { background-color: #f5f5f4; }
+        .text-primary { color: #1f2937; }
+        .text-secondary { color: #4b5563; }
+        .accent-color { color: #3b82f6; }
+        .accent-bg { background-color: #3b82f6; }
+        .accent-border { border-color: #3b82f6; }
+        .border-neutral { border-color: #d6d3d1; }
+    </style>
+</head>
+<body class="bg-warm-neutral text-primary">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-5xl font-bold mb-2">The Self-Correcting AI Loop</h1>
+            <p class="text-md md:text-lg text-secondary max-w-3xl mx-auto">An interactive exploration of how models can learn to diagnose, correct, and prevent their own failures.</p>
+        </header>
+
+        <main>
+            <!-- Interactive Loop Diagram -->
+            <section id="loop-navigation" class="mb-8 md:mb-12">
+                <h2 class="text-2xl font-bold text-center mb-6">Anatomy of the Self-Correction Process</h2>
+                <div class="relative grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto p-4">
+                    <!-- Stage 1 -->
+                    <div id="nav-detect" data-section="detect" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">1</span>
+                        <h3 class="font-semibold">Failure Detection</h3>
+                        <p class="text-sm text-secondary">Is the model wrong or uncertain?</p>
+                    </div>
+                    <!-- Stage 2 -->
+                    <div id="nav-explain" data-section="explain" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">2</span>
+                        <h3 class="font-semibold">Causal Explanation</h3>
+                        <p class="text-sm text-secondary">Why did the failure occur?</p>
+                    </div>
+                    <!-- Stage 3 -->
+                    <div id="nav-target" data-section="target" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">3</span>
+                        <h3 class="font-semibold">Counterfactual Targeting</h3>
+                        <p class="text-sm text-secondary">What needs to change?</p>
+                    </div>
+                    <!-- Stage 4 -->
+                    <div id="nav-generate" data-section="generate" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">4</span>
+                        <h3 class="font-semibold">Counterfactual Generation</h3>
+                        <p class="text-sm text-secondary">Create corrective data.</p>
+                    </div>
+                    <!-- Stage 5 -->
+                    <div id="nav-update" data-section="update" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">5</span>
+                        <h3 class="font-semibold">Geometric Update</h3>
+                        <p class="text-sm text-secondary">Reshape the model's logic.</p>
+                    </div>
+                    <!-- Stage 6 -->
+                    <div id="nav-prevent" data-section="prevent" class="loop-item bg-white p-4 rounded-lg shadow-md border border-neutral text-center">
+                        <span class="accent-bg text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2 font-bold">6</span>
+                        <h3 class="font-semibold">Failure Prevention</h3>
+                        <p class="text-sm text-secondary">Learn a general lesson.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Dynamic Content Area -->
+            <section id="content-area" class="bg-white p-6 md:p-8 rounded-lg shadow-lg min-h-[500px]">
+                <!-- Content will be injected here by JavaScript -->
+            </section>
+        </main>
+        
+        <footer class="text-center mt-12 text-secondary text-sm">
+            <p>Interactive report generated from "The Self-Correcting Loop" research summary.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navigation = document.getElementById('loop-navigation');
+            const contentArea = document.getElementById('content-area');
+            let currentChart = null;
+
+            const contentData = {
+                detect: {
+                    title: 'Stage 1: Failure Detection',
+                    intro: 'Before a model can correct a mistake, it must first realize it has made one. This stage is about identifying failures by monitoring the model\'s performance and confidence. This involves defining what a failure is for a specific task and using technical methods to flag potential errors during operation.',
+                    body: `
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div class="bg-stone-50 p-4 rounded-lg border border-neutral">
+                                <h4 class="font-bold text-lg mb-2">Reliability Failures</h4>
+                                <p class="text-secondary">These happen on <strong>in-distribution</strong> data—data that is similar to the training set. They show the model hasn't fully learned the patterns, perhaps due to biases or insufficient data. It's a failure to generalize to new, but expected, examples.</p>
+                            </div>
+                            <div class="bg-stone-50 p-4 rounded-lg border border-neutral">
+                                <h4 class="font-bold text-lg mb-2">Robustness Failures</h4>
+                                <p class="text-secondary">These occur with <strong>out-of-distribution</strong> (OOD) data, like new environments or adversarial attacks. The world has changed from what the model was trained on, and it fails to adapt. This is a failure to handle novelty.</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-stone-50 p-4 rounded-lg border border-neutral">
+                            <h4 class="font-bold text-lg mb-2">Key Detection Techniques</h4>
+                            <ul class="list-disc list-inside text-secondary space-y-2">
+                                <li><strong>Probabilistic Uncertainty Estimation:</strong> The model outputs a confidence score with its prediction. High uncertainty (low confidence) is a red flag for a potential failure. The model essentially says, "I'm not sure about this one."</li>
+                                <li><strong>Out-of-Distribution (OOD) Detection:</strong> Specialized methods, often using Bayesian techniques, are used to detect when an input is fundamentally different from anything the model has seen before. This directly signals a potential robustness failure.</li>
+                            </ul>
+                        </div>
+                    `
+                },
+                explain: {
+                    title: 'Stage 2: Causal Explanation',
+                    intro: 'Once a failure is detected, the critical next step is to understand *why* it happened. This section explores the shift from popular but potentially misleading "post-hoc" explanations to "mechanistic interpretability," which reverse-engineers the model\'s internal logic to find the true, causal reason for the error.',
+                    body: `
+                        <p class="text-secondary mt-4">Post-hoc methods like LIME and SHAP explain a model from the outside, but their explanations are not guaranteed to be faithful to the model's actual process. For true self-correction, a model must understand its own internal "circuits."</p>
+                        <div class="mt-6">
+                            <h4 class="font-bold text-lg mb-2 text-center">Comparing Explanation Paradigms</h4>
+                            <p class="text-secondary text-center mb-4">This chart compares different approaches on key criteria for reliable failure diagnosis. "Mechanistic" methods are the gold standard for enabling self-correction.</p>
+                            <div class="chart-container"><canvas id="explanationChart"></canvas></div>
+                        </div>
+                    `
+                },
+                target: {
+                    title: 'Stage 3: Counterfactual Targeting',
+                    intro: 'With a causal explanation in hand (e.g., "Failure due to over-reliance on background texture"), the system can formulate a precise correction target. This involves defining what a successful correction would look like, which is often framed as a "what if" scenario.',
+                    body: `
+                        <div class="mt-6 bg-stone-50 p-6 rounded-lg border border-neutral">
+                            <h4 class="font-bold text-lg mb-2">From Diagnosis to Goal</h4>
+                            <p class="text-secondary mb-4">The core idea is to translate the explanation into an instruction for data generation. This instruction forms the basis of a counterfactual. A counterfactual answers the question: "What is the smallest change to the input that would have produced the correct outcome?"</p>
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-4">
+                                    <span class="text-2xl accent-color">➡️</span>
+                                    <div>
+                                        <p><strong>Causal Diagnosis:</strong> "The model misclassified the camel because it's on grass, and it has learned a spurious correlation between grass and cows."</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-4">
+                                    <span class="text-2xl accent-color">🎯</span>
+                                    <div>
+                                        <p><strong>Correction Target:</strong> "Generate an image of a camel that is clearly on grass, to teach the model that the animal's shape, not the background, is the important feature."</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <h4 class="font-bold text-lg mb-2">The Ideal Counterfactual</h4>
+                            <p class="text-secondary">A useful counterfactual must be <span class="font-semibold">valid</span> (flips the prediction), <span class="font-semibold">sparse</span> (makes minimal changes), and <span class="font-semibold">plausible</span> (looks realistic).</p>
+                        </div>
+                    `
+                },
+                generate: {
+                    title: 'Stage 4: Counterfactual Generation',
+                    intro: 'This stage involves creating the actual data that will be used to correct the model. Using the target from the previous stage, a generative process produces one or more new data points (counterfactuals) that explicitly address the model\'s identified weakness.',
+                    body: `
+                        <p class="text-secondary mt-4">Simply augmenting with one minimally changed example is often not enough. A better approach is to generate a diverse set of counterfactuals that explore the area around the failure point, providing a much richer learning signal.</p>
+                        <div class="mt-6 p-6 rounded-lg border border-neutral bg-stone-50">
+                            <h4 class="font-bold text-lg mb-4 text-center">Interactive Counterfactual Simulation</h4>
+                            <div id="cf-simulation" class="w-full h-64 bg-white rounded-lg border-2 border-dashed border-neutral relative overflow-hidden">
+                                <div id="cf-boundary" class="absolute top-0 bottom-0 w-1.5 bg-gray-300" style="left: 50%;"></div>
+                                <span class="absolute top-2 text-sm font-semibold text-blue-500" style="left: 25%;">Class A</span>
+                                <span class="absolute top-2 text-sm font-semibold text-red-500" style="right: 25%;">Class B</span>
+                                <div id="cf-point" class="absolute w-4 h-4 bg-red-500 rounded-full" style="top: 50%; left: 60%; transform: translate(-50%, -50%); transition: all 1s ease-in-out;"></div>
+                                <div id="cf-original-label" class="absolute text-xs p-1 rounded bg-black/10" style="top: calc(50% + 10px); left: 60%;">Original (Fail)</div>
+                                <div id="cf-target-label" class="absolute text-xs p-1 rounded bg-black/10 hidden" style="top: calc(50% - 40px); left: 40%;">Counterfactual (Success)</div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button id="cf-button" class="accent-bg text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">Generate Counterfactual</button>
+                            </div>
+                            <p class="text-center text-sm text-secondary mt-2">Click to see a "failed" point (Class B) moved across the decision boundary to its correct "counterfactual" position (Class A) with minimal change.</p>
+                        </div>
+                    `
+                },
+                update: {
+                    title: 'Stage 5: Geometric Update',
+                    intro: 'Simply training on a new example is a patch. A real fix involves embedding the correction into the model\'s core logic—its "latent space." This stage reshapes the model\'s internal geometric map of the world to make the previous failure less likely.',
+                    body: `
+                        <p class="text-secondary mt-4">Deep learning models organize knowledge in a geometric "latent space." Failures often happen when the representations of different classes are too close together. The fix is to regularize this space, pushing the classes apart to create a clearer decision margin.</p>
+                        <div class="mt-6 p-6 rounded-lg border border-neutral bg-stone-50">
+                            <h4 class="font-bold text-lg mb-4 text-center">Visualizing Latent Space Regularization</h4>
+                            <div id="ls-simulation" class="w-full h-56 relative flex justify-around items-center">
+                                <div id="ls-before" class="w-2/5 h-full border border-neutral rounded p-2">
+                                    <p class="text-center font-semibold mb-2">Before</p>
+                                    <div class="relative w-full h-4/5">
+                                        <div class="absolute w-2 h-2 bg-blue-500 rounded-full" style="top: 40%; left: 45%;"></div>
+                                        <div class="absolute w-2 h-2 bg-blue-500 rounded-full" style="top: 60%; left: 55%;"></div>
+                                        <div class="absolute w-2 h-2 bg-red-500 rounded-full" style="top: 45%; left: 50%;"></div>
+                                        <div class="absolute w-2 h-2 bg-red-500 rounded-full" style="top: 55%; left: 60%;"></div>
+                                    </div>
+                                </div>
+                                <div class="text-2xl font-bold accent-color">→</div>
+                                <div id="ls-after" class="w-2/5 h-full border border-neutral rounded p-2">
+                                    <p class="text-center font-semibold mb-2">After</p>
+                                     <div class="relative w-full h-4/5">
+                                        <div class="absolute w-2 h-2 bg-blue-500 rounded-full transition-all duration-1000" style="top: 30%; left: 20%;"></div>
+                                        <div class="absolute w-2 h-2 bg-blue-500 rounded-full transition-all duration-1000" style="top: 70%; left: 30%;"></div>
+                                        <div class="absolute w-2 h-2 bg-red-500 rounded-full transition-all duration-1000" style="top: 25%; left: 75%;"></div>
+                                        <div class="absolute w-2 h-2 bg-red-500 rounded-full transition-all duration-1000" style="top: 65%; left: 80%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center text-sm text-secondary mt-2">The update uses the counterfactual as a guide to "pull" the decision boundary away from the failure point, increasing the separation between class clusters.</p>
+                        </div>
+                    `
+                },
+                prevent: {
+                    title: 'Stage 6: Failure Prevention & The Hybrid Agent',
+                    intro: 'The ultimate goal is not just to fix one error, but to learn a general principle that prevents similar failures from happening again. A truly sample-efficient system achieves this by integrating multiple learning paradigms into a single, hybrid agent.',
+                    body: `
+                        <p class="text-secondary mt-4">The self-correction loop isn't one type of machine learning; it's a seamless blend of three. The counterfactual acts as the critical bridge connecting them.</p>
+                        <div class="mt-6 grid md:grid-cols-3 gap-6">
+                             <div class="bg-stone-50 p-4 rounded-lg border border-neutral">
+                                <h4 class="font-bold text-lg mb-2">1. Supervised Learning</h4>
+                                <p class="text-secondary">It starts with a labeled example where the model failed. The initial error signal is supervised. <strong class="block mt-2">Input: Labeled Failure.</strong></p>
+                            </div>
+                            <div class="bg-stone-50 p-4 rounded-lg border border-neutral">
+                                <h4 class="font-bold text-lg mb-2">2. Self-Supervised Learning</h4>
+                                <p class="text-secondary">The model uses its internal explanation to generate its own corrective data (the counterfactual). It's teaching itself. <strong class="block mt-2">Action: Generate CF Data.</strong></p>
+                            </div>
+                             <div class="bg-stone-50 p-4 rounded-lg border border-neutral">
+                                <h4 class="font-bold text-lg mb-2">3. Reinforcement Learning</h4>
+                                <p class="text-secondary">The system observes whether the correction improves long-term performance. This outcome serves as a "reward" signal to improve its policy for generating future corrections. <strong class="block mt-2">Outcome: Policy Update.</strong></p>
+                            </div>
+                        </div>
+                    `
+                },
+            };
+
+            const renderContent = (sectionId) => {
+                const content = contentData[sectionId];
+                if (!content) return;
+
+                if (currentChart) {
+                    currentChart.destroy();
+                    currentChart = null;
+                }
+
+                contentArea.innerHTML = `
+                    <div class="content-fade-in">
+                        <h2 class="text-2xl md:text-3xl font-bold text-primary">${content.title}</h2>
+                        <p class="mt-2 text-md text-secondary">${content.intro}</p>
+                        <div class="mt-4">${content.body}</div>
+                    </div>`;
+
+                if (sectionId === 'explain') {
+                    renderExplanationChart();
+                } else if (sectionId === 'generate') {
+                    setupCfSimulation();
+                } else if (sectionId === 'update') {
+                    triggerLsAnimation();
+                }
+            };
+            
+            const renderExplanationChart = () => {
+                const ctx = document.getElementById('explanationChart').getContext('2d');
+                const data = {
+                    labels: ['Faithfulness to Model', 'Causal Inference', 'Suitability for Correction', 'Ease of Use', 'Model Agnostic'],
+                    datasets: [
+                        {
+                            label: 'Post-Hoc (LIME, SHAP)',
+                            data: [2, 1, 1, 5, 5],
+                            fill: true,
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgb(239, 68, 68)',
+                            pointBackgroundColor: 'rgb(239, 68, 68)',
+                        },
+                        {
+                            label: 'Mechanistic Interpretability',
+                            data: [5, 5, 5, 2, 2],
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                        }
+                    ]
+                };
+                currentChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: data,
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        if (context.parsed.r !== null) {
+                                            const score = context.parsed.r;
+                                            const ratings = ['Very Low', 'Low', 'Medium', 'High', 'Very High'];
+                                            label += ratings[score - 1];
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                angleLines: { color: '#e5e7eb' },
+                                grid: { color: '#e5e7eb' },
+                                pointLabels: { font: { size: 12 } },
+                                suggestedMin: 0,
+                                suggestedMax: 5,
+                                ticks: {
+                                    stepSize: 1,
+                                    backdropColor: 'rgba(0,0,0,0)',
+                                    callback: () => ''
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const setupCfSimulation = () => {
+                const button = document.getElementById('cf-button');
+                const point = document.getElementById('cf-point');
+                const originalLabel = document.getElementById('cf-original-label');
+                const targetLabel = document.getElementById('cf-target-label');
+                
+                let isOriginalState = true;
+                
+                button.onclick = () => {
+                    if (isOriginalState) {
+                        point.style.left = '40%';
+                        originalLabel.classList.add('hidden');
+                        targetLabel.classList.remove('hidden');
+                        button.textContent = 'Reset Simulation';
+                    } else {
+                        point.style.left = '60%';
+                        originalLabel.classList.remove('hidden');
+                        targetLabel.classList.add('hidden');
+                        button.textContent = 'Generate Counterfactual';
+                    }
+                    isOriginalState = !isOriginalState;
+                };
+            };
+            
+            const triggerLsAnimation = () => {
+                const afterSection = document.getElementById('ls-after');
+                const points = afterSection.querySelectorAll('.absolute');
+                const originalStyles = Array.from(points).map(p => p.style.cssText);
+
+                const animate = () => {
+                    points[0].style.top = '20%'; points[0].style.left = '15%';
+                    points[1].style.top = '75%'; points[1].style.left = '25%';
+                    points[2].style.top = '30%'; points[2].style.left = '80%';
+                    points[3].style.top = '65%'; points[3].style.left = '70%';
+                }
+                
+                setTimeout(animate, 100);
+
+                const observer = new IntersectionObserver((entries) => {
+                    if(!entries[0].isIntersecting){
+                       points.forEach((p, i) => p.style.cssText = originalStyles[i]);
+                       setTimeout(animate, 100);
+                    }
+                });
+                observer.observe(contentArea);
+            };
+
+            navigation.addEventListener('click', (e) => {
+                const navItem = e.target.closest('.loop-item');
+                if (navItem) {
+                    const sectionId = navItem.dataset.section;
+                    
+                    document.querySelectorAll('.loop-item').forEach(item => {
+                        item.classList.remove('active', 'accent-border');
+                        item.classList.add('border-neutral');
+                    });
+                    
+                    navItem.classList.add('active', 'accent-border');
+                    navItem.classList.remove('border-neutral');
+                    
+                    renderContent(sectionId);
+                }
+            });
+
+            document.getElementById('nav-detect').click();
+        });
+    </script>
+</body>
+</html>
+

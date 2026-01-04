@@ -1,0 +1,130 @@
+/* Feature Card Component Styles */
+
+.feature-card {
+  position: relative;
+  padding: 2.5rem; /* Base padding, will be overridden by utility classes */
+  border-radius: 18px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(25, 25, 25, 0.7);
+  border: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-out;
+}
+
+/* Card background gradient */
+.feature-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, rgba(136, 136, 136, 0.08), rgba(0, 128, 128, 0.06));
+  z-index: 0;
+  border-radius: 18px;
+}
+
+/* Glowing border effect */
+.feature-card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0, 128, 128, 0.06), rgba(136, 136, 136, 0.06), rgba(0, 128, 128, 0.06));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card-glow.active {
+  opacity: 1;
+  box-shadow: 0 0 20px 4px rgba(0, 128, 128, 0.15);
+}
+
+/* Pulsing animation for glow */
+@keyframes feature-card-pulse {
+  0% { box-shadow: 0 0 5px rgba(0, 128, 128, 0.08); }
+  50% { box-shadow: 0 0 20px 4px rgba(0, 128, 128, 0.15); }
+  100% { box-shadow: 0 0 5px rgba(0, 128, 128, 0.08); }
+}
+
+.feature-card-glow.active.pulsing {
+  animation: feature-card-pulse 2s ease-in-out infinite;
+}
+
+/* Card content wrapper */
+.feature-card-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* Icon container */
+.feature-card-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0, 128, 128, 0.1);
+  border: 1px solid rgba(0, 128, 128, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-card-icon.hovered {
+  box-shadow: 0 0 15px rgba(0, 128, 128, 0.3);
+}
+
+/* Title styles */
+.feature-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  white-space: normal;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.feature-card-title.hovered {
+  color: var(--secondary-color);
+  text-shadow: 0 0 8px rgba(0, 128, 128, 0.7);
+}
+
+/* Description styles */
+.feature-card-description {
+  color: var(--text-secondary);
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.6;
+}
+
+body.light-theme .feature-card-description {
+  color: #222 !important; /* Much darker for high contrast in light mode */
+}
+
+/* Link styles - extends the existing read-more-link */
+.feature-card .read-more-link {
+  display: inline-block;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* Hover state for the card */
+.feature-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 128, 128, 0.3);
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+  .feature-card {
+    padding: 3rem; /* sm:p-12 equivalent */
+  }
+} 

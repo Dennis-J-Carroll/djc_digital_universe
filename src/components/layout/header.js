@@ -6,8 +6,15 @@ const Header = ({ siteTitle }) => {
   const headerRef = useRef(null);
   const logoRef = useRef(null);
   const menuRef = useRef(null);
-  const [isLightTheme, setIsLightTheme] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('dark');
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Theme configuration
+  const themes = [
+    { id: 'dark', name: 'Dark', icon: '🌙' },
+    { id: 'light', name: 'Light', icon: '☀️' },
+    { id: 'tokyo-afternoon', name: 'Tokyo', icon: '🌸' }
+  ];
 
   // --- Define handleScroll with useCallback ---
   const handleScroll = useCallback(() => {
@@ -16,9 +23,9 @@ const Header = ({ siteTitle }) => {
     if (scrollY > 50) {
       setIsScrolled(true);
       gsap.to(headerRef.current, {
-        backgroundColor: isLightTheme ? "rgba(240, 240, 245, 0.9)" : "rgba(10, 14, 20, 0.9)",
+        backgroundColor: currentTheme === 'light' ? "rgba(240, 240, 245, 0.9)" : "rgba(10, 14, 20, 0.9)",
         backdropFilter: "blur(12px)",
-        borderBottom: isLightTheme ? "1px solid rgba(100, 100, 150, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)",
+        borderBottom: currentTheme === 'light' ? "1px solid rgba(100, 100, 150, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)",
         padding: "0.5rem 2rem",
         duration: 0.3
       });
@@ -32,7 +39,7 @@ const Header = ({ siteTitle }) => {
         duration: 0.3
       });
     }
-  }, [isLightTheme]); // Dependency: Re-create if isLightTheme changes
+  }, [currentTheme]); // Dependency: Re-create if currentTheme changes
   // -----------------------------------------
 
   // Setup animations on mount
@@ -60,7 +67,7 @@ const Header = ({ siteTitle }) => {
     if (typeof window !== 'undefined') {
       initialTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(initialTheme + '-theme');
-      setIsLightTheme(initialTheme === 'light');
+      setCurrentTheme(initialTheme);
     }
     // ------------------------------------------
 
@@ -78,14 +85,18 @@ const Header = ({ siteTitle }) => {
     };
   }, [handleScroll]); // Dependency: handleScroll (stable due to useCallback)
 
-  // --- Theme Toggle Handler ---
-  const handleThemeToggle = () => {
+  // --- Theme Cycle Handler ---
+  const handleThemeChange = (themeId) => {
     if (typeof window !== 'undefined') {
-      const newTheme = isLightTheme ? 'dark' : 'light';
-      setIsLightTheme(!isLightTheme);
-      localStorage.setItem('theme', newTheme);
-      document.body.classList.remove(isLightTheme ? 'light-theme' : 'dark-theme');
-      document.body.classList.add(newTheme + '-theme');
+      // Remove all theme classes
+      themes.forEach(theme => {
+        document.body.classList.remove(theme.id + '-theme');
+      });
+      
+      // Add new theme class
+      document.body.classList.add(themeId + '-theme');
+      setCurrentTheme(themeId);
+      localStorage.setItem('theme', themeId);
 
       // Manually trigger scroll handler to update header styles immediately
       handleScroll(); 
@@ -101,13 +112,14 @@ const Header = ({ siteTitle }) => {
         top: 0,
         left: 0,
         width: "100%",
-        zIndex: 100,
+        zIndex: 200,
         padding: "1rem 2rem",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         transition: "all 0.3s ease",
-        color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-primary)"
+        color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-primary)",
+        pointerEvents: "auto"
       }}
     >
       {/* Logo */}
@@ -167,7 +179,7 @@ const Header = ({ siteTitle }) => {
             fontSize: "1.2rem",
             fontWeight: "600",
             letterSpacing: "0.5px",
-            color: isLightTheme && isScrolled ? "var(--primary-color)" : "inherit",
+            color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "inherit",
             transition: "color 0.3s ease"
           }}>
             Dennis J. Carroll
@@ -190,12 +202,13 @@ const Header = ({ siteTitle }) => {
           gap: "1rem"
         }}>
           {/* GitHub Icon */}
-          <a 
-            href="https://github.com/Dennis-J-Carroll" 
+          <a
+            href="https://github.com/Dennis-J-Carroll"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Visit Dennis J. Carroll's GitHub profile"
             style={{
-              color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+              color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
               transition: "all 0.2s ease",
               position: "relative",
               display: "flex",
@@ -222,7 +235,7 @@ const Header = ({ siteTitle }) => {
               gsap.to(e.currentTarget, {
                 backgroundColor: "rgba(15, 20, 30, 0.5)",
                 borderColor: "rgba(120, 180, 255, 0.1)",
-                color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+                color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
                 boxShadow: "none",
                 scale: 1,
                 duration: 0.2
@@ -235,12 +248,13 @@ const Header = ({ siteTitle }) => {
           </a>
 
           {/* X/Twitter Icon */}
-          <a 
-            href="https://x.com/denniscarrollj" 
+          <a
+            href="https://x.com/denniscarrollj"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Follow Dennis J. Carroll on X (Twitter)"
             style={{
-              color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+              color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
               transition: "all 0.2s ease",
               position: "relative",
               display: "flex",
@@ -267,7 +281,7 @@ const Header = ({ siteTitle }) => {
               gsap.to(e.currentTarget, {
                 backgroundColor: "rgba(15, 20, 30, 0.5)",
                 borderColor: "rgba(120, 180, 255, 0.1)",
-                color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+                color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
                 boxShadow: "none",
                 scale: 1,
                 duration: 0.2
@@ -280,12 +294,13 @@ const Header = ({ siteTitle }) => {
           </a>
 
           {/* LinkedIn Icon */}
-          <a 
-            href="https://www.linkedin.com/in/dennisjcarroll/" 
+          <a
+            href="https://www.linkedin.com/in/dennisjcarroll/"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Connect with Dennis J. Carroll on LinkedIn"
             style={{
-              color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+              color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
               transition: "all 0.2s ease",
               position: "relative",
               display: "flex",
@@ -312,7 +327,7 @@ const Header = ({ siteTitle }) => {
               gsap.to(e.currentTarget, {
                 backgroundColor: "rgba(15, 20, 30, 0.5)",
                 borderColor: "rgba(120, 180, 255, 0.1)",
-                color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+                color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
                 boxShadow: "none",
                 scale: 1,
                 duration: 0.2
@@ -325,66 +340,60 @@ const Header = ({ siteTitle }) => {
           </a>
         </div>
 
-        {/* Theme Toggle Button */}
-        <button
-          onClick={handleThemeToggle} // Use the new handler
-          aria-label="Toggle theme"
-          style={{
-            background: "rgba(15, 20, 30, 0.5)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(120, 180, 255, 0.1)",
-            color: "var(--text-secondary)",
-            width: "2.5rem",
-            height: "2.5rem",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            transition: "all 0.2s ease"
-          }}
-          onMouseEnter={(e) => {
-            gsap.to(e.currentTarget, {
-              backgroundColor: "rgba(30, 40, 60, 0.6)",
-              borderColor: "rgba(120, 180, 255, 0.3)",
-              color: "var(--primary-color)",
-              boxShadow: "0 0 10px var(--primary-glow)",
-              scale: 1.1,
-              duration: 0.2
-            });
-          }}
-          onMouseLeave={(e) => {
-            gsap.to(e.currentTarget, {
-              backgroundColor: "rgba(15, 20, 30, 0.5)",
-              borderColor: "rgba(120, 180, 255, 0.1)",
-              color: isLightTheme && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
-              boxShadow: "none",
-              scale: 1,
-              duration: 0.2
-            });
-          }}
-        >
-          {/* Moon Icon (for dark/light mode toggle) */}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isLightTheme ? (
-              // Sun icon for light theme
-              <>
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </>
-            ) : (
-              // Moon icon for dark theme (original)
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            )}
-          </svg>
-        </button>
+        {/* Theme Selector */}
+        <div style={{
+          display: "flex",
+          gap: "0.5rem",
+          background: "rgba(15, 20, 30, 0.5)",
+          backdropFilter: "blur(8px)",
+          borderRadius: "25px",
+          padding: "0.25rem",
+          border: "1px solid rgba(120, 180, 255, 0.1)"
+        }}>
+          {themes.map((theme) => (
+            <button
+              key={theme.id}
+              onClick={() => handleThemeChange(theme.id)}
+              aria-label={`Switch to ${theme.name} theme`}
+              title={`Switch to ${theme.name} theme`}
+              style={{
+                background: currentTheme === theme.id ? "var(--primary-color)" : "transparent",
+                border: "none",
+                width: "2rem",
+                height: "2rem",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                fontSize: "1rem",
+                opacity: currentTheme === theme.id ? 1 : 0.6,
+                transform: currentTheme === theme.id ? "scale(1.1)" : "scale(1)"
+              }}
+              onMouseEnter={(e) => {
+                if (currentTheme !== theme.id) {
+                  gsap.to(e.currentTarget, {
+                    opacity: 0.9,
+                    scale: 1.05,
+                    duration: 0.2
+                  });
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentTheme !== theme.id) {
+                  gsap.to(e.currentTarget, {
+                    opacity: 0.6,
+                    scale: 1,
+                    duration: 0.2
+                  });
+                }
+              }}
+            >
+              {theme.icon}
+            </button>
+          ))}
+        </div>
       </div>
     </header>
   );

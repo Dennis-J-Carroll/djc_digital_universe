@@ -8,6 +8,21 @@ const path = require("path")
 const { createFilePath } = require("gatsby-source-filesystem")
 
 /**
+ * @type {import('gatsby').GatsbyNode['onCreateDevServer']}
+ */
+exports.onCreateDevServer = ({ app }) => {
+  const express = require('express')
+
+  // Serve static HTML files from the static directory in development mode
+  app.use('/apps', express.static(path.join(__dirname, 'static/apps')))
+  app.use('/Wpp', express.static(path.join(__dirname, 'static/Wpp')))
+
+  console.log('\n✓ Static HTML files configured for dev server:')
+  console.log('  📱 Apps: http://localhost:8000/apps/')
+  console.log('  🎓 CLI University: http://localhost:8000/Wpp/CLI_uni.html\n')
+}
+
+/**
  * @type {import('gatsby').GatsbyNode['onCreateNode']}
  */
 exports.onCreateNode = ({ node, actions, getNode }) => {

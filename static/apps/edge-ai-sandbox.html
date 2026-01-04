@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge AI Theoretical Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glossary-term {
+            cursor: help;
+            border-bottom: 1px dotted #9ca3af;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-white">Edge AI Theoretical Sandbox ✨</h1>
+            <p class="text-gray-400 mt-2">Enhanced with Glossary - Click underlined terms for definitions.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- CONTROLS PANEL -->
+            <div class="lg:col-span-1 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+                <h2 class="text-2xl font-semibold mb-6 text-white border-b border-gray-600 pb-3">Simulation Parameters</h2>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-3">Hardware & Efficiency</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="systolicArraySize" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="sasp">Systolic Array (SASP)</span>
+                            </label>
+                            <select id="systolicArraySize" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                                <option value="16">16x16</option>
+                                <option value="32" selected>32x32</option>
+                                <option value="64">64x64</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="quantization" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="quantization">Quantization</span>
+                            </label>
+                            <select id="quantization" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                                <option value="32">FP32</option>
+                                <option value="8" selected>INT8</option>
+                                <option value="4">INT4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="pruningRate" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="pruning">Pruning Rate</span>: <span id="pruningRateValue">20%</span>
+                            </label>
+                            <input type="range" id="pruningRate" min="0" max="90" value="20" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-3">Learning Paradigm</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="nonIID" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="non-iid">Non-IID Data Factor</span>: <span id="nonIIDValue">0.5</span>
+                            </label>
+                            <input type="range" id="nonIID" min="0" max="1" step="0.05" value="0.5" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="numTasks" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="continual-learning">Continual Learning Tasks</span>: <span id="numTasksValue">5</span>
+                            </label>
+                            <input type="range" id="numTasks" min="1" max="20" value="5" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-purple-400 mb-3">Trust Architecture</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="privacyBudget" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="privacy-budget">Privacy Budget (ε)</span>: <span id="privacyBudgetValue">4.0</span>
+                            </label>
+                            <input type="range" id="privacyBudget" min="0.5" max="8" step="0.1" value="4.0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="trustOverhead" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span class="glossary-term" data-term="trust-overhead">Trust Overhead</span>
+                            </label>
+                            <select id="trustOverhead" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                                <option value="0.05">Low</option>
+                                <option value="0.1" selected>Medium</option>
+                                <option value="0.2">High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISUALIZATION & RESULTS -->
+            <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex flex-col">
+                <h2 class="text-2xl font-semibold mb-4 text-white border-b border-gray-600 pb-3">System Performance Profile</h2>
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="w-full h-full min-h-[300px]">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <div>
+                        <div id="results" class="space-y-3 text-lg">
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
+                                <span class="font-semibold text-blue-300 glossary-term" data-term="efficiency">Efficiency (EDP⁻¹)</span>
+                                <span id="efficiencyValue" class="font-mono text-xl font-bold text-white">0.750</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
+                                <span class="font-semibold text-green-300 glossary-term" data-term="performance">Performance (mAP)</span>
+                                <span id="performanceValue" class="font-mono text-xl font-bold text-white">0.845</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
+                                <span class="font-semibold text-yellow-300 glossary-term" data-term="adaptability">Adaptability (1-Forget)</span>
+                                <span id="adaptabilityValue" class="font-mono text-xl font-bold text-white">0.692</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
+                                <span class="font-semibold text-purple-300 glossary-term" data-term="trust">Trust Score</span>
+                                <span id="trustValue" class="font-mono text-xl font-bold text-white">0.788</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-600">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">Simulation Log</h3>
+                    <div id="log" class="w-full h-24 bg-gray-900 rounded-md p-3 text-sm font-mono overflow-y-auto text-gray-400">
+                        > System parameters are balanced. All metrics are within normal operational ranges.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glossary Modal -->
+    <div id="glossaryModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-8 border border-gray-700 relative">
+            <button id="closeGlossaryModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            <h2 id="glossaryTerm" class="text-2xl font-bold text-cyan-400 mb-4"></h2>
+            <p id="glossaryDefinition" class="text-gray-300"></p>
+        </div>
+    </div>
+
+    <script>
+        // Glossary Data
+        const glossaryData = {
+            'sasp': {
+                term: 'Systolic Array Structured Pruning (SASP)',
+                def: 'A hardware-software co-design strategy. It uses highly parallel hardware circuits (Systolic Arrays) that are efficient for AI calculations. The AI model is pruned (simplified) in structured blocks that match the hardware\'s size, allowing the system to skip entire computational chunks, which dramatically boosts speed and saves energy.'
+            },
+            'quantization': {
+                term: 'Quantization',
+                def: 'The process of reducing the numerical precision of a model\'s weights (e.g., from 32-bit numbers to 8-bit integers). This makes the model smaller, faster, and more energy-efficient, which is crucial for edge devices. However, aggressive quantization can sometimes slightly reduce accuracy.'
+            },
+            'pruning': {
+                term: 'Pruning Rate',
+                def: 'The percentage of a model\'s weights (parameters) that are removed or set to zero to make it smaller and faster. A higher pruning rate improves efficiency but can negatively impact the model\'s performance if too many important connections are removed.'
+            },
+            'non-iid': {
+                term: 'Non-IID Data Factor',
+                def: 'Stands for "non-Independent and Identically Distributed." In federated learning, this measures how much the data differs across devices. A high Non-IID factor means each device has a very different, skewed dataset, which can cause "Client Drift" and harm the performance of the shared global model.'
+            },
+            'continual-learning': {
+                term: 'Continual Learning Tasks',
+                def: 'Refers to the model\'s ability to learn from a continuous stream of new tasks over time without forgetting what it has learned before. The main challenge is "Catastrophic Forgetting." A higher number of tasks makes this challenge more difficult.'
+            },
+            'privacy-budget': {
+                term: 'Privacy Budget (ε)',
+                def: 'A key concept in Differential Privacy. Epsilon (ε) is a mathematical measure of how much privacy is lost. A lower epsilon provides stronger, more formal privacy guarantees, but typically requires adding more "noise" to the data, which can reduce model accuracy.'
+            },
+            'trust-overhead': {
+                term: 'Trust Overhead',
+                def: 'The extra computational cost required to run the trust-building mechanisms, such as explainability (to understand model decisions) and auditability (e.g., blockchain verification). Higher overhead makes the system more transparent and trustworthy but consumes more energy and can slow it down.'
+            },
+            'efficiency': {
+                term: 'Efficiency (EDP⁻¹)',
+                def: 'A measure based on the inverse of the Energy-Delay Product (EDP). EDP combines a model\'s latency (how fast it is) and its energy consumption into a single metric. A higher efficiency score means the system is faster and/or consumes less power, making it better suited for battery-powered edge devices.'
+            },
+            'performance': {
+                term: 'Performance (mAP)',
+                def: 'A standard accuracy metric, often "mean Average Precision," used to measure how well the model performs its core task (e.g., object detection, segmentation). A higher score means the model is more accurate in its predictions.'
+            },
+            'adaptability': {
+                term: 'Adaptability (1 - Forgetting)',
+                def: 'Measures how well the model can learn new tasks without forgetting old ones. This score is calculated as 1 minus a "Forgetting" metric. A score of 1.0 means the model has perfect memory and suffers no catastrophic forgetting.'
+            },
+            'trust': {
+                term: 'Trust Score',
+                def: 'A composite metric that combines the system\'s guarantees for privacy (how well it protects user data), explainability (how transparent its decisions are), and auditability. A higher score indicates a more trustworthy system.'
+            }
+        };
+
+        // Chart initialization
+        let radarChart;
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Efficiency', 'Performance', 'Adaptability', 'Trust'],
+                datasets: [{
+                    label: 'System Profile',
+                    data: [0.750, 0.845, 0.692, 0.788],
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(59, 130, 246)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#cbd5e1' },
+                        ticks: { color: '#9ca3af', backdropColor: 'rgba(0,0,0,0)', stepSize: 0.25, font: { size: 10 } },
+                        min: 0,
+                        max: 1
+                    }
+                },
+                plugins: { legend: { labels: { color: '#e5e7eb', font: { size: 14 } } } }
+            }
+        });
+
+        // Calculation and UI update functions
+        const calculateMetrics = () => {
+            const params = {
+                sasp: Number(document.getElementById('systolicArraySize').value),
+                quant: Number(document.getElementById('quantization').value),
+                prune: Number(document.getElementById('pruningRate').value) / 100,
+                nonIID: Number(document.getElementById('nonIID').value),
+                tasks: Number(document.getElementById('numTasks').value),
+                epsilon: Number(document.getElementById('privacyBudget').value),
+                trustCost: Number(document.getElementById('trustOverhead').value)
+            };
+
+            let logMessages = [];
+
+            // Performance calculation
+            let basePerf = 0.95 - Math.pow(params.prune, 1.5) * 0.5 - (params.quant === 8 ? 0.02 : params.quant === 4 ? 0.08 : 0) - params.nonIID * 0.2 - (8 / (params.epsilon + 1)) * 0.05;
+            if (params.prune > 0.7) logMessages.push("High pruning rate (>70%) is severely degrading model accuracy.");
+            if (params.quant === 4) logMessages.push("Aggressive INT4 quantization may lead to significant performance loss.");
+            if (params.nonIID > 0.75) logMessages.push("High Non-IID factor is causing significant client drift.");
+            const performance = Math.max(0, Math.min(1, basePerf));
+
+            // Efficiency calculation
+            let baseEDP = 100 / (params.sasp / 16) / (32 / params.quant) * (1 - params.prune * 0.6) * (1 + params.trustCost);
+            if(params.trustCost > 0.15) logMessages.push("High trust overhead is increasing system latency.");
+            const efficiency = Math.max(0, Math.min(1, 1 - (baseEDP / 100)));
+
+            // Adaptability calculation
+            let replayQuality = 1 - (8 / (params.epsilon + 4)) * 0.4;
+            let forgetting = (params.tasks / 20) * 0.6 * (1 - replayQuality * 0.7);
+            if (params.tasks > 15) logMessages.push("Learning many sequential tasks increases risk of catastrophic forgetting.");
+            const adaptability = Math.max(0, Math.min(1, 1 - forgetting));
+
+            // Trust calculation
+            let privacyScore = 1 - (params.epsilon / 8.5);
+            let transparencyScore = params.trustCost / 0.2;
+            if (params.epsilon > 6) logMessages.push("High privacy budget (ε > 6) provides weaker privacy guarantees.");
+            const trust = Math.max(0, Math.min(1, (privacyScore * 0.6 + transparencyScore * 0.4)));
+
+            if(logMessages.length === 0) logMessages.push("System parameters are balanced. All metrics are within normal operational ranges.");
+
+            updateUI({ efficiency, performance, adaptability, trust }, logMessages);
+        };
+
+        const updateUI = (metrics, logMessages) => {
+            // Update value displays
+            document.getElementById('pruningRateValue').textContent = `${document.getElementById('pruningRate').value}%`;
+            document.getElementById('nonIIDValue').textContent = document.getElementById('nonIID').value;
+            document.getElementById('numTasksValue').textContent = document.getElementById('numTasks').value;
+            document.getElementById('privacyBudgetValue').textContent = document.getElementById('privacyBudget').value;
+
+            // Update results
+            document.getElementById('efficiencyValue').textContent = metrics.efficiency.toFixed(3);
+            document.getElementById('performanceValue').textContent = metrics.performance.toFixed(3);
+            document.getElementById('adaptabilityValue').textContent = metrics.adaptability.toFixed(3);
+            document.getElementById('trustValue').textContent = metrics.trust.toFixed(3);
+
+            // Update chart
+            radarChart.data.datasets[0].data = [metrics.efficiency, metrics.performance, metrics.adaptability, metrics.trust];
+            radarChart.update();
+
+            // Update log
+            document.getElementById('log').innerHTML = logMessages.map(msg => `<div>&gt; ${msg}</div>`).join('');
+        };
+
+        // Glossary functionality
+        const glossaryModal = document.getElementById('glossaryModal');
+        const glossaryTerm = document.getElementById('glossaryTerm');
+        const glossaryDefinition = document.getElementById('glossaryDefinition');
+        const closeBtn = document.getElementById('closeGlossaryModalBtn');
+        const termSpans = document.querySelectorAll('.glossary-term');
+
+        termSpans.forEach(span => {
+            span.addEventListener('click', (e) => {
+                const termKey = e.target.dataset.term;
+                const termData = glossaryData[termKey];
+                if (termData) {
+                    glossaryTerm.textContent = termData.term;
+                    glossaryDefinition.textContent = termData.def;
+                    glossaryModal.classList.remove('hidden');
+                }
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            glossaryModal.classList.add('hidden');
+        });
+
+        glossaryModal.addEventListener('click', (e) => {
+            if (e.target === glossaryModal) {
+                glossaryModal.classList.add('hidden');
+            }
+        });
+
+        // Event listeners for controls
+        ['systolicArraySize', 'quantization', 'pruningRate', 'nonIID', 'numTasks', 'privacyBudget', 'trustOverhead'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateMetrics);
+        });
+
+        // Initialize
+        calculateMetrics();
+    </script>
+</body>
+</html>

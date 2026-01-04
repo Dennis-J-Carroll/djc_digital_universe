@@ -1,0 +1,147 @@
+/* Shared Component Styles */
+
+/* Hero Text Component */
+.hero-text-container {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.hero-name-container {
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.hero-name-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .hero-name-wrapper {
+    gap: 0.5rem;
+  }
+}
+
+.hero-letter {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(2rem, 5vw, 5rem);
+  font-weight: 700;
+}
+
+.hero-letter.accent {
+  color: var(--accent-color);
+  text-shadow: var(--accent-glow);
+}
+
+.hero-letter.primary {
+  color: var(--primary-color);
+  text-shadow: var(--neon-glow);
+}
+
+.hero-letter.space {
+  width: 1rem;
+}
+
+@media (min-width: 768px) {
+  .hero-letter.space {
+    width: 1.5rem;
+  }
+}
+
+.hero-title {
+  font-family: 'Space Grotesk', sans-serif;
+  background: linear-gradient(to right, #008080, #888888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-description {
+  color: var(--text-secondary);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.hero-divider {
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  margin: 2rem auto;
+  box-shadow: var(--neon-glow);
+}
+
+/* Business Card Component */
+.business-card {
+  padding: 3rem 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+  background: rgba(25, 25, 25, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), var(--neon-glow);
+  transition: all 0.3s ease;
+}
+
+.business-card:hover {
+  transform: translateY(-10px) rotateX(5deg) rotateY(-5deg);
+  box-shadow: 0 40px 70px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 128, 128, 0.5);
+}
+
+.business-card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.business-card-name {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.business-card-title {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.business-card-content {
+  margin-bottom: 2rem;
+}
+
+.business-card-subtitle {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  text-shadow: var(--neon-glow);
+}
+
+.business-card-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.business-card-social {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.business-card-social-link {
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.business-card-social-link:hover {
+  color: var(--primary-color);
+  transform: translateY(-3px);
+  text-shadow: var(--neon-glow);
+} 

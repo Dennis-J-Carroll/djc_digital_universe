@@ -27,20 +27,6 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `data-science-projects`,
-        path: `${__dirname}/src/data-science-projects`,
-      },
-    },
-    {
-      resolve: `gatsby-source-filesystem`,
-      options: {
-        name: `python-dev-projects`,
-        path: `${__dirname}/src/python-dev-projects`,
-      },
-    },
-    {
-      resolve: `gatsby-source-filesystem`,
-      options: {
         name: `blog-posts`,
         path: `${__dirname}/src/blog-posts`,
       },

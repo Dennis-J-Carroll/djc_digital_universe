@@ -142,7 +142,7 @@ const ContactPage = ({ location }) => {
 
   return (
     <Layout location={location}>
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-8 md:px-12 py-16">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,10 +181,9 @@ const ContactPage = ({ location }) => {
                 <p className="text-teal-400 font-medium text-lg">{formStatus.message}</p>
               </motion.div>
             ) : (
-              <form 
-                onSubmit={handleSubmit} 
+              <form
+                onSubmit={handleSubmit}
                 className="space-y-6"
-                role="form"
                 aria-label="Contact form"
               >
                 <div>

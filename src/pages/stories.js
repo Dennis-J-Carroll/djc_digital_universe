@@ -8,7 +8,7 @@ const StoriesPage = ({ data, location }) => {
 
   return (
     <Layout location={location}>
-      <div className="stories-container">
+      <div className="stories-container px-8 md:px-12">
         <h1>Creative Writing</h1>
         <p>A collection of short stories, fiction, and creative experiments.</p>
         

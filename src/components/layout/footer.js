@@ -9,8 +9,7 @@ const Footer = ({ siteTitle }) => {
   // List of quick links for the footer
   const quickLinks = [
     { label: "Home", url: "/" },
-    { label: "Data Science", url: "/data-science" },
-    { label: "Python Dev", url: "/python-dev" },
+    { label: "Development Projects", url: "/development-projects" },
     { label: "Creative", url: "/stories" },
     { label: "About", url: "/about" },
     { label: "Contact", url: "/contact" }
@@ -18,35 +17,36 @@ const Footer = ({ siteTitle }) => {
 
   // Setup animations on mount
   useEffect(() => {
-    if (!footerRef.current) return;
+    const footer = footerRef.current;
+    if (!footer) return;
 
     // Animate the circuit lines
     if (circuitRef.current) {
       const lines = circuitRef.current.querySelectorAll('.circuit-line');
       const dots = circuitRef.current.querySelectorAll('.circuit-dot');
-      
+
       // Animate circuit lines
       gsap.fromTo(
         lines,
         { scaleX: 0 },
-        { 
-          scaleX: 1, 
-          duration: 1.5, 
-          stagger: 0.1, 
+        {
+          scaleX: 1,
+          duration: 1.5,
+          stagger: 0.1,
           ease: "power2.inOut",
           delay: 0.5
         }
       );
-      
+
       // Animate circuit dots
       gsap.fromTo(
         dots,
         { scale: 0, opacity: 0 },
-        { 
-          scale: 1, 
-          opacity: 1, 
-          duration: 0.5, 
-          stagger: 0.15, 
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.15,
           ease: "back.out(2)",
           delay: 0.8
         }
@@ -59,14 +59,14 @@ const Footer = ({ siteTitle }) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             gsap.fromTo(
-              footerRef.current.querySelectorAll('.footer-section'),
+              footer.querySelectorAll('.footer-section'),
               { y: 20, opacity: 0 },
-              { 
-                y: 0, 
-                opacity: 1, 
-                duration: 0.8, 
-                stagger: 0.15, 
-                ease: "power2.out" 
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.15,
+                ease: "power2.out"
               }
             );
             observer.unobserve(entry.target);
@@ -76,11 +76,11 @@ const Footer = ({ siteTitle }) => {
       { threshold: 0.2 }
     );
 
-    observer.observe(footerRef.current);
+    observer.observe(footer);
 
     return () => {
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
+      if (footer) {
+        observer.unobserve(footer);
       }
     };
   }, []);
@@ -244,10 +244,12 @@ const Footer = ({ siteTitle }) => {
             marginBottom: "1rem"
           }}>
             {/* GitHub */}
-            <a 
-              href="https://github.com/Dennis-J-Carroll" 
+            <a
+              href="https://github.com/Dennis-J-Carroll"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Visit Dennis J. Carroll's GitHub profile"
+              title="Visit Dennis J. Carroll's GitHub profile"
               style={{
                 color: "var(--text-secondary)",
                 transition: "all 0.2s ease",
@@ -285,10 +287,12 @@ const Footer = ({ siteTitle }) => {
             </a>
 
             {/* LinkedIn */}
-            <a 
-              href="https://www.linkedin.com/in/dennisjcarroll/" 
+            <a
+              href="https://www.linkedin.com/in/dennisjcarroll/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Connect with Dennis J. Carroll on LinkedIn"
+              title="Connect with Dennis J. Carroll on LinkedIn"
               style={{
                 color: "var(--text-secondary)",
                 transition: "all 0.2s ease",
@@ -326,10 +330,12 @@ const Footer = ({ siteTitle }) => {
             </a>
 
             {/* Twitter/X */}
-            <a 
-              href="https://x.com/denniscarrollj" 
+            <a
+              href="https://x.com/denniscarrollj"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Follow Dennis J. Carroll on X (Twitter)"
+              title="Follow Dennis J. Carroll on X (Twitter)"
               style={{
                 color: "var(--text-secondary)",
                 transition: "all 0.2s ease",
@@ -372,9 +378,9 @@ const Footer = ({ siteTitle }) => {
         <div className="footer-section">
           <h3 style={{
             fontSize: "1.1rem",
-            fontWeight: "600",
+            fontWeight: "600", 
             marginBottom: "1.5rem",
-            color: "var(--accent-color)",
+            color: "var(--heading-color)", // This is correctly referencing the CSS variable from global.css
             display: "flex",
             alignItems: "center",
             gap: "0.5rem"

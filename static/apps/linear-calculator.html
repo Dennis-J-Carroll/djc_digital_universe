@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Algebra Holo-Interface 7000 v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --primary-glow: #00d9ff;
+            --secondary-glow: #ff00c8;
+            --accent-glow: #f3ff00;
+            --bg-dark: #0a0a14;
+            --glass-bg: rgba(20, 20, 40, 0.6);
+            --glass-border: rgba(0, 217, 255, 0.2);
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--bg-dark), #100f28, var(--bg-dark), #231a33);
+            background-size: 400% 400%;
+            animation: gradient-animation 25s ease infinite;
+            z-index: -2;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .operation-card {
+            background: var(--glass-bg);
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .operation-card:hover {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+        
+        .result-box, pre {
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed var(--glass-border);
+            border-radius: 0.5rem;
+            min-height: 50px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-primary);
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            flex-grow: 1;
+        }
+
+        .btn {
+            font-family: 'Orbitron', sans-serif;
+            background: transparent;
+            border: 2px solid var(--primary-glow);
+            color: var(--primary-glow);
+            text-shadow: 0 0 5px var(--primary-glow);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+            transition: left 0.4s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary-glow); color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--primary-glow); text-shadow: none;
+        }
+        
+        .btn:hover::before { left: 100%; }
+        
+        .btn-secondary {
+            border-color: var(--secondary-glow); color: var(--secondary-glow);
+            text-shadow: 0 0 5px var(--secondary-glow);
+        }
+        .btn-secondary:hover { background: var(--secondary-glow); box-shadow: 0 0 20px var(--secondary-glow); }
+        .btn-secondary::before { background: linear-gradient(90deg, transparent, var(--secondary-glow), transparent); }
+
+        .btn-accent {
+            border-color: var(--accent-glow); color: var(--accent-glow);
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+        .btn-accent:hover { background: var(--accent-glow); box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-accent::before { background: linear-gradient(90deg, transparent, var(--accent-glow), transparent); }
+
+        input, textarea, select {
+            background: transparent; border: none;
+            border-bottom: 2px solid var(--glass-border); border-radius: 0;
+            padding: 0.5rem 0.25rem; color: var(--text-primary);
+            transition: border-color 0.3s ease;
+            font-family: 'Rajdhani', sans-serif; font-size: 1.1rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none; border-bottom-color: var(--primary-glow);
+            box-shadow: 0 5px 15px -10px var(--primary-glow);
+        }
+
+        textarea { min-height: 100px; }
+
+        select {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat; background-position: right 0.5rem center;
+        }
+        
+        select option { background: var(--bg-dark); color: var(--text-primary); }
+
+        label {
+            color: var(--text-secondary); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        
+        .katex-display { margin: 0.5em 0; }
+        .katex { font-size: 1.1em !important; text-shadow: 0 0 5px var(--primary-glow); }
+        
+        #plot-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        #plot-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white">Holo-Interface 7000</h1>
+            <p class="text-lg text-gray-400 mt-2 tracking-wider">Advanced Linear Algebra Core</p>
+        </header>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+
+            <!-- Basic Operations -->
+            <div class="operation-card">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Core Operations</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="vectorA" class="block mb-2">Vector A / v</label>
+                        <input type="text" id="vectorA" class="w-full" placeholder="e.g., 1, 2, 0">
+                    </div>
+                    <div>
+                        <label for="vectorB" class="block mb-2">Vector B</label>
+                        <input type="text" id="vectorB" class="w-full" placeholder="e.g., 4, 5, 0">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="matrixA" class="block mb-2">Matrix A</label>
+                        <textarea id="matrixA" class="w-full" placeholder="1, 2, 0&#10;3, 4, 0&#10;0, 0, 1"></textarea>
+                    </div>
+                    <div>
+                        <label for="matrixB" class="block mb-2">Matrix B</label>
+                        <textarea id="matrixB" class="w-full" placeholder="5, 6, 0&#10;7, 8, 0&#10;0, 0, 1"></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 mb-6">
+                     <button id="matAddBtn" class="btn">A + B</button>
+                     <button id="matMulBtn" class="btn">A * B</button>
+                     <button id="matVecMulBtn" class="btn btn-secondary">A * v</button>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Output:</h3>
+                <div id="basicResult" class="result-box p-4 rounded-lg text-lg"></div>
+            </div>
+
+            <!-- Advanced Operations & Visualization -->
+            <div class="operation-card row-span-2">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Advanced Analysis & Visualization</h2>
+                
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">Eigen-Analysis (for Matrix A)</h3>
+                    <p class="text-sm text-gray-400 mb-2">Calculates eigenvalues/eigenvectors for 2x2 matrices. Input a 2x2 matrix in the 'Matrix A' field.</p>
+                    <div class="flex gap-3">
+                        <button id="eigenBtn" class="btn btn-accent">Calculate Eigen-Data</button>
+                    </div>
+                    <div id="eigenResult" class="result-box p-4 mt-4 text-base"></div>
+                </div>
+
+                <div class="flex-grow flex flex-col">
+                    <h3 class="font-bold text-lg mb-2">3D Holo-Plotter</h3>
+                     <p class="text-sm text-gray-400 mb-2">Visualizes vectors and matrix transformations. Use mouse to rotate/zoom. Vectors are plotted from the 'Vector A' field.</p>
+                    <div id="plot-container" class="flex-grow">
+                        <canvas id="plot-canvas"></canvas>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <button id="plotVecBtn" class="btn">Plot Vector 'v'</button>
+                        <button id="plotMatBtn" class="btn btn-secondary">Plot Matrix 'A'</button>
+                        <button id="plotTransformBtn" class="btn btn-accent">Plot A * v</button>
+                        <button id="plotClearBtn" class="btn bg-red-500/50 border-red-500 text-red-300">Clear Plot</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Python/NumPy Code Demonstrations -->
+            <div class="operation-card">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Python Simulation</h2>
+                <div class="mb-6">
+                    <label for="pythonOpSelect" class="block mb-2">Select Simulation:</label>
+                    <select id="pythonOpSelect" class="w-full p-2">
+                        <option value="intro" selected>-- Select an Operation --</option>
+                        <optgroup label="Vector/Matrix">
+                            <option value="vec_add">Vector Addition</option>
+                            <option value="mat_mul">Matrix Multiplication</option>
+                            <option value="mat_transpose">Matrix Transpose</option>
+                        </optgroup>
+                        <optgroup label="Advanced">
+                            <option value="np_eigen">Eigenvalues & Eigenvectors</option>
+                            <option value="np_svd">Singular Value Decomposition (SVD)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="mb-4 flex-grow flex flex-col">
+                    <h3 class="font-bold text-lg mb-2">Code Simulation:</h3>
+                    <pre class="p-4 text-sm overflow-x-auto flex-grow"><code id="pythonCodeSnippet" class="language-python"># Select a simulation...</code></pre>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-2">Simulated Output:</h3>
+                    <div id="pythonOutput" class="result-box p-4 text-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- UTILITY & PARSING ---
+        const parseVector = (str) => {
+            try {
+                if (!str) return null;
+                const arr = str.split(',').map(s => parseFloat(s.trim()));
+                return arr.some(isNaN) ? null : arr;
+            } catch { return null; }
+        };
+        const parseMatrix = (str) => {
+            try {
+                if (!str) return null;
+                const matrix = str.trim().split('\n').map(row => parseVector(row));
+                if (matrix.some(row => row === null)) return null;
+                const len = matrix[0]?.length || 0;
+                return matrix.every(row => row.length === len) ? matrix : null;
+            } catch { return null; }
+        };
+        const formatVector = (v) => `[ ${v.map(n => n.toFixed(2)).join(', ')} ]`;
+        const formatMatrix = (m) => m.map(row => `  ${formatVector(row)}`).join('\n');
+
+        // --- CORE LINEAR ALGEBRA ---
+        const addMatrices = (m1, m2) => (m1.length !== m2.length || m1[0].length !== m2[0].length) ? { error: "Matrices must have same dimensions." } : { result: m1.map((r, i) => r.map((v, j) => v + m2[i][j])) };
+        const multiplyMatrices = (m1, m2) => {
+            if (m1[0].length !== m2.length) return { error: "Cols of A must equal rows of B." };
+            const res = Array(m1.length).fill(0).map(() => Array(m2[0].length).fill(0));
+            for (let i = 0; i < m1.length; i++) {
+                for (let j = 0; j < m2[0].length; j++) {
+                    for (let k = 0; k < m1[0].length; k++) {
+                        res[i][j] += m1[i][k] * m2[k][j];
+                    }
+                }
+            }
+            return { result: res };
+        };
+        const multiplyMatrixVector = (m, v) => {
+            if (m[0].length !== v.length) return { error: "Matrix cols must equal vector length." };
+            return { result: m.map(row => row.reduce((acc, val, i) => acc + val * v[i], 0)) };
+        };
+        
+        // --- EIGENVALUE CALCULATION for 2x2 ---
+        const calculateEigen2x2 = (m) => {
+            if (m.length !== 2 || m[0].length !== 2) return { error: "Eigen-analysis requires a 2x2 matrix." };
+            const [[a, b], [c, d]] = m;
+            const trace = a + d;
+            const det = a * d - b * c;
+            const discriminant = trace * trace - 4 * det;
+
+            if (discriminant < 0) return { eigenvalues: "Complex eigenvalues not supported.", eigenvectors: "" };
+            
+            const lambda1 = (trace + Math.sqrt(discriminant)) / 2;
+            const lambda2 = (trace - Math.sqrt(discriminant)) / 2;
+
+            let v1 = [0, 0], v2 = [0, 0];
+            if (c !== 0) {
+                v1 = [lambda1 - d, c];
+                v2 = [lambda2 - d, c];
+            } else if (b !== 0) {
+                v1 = [b, lambda1 - a];
+                v2 = [b, lambda2 - a];
+            } else { // Diagonal matrix
+                v1 = [1, 0];
+                v2 = [0, 1];
+            }
+            // Normalize vectors
+            const norm1 = Math.sqrt(v1[0]**2 + v1[1]**2);
+            const norm2 = Math.sqrt(v2[0]**2 + v2[1]**2);
+            v1 = norm1 === 0 ? v1 : [v1[0]/norm1, v1[1]/norm1];
+            v2 = norm2 === 0 ? v2 : [v2[0]/norm2, v2[1]/norm2];
+
+            return {
+                eigenvalues: `&lambda;₁ = ${lambda1.toFixed(3)}, &lambda;₂ = ${lambda2.toFixed(3)}`,
+                eigenvectors: [v1, v2]
+            };
+        };
+
+        // --- 3D VISUALIZATION (three.js) ---
+        let scene, camera, renderer, gridHelper, axesHelper;
+        const plotObjects = [];
+
+        function init3DPlot() {
+            const container = document.getElementById('plot-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('plot-canvas'), antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            gridHelper = new THREE.GridHelper(10, 10, 0x00d9ff, 0xaaaaaa);
+            gridHelper.material.opacity = 0.2;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+
+            axesHelper = new THREE.AxesHelper(5);
+            axesHelper.material.opacity = 0.5;
+            axesHelper.material.transparent = true;
+            scene.add(axesHelper);
+
+            const light = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(light);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            
+            const onMouseDown = (e) => { isDragging = true; };
+            const onMouseUp = (e) => { isDragging = false; };
+            const onMouseMove = (e) => {
+                if (!isDragging) return;
+                const deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+                
+                const deltaRotationQuaternion = new THREE.Quaternion()
+                    .setFromEuler(new THREE.Euler(
+                        (deltaMove.y * Math.PI) / 180,
+                        (deltaMove.x * Math.PI) / 180,
+                        0,
+                        'XYZ'
+                    ));
+                
+                camera.position.applyQuaternion(deltaRotationQuaternion);
+                camera.lookAt(0,0,0);
+                previousMousePosition = { x: e.offsetX, y: e.offsetY };
+            };
+            const onWheel = (e) => {
+                camera.position.z += e.deltaY * 0.01;
+            };
+
+            container.addEventListener('mousedown', onMouseDown);
+            container.addEventListener('mouseup', onMouseUp);
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('wheel', onWheel);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        
+        function addVectorToPlot(vec, color = 0x00d9ff, name = 'vector') {
+            const [x, y, z] = [vec[0] || 0, vec[1] || 0, vec[2] || 0];
+            const dir = new THREE.Vector3(x, y, z);
+            const origin = new THREE.Vector3(0, 0, 0);
+            const length = dir.length();
+            const arrowHelper = new THREE.ArrowHelper(dir.normalize(), origin, length, color);
+            arrowHelper.name = name;
+            scene.add(arrowHelper);
+            plotObjects.push(arrowHelper);
+        }
+        
+        function clearPlot() {
+            plotObjects.forEach(obj => scene.remove(obj));
+            plotObjects.length = 0;
+        }
+
+        // --- EVENT LISTENERS ---
+        const basicResultEl = document.getElementById('basicResult');
+        const eigenResultEl = document.getElementById('eigenResult');
+
+        document.getElementById('matAddBtn').addEventListener('click', () => {
+            const mA = parseMatrix(document.getElementById('matrixA').value);
+            const mB = parseMatrix(document.getElementById('matrixB').value);
+            if (!mA || !mB) { basicResultEl.textContent = 'Error: Invalid matrix input.'; return; }
+            const { result, error } = addMatrices(mA, mB);
+            basicResultEl.textContent = error ? `Error: ${error}` : formatMatrix(result);
+        });
+        document.getElementById('matMulBtn').addEventListener('click', () => {
+            const mA = parseMatrix(document.getElementById('matrixA').value);
+            const mB = parseMatrix(document.getElementById('matrixB').value);
+            if (!mA || !mB) { basicResultEl.textContent = 'Error: Invalid matrix input.'; return; }
+            const { result, error } = multiplyMatrices(mA, mB);
+            basicResultEl.textContent = error ? `Error: ${error}` : formatMatrix(result);
+        });
+        document.getElementById('matVecMulBtn').addEventListener('click', () => {
+            const mA = parseMatrix(document.getElementById('matrixA').value);
+            const vA = parseVector(document.getElementById('vectorA').value);
+            if (!mA || !vA) { basicResultEl.textContent = 'Error: Invalid matrix or vector input.'; return; }
+            const { result, error } = multiplyMatrixVector(mA, vA);
+            basicResultEl.textContent = error ? `Error: ${error}` : formatVector(result);
+        });
+
+        document.getElementById('eigenBtn').addEventListener('click', () => {
+            const mA = parseMatrix(document.getElementById('matrixA').value);
+            if (!mA) { eigenResultEl.textContent = 'Error: Invalid matrix input.'; return; }
+            const { eigenvalues, eigenvectors, error } = calculateEigen2x2(mA);
+            if (error) {
+                eigenResultEl.innerHTML = `<p>${error}</p>`;
+                return;
+            }
+            let html = `<p class="mb-2">Eigenvalues: ${eigenvalues}</p>`;
+            if (eigenvectors) {
+                html += `<p>Eigenvector 1: ${formatVector(eigenvectors[0])}</p>`;
+                html += `<p>Eigenvector 2: ${formatVector(eigenvectors[1])}</p>`;
+                clearPlot();
+                addVectorToPlot(eigenvectors[0], 0xff00c8, 'eigenvector1');
+                addVectorToPlot(eigenvectors[1], 0xff00c8, 'eigenvector2');
+            }
+            eigenResultEl.innerHTML = html;
+        });
+        
+        // Plotting listeners
+        document.getElementById('plotVecBtn').addEventListener('click', () => {
+            const v = parseVector(document.getElementById('vectorA').value);
+            if(v) addVectorToPlot(v, 0x00d9ff, 'vector_v');
+        });
+        document.getElementById('plotMatBtn').addEventListener('click', () => {
+            const m = parseMatrix(document.getElementById('matrixA').value);
+            if(m) {
+                const basisX = [1,0,0], basisY = [0,1,0];
+                const transformedX = multiplyMatrixVector(m, basisX).result;
+                const transformedY = multiplyMatrixVector(m, basisY).result;
+                if(transformedX) addVectorToPlot(transformedX, 0xf3ff00, 'basis_x');
+                if(transformedY) addVectorToPlot(transformedY, 0xf3ff00, 'basis_y');
+            }
+        });
+        document.getElementById('plotTransformBtn').addEventListener('click', () => {
+            const m = parseMatrix(document.getElementById('matrixA').value);
+            const v = parseVector(document.getElementById('vectorA').value);
+            if (m && v) {
+                const { result, error } = multiplyMatrixVector(m, v);
+                if (!error) {
+                    addVectorToPlot(v, 0x00d9ff, 'original_v');
+                    addVectorToPlot(result, 0xff00c8, 'transformed_v');
+                }
+            }
+        });
+        document.getElementById('plotClearBtn').addEventListener('click', clearPlot);
+
+        // --- PYTHON SIMULATION ---
+        const pythonCodeEl = document.getElementById('pythonCodeSnippet');
+        const pythonOutputEl = document.getElementById('pythonOutput');
+        const pythonSelectEl = document.getElementById('pythonOpSelect');
+        const pythonOperations = {
+            intro: { code: `# Select a simulation...`, output: `` },
+            vec_add: { code: `import numpy as np\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\nc = a + b\nprint(c)`, output: `[5 7 9]` },
+            mat_mul: { code: `import numpy as np\nA = np.array([[1, 2], [3, 4]])\nB = np.array([[5, 6], [7, 8]])\nC = A @ B\nprint(C)`, output: `[[19 22]\n [43 50]]` },
+            mat_transpose: { code: `import numpy as np\nA = np.array([[1, 2, 3], [4, 5, 6]])\nB = A.T\nprint(B)`, output: `[[1 4]\n [2 5]\n [3 6]]` },
+            np_eigen: { code: `import numpy as np\nA = np.array([[4, 1], [2, 3]])\neigenvalues, eigenvectors = np.linalg.eig(A)\nprint("Eigenvalues:\\n", eigenvalues)\nprint("\\nEigenvectors:\\n", eigenvectors)`, output: `Eigenvalues:\n [5. 2.]\n\nEigenvectors:\n [[ 0.70710678 -0.4472136 ]\n [ 0.70710678  0.89442719]]` },
+            np_svd: { code: `import numpy as np\nA = np.array([[1, 2], [3, 4], [5, 6]])\nU, s, VT = np.linalg.svd(A)\nprint("U (Left Singular Vectors):\\n", U)\nprint("\\ns (Singular Values):\\n", s)\nprint("\\nVT (Right Singular Vectors Transposed):\\n", VT)`, output: `U (Left Singular Vectors):\n [[-0.2298477  0.88346102 0.40824829]\n [-0.52474482 0.24078249 -0.81649658]\n [-0.81964194 -0.40189603 0.40824829]]\n\ns (Singular Values):\n [9.52551809 0.51430058]\n\nVT (Right Singular Vectors Transposed):\n [[-0.61962948 -0.78489445]\n [-0.78489445  0.61962948]]` }
+        };
+        pythonSelectEl.addEventListener('change', (e) => {
+            const data = pythonOperations[e.target.value];
+            if (data) {
+                pythonCodeEl.textContent = data.code;
+                pythonOutputEl.textContent = data.output;
+            }
+        });
+
+        // --- ONLOAD INITIALIZATION ---
+        window.onload = () => {
+            document.getElementById('vectorA').value = '1, 2, 0';
+            document.getElementById('vectorB').value = '4, 5, 0';
+            document.getElementById('matrixA').value = '1, 2, 0\n3, 4, 0\n0, 0, 1';
+            document.getElementById('matrixB').value = '5, 6, 0\n7, 8, 0\n0, 0, 1';
+            pythonOutputEl.textContent = pythonOperations.intro.output;
+            pythonCodeEl.textContent = pythonOperations.intro.code;
+            init3DPlot();
+        };
+    </script>
+</body>
+</html>

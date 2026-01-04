@@ -1,0 +1,175 @@
+# Everything Personal Website — "Fix-It-Myself" Cheat Sheet
+
+A quick‑reference guide to running, developing, and troubleshooting your Gatsby + Tailwind “everything” personal website.
+
+---
+
+## 🚀 Getting Started & Common Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Run local dev server (hot‑reloads on change)
+npm start   # usually runs "gatsby develop"
+
+# Build optimized production bundle
+npm run build  # runs "gatsby build"
+
+# Preview the production build locally
+gatsby serve --port 9000
+
+# Clear Gatsby cache (if builds act funky)
+gatsby clean
+```
+
+---
+
+## 📂 Core Project Structure
+
+```
+├── package.json             # scripts & dependencies
+├── gatsby-config.js         # siteMetadata & plugin setup
+├── gatsby-node.js           # createPages, Node APIs
+├── gatsby-browser.js        # wrapRootElement, browser APIs
+├── gatsby-ssr.js            # server‑render APIs
+├── postcss.config.js        # PostCSS & Tailwind integration
+├── tailwind.config.js       # design tokens, purge paths
+├── src/
+│   ├── pages/               # file‑based routes (index.js → "/")
+│   ├── components/          # reusable UI pieces (Navbar, Footer, Cards)
+│   ├── data/                # static arrays/JSON for things like FeaturedWork
+│   ├── styles/              # global CSS imports (if any)
+│   └── images/              # imported asset files
+├── static/                  # copied verbatim to /public
+├── public/                  # build output (auto‑generated)
+└── netlify.toml / vercel.json / windsurf_deployment.yaml  # deploy config
+```
+
+---
+
+## 🔧 Fixing Broken Navigation (Featured Work Cards)
+
+1. **Locate the component**
+
+   * Search under `src/components/` or `src/sections/` for the file rendering your "Featured Work" cards.
+
+   ```bash
+   grep -R "Featured Work" -n src
+   ```
+
+2. **Swap HTML `<a>` for Gatsby `<Link>`**
+
+   * At the top:
+
+     ```js
+     import { Link } from 'gatsby'
+     ```
+   * Replace:
+
+     ```jsx
+     <a href={work.link} className="..."></a>
+     ```
+
+     with:
+
+     ```jsx
+     <Link to={work.link} className="...">
+       {/* child content */}
+     </Link>
+     ```
+   * **Ensure** `work.link` matches a valid page route (e.g. `/data-science/` → `src/pages/data-science.js`).
+
+3. **Restart dev server**
+   Gatsby hot‑reload should pick it up, but if it doesn’t, run:
+
+   ```bash
+   ```
+
+gatsby clean && npm start
+
+````
+
+---
+
+## 🎨 Reformatting the "Featured Work" Section
+
+1. **Extract your data** to a single source file (if not already):  
+   ```js
+   // src/data/featuredWork.js
+   export default [
+     { slug: "data-science", title: "Data Science", description: "Insights via Python & ML", link: "/data-science/" },
+     // … more cards
+   ]
+````
+
+2. **Use a responsive grid** in your component JSX:
+
+   ```jsx
+   // src/components/FeaturedWork.jsx
+   import works from '../data/featuredWork'
+   import { Link } from 'gatsby'
+
+   export default function FeaturedWork() {
+     return (
+       <section id="featured-work" className="py-16 px-4">
+         <h2 className="text-3xl font-semibold text-center mb-8">Featured Work</h2>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+           {works.map(w => (
+             <Link
+               key={w.slug}
+               to={w.link}
+               className="block bg-white bg-opacity-10 hover:bg-opacity-20 transition rounded-lg p-6"
+             >
+               <h3 className="text-xl font-medium mb-2">{w.title}</h3>
+               <p className="text-sm">{w.description}</p>
+             </Link>
+           ))}
+         </div>
+       </section>
+     )
+   }
+   ```
+
+3. **Tailwind tweak tips**
+
+   * **Gap**: adjust `gap-6` → `gap-4` or `gap-8` for tighter or looser spacing.
+   * **Rounded corners**: `rounded-lg` → `rounded-xl`.
+   * **Hover states**: add `hover:shadow-lg` or `hover:scale-105` for interactivity.
+
+---
+
+## 🛠️ “Fix-It-Myself” Cheat Sheet: Key Areas & Tips
+
+| Area                | Path / File(s)                                             | Tip                                                                                      |
+| ------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Dev / Build**     | `package.json`                                             | Check `scripts`: `start`, `build`, `clean`, `serve`.                                     |
+| **Site Config**     | `gatsby-config.js`                                         | Plugins, Source FileSystem, Metadata — change global settings here.                      |
+| **Node Hooks**      | `gatsby-node.js`                                           | Programmatic page creation; GraphQL schema customizations.                               |
+| **Browser/SSR**     | `gatsby-browser.js`, `gatsby-ssr.js`                       | Wrap root elements (Providers, Layout), inject head tags.                                |
+| **Styling**         | `tailwind.config.js`, `postcss.config.js`                  | Extend theme, purge unused CSS, add custom utilities/color scales.                       |
+| **Global CSS**      | `src/styles/` or CSS files imported in `gatsby-browser.js` | Use for resets or overrides beyond Tailwind.                                             |
+| **Pages**           | `src/pages/*.js`                                           | File-based routing; `/about.js` → `/about/`.                                             |
+| **Components**      | `src/components/`                                          | Draggable UI elements—Card layouts, Navbars, Footer, etc.                                |
+| **Static Assets**   | `static/`                                                  | Raw files (robots.txt, favicon, PDFs) auto‑copied to `/public`.                          |
+| **Deploy Config**   | `netlify.toml`, `vercel.json`, `windsurf_deployment.yaml`  | Redirects, build hooks, environment variables for your chosen host.                      |
+| **Data/Content**    | `src/data/`                                                | JSON/JS arrays for reusable content (projects, team members, blog indexes).              |
+| **Images**          | `src/images/`, `static/`                                   | Imported in components with `gatsby-plugin-image` for optimized delivery.                |
+| **GraphQL**         | Page queries & `useStaticQuery()` calls inside components  | Use GraphiQL (`localhost:8000/___graphql`) to explore your schema & test queries.        |
+| **Troubleshooting** | —                                                          | \* `gatsby clean`<br>\* Check console errors/warnings<br>\* Verify path slashes & casing |
+
+---
+
+## 🔍 Quick Debug Checklist
+
+* [ ] **404’s or Blank Page?** Run `gatsby clean` + `npm start`, check console for missing page/asset.
+* [ ] **CSS Not Updating?** Ensure you imported `src/styles/global.css` or `@tailwind base; @tailwind components; @tailwind utilities;` in `gatsby-browser.js`.
+* [ ] **Plugin Issues?** Double‑check versions in `package.json` vs. docs. Run `npm outdated`.
+* [ ] **Image Errors?** Use `gatsby-plugin-image` with proper GraphQL fragments, not `<img src=...>`.
+* [ ] **Routing Problems?** Ensure you’re using `<Link to="/path/">`, not `<a href>` for internal links.
+* [ ] **Deployment Fails?** Inspect build logs; environment variables in Netlify/Vercel need matching names.
+
+---
+
+Keep this sheet handy as you explore, tweak, and expand your “everything” site. Each section gives you the file paths, command snippets, and pro tips you need to diagnose and implement fixes yourself—fast. Happy coding, Dennis! 🎉
+

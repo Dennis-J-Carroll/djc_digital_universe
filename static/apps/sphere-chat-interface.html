@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erudite - Curiosity Sphere</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #303F40 0%, #1a1a2e 50%, #16213e 100%);
+        }
+
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-button {
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(97, 203, 215, 0.3) transparent;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+
+        .curiosity-glow {
+            animation: curiosityPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes curiosityPulse {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-primary); }
+            50% { box-shadow: 0 0 40px var(--accent-secondary); }
+        }
+
+        .sphere-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .draggable-panel {
+            pointer-events: auto;
+            cursor: move;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 20px var(--accent-primary);
+            border-color: var(--accent-primary) !important;
+        }
+
+        /* Theme Support */
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-readable: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(30, 41, 59, 0.3);
+            --accent-primary: #1e3a8a;
+            --accent-secondary: #312e81;
+            --status-bg: rgba(30, 58, 138, 0.1);
+            --button-bg: rgba(30, 58, 138, 0.2);
+            --button-hover: rgba(30, 58, 138, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-readable: #e2e8f0;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(30, 58, 138, 0.4);
+            --accent-primary: #1e3a8a;
+            --accent-secondary: #312e81;
+            --status-bg: rgba(30, 58, 138, 0.2);
+            --button-bg: rgba(30, 58, 138, 0.3);
+            --button-hover: rgba(30, 58, 138, 0.5);
+        }
+
+        [data-theme="dim"] {
+            --bg-gradient: linear-gradient(135deg, #152433 0%, #1a1f2e 50%, #2a1f3d 100%);
+            --text-primary: #d5dbe2;
+            --text-secondary: #a0a8b0;
+            --text-readable: #e2e8f0;
+            --glass-bg: rgba(21, 36, 51, 0.7);
+            --glass-border: rgba(255, 72, 169, 0.4);
+            --accent-primary: #ff48a9;
+            --accent-secondary: #e91e63;
+            --status-bg: rgba(255, 72, 169, 0.2);
+            --button-bg: rgba(255, 72, 169, 0.3);
+            --button-hover: rgba(255, 72, 169, 0.5);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .text-darker {
+            color: var(--text-readable) !important;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button {
+            background: var(--button-bg);
+            border: 1px solid var(--accent-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            background: var(--button-hover);
+            border-color: var(--accent-secondary);
+        }
+
+        .text-accent {
+            color: var(--accent-primary) !important;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        .switcher {
+            position: fixed;
+            z-index: 100;
+            top: 20px;
+            right: 20px;
+            pointer-events: auto;
+
+            margin: 0;
+            padding: 0;
+            border: 0;
+
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 0.5rem;
+
+            filter: url(#switcher);
+            transition: all 400ms cubic-bezier(1, 0, 0.4, 1);
+        }
+
+        .switcher:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .switcher__legend {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .switcher__option {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .switcher__option:hover {
+            transform: scale(1.1);
+        }
+
+        .switcher__input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .switcher__input:checked + .switcher__icon {
+            color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+        }
+
+        .switcher__icon {
+            color: var(--text-secondary);
+            width: 1.5rem;
+            height: 1.5rem;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .switcher__filter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* Moving Background Styles */
+        @keyframes move {
+            100% {
+                transform: translate3d(0, 0, 1px) rotate(360deg);
+            }
+        }
+
+        .background {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            background: transparent;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background span {
+            width: 20vmin;
+            height: 20vmin;
+            border-radius: 20vmin;
+            backface-visibility: hidden;
+            position: absolute;
+            animation: move;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            transition: color 400ms cubic-bezier(1, 0, 0.4, 1);
+        }
+
+        /* Theme-responsive background orb colors */
+        [data-theme="light"] .background span:nth-child(1) { color: #1e3a8a; animation-duration: 16s; animation-delay: -39s; top: 17%; left: 87%; transform-origin: -10vw -9vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="light"] .background span:nth-child(2) { color: #312e81; animation-duration: 35s; animation-delay: -12s; top: 99%; left: 9%; transform-origin: 25vw 6vh; box-shadow: -40vmin 0 5.69vmin currentColor; }
+        [data-theme="light"] .background span:nth-child(3) { color: #1e40af; animation-duration: 30s; animation-delay: -43s; top: 9%; left: 76%; transform-origin: 10vw 2vh; box-shadow: -40vmin 0 5.11vmin currentColor; }
+        [data-theme="light"] .background span:nth-child(4) { color: #1d4ed8; animation-duration: 18s; animation-delay: -7s; top: 40%; left: 85%; transform-origin: 23vw -13vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="light"] .background span:nth-child(5) { color: #2563eb; animation-duration: 39s; animation-delay: -31s; top: 47%; left: 42%; transform-origin: 5vw 24vh; box-shadow: -40vmin 0 5.39vmin currentColor; }
+
+        [data-theme="dark"] .background span:nth-child(1) { color: #1e3a8a; animation-duration: 16s; animation-delay: -39s; top: 17%; left: 87%; transform-origin: -10vw -9vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="dark"] .background span:nth-child(2) { color: #312e81; animation-duration: 35s; animation-delay: -12s; top: 99%; left: 9%; transform-origin: 25vw 6vh; box-shadow: -40vmin 0 5.69vmin currentColor; }
+        [data-theme="dark"] .background span:nth-child(3) { color: #1e40af; animation-duration: 30s; animation-delay: -43s; top: 9%; left: 76%; transform-origin: 10vw 2vh; box-shadow: -40vmin 0 5.11vmin currentColor; }
+        [data-theme="dark"] .background span:nth-child(4) { color: #60a5fa; animation-duration: 18s; animation-delay: -7s; top: 40%; left: 85%; transform-origin: 23vw -13vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="dark"] .background span:nth-child(5) { color: #3b82f6; animation-duration: 39s; animation-delay: -31s; top: 47%; left: 42%; transform-origin: 5vw 24vh; box-shadow: -40vmin 0 5.39vmin currentColor; }
+
+        [data-theme="dim"] .background span:nth-child(1) { color: #ff48a9; animation-duration: 16s; animation-delay: -39s; top: 17%; left: 87%; transform-origin: -10vw -9vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="dim"] .background span:nth-child(2) { color: #e91e63; animation-duration: 35s; animation-delay: -12s; top: 99%; left: 9%; transform-origin: 25vw 6vh; box-shadow: -40vmin 0 5.69vmin currentColor; }
+        [data-theme="dim"] .background span:nth-child(3) { color: #f06292; animation-duration: 30s; animation-delay: -43s; top: 9%; left: 76%; transform-origin: 10vw 2vh; box-shadow: -40vmin 0 5.11vmin currentColor; }
+        [data-theme="dim"] .background span:nth-child(4) { color: #ec407a; animation-duration: 18s; animation-delay: -7s; top: 40%; left: 85%; transform-origin: 23vw -13vh; box-shadow: -40vmin 0 5.56vmin currentColor; }
+        [data-theme="dim"] .background span:nth-child(5) { color: #ad1457; animation-duration: 39s; animation-delay: -31s; top: 47%; left: 42%; transform-origin: 5vw 24vh; box-shadow: -40vmin 0 5.39vmin currentColor; }
+    </style>
+</head>
+<body>
+    <!-- Moving Background -->
+    <div class="background">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sphere-container" id="sphere-container"></div>
+
+    <div class="ui-overlay">
+        <!-- Theme Toggle Button -->
+        <fieldset class="switcher" id="theme-switcher">
+            <legend class="switcher__legend">Choose theme</legend>
+            <label class="switcher__option">
+                <input class="switcher__input" type="radio" name="theme" value="light" c-option="1" />
+                <svg class="switcher__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m11.72 11.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M17.36 6.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </label>
+            <label class="switcher__option">
+                <input class="switcher__input" type="radio" name="theme" value="dark" c-option="2" checked />
+                <svg class="switcher__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </label>
+            <label class="switcher__option">
+                <input class="switcher__input" type="radio" name="theme" value="dim" c-option="3" />
+                <svg class="switcher__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 1v6m0 10v6m11-7h-6M7 12H1m15.4-6.4l-4.2 4.2M8.2 17.8l-4.2 4.2m12.8 0l-4.2-4.2M8.2 6.2L4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </label>
+            <div class="switcher__filter">
+                <svg>
+                    <filter id="switcher">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+                        <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+                    </filter>
+                    <filter id="toggler">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+                        <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+                    </filter>
+                </svg>
+            </div>
+        </fieldset>
+
+        <!-- Chat Panel -->
+        <div id="chat-panel" class="draggable-panel glass-panel absolute top-8 left-8 w-96 p-6 fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-darker text-glow">Erudite</h2>
+                <div id="status-indicator" class="text-xs px-3 py-1 rounded-full" style="background: var(--status-bg); color: var(--accent-primary);">Ready</div>
+            </div>
+
+            <div id="chat-history" class="chat-container space-y-3 mb-4">
+                <div class="glass-panel p-3 text-sm">
+                    <div class="text-accent font-medium mb-1">Erudite</div>
+                    <div class="text-darker">Welcome! I'm a demonstration of an interactive 3D sphere that responds to curiosity. Try asking thought-provoking questions or discussing complex topics to see the sphere react!</div>
+                </div>
+            </div>
+
+            <form id="prompt-form" class="space-y-3">
+                <input
+                    type="text"
+                    id="prompt-input"
+                    placeholder="Ask a question that requires synthesis or deep thinking..."
+                    class="w-full rounded-lg px-4 py-3 text-darker focus:outline-none input-glow transition-all" style="background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-readable);"
+                >
+                <button
+                    type="submit"
+                    class="w-full glass-button font-medium rounded-lg px-4 py-3" style="color: var(--text-primary);"
+                >
+                    Send to Sphere
+                </button>
+            </form>
+        </div>
+
+        <!-- Curiosity Log Panel -->
+        <div id="curiosity-panel" class="draggable-panel glass-panel absolute top-8 right-8 w-80 p-6 fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-darker text-glow">Curiosity Archive</h2>
+            </div>
+
+            <div id="saved-prompts-container" class="chat-container space-y-3">
+                <div class="text-center text-gray-500 py-8">
+                    <div class="text-4xl mb-2">🧠</div>
+                    <p class="text-sm text-darker">High-curiosity prompts (7+ score) saved here</p>
+                    <p class="text-xs text-gray-400 mt-2">Demo mode - interactive showcase</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div id="controls-panel" class="draggable-panel glass-panel absolute bottom-8 left-8 p-4 fade-in">
+            <h3 class="text-lg font-bold text-darker text-glow mb-3">Sphere Controls</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-sm text-darker block mb-1">Activity Sensitivity</label>
+                    <input
+                        type="range"
+                        id="sensitivity-slider"
+                        min="1"
+                        max="10"
+                        value="5"
+                        class="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer"
+                    >
+                </div>
+                <div>
+                    <label class="text-sm text-darker block mb-1">Distortion Level</label>
+                    <input
+                        type="range"
+                        id="distortion-slider"
+                        min="0.5"
+                        max="3"
+                        step="0.1"
+                        value="1.5"
+                        class="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer"
+                    >
+                </div>
+                <button id="reset-sphere" class="glass-button w-full text-sm py-2 rounded-lg" style="color: var(--text-primary);">
+                    Reset Sphere
+                </button>
+            </div>
+        </div>
+
+        <!-- User Info Panel -->
+        <div id="user-panel" class="draggable-panel glass-panel absolute bottom-8 right-8 p-4 fade-in">
+            <div class="text-center">
+                <div class="text-3xl mb-2">🌐</div>
+                <div id="user-id-display" class="text-xs text-darker">Demo Mode</div>
+                <div id="conversation-count" class="text-sm text-accent mt-1">0 messages</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration
+        const CURIOSITY_THRESHOLD = 7;
+        const CURIOSITY_KEYWORDS = ['why', 'how', 'what if', 'explain', 'relationship', 'connection', 'synthesis', 'integrate', 'compare', 'contrast'];
+
+        // Global variables
+        let scene, camera, renderer, sphere, outerMaterial;
+        let conversationHistory = [];
+        let messageCounter = 0;
+        let sphereActivity = 0;
+        let elapsedTime = 0;
+        let savedPrompts = [];
+
+        // UI Elements
+        const chatHistoryEl = document.getElementById('chat-history');
+        const promptForm = document.getElementById('prompt-form');
+        const promptInput = document.getElementById('prompt-input');
+        const savedPromptsContainer = document.getElementById('saved-prompts-container');
+        const statusIndicator = document.getElementById('status-indicator');
+        const conversationCount = document.getElementById('conversation-count');
+
+        // Initialize Three.js Sphere
+        function initSphere() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 0, 10);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('sphere-container').appendChild(renderer.domElement);
+
+            // Create sphere geometry
+            const geometry = new THREE.SphereGeometry(3, 64, 64);
+
+            // Enhanced shader material
+            outerMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    activity: { value: 0 },
+                    distortion: { value: 1.5 },
+                    color1: { value: new THREE.Color(0x0f172a) },
+                    color2: { value: new THREE.Color(0x1e3a8a) },
+                    color3: { value: new THREE.Color(0x312e81) }
+                },
+                wireframe: true,
+                transparent: true,
+                vertexShader: `
+                    uniform float time;
+                    uniform float activity;
+                    uniform float distortion;
+                    varying vec3 vNormal;
+                    varying vec3 vPosition;
+
+                    // Simplex noise function
+                    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                    vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                    vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+                    float snoise(vec3 v) {
+                        const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                        const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+                        vec3 i = floor(v + dot(v, C.yyy));
+                        vec3 x0 = v - i + dot(i, C.xxx);
+                        vec3 g = step(x0.yzx, x0.xyz);
+                        vec3 l = 1.0 - g;
+                        vec3 i1 = min(g.xyz, l.zxy);
+                        vec3 i2 = max(g.xyz, l.zxy);
+                        vec3 x1 = x0 - i1 + C.xxx;
+                        vec3 x2 = x0 - i2 + C.yyy;
+                        vec3 x3 = x0 - D.yyy;
+                        i = mod289(i);
+                        vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+                        float n_ = 0.142857142857;
+                        vec3 ns = n_ * D.wyz - D.xzx;
+                        vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+                        vec4 x_ = floor(j * ns.z);
+                        vec4 y_ = floor(j - 7.0 * x_);
+                        vec4 x = x_ *ns.x + ns.yyyy;
+                        vec4 y = y_ *ns.x + ns.yyyy;
+                        vec4 h = 1.0 - abs(x) - abs(y);
+                        vec4 b0 = vec4(x.xy, y.xy);
+                        vec4 b1 = vec4(x.zw, y.zw);
+                        vec4 s0 = floor(b0)*2.0 + 1.0;
+                        vec4 s1 = floor(b1)*2.0 + 1.0;
+                        vec4 sh = -step(h, vec4(0.0));
+                        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+                        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+                        vec3 p0 = vec3(a0.xy, h.x);
+                        vec3 p1 = vec3(a0.zw, h.y);
+                        vec3 p2 = vec3(a1.xy, h.z);
+                        vec3 p3 = vec3(a1.zw, h.w);
+                        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+                        p0 *= norm.x;
+                        p1 *= norm.y;
+                        p2 *= norm.z;
+                        p3 *= norm.w;
+                        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+                        m = m * m;
+                        return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+                    }
+
+                    void main() {
+                        vNormal = normal;
+                        vPosition = position;
+
+                        vec3 pos = position;
+                        float noise = snoise(pos * 0.5 + vec3(0.0, 0.0, time * 0.3));
+                        pos += normal * noise * distortion * (1.0 + activity * 2.0);
+
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    uniform float activity;
+                    uniform vec3 color1;
+                    uniform vec3 color2;
+                    uniform vec3 color3;
+                    varying vec3 vNormal;
+                    varying vec3 vPosition;
+
+                    void main() {
+                        vec3 viewDir = normalize(cameraPosition - vPosition);
+                        float fresnel = 1.0 - max(0.0, dot(viewDir, vNormal));
+                        fresnel = pow(fresnel, 2.0 + activity * 2.0);
+
+                        // Color mixing based on activity
+                        vec3 baseColor = mix(color1, color2, sin(time * 0.5) * 0.5 + 0.5);
+                        vec3 activeColor = mix(baseColor, color3, activity);
+
+                        float pulse = 0.8 + 0.2 * sin(time * 2.0);
+                        vec3 emissiveColor = activeColor * fresnel * pulse * (1.0 + activity * 0.8);
+                        float alpha = fresnel * (0.7 + activity * 0.3);
+
+                        gl_FragColor = vec4(emissiveColor, alpha);
+                    }
+                `
+            });
+
+            sphere = new THREE.Mesh(geometry, outerMaterial);
+            scene.add(sphere);
+
+            // Setup basic camera animation
+            setupCameraAnimation();
+        }
+
+        function setupCameraAnimation() {
+            gsap.to(camera.position, {
+                duration: 20,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                motionPath: {
+                    path: [
+                        { x: 0, y: 0, z: 10 },
+                        { x: 5, y: 3, z: 8 },
+                        { x: -3, y: -2, z: 12 },
+                        { x: 0, y: 0, z: 10 }
+                    ],
+                    autoRotate: false
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            elapsedTime += 0.016;
+
+            if (outerMaterial) {
+                outerMaterial.uniforms.time.value = elapsedTime;
+                outerMaterial.uniforms.activity.value = sphereActivity;
+                outerMaterial.uniforms.distortion.value = parseFloat(document.getElementById('distortion-slider').value);
+            }
+
+            if (sphere) {
+                sphere.rotation.y += 0.005 + (sphereActivity * 0.01);
+                sphere.rotation.x += 0.002;
+            }
+
+            // Gradually decrease activity
+            sphereActivity = Math.max(0, sphereActivity - 0.01);
+
+            camera.lookAt(scene.position);
+            renderer.render(scene, camera);
+        }
+
+        // Calculate curiosity score based on keywords and question structure
+        function calculateCuriosityScore(prompt) {
+            let score = 5; // Base score
+
+            // Check for curiosity keywords
+            const lowerPrompt = prompt.toLowerCase();
+            CURIOSITY_KEYWORDS.forEach(keyword => {
+                if (lowerPrompt.includes(keyword)) score += 1;
+            });
+
+            // Check for question marks
+            if (prompt.includes('?')) score += 1;
+
+            // Check for length (longer questions often more thoughtful)
+            if (prompt.length > 50) score += 1;
+            if (prompt.length > 100) score += 1;
+
+            // Cap at 10
+            return Math.min(10, score);
+        }
+
+        // Generate mock response based on prompt
+        function generateMockResponse(prompt) {
+            const responses = [
+                "That's a fascinating question! The relationship between these concepts involves multiple layers of understanding.",
+                "Let me break this down: The key lies in how we synthesize information from different domains.",
+                "This touches on a fundamental principle in systems thinking - emergence from complexity.",
+                "Your question highlights an interesting paradox that has puzzled thinkers for centuries.",
+                "The answer requires us to explore the intersection of theory and practice."
+            ];
+
+            const funFacts = [
+                "Did you know that the human brain can process information at speeds up to 120 m/s?",
+                "Studies show that asking 'why' questions increases learning retention by up to 40%.",
+                "The concept of emergence was first formally described in philosophy in 1875.",
+                "Curiosity activates the same neural pathways as receiving a reward.",
+                "Complex systems often exhibit behavior that can't be predicted from their individual parts."
+            ];
+
+            return {
+                answer: responses[Math.floor(Math.random() * responses.length)],
+                funFact: funFacts[Math.floor(Math.random() * funFacts.length)],
+                funFactProvider: "Demo System"
+            };
+        }
+
+        // UI Functions
+        function updateStatus(message, isError = false) {
+            statusIndicator.textContent = message;
+            statusIndicator.className = 'text-xs px-3 py-1 rounded-full';
+            if (isError) {
+                statusIndicator.style.background = 'rgba(239, 68, 68, 0.2)';
+                statusIndicator.style.color = '#fca5a5';
+            } else {
+                statusIndicator.style.background = 'var(--status-bg)';
+                statusIndicator.style.color = 'var(--accent-primary)';
+            }
+        }
+
+        function appendMessage(sender, text, isHtml = false) {
+            const messageId = `msg-${messageCounter++}`;
+            const messageEl = document.createElement('div');
+            messageEl.id = messageId;
+            messageEl.classList.add('glass-panel', 'p-3', 'text-sm', 'fade-in');
+
+            let content = isHtml ? text : text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            if (sender === 'user') {
+                messageEl.innerHTML = `<div class="text-accent font-medium mb-1">You</div><div class="text-darker">${content}</div>`;
+            } else if (sender === 'ai') {
+                messageEl.innerHTML = `<div class="text-accent font-medium mb-1">Erudite</div><div class="text-darker">${content}</div>`;
+            } else {
+                messageEl.innerHTML = `<div class="text-accent font-medium mb-1">Erudite</div><div class="flex items-center space-x-2 text-secondary"><div class="animate-spin rounded-full h-4 w-4 border-b-2" style="border-color: var(--accent-primary);"></div><span>Thinking...</span></div>`;
+            }
+
+            chatHistoryEl.appendChild(messageEl);
+            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+
+            // Trigger sphere activity
+            sphereActivity = Math.min(1, sphereActivity + 0.3);
+
+            return { messageEl, messageId };
+        }
+
+        function updateConversationCount() {
+            const count = conversationHistory.filter(msg => msg.role === 'user').length;
+            conversationCount.textContent = `${count} messages`;
+        }
+
+        async function handleNewPrompt(userPrompt) {
+            appendMessage('user', userPrompt);
+            conversationHistory.push({ role: 'user', content: userPrompt });
+            promptInput.value = '';
+            promptInput.disabled = true;
+            updateConversationCount();
+
+            const loadingIndicator = appendMessage('loading', '');
+            updateStatus("Processing...");
+
+            // Major sphere activity spike
+            sphereActivity = 1.0;
+
+            // Simulate thinking time
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            chatHistoryEl.removeChild(loadingIndicator.messageEl);
+
+            const curiosityScore = calculateCuriosityScore(userPrompt);
+            const result = generateMockResponse(userPrompt);
+
+            let formattedResponse = `<p>${result.answer}</p>`;
+            if (result.funFact) {
+                formattedResponse += `
+                <div class="mt-3 pt-3 border-t border-cyan-400/30 text-sm">
+                    <strong class="text-accent">✨ Fun Fact (${result.funFactProvider}):</strong>
+                    <span class="text-secondary italic">${result.funFact}</span>
+                </div>`;
+            }
+
+            appendMessage('ai', formattedResponse, true);
+            conversationHistory.push({ role: 'model', content: result.answer });
+
+            if (curiosityScore >= CURIOSITY_THRESHOLD) {
+                updateStatus(`High curiosity detected! (Score: ${curiosityScore}/10)`, false);
+                saveCuriousPrompt(userPrompt, result.answer, curiosityScore);
+
+                // Extra sphere activity for curious prompts
+                sphereActivity = 1.5;
+            } else {
+                updateStatus("Ready", false);
+            }
+
+            promptInput.disabled = false;
+            updateConversationCount();
+        }
+
+        function saveCuriousPrompt(promptText, responseText, curiosityScore) {
+            const prompt = {
+                promptText,
+                responseText,
+                curiosityScore,
+                curiosityJustification: "High semantic complexity and inquiry depth",
+                timestamp: Date.now()
+            };
+            savedPrompts.push(prompt);
+            renderSavedPrompts();
+        }
+
+        function renderSavedPrompts() {
+            savedPromptsContainer.innerHTML = '';
+            if (savedPrompts.length === 0) {
+                savedPromptsContainer.innerHTML = `
+                    <div class="text-center text-gray-400 py-8">
+                        <div class="text-4xl mb-2">🌟</div>
+                        <p class="text-sm text-darker">Curious prompts will appear here</p>
+                    </div>`;
+                return;
+            }
+
+            savedPrompts.forEach(prompt => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-4 fade-in cursor-pointer hover:border-purple-400/40 transition-all';
+                if (prompt.curiosityScore >= 9) {
+                    card.classList.add('curiosity-glow');
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-darker font-medium text-sm pr-2">"${prompt.promptText}"</p>
+                        <span class="text-xs px-2 py-1 rounded-full text-accent" style="background: var(--status-bg);">${prompt.curiosityScore}/10</span>
+                    </div>
+                    <p class="text-secondary italic text-xs">"${prompt.curiosityJustification}"</p>
+                `;
+
+                savedPromptsContainer.appendChild(card);
+            });
+        }
+
+        // Theme toggle functionality
+        let currentTheme = 'dark';
+        const themeToggle = document.getElementById('theme-switcher');
+
+        function toggleTheme() {
+            const themeRadios = themeToggle.querySelectorAll('input[type="radio"]');
+            themeRadios.forEach(radio => {
+                if (radio.checked) {
+                    currentTheme = radio.value;
+                }
+            });
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            // Update sphere colors based on theme
+            if (outerMaterial) {
+                if (currentTheme === 'light') {
+                    outerMaterial.uniforms.color1.value = new THREE.Color(0xf8fafc);
+                    outerMaterial.uniforms.color2.value = new THREE.Color(0x1e3a8a);
+                    outerMaterial.uniforms.color3.value = new THREE.Color(0x312e81);
+                } else if (currentTheme === 'dark') {
+                    outerMaterial.uniforms.color1.value = new THREE.Color(0x0f172a);
+                    outerMaterial.uniforms.color2.value = new THREE.Color(0x1e3a8a);
+                    outerMaterial.uniforms.color3.value = new THREE.Color(0x312e81);
+                } else if (currentTheme === 'dim') {
+                    outerMaterial.uniforms.color1.value = new THREE.Color(0x152433);
+                    outerMaterial.uniforms.color2.value = new THREE.Color(0xff48a9);
+                    outerMaterial.uniforms.color3.value = new THREE.Color(0xe91e63);
+                }
+            }
+        }
+
+        // Event Listeners
+        themeToggle.addEventListener('change', toggleTheme);
+
+        promptForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (promptInput.value.trim()) {
+                handleNewPrompt(promptInput.value.trim());
+            }
+        });
+
+        document.getElementById('reset-sphere').addEventListener('click', () => {
+            sphereActivity = 0;
+            elapsedTime = 0;
+            gsap.to(camera.position, { x: 0, y: 0, z: 10, duration: 1 });
+        });
+
+        // Make panels draggable
+        function makeDraggable(element) {
+            let isDragging = false;
+            let currentX, currentY, initialX, initialY;
+
+            element.addEventListener('mousedown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+                isDragging = true;
+                initialX = e.clientX - element.offsetLeft;
+                initialY = e.clientY - element.offsetTop;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                element.style.left = currentX + 'px';
+                element.style.top = currentY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        // Initialize everything
+        window.onload = () => {
+            // Set initial theme
+            document.documentElement.setAttribute('data-theme', 'dark');
+
+            initSphere();
+            animate();
+            updateStatus("Ready - Demo Mode");
+
+            // Make panels draggable
+            makeDraggable(document.getElementById('chat-panel'));
+            makeDraggable(document.getElementById('curiosity-panel'));
+            makeDraggable(document.getElementById('controls-panel'));
+            makeDraggable(document.getElementById('user-panel'));
+        };
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

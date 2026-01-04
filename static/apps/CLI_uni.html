@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI University - Menu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+        :root {
+            --background: #1e1e2e;
+            --foreground: #cdd6f4;
+            --green: #a6e3a1;
+            --blue: #89b4fa;
+            --mauve: #cba6f7;
+            --red: #f38ba8;
+            --yellow: #f9e2af;
+            --subtext: #a6adc8;
+            --overlay: #9399b2;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: 'Fira Code', monospace;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #terminal-window {
+            width: 100%;
+            max-width: 1000px;
+            height: 90vh;
+            border: 1px solid var(--overlay);
+            border-radius: 8px;
+            background-color: var(--background);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #title-bar {
+            padding: 8px;
+            background-color: #313244;
+            border-bottom: 1px solid var(--overlay);
+            text-align: center;
+            color: var(--subtext);
+            font-weight: bold;
+            user-select: none;
+        }
+
+        #main-content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #menu {
+            width: 250px;
+            min-width: 250px;
+            border-right: 1px solid var(--overlay);
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        #content-display {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        h2 {
+            color: var(--mauve);
+            border-bottom: 1px solid var(--mauve);
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        li {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+            color: var(--subtext);
+        }
+
+        li:hover {
+            background-color: #45475a;
+            color: var(--foreground);
+        }
+        
+        li.active {
+            background-color: var(--blue);
+            color: var(--background);
+            font-weight: bold;
+        }
+
+        #content-display h2, #content-display h3 {
+           color: var(--mauve);
+           border-bottom: none;
+        }
+        
+        #content-display h3 {
+            color: var(--blue);
+            margin-top: 20px;
+        }
+        
+        #content-display code {
+            background-color: #313244;
+            color: var(--yellow);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        #content-display pre {
+            background-color: #313244;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid var(--subtext);
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="terminal-window">
+    <div id="title-bar">~/cli-university/menu</div>
+    <div id="main-content">
+        <div id="menu">
+            <h2>Topics</h2>
+            <ul id="vim-menu">
+                <li><a href="#" data-topic="vim" data-lesson="philosophy">Vim: Philosophy</a></li>
+                <li><a href="#" data-topic="vim" data-lesson="basics">Vim: Basics</a></li>
+                <li><a href="#" data-topic="vim" data-lesson="editing">Vim: Editing</a></li>
+                <li><a href="#" data-topic="vim" data-lesson="modes">Vim: Modes</a></li>
+                <li><a href="#" data-topic="vim" data-lesson="advanced">Vim: Advanced</a></li>
+            </ul>
+             <h2>Tools</h2>
+            <ul id="tmux-menu">
+                 <li><a href="#" data-topic="tmux" data-lesson="intro">Tmux: Intro</a></li>
+                 <li><a href="#" data-topic="tmux" data-lesson="sessions">Tmux: Sessions</a></li>
+                 <li><a href="#" data-topic="tmux" data-lesson="windows">Tmux: Windows</a></li>
+                 <li><a href="#" data-topic="tmux" data-lesson="panes">Tmux: Panes</a></li>
+            </ul>
+            <h2>Building</h2>
+            <ul id="cli-menu">
+                 <li><a href="#" data-topic="cli" data-lesson="intro">CLI: Intro</a></li>
+                 <li><a href="#" data-topic="cli" data-lesson="streams">CLI: Streams & Pipes</a></li>
+                 <li><a href="#" data-topic="cli" data-lesson="go">CLI: Using Go</a></li>
+                 <li><a href="#" data-topic="cli" data-lesson="python">CLI: Using Python</a></li>
+                 <li><a href="#" data-topic="cli" data-lesson="rust">CLI: Using Rust</a></li>
+                 <li><a href="#" data-topic="cli" data-lesson="automation">CLI: Automation</a></li>
+            </ul>
+        </div>
+        <div id="content-display">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+const contentDisplay = document.getElementById('content-display');
+const menuLinks = document.querySelectorAll('#menu a');
+
+const content = {
+    welcome: `
+        <h2>Welcome to CLI University!</h2>
+        <p>Select a topic from the menu on the left to begin your lesson.</p>
+        <p>This is a simplified, menu-driven interface to help you learn without any distractions. All content is available offline.</p>
+    `,
+    vim: {
+        philosophy: `
+            <h2>1. The Vim Philosophy: Speed through Efficiency</h2>
+            <p>Vim (and Neovim) is a <strong>modal text editor</strong>. This is its most important concept. Unlike normal editors where you can always type text, Vim has different "modes".</p>
+            <ul>
+                <li><strong>NORMAL mode:</strong> For navigation and manipulation. Your default state.</li>
+                <li><strong>INSERT mode:</strong> For typing text, like a normal editor.</li>
+                <li><strong>VISUAL mode:</strong> For selecting text.</li>
+                <li><strong>COMMAND-LINE mode:</strong> For running commands (saving, quitting, etc.).</li>
+            </ul>
+            <p>The power comes from staying in NORMAL mode as much as possible. Your hands rest on the home row, and single key presses perform powerful actions. You move, delete, copy, and paste without reaching for the mouse or arrow keys.</p>
+            <p>It's a language for text editing. <code>d</code> is the "delete verb". You combine it with a "motion noun".</p>
+            <pre><code>dw  -> delete word
+d$  -> delete to the end of the line
+d3w -> delete 3 words</code></pre>
+        `,
+        basics: `
+            <h2>2. Basic Navigation & Editing</h2>
+            <p>These are the absolute essentials. Practice them until they are muscle memory.</p>
+            <h3>MOVEMENT (in NORMAL mode)</h3>
+            <pre><code>h: move left
+j: move down
+k: move up
+l: move right
+
+w: jump forward to the start of the next word
+b: jump backward to the start of the previous word
+0: jump to the start of the line
+$: jump to the end of the line
+gg: go to the first line of the file
+G:  go to the last line of the file</code></pre>
+            <h3>ENTERING INSERT MODE</h3>
+            <pre><code>i: insert text before the cursor
+a: append text after the cursor
+o: open a new line below and enter insert mode
+O: open a new line above and enter insert mode</code></pre>
+            <h3>GETTING OUT</h3>
+            <p><code>&lt;Esc&gt;</code>: The most important key. It takes you back to NORMAL mode from any other mode.</p>
+        `,
+        editing: `
+            <h2>3. The Verbs: Deleting, Changing, and Copy/Pasting</h2>
+            <p>This is where Vim's language shines. In NORMAL mode:</p>
+            <h3>DELETE (<code>d</code> for delete)</h3>
+            <pre><code>dw: delete word
+dd: delete the entire current line
+d$: delete from cursor to the end of the line</code></pre>
+            <h3>CHANGE (<code>c</code> for change) - Deletes and then enters INSERT mode</h3>
+            <pre><code>cw: change word
+cc: change the entire line</code></pre>
+            <h3>YANK & PUT (Copy & Paste)</h3>
+            <p>Vim uses <code>y</code> for yank (copy) and <code>p</code> for put (paste).</p>
+            <pre><code>yy: yank the entire line
+p:  put (paste) the yanked text after the cursor
+P:  put (paste) the yanked text before the cursor</code></pre>
+        `,
+        modes: `
+            <h2>4. Modes In-Depth</h2>
+            <h3>VISUAL Mode</h3>
+            <p>Enter visual mode to select text.</p>
+            <pre><code>v:        character-wise visual mode
+V:        line-wise visual mode
+Ctrl-v:   block-wise visual mode</code></pre>
+            <p>Once text is selected, you can run a command on it: <code>d</code> (delete), <code>y</code> (yank), or <code>c</code> (change).</p>
+            <h3>COMMAND-LINE Mode</h3>
+            <p>Press <code>:</code> in NORMAL mode to enter Command-Line mode.</p>
+            <pre><code>:w   # write (save) the file
+:q   # quit
+:wq  # write and quit
+:q!  # quit without saving changes</code></pre>
+        `,
+        advanced: `
+            <h2>5. Beyond the Basics</h2>
+            <p>This is just the tip of the iceberg. Here's where to go next:</p>
+            <ul>
+                <li><strong>Macros:</strong> Record a sequence of commands and replay it. Incredibly powerful for repetitive tasks.</li>
+                <li><strong>Configuration (<code>init.lua</code>):</strong> This is where you customize Neovim, set options, define key mappings, and install plugins.</li>
+                <li><strong>Plugins:</strong> The Neovim ecosystem is vast. Plugin managers like 'lazy.nvim' help you manage extensions for file trees, fuzzy finders, Git integration, and code intelligence (LSP).</li>
+            </ul>
+        `
+    },
+    tmux: {
+        intro: `
+            <h2>1. Introduction to tmux</h2>
+            <p>tmux is a <strong>terminal multiplexer</strong>. It lets you create and manage multiple terminals within a single terminal window.</p>
+            <h3>Why is this useful?</h3>
+            <ol>
+                <li><strong>Organization:</strong> Keep your editor in one pane, a server in another, and tests in a third.</li>
+                <li><strong>Persistence:</strong> Detach from a session and reconnect later. Your programs will still be running. This is ESSENTIAL for remote work (SSH).</li>
+            </ol>
+            <h3>The Prefix Key</h3>
+            <p>All tmux commands start with a <strong>prefix key</strong>, followed by another key. The default prefix is <code>Ctrl-b</code>.</p>
+        `,
+        sessions: `
+            <h2>2. Managing Sessions</h2>
+            <p>A session is a container for a set of windows and panes, usually for a single project.</p>
+            <h3>From your regular shell:</h3>
+            <pre><code>tmux new -s [session_name]
+tmux ls
+tmux attach -t [session_name]</code></pre>
+            <h3>Inside tmux:</h3>
+            <pre><code>prefix + d: Detach from the current session
+prefix + s: List and switch sessions</code></pre>
+        `,
+        windows: `
+            <h2>3. Managing Windows</h2>
+            <p>Think of windows like tabs in a browser.</p>
+            <h3>Inside tmux:</h3>
+            <pre><code>prefix + c: Create a new window
+prefix + w: List windows
+prefix + p: Go to previous window
+prefix + n: Go to next window
+prefix + ,: Rename the current window</code></pre>
+        `,
+        panes: `
+            <h2>4. Managing Panes</h2>
+            <p>Panes split a window into multiple, smaller terminal views.</p>
+            <h3>Inside tmux:</h3>
+            <pre><code>prefix + %: Split vertically (left/right)
+prefix + ": Split horizontally (top/bottom)
+prefix + [arrow key]: Move between panes
+prefix + z: Zoom/unzoom the current pane
+prefix + x: Kill the current pane</code></pre>
+        `
+    },
+    cli: {
+        intro: `
+            <h2>1. Building for the Command Line</h2>
+            <p>Creating a CLI tool is about building a program that developers can interact with from their terminal.</p>
+            <p>Good CLIs are:</p>
+            <ul>
+                <li><strong>Helpful:</strong> They have good help messages (<code>--help</code>).</li>
+                <li><strong>Composable:</strong> They follow Unix philosophy, doing one thing well.</li>
+                <li><strong>User-friendly:</strong> They have clear flags and arguments.</li>
+            </ul>
+        `,
+        streams: `
+            <h2>2. Standard Streams, Pipes, and Redirection</h2>
+            <p>This is the bedrock of the command line.</p>
+            <ul>
+                <li><strong>stdin:</strong> standard input (usually keyboard)</li>
+                <li><strong>stdout:</strong> standard output (usually the screen)</li>
+                <li><strong>stderr:</strong> standard error (also the screen)</li>
+            </ul>
+            <h3>Pipes <code>|</code></h3>
+            <p>A pipe takes the stdout of one command and makes it the stdin of the next.</p>
+            <pre><code>ls -l | grep .txt</code></pre>
+            <h3>Redirection <code>></code> and <code>>></code></h3>
+            <pre><code>command > file.txt   # Overwrite file
+command >> file.txt  # Append to file</code></pre>
+        `,
+        go: `
+            <h2>Building CLIs with Go</h2>
+            <p>Go is fantastic for CLIs because it compiles to a single, fast, cross-platform binary with no dependencies.</p>
+            <h3>Popular libraries:</h3>
+            <ul>
+                <li><strong>Cobra:</strong> The king of complex CLIs (used by Docker, Kubernetes).</li>
+                <li><strong>Viper:</strong> Works with Cobra for handling configuration.</li>
+                <li><strong>Bubble Tea:</strong> For building beautiful Terminal User Interfaces (TUIs).</li>
+            </ul>
+        `,
+        python: `
+            <h2>Building CLIs with Python</h2>
+            <p>Python is great for CLIs that need to integrate with data science, web, or scripting libraries.</p>
+            <h3>Popular libraries:</h3>
+            <ul>
+                <li><strong>Click:</strong> A simple and powerful library. Decorator-based.</li>
+                <li><strong>Typer:</strong> Built on Click, uses Python type hints. Very modern.</li>
+                <li><strong>Rich:</strong> A library for beautiful formatting (colors, tables, etc).</li>
+            </ul>
+        `,
+        rust: `
+            <h2>Building CLIs with Rust</h2>
+            <p>Rust is the choice for performance-critical CLIs where speed and memory safety are paramount.</p>
+            <h3>Popular libraries:</h3>
+            <ul>
+                <li><strong>clap:</strong> The most popular argument parser.</li>
+                <li><strong>structopt:</strong> A layer on top of clap that uses structs.</li>
+            </ul>
+        `,
+        automation: `
+            <h2>Automation with Shell Scripting</h2>
+            <p>The simplest form of automation is a shell script. It's just a sequence of commands saved to a file that the shell can execute.</p>
+            <h3>Example (<code>script.sh</code>):</h3>
+            <pre><code>#!/bin/bash
+# A simple shell script
+
+NAME="World"
+echo "Hello, $NAME"
+
+# Logic
+if [ "$USER" == "student" ]; then
+    echo "Welcome, student!"
+fi</code></pre>
+        `
+    }
+};
+
+function displayContent(topic, lesson) {
+    if (content[topic] && content[topic][lesson]) {
+        contentDisplay.innerHTML = content[topic][lesson];
+    } else {
+        contentDisplay.innerHTML = `<h2 class="error">Content not found.</h2>`;
+    }
+    contentDisplay.scrollTop = 0; // Scroll to top on new content
+}
+
+menuLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Remove active class from all links
+        menuLinks.forEach(l => l.parentElement.classList.remove('active'));
+        
+        // Add active class to the clicked link's parent li
+        const listItem = e.target.parentElement;
+        listItem.classList.add('active');
+
+        const topic = e.target.dataset.topic;
+        const lesson = e.target.dataset.lesson;
+        displayContent(topic, lesson);
+    });
+});
+
+// Load welcome message by default
+contentDisplay.innerHTML = content.welcome;
+</script>
+</body>
+</html>
+

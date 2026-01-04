@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverse Space → Hypersphere Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f7b733);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+        
+        .visualization {
+            flex: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .viz-row {
+            flex: 1;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .viz-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .controls {
+            flex: 1;
+            padding: 30px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            border-left: 2px solid rgba(255,255,255,0.1);
+            overflow-y: auto;
+        }
+        
+        .control-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-section h3 {
+            margin-top: 0;
+            color: #4ecdc4;
+            font-size: 1.3em;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1em;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            outline: none;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        
+        .slider:hover {
+            opacity: 1;
+            transform: scaleY(1.2);
+        }
+        
+        .value-display {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 8px 5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.4);
+        }
+        
+        .button.active {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        
+        .equation-panel {
+            background: linear-gradient(145deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 2px solid rgba(255,255,255,0.1);
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .equation {
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin: 10px 0;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .highlight {
+            color: #f7b733;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(247, 183, 51, 0.5);
+        }
+        
+        .ratio-display {
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(78, 205, 196, 0.2));
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid rgba(255,255,255,0.2);
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .dimension-indicator {
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        #canvas3d, #canvas4d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .insight-box {
+            background: linear-gradient(135deg, rgba(247, 183, 51, 0.1), rgba(255, 107, 107, 0.1));
+            border: 2px solid rgba(247, 183, 51, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .insight-box h4 {
+            color: #f7b733;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Inverse Space → Hypersphere Portal</h1>
+            <p>From Denn Thought to Dimensional Truth: Cylinder-Sphere → Hypercube-Hypersphere</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="visualization">
+                <div class="viz-row">
+                    <div class="viz-label">3D: Cylinder ⊃ Sphere</div>
+                    <div id="canvas3d"></div>
+                </div>
+                <div class="viz-row">
+                    <div class="viz-label">4D: Hypercube ⊃ Hypersphere</div>
+                    <div id="canvas4d"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>🎯 Geometric Parameters</h3>
+                    <div class="slider-container">
+                        <label>Radius (r)</label>
+                        <input type="range" class="slider" id="radius" min="0.5" max="2.5" step="0.1" value="1.5">
+                        <div class="value-display">r = <span id="radius-value">1.5</span></div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>4D Cross-Section Depth</label>
+                        <input type="range" class="slider" id="depth4d" min="-2" max="2" step="0.1" value="0">
+                        <div class="value-display">w = <span id="depth4d-value">0.0</span></div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>📊 Volume Analysis</h3>
+                    
+                    <div class="dimension-indicator">3D Analysis</div>
+                    <div class="equation-panel">
+                        <div class="equation">
+                            Cylinder: V = π r² (2r) = <span class="highlight" id="cylinder-vol">14.14</span>
+                        </div>
+                        <div class="equation">
+                            Sphere: V = (4/3) π r³ = <span class="highlight" id="sphere-vol">14.14</span>
+                        </div>
+                        <div class="ratio-display">
+                            <strong>Inverse Volume:</strong> <span id="inverse-vol">0.00</span><br>
+                            <strong>Ratio:</strong> <span id="ratio-3d">1.50</span> (Archimedes' 3:2!)
+                        </div>
+                    </div>
+                    
+                    <div class="dimension-indicator">4D Analysis</div>
+                    <div class="equation-panel">
+                        <div class="equation">
+                            Hypercube: V = (2r)⁴ = <span class="highlight" id="hypercube-vol">81.00</span>
+                        </div>
+                        <div class="equation">
+                            Hypersphere: V = (π²/2) r⁴ = <span class="highlight" id="hypersphere-vol">49.35</span>
+                        </div>
+                        <div class="ratio-display">
+                            <strong>4D Inverse Volume:</strong> <span id="inverse-vol-4d">31.65</span><br>
+                            <strong>4D Ratio:</strong> <span id="ratio-4d">1.64</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>🔄 Visualization Mode</h3>
+                    <button class="button active" onclick="setMode('both')" id="btn-both">Both Views</button>
+                    <button class="button" onclick="setMode('inverse')" id="btn-inverse">Inverse Only</button>
+                    <button class="button" onclick="setMode('geometric')" id="btn-geometric">Geometric</button>
+                </div>
+                
+                <div class="insight-box">
+                    <h4>🧠 Key Insight</h4>
+                    <div id="insight-content">
+                        <p><strong>Archimedes' Discovery:</strong> The ratio of cylinder to sphere volume is exactly 3:2 in all cases!</p>
+                        <p><strong>4D Extension:</strong> What happens to this ratio in 4D? The hypercube to hypersphere ratio approaches a completely different limit...</p>
+                        <p><strong>The Pattern:</strong> As dimensions increase, hyperspheres become increasingly "lonely" in their hypercubes!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js setup for both canvases
+        let scene3d, camera3d, renderer3d;
+        let scene4d, camera4d, renderer4d;
+        let sphere, cylinder, inverseSpace;
+        let hypersphere3d, hypercube3d, inverse4d;
+        let currentMode = 'both';
+        
+        function init() {
+            init3D();
+            init4D();
+            setupControls();
+            updateCalculations();
+            animate();
+        }
+        
+        function init3D() {
+            scene3d = new THREE.Scene();
+            camera3d = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            const container3d = document.getElementById('canvas3d');
+            const rect3d = container3d.getBoundingClientRect();
+            renderer3d.setSize(rect3d.width, rect3d.height);
+            renderer3d.setClearColor(0x000000, 0.2);
+            container3d.appendChild(renderer3d.domElement);
+            
+            // Lighting
+            const ambientLight3d = new THREE.AmbientLight(0x404040, 0.8);
+            scene3d.add(ambientLight3d);
+            
+            const directionalLight3d = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight3d.position.set(5, 5, 5);
+            scene3d.add(directionalLight3d);
+            
+            create3DShapes();
+            
+            camera3d.position.set(4, 3, 4);
+            camera3d.lookAt(0, 0, 0);
+        }
+        
+        function init4D() {
+            scene4d = new THREE.Scene();
+            camera4d = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            renderer4d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            const container4d = document.getElementById('canvas4d');
+            const rect4d = container4d.getBoundingClientRect();
+            renderer4d.setSize(rect4d.width, rect4d.height);
+            renderer4d.setClearColor(0x000000, 0.2);
+            container4d.appendChild(renderer4d.domElement);
+            
+            // Lighting
+            const ambientLight4d = new THREE.AmbientLight(0x404040, 0.8);
+            scene4d.add(ambientLight4d);
+            
+            const directionalLight4d = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight4d.position.set(5, 5, 5);
+            scene4d.add(directionalLight4d);
+            
+            create4DShapes();
+            
+            camera4d.position.set(4, 3, 4);
+            camera4d.lookAt(0, 0, 0);
+        }
+        
+        function create3DShapes() {
+            const radius = parseFloat(document.getElementById('radius').value);
+            
+            // Clear existing shapes
+            if (sphere) scene3d.remove(sphere);
+            if (cylinder) scene3d.remove(cylinder);
+            if (inverseSpace) scene3d.remove(inverseSpace);
+            
+            // Create sphere
+            const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
+            const sphereMaterial = new THREE.MeshPhongMaterial({
+                color: 0x4ecdc4,
+                transparent: true,
+                opacity: 0.7
+            });
+            sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            scene3d.add(sphere);
+            
+            // Create cylinder
+            const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, 2 * radius, 32);
+            const cylinderMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff6b6b,
+                transparent: true,
+                opacity: 0.3,
+                wireframe: true
+            });
+            cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+            scene3d.add(cylinder);
+            
+            // Create inverse space representation (wireframe difference)
+            const inverseGeometry = new THREE.SphereGeometry(radius * 1.1, 16, 16);
+            const inverseMaterial = new THREE.MeshBasicMaterial({
+                color: 0xf7b733,
+                transparent: true,
+                opacity: 0.4,
+                wireframe: true
+            });
+            inverseSpace = new THREE.Mesh(inverseGeometry, inverseMaterial);
+            scene3d.add(inverseSpace);
+        }
+        
+        function create4DShapes() {
+            const radius = parseFloat(document.getElementById('radius').value);
+            const depth = parseFloat(document.getElementById('depth4d').value);
+            
+            // Clear existing shapes
+            if (hypersphere3d) scene4d.remove(hypersphere3d);
+            if (hypercube3d) scene4d.remove(hypercube3d);
+            if (inverse4d) scene4d.remove(inverse4d);
+            
+            // Create 3D cross-section of 4D hypersphere
+            const effectiveRadius = Math.sqrt(Math.max(0, radius * radius - depth * depth));
+            
+            if (effectiveRadius > 0) {
+                const hypersphereGeometry = new THREE.SphereGeometry(effectiveRadius, 32, 32);
+                const hypersphereMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x45b7d1,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                hypersphere3d = new THREE.Mesh(hypersphereGeometry, hypersphereMaterial);
+                scene4d.add(hypersphere3d);
+            }
+            
+            // Create 3D cross-section of 4D hypercube
+            const cubeSize = radius;
+            const hypercubeGeometry = new THREE.BoxGeometry(cubeSize * 2, cubeSize * 2, cubeSize * 2);
+            const hypercubeMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff6b6b,
+                transparent: true,
+                opacity: 0.3,
+                wireframe: true
+            });
+            hypercube3d = new THREE.Mesh(hypercubeGeometry, hypercubeMaterial);
+            scene4d.add(hypercube3d);
+            
+            // Create 4D inverse space representation
+            if (effectiveRadius > 0) {
+                const inverse4dGeometry = new THREE.BoxGeometry(
+                    cubeSize * 1.8, 
+                    cubeSize * 1.8, 
+                    cubeSize * 1.8
+                );
+                const inverse4dMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xf7b733,
+                    transparent: true,
+                    opacity: 0.2,
+                    wireframe: true
+                });
+                inverse4d = new THREE.Mesh(inverse4dGeometry, inverse4dMaterial);
+                scene4d.add(inverse4d);
+            }
+        }
+        
+        function setupControls() {
+            const radius = document.getElementById('radius');
+            const depth4d = document.getElementById('depth4d');
+            
+            radius.addEventListener('input', function() {
+                document.getElementById('radius-value').textContent = this.value;
+                create3DShapes();
+                create4DShapes();
+                updateCalculations();
+            });
+            
+            depth4d.addEventListener('input', function() {
+                document.getElementById('depth4d-value').textContent = parseFloat(this.value).toFixed(1);
+                create4DShapes();
+                updateInsight();
+            });
+        }
+        
+        function updateCalculations() {
+            const r = parseFloat(document.getElementById('radius').value);
+            
+            // 3D calculations
+            const cylinderVol = Math.PI * r * r * (2 * r);
+            const sphereVol = (4/3) * Math.PI * r * r * r;
+            const inverseVol = cylinderVol - sphereVol;
+            const ratio3d = cylinderVol / sphereVol;
+            
+            // 4D calculations
+            const hypercubeVol = Math.pow(2 * r, 4);
+            const hypersphereVol = (Math.PI * Math.PI / 2) * Math.pow(r, 4);
+            const inverseVol4d = hypercubeVol - hypersphereVol;
+            const ratio4d = hypercubeVol / hypersphereVol;
+            
+            // Update displays
+            document.getElementById('cylinder-vol').textContent = cylinderVol.toFixed(2);
+            document.getElementById('sphere-vol').textContent = sphereVol.toFixed(2);
+            document.getElementById('inverse-vol').textContent = inverseVol.toFixed(2);
+            document.getElementById('ratio-3d').textContent = ratio3d.toFixed(2);
+            
+            document.getElementById('hypercube-vol').textContent = hypercubeVol.toFixed(2);
+            document.getElementById('hypersphere-vol').textContent = hypersphereVol.toFixed(2);
+            document.getElementById('inverse-vol-4d').textContent = inverseVol4d.toFixed(2);
+            document.getElementById('ratio-4d').textContent = ratio4d.toFixed(2);
+            
+            updateInsight();
+        }
+        
+        function updateInsight() {
+            const r = parseFloat(document.getElementById('radius').value);
+            const depth = parseFloat(document.getElementById('depth4d').value);
+            const ratio3d = parseFloat(document.getElementById('ratio-3d').textContent);
+            const ratio4d = parseFloat(document.getElementById('ratio-4d').textContent);
+            
+            const effectiveRadius = Math.sqrt(Math.max(0, r * r - depth * depth));
+            
+            let content = `
+                <p><strong>Current Analysis:</strong></p>
+                <p>3D Ratio: ${ratio3d.toFixed(3)} (Always 1.5 = 3/2)</p>
+                <p>4D Ratio: ${ratio4d.toFixed(3)} (Fixed at ~1.64)</p>
+            `;
+            
+            if (Math.abs(depth) > r * 0.9) {
+                content += `<p><strong>🎯 Edge Case:</strong> Near the 4D "edge" - hypersphere cross-section shrinks dramatically!</p>`;
+            } else if (Math.abs(depth) < 0.1) {
+                content += `<p><strong>🎯 Central Slice:</strong> Maximum 4D hypersphere cross-section. This is where the 4D "equator" lives!</p>`;
+            }
+            
+            content += `
+                <p><strong>The Pattern:</strong> As dimensions increase, hyperspheres occupy less and less of their containing hypercubes. The "curse of dimensionality" strikes!</p>
+            `;
+            
+            document.getElementById('insight-content').innerHTML = content;
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + mode).classList.add('active');
+            
+            // Update visibility based on mode
+            updateVisibility();
+        }
+        
+        function updateVisibility() {
+            switch(currentMode) {
+                case 'both':
+                    if (sphere) sphere.visible = true;
+                    if (cylinder) cylinder.visible = true;
+                    if (inverseSpace) inverseSpace.visible = false;
+                    if (hypersphere3d) hypersphere3d.visible = true;
+                    if (hypercube3d) hypercube3d.visible = true;
+                    if (inverse4d) inverse4d.visible = false;
+                    break;
+                case 'inverse':
+                    if (sphere) sphere.visible = false;
+                    if (cylinder) cylinder.visible = false;
+                    if (inverseSpace) inverseSpace.visible = true;
+                    if (hypersphere3d) hypersphere3d.visible = false;
+                    if (hypercube3d) hypercube3d.visible = false;
+                    if (inverse4d) inverse4d.visible = true;
+                    break;
+                case 'geometric':
+                    if (sphere) sphere.visible = true;
+                    if (cylinder) cylinder.visible = true;
+                    if (inverseSpace) inverseSpace.visible = true;
+                    if (hypersphere3d) hypersphere3d.visible = true;
+                    if (hypercube3d) hypercube3d.visible = true;
+                    if (inverse4d) inverse4d.visible = true;
+                    break;
+            }
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Gentle rotation
+            if (sphere) {
+                sphere.rotation.y += 0.005;
+                cylinder.rotation.y += 0.005;
+                if (inverseSpace) inverseSpace.rotation.y += 0.003;
+            }
+            
+            if (hypersphere3d) {
+                hypersphere3d.rotation.y += 0.007;
+                hypercube3d.rotation.y += 0.007;
+                if (inverse4d) inverse4d.rotation.y += 0.004;
+            }
+            
+            renderer3d.render(scene3d, camera3d);
+            renderer4d.render(scene4d, camera4d);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const container3d = document.getElementById('canvas3d');
+            const rect3d = container3d.getBoundingClientRect();
+            camera3d.aspect = rect3d.width / rect3d.height;
+            camera3d.updateProjectionMatrix();
+            renderer3d.setSize(rect3d.width, rect3d.height);
+            
+            const container4d = document.getElementById('canvas4d');
+            const rect4d = container4d.getBoundingClientRect();
+            camera4d.aspect = rect4d.width / rect4d.height;
+            camera4d.updateProjectionMatrix();
+            renderer4d.setSize(rect4d.width, rect4d.height);
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

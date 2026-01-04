@@ -1,70 +1,247 @@
 /* Futuristic UI CSS */
 
-/* Variables */
+/* CSS Variables for theming */
 :root {
-  --primary-color: #008080;
-  --secondary-color: #F8F8F8;
-  --accent-color: #888888;
-  --background-dark: #121212;
-  --card-bg: rgba(25, 25, 25, 0.7);
+  --primary-color: #00bcd4;
+  --secondary-color: #7c4dff;
+  --accent-color: #798996;
+  --bg-primary: #0a0e14;
+  --bg-secondary: #0f1419;
   --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 128, 128, 0.5);
-  --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(136, 136, 136, 0.5);
-  --transition-speed: 0.3s;
+  --text-secondary: #e0e0e0;
+  --border-color: rgba(0, 188, 212, 0.2);
+  --card-bg: rgba(15, 20, 30, 0.8);
+  --card-border: rgba(0, 188, 212, 0.1);
+  --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 188, 212, 0.5);
+  --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(64, 147, 255, 0.5);
 }
 
-/* Light Theme Variables */
+/* Light Theme */
 body.light-theme {
-  --primary-color: #008080;
-  --secondary-color: #F8F8F8;
-  --accent-color: #888888;
-  --background-dark: #F8F8F8;
+  --primary-color: #006fae;
+  --secondary-color: #5a2bcc;
+  --accent-color: #798996;
+  --bg-primary: #f0f0f5;
+  --bg-secondary: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --border-color: rgba(0, 111, 174, 0.2);
   --card-bg: rgba(255, 255, 255, 0.9);
-  --text-primary: #333333;
-  --text-secondary: #444444;
-  --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 128, 128, 0.5);
-  --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(136, 136, 136, 0.5);
+  --card-border: rgba(0, 111, 174, 0.1);
+  --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 111, 174, 0.3);
+  --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(121, 137, 150, 0.3);
 }
 
-/* Apply specific light theme color to footer text */
 body.light-theme footer[data-component-name="Footer"] {
-  color: var(--accent-color);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
 }
 
 /* Dark Theme is default */
 body.dark-theme {
-  --primary-color: #008080;
-  --secondary-color: #F8F8F8;
-  --accent-color: #888888;
-  --background-dark: #121212;
-  --card-bg: rgba(25, 25, 25, 0.7);
+  --bg-primary: #0a0e14;
+  --bg-secondary: #0f1419;
   --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
+  --text-secondary: #b8b8b8;
+  --primary-color: #00bcd4;
+  --secondary-color: #7c4dff;
+  --primary-glow: 0 0 20px rgba(0, 188, 212, 0.6);
+  --secondary-glow: 0 0 20px rgba(124, 77, 255, 0.5);
+  --border-color: rgba(0, 188, 212, 0.2);
+  --card-bg: rgba(15, 20, 30, 0.8);
+  --card-border: rgba(0, 188, 212, 0.1);
   --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 128, 128, 0.5);
   --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(136, 136, 136, 0.5);
 }
 
-/* Global Styles */
-body {
-  background-color: var(--background-dark);
+/* Tokyo Afternoon Theme - Inspired by Majestika */
+body.tokyo-afternoon {
+  --bg-primary: #e0f7fa;
+  --bg-secondary: #b2ebf2;
+  --text-primary: #4a148c;
+  --text-secondary: #6a1b9a;
+  --primary-color: #591675;
+  --secondary-color: #00acc1;
+  --primary-glow: 0 0 20px rgba(123, 31, 162, 0.4);
+  --secondary-glow: 0 0 20px  #5ea3ac;
+  ;
+  --border-color: rgba(123, 31, 162, 0.2);
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-border: rgba(63, 15, 83, 0.616);
+  --accent-color: #5ea3ac;
+  --accent-glow: 0 0 15px rgba(77, 207, 224, 0.4);
+  --neon-glow: 0 0 10px var(--primary-color), 0 0 20px rgba(123, 31, 162, 0.4);
+}
+
+/* Tokyo Afternoon specific styles */
+body.tokyo-afternoon {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+}
+
+body.tokyo-afternoon .site-wrapper {
+  background: transparent;
+}
+
+body.tokyo-afternoon .gradient-text {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.tokyo-afternoon .tech-tag {
+  background: rgba(123, 31, 162, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+body.tokyo-afternoon .btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+body.tokyo-afternoon .nav-indicator {
+  background: var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+body.tokyo-afternoon .project-card,
+body.tokyo-afternoon .featured-card,
+body.tokyo-afternoon .blog-post-card,
+body.tokyo-afternoon .story-card {
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: 0 4px 20px rgba(123, 31, 162, 0.1);
+}
+
+body.tokyo-afternoon h1,
+body.tokyo-afternoon h2,
+body.tokyo-afternoon h3,
+body.tokyo-afternoon h4,
+body.tokyo-afternoon h5,
+body.tokyo-afternoon h6 {
   color: var(--text-primary);
-  font-family: 'Space Grotesk', 'Rajdhani', 'Arial', sans-serif;
+}
+
+body.tokyo-afternoon p,
+body.tokyo-afternoon li,
+body.tokyo-afternoon span {
+  color: var(--text-secondary);
+}
+
+body.tokyo-afternoon .nav-link {
+  color: var(--text-primary);
+}
+
+body.tokyo-afternoon .read-more-link {
+  color: var(--primary-color);
+}
+
+/* Global Styles with improved contrast */
+body {
   margin: 0;
   padding: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Links */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--secondary-color);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus styles for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* For nav links to prevent double outline */
+.nav-link:focus-visible {
+  outline: none;
+}
+
+/* Typography with improved contrast */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 3.5rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 2.5rem;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 1.75rem;
+  line-height: 1.4;
+}
+
+/* Ensure good contrast for paragraphs and text */
+p, li, span, div {
+  color: var(--text-secondary);
   line-height: 1.6;
-  transition: background-color var(--transition-speed);
+}
+
+/* Improve contrast for light theme */
+body.light-theme p,
+body.light-theme li,
+body.light-theme span,
+body.light-theme div {
+  color: var(--text-secondary);
+}
+
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme h4,
+body.light-theme h5,
+body.light-theme h6 {
+  color: var(--text-primary);
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
   color: var(--primary-color);
   text-decoration: none;
-  transition: color var(--transition-speed), text-shadow var(--transition-speed), outline var(--transition-speed);
+  transition: all 0.3s ease;
 }
 
 a:hover {
-  color: #fff;
-  text-shadow: var(--neon-glow);
+  color: var(--secondary-color);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Focus styles for keyboard navigation */
@@ -111,139 +288,226 @@ h3 {
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  color: transparent;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(0, 188, 212, 0.3));
+  animation: gradient-shift 3s ease infinite;
 }
 
 /* Glitch Text Animation */
 .glitch-text {
   position: relative;
-  color: var(--text-primary);
-  text-shadow: var(--neon-glow);
-  animation: glitch 5s infinite;
+  display: inline-block;
+  animation: glitch 2s infinite;
 }
 
 @keyframes glitch {
-  0% { text-shadow: var(--neon-glow); }
-  2% { text-shadow: 2px 2px 1px rgba(74, 164, 168, 0.7); }
-  3% { text-shadow: -2px 0px 1px rgba(6, 113, 235, 0.7); }
-  4% { text-shadow: var(--neon-glow); }
-  50% { text-shadow: var(--neon-glow); }
-  52% { text-shadow: 2px 2px 1px rgba(74, 164, 168, 0.7); }
-  53% { text-shadow: -2px 0px 1px rgba(6, 113, 235, 0.7); }
-  54% { text-shadow: var(--neon-glow); }
-  100% { text-shadow: var(--neon-glow); }
+  0% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, .75), -0.05em -0.025em 0 rgba(0, 255, 0, .75), 0.025em 0.05em 0 rgba(0, 0, 255, .75); }
+  14% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, .75), -0.05em -0.025em 0 rgba(0, 255, 0, .75), 0.025em 0.05em 0 rgba(0, 0, 255, .75); }
+  15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, .75), 0.025em 0.025em 0 rgba(0, 255, 0, .75), -0.05em -0.05em 0 rgba(0, 0, 255, .75); }
+  49% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, .75), 0.025em 0.025em 0 rgba(0, 255, 0, .75), -0.05em -0.05em 0 rgba(0, 0, 255, .75); }
+  50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, .75), 0.05em 0 0 rgba(0, 255, 0, .75), 0 -0.05em 0 rgba(0, 0, 255, .75); }
+  99% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, .75), 0.05em 0 0 rgba(0, 255, 0, .75), 0 -0.05em 0 rgba(0, 0, 255, .75); }
+  100% { text-shadow: -0.025em 0 0 rgba(255, 0, 0, .75), -0.025em -0.025em 0 rgba(0, 255, 0, .75), -0.025em -0.05em 0 rgba(0, 0, 255, .75); }
 }
 
 /* Buttons */
 .btn {
   display: inline-block;
-  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-  color: var(--text-primary);
   padding: 0.75rem 1.5rem;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  transition: all var(--transition-speed);
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0, 128, 128, 0.2);
-  border-radius: 0.375rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-weight: 600;
   border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 128, 128, 0.3), var(--neon-glow);
-  filter: brightness(110%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), var(--neon-glow);
 }
 
 .btn-secondary {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: none;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--primary-color);
+  color: white;
 }
 
 /* Cards */
 .project-card, .featured-card, .blog-post-card, .story-card {
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  transition: all var(--transition-speed);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .project-card:hover, .featured-card:hover, .blog-post-card:hover, .story-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), var(--neon-glow);
+  border-color: var(--primary-color);
 }
 
 .project-card::before, .featured-card::before, .blog-post-card::before, .story-card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, rgba(136, 136, 136, 0.1), rgba(0, 128, 128, 0.1));
-  z-index: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+/* Ensure card text has proper contrast */
+.project-card h2, .project-card h3,
+.featured-card h2, .featured-card h3,
+.blog-post-card h2, .blog-post-card h3,
+.story-card h2, .story-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.project-card p,
+.featured-card p,
+.blog-post-card p,
+.story-card p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* Dark theme card text adjustments */
+body.dark-theme .story-card p,
+body.dark-theme .project-card p,
+body.dark-theme .featured-card p,
+body.dark-theme .blog-post-card p {
+  color: #d0d0d0;
+}
+
+body.dark-theme .story-card h2,
+body.dark-theme .story-card h3,
+body.dark-theme .project-card h2,
+body.dark-theme .project-card h3 {
+  color: #ffffff;
+}
+
+/* Light theme card text adjustments */
+body.light-theme .story-card,
+body.light-theme .project-card,
+body.light-theme .featured-card,
+body.light-theme .blog-post-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 111, 174, 0.15);
+}
+
+body.light-theme .story-card p,
+body.light-theme .project-card p,
+body.light-theme .featured-card p,
+body.light-theme .blog-post-card p {
+  color: #333333;
+}
+
+body.light-theme .story-card h2,
+body.light-theme .story-card h3,
+body.light-theme .project-card h2,
+body.light-theme .project-card h3 {
+  color: #1a1a1a;
+}
+
+/* Tokyo afternoon specific card styles */
+body.tokyo-afternoon .story-card,
+body.tokyo-afternoon .project-card,
+body.tokyo-afternoon .featured-card,
+body.tokyo-afternoon .blog-post-card {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(123, 31, 162, 0.2);
+  box-shadow: 0 4px 20px rgba(123, 31, 162, 0.1);
+}
+
+body.tokyo-afternoon .story-card h2,
+body.tokyo-afternoon .story-card h3,
+body.tokyo-afternoon .project-card h2,
+body.tokyo-afternoon .project-card h3,
+body.tokyo-afternoon .featured-card h2,
+body.tokyo-afternoon .featured-card h3,
+body.tokyo-afternoon .blog-post-card h2,
+body.tokyo-afternoon .blog-post-card h3 {
+  color: #4a148c;
+}
+
+body.tokyo-afternoon .story-card p,
+body.tokyo-afternoon .project-card p,
+body.tokyo-afternoon .featured-card p,
+body.tokyo-afternoon .blog-post-card p {
+  color: #5e35b1;
+  font-weight: 400;
 }
 
 /* Grids */
 .projects-grid, .featured-grid, .blog-posts-grid, .stories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
 /* Tech Tags */
 .tech-tags {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.5rem;
   margin: 1rem 0;
 }
 
 .tech-tag {
-  background-color: rgba(0, 128, 128, 0.2);
-  color: var(--primary-color);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 188, 212, 0.1);
   border: 1px solid var(--primary-color);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
 }
 
 /* Read More Links */
 .read-more-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   color: var(--primary-color);
-  text-decoration: none;
   font-weight: 600;
-  transition: all var(--transition-speed);
+  text-decoration: none;
+  transition: all 0.3s ease;
   margin-top: 1rem;
 }
 
 .read-more-link:hover {
-  color: #fff;
-  text-shadow: var(--neon-glow);
+  color: var(--secondary-color);
+  transform: translateX(5px);
 }
 
 /* Section Styles */

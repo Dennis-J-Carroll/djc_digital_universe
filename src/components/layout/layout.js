@@ -28,8 +28,7 @@ const Layout = ({ children, pageContext, location }) => {
   // Determine current section based on pathname
   const getCurrentSection = () => {
     const path = location?.pathname || "";
-    if (path.includes("/data-science")) return "data-science";
-    if (path.includes("/Development-projects")) return "dev-projects";
+    if (path.includes("/development-projects")) return "dev-projects";
     if (path.includes("/stories")) return "stories";
     if (path.includes("/about")) return "about";
     if (path.includes("/contact")) return "contact";
@@ -68,8 +67,8 @@ const Layout = ({ children, pageContext, location }) => {
         <Header siteTitle={siteTitle} currentSection={getCurrentSection()} />
         
         {/* Main Navigation */}
-        <div className="navigation-container py-4 mt-20 sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-teal-900/30">
-          <Navigation currentSection={getCurrentSection()} />
+        <div className="navigation-container py-4 mt-20 sticky top-0 z-[150] bg-black/70 backdrop-blur-md border-b border-teal-900/30">
+          <Navigation />
         </div>
         
         <main className="relative z-10">{children}</main>
