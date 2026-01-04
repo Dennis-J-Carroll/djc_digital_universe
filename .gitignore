@@ -68,3 +68,21 @@ yarn-error.log
 # Yarn Integrity file
 .yarn-integrity
 git_01/
+
+# Editor and office lock files
+.~lock.*
+*.swp
+*.swo
+*~
+.*.sw?
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
