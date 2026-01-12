@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Conversion - File Converter Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-charcoal: #212529;
+            --dark-grey: #495057;
+            --medium-grey: #ADB5BD;
+            --light-grey: #DEE2E6;
+            --bright-blue: #007BFF;
+            --success-green: #28A745;
+            --warning-amber: #FFC107;
+            --error-red: #DC3545;
+            --pure-white: #FFFFFF;
+            --off-white: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+            min-height: 100vh;
+        }
+        
+        .font-display { font-family: 'Poppins', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .batch-drop-zone {
+            border: 3px dashed var(--medium-grey);
+            transition: all 0.3s ease;
+            background: var(--pure-white);
+        }
+        
+        .batch-drop-zone:hover,
+        .batch-drop-zone.dragover {
+            border-color: var(--bright-blue);
+            background: rgba(0, 123, 255, 0.05);
+            transform: scale(1.02);
+        }
+        
+        .file-item {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .file-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-item.processing {
+            border-left-color: var(--warning-amber);
+            background: rgba(255, 193, 7, 0.05);
+        }
+        
+        .file-item.completed {
+            border-left-color: var(--success-green);
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .file-item.error {
+            border-left-color: var(--error-red);
+            background: rgba(220, 53, 69, 0.05);
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        
+        .nav-tab {
+            position: relative;
+            color: var(--dark-grey);
+            transition: color 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            color: var(--bright-blue);
+        }
+        
+        .nav-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--bright-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-tab.active::after {
+            width: 100%;
+        }
+        
+        .batch-stats {
+            background: var(--pure-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--bright-blue);
+            color: var(--pure-white);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #0056B3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-pending { background-color: var(--medium-grey); }
+        .status-processing { background-color: var(--warning-amber); animation: pulse 2s infinite; }
+        .status-completed { background-color: var(--success-green); }
+        .status-error { background-color: var(--error-red); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .batch-controls {
+            background: var(--pure-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-xl text-gray-900">File Converter Pro</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-8">
+                    <a href="index.html" class="nav-tab text-sm font-medium">Convert</a>
+                    <a href="batch.html" class="nav-tab active text-sm font-medium">Batch</a>
+                    <a href="history.html" class="nav-tab text-sm font-medium">History</a>
+                    <a href="help.html" class="nav-tab text-sm font-medium">Help</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Batch Header -->
+    <section class="bg-gradient-to-r from-blue-600 to-blue-700 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-white">
+                <h1 class="font-display font-bold text-4xl mb-4">Batch Conversion</h1>
+                <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                    Convert multiple files simultaneously with intelligent queue management and progress tracking.
+                </p>
+                <div class="flex justify-center space-x-6 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-white rounded-full"></div>
+                        <span id="totalFiles">0 files</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-yellow-300 rounded-full"></div>
+                        <span id="processingFiles">0 processing</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                        <span id="completedFiles">0 completed</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-red-300 rounded-full"></div>
+                        <span id="failedFiles">0 failed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Batch Interface -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel - File Queue -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Batch Upload -->
+                <div class="batch-controls p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Add Files to Queue</h2>
+                    
+                    <div id="batchDropZone" class="batch-drop-zone rounded-lg p-8 text-center cursor-pointer mb-4">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-gray-600 mb-2">Drag and drop multiple files here</p>
+                        <p class="text-sm text-gray-500">or click to browse</p>
+                        <input type="file" id="batchFileInput" class="hidden" multiple />
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button id="selectFilesBtn" class="btn-primary px-4 py-2 rounded-lg font-medium">
+                            Select Files
+                        </button>
+                        <button id="clearQueueBtn" class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                            Clear Queue
+                        </button>
+                        <button id="removeCompletedBtn" class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                            Remove Completed
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- File Queue -->
+                <div class="batch-controls p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-display font-semibold text-xl text-gray-900">File Queue</h2>
+                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                            <span id="queueSummary">0 files</span>
+                            <span>•</span>
+                            <span id="queueSize">0 MB</span>
+                        </div>
+                    </div>
+                    
+                    <div id="fileQueue" class="space-y-3 max-h-96 overflow-y-auto">
+                        <!-- File items will be populated by JavaScript -->
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                            </svg>
+                            <p>No files in queue</p>
+                            <p class="text-sm">Add files to start batch conversion</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Batch Controls -->
+            <div class="space-y-6">
+                <!-- Global Settings -->
+                <div class="batch-controls p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Batch Settings</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Format</label>
+                            <select id="globalFormat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Select format for all files</option>
+                                <option value="json">JSON</option>
+                                <option value="xml">XML</option>
+                                <option value="csv">CSV</option>
+                                <option value="txt">Plain Text</option>
+                                <option value="pdf">PDF</option>
+                                <option value="jpg">JPEG</option>
+                                <option value="png">PNG</option>
+                                <option value="mp3">MP3</option>
+                                <option value="mp4">MP4</option>
+                                <option value="zip">ZIP</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Output Directory</label>
+                            <input type="text" id="outputDirectory" placeholder="./converted_files" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">File Naming</label>
+                            <select id="namingConvention" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="original">Keep original name</option>
+                                <option value="timestamp">Add timestamp</option>
+                                <option value="numbered">Number sequentially</option>
+                                <option value="custom">Custom prefix</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Custom Prefix</label>
+                            <input type="text" id="customPrefix" placeholder="converted_" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="createSubdirectories" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label class="text-sm text-gray-700">Create format-specific subdirectories</label>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="overwriteExisting" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label class="text-sm text-gray-700">Overwrite existing files</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Batch Actions -->
+                <div class="batch-controls p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Batch Actions</h2>
+                    
+                    <div class="space-y-3">
+                        <button id="startBatchBtn" class="btn-primary w-full py-3 px-4 rounded-lg font-medium text-lg" disabled>
+                            Start Batch Conversion
+                        </button>
+                        <button id="pauseBatchBtn" class="w-full py-2 px-4 border border-yellow-300 rounded-lg font-medium text-yellow-700 hover:bg-yellow-50 transition-colors" disabled>
+                            Pause Batch
+                        </button>
+                        <button id="resumeBatchBtn" class="w-full py-2 px-4 border border-green-300 rounded-lg font-medium text-green-700 hover:bg-green-50 transition-colors" disabled>
+                            Resume Batch
+                        </button>
+                        <button id="cancelBatchBtn" class="w-full py-2 px-4 border border-red-300 rounded-lg font-medium text-red-700 hover:bg-red-50 transition-colors" disabled>
+                            Cancel Batch
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Batch Progress -->
+                <div class="batch-controls p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Progress Overview</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Overall Progress</span>
+                                <span id="overallProgress">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="overallProgressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-gray-900" id="elapsedTime">00:00</div>
+                                <div class="text-sm text-gray-600">Elapsed Time</div>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="text-2xl font-bold text-gray-900" id="estimatedTime">--:--</div>
+                                <div class="text-sm text-gray-600">Estimated Time</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button id="downloadAllBtn" class="btn-primary px-6 py-2 rounded-lg font-medium" disabled>
+                                Download All as ZIP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Batch Statistics -->
+        <section class="mt-16 scroll-reveal">
+            <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Batch Conversion Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="batch-stats p-6">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Success Rate by Format</h3>
+                    <div id="successRateChart" style="height: 300px;"></div>
+                </div>
+                
+                <div class="batch-stats p-6">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Processing Time Distribution</h3>
+                    <div id="processingTimeChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600">© 2024 File Converter Pro. Built for extreme usability and performance.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

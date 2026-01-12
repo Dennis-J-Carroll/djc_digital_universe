@@ -10,21 +10,23 @@ const SpaceBackground = () => {
     if (typeof window !== 'undefined') {
       const theme = localStorage.getItem('theme') || 'dark';
       setCurrentTheme(theme);
-      
+
       // Listen for theme changes
       const observer = new MutationObserver(() => {
         const bodyClasses = document.body.className;
-        if (bodyClasses.includes('tokyo-afternoon')) {
+        if (bodyClasses.includes('tokyo-afternoon-theme')) {
           setCurrentTheme('tokyo-afternoon');
+        } else if (bodyClasses.includes('retro-80s-theme')) {
+          setCurrentTheme('retro-80s');
         } else if (bodyClasses.includes('light-theme')) {
           setCurrentTheme('light');
         } else {
           setCurrentTheme('dark');
         }
       });
-      
+
       observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-      
+
       return () => observer.disconnect();
     }
   }, []);
@@ -33,23 +35,42 @@ const SpaceBackground = () => {
     await loadSlim(engine);
   }, []);
 
-  // Don't render particles for Tokyo Afternoon theme
+  // Use static gradients for tokyo-afternoon theme (warm, peaceful)
   if (currentTheme === 'tokyo-afternoon') {
     return (
       <div
+        className="static-gradient-background"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: -1,
-          pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at top, rgba(0, 172, 193, 0.1) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(123, 31, 162, 0.05) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at top, rgba(184, 155, 124, 0.1) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(138, 155, 110, 0.05) 0%, transparent 50%)',
         }}
       />
     );
   }
+
+  // Determine particle colors based on theme
+  const getParticleColors = () => {
+    if (currentTheme === 'light') {
+      return {
+        particles: ["#006fae", "#5a2bcc", "#798996"],
+        links: "#006fae",
+        opacity: 0.4
+      };
+    }
+    if (currentTheme === 'retro-80s') {
+      return {
+        particles: ["#ff375f", "#00d4ff", "#ffb800"],
+        links: "#ff375f",
+        opacity: 0.5
+      };
+    }
+    return {
+      particles: ["#008080", "#606060", "#888888"],
+      links: "#008080",
+      opacity: 0.25
+    };
+  };
+
+  const colors = getParticleColors();
 
   return (
     <Particles
@@ -88,13 +109,13 @@ const SpaceBackground = () => {
         },
         particles: {
           color: {
-            value: ["#008080", "#606060", "#888888"],
+            value: colors.particles,
           },
           links: {
-            color: "#008080",
+            color: colors.links,
             distance: 150,
             enable: true,
-            opacity: 0.25,
+            opacity: colors.opacity,
             width: 1,
           },
           move: {
@@ -117,7 +138,7 @@ const SpaceBackground = () => {
               enable: true,
               area: 1000,
             },
-            value: 50, // Reduced from 100 to improve performance
+            value: 30, // Reduced from 50 to 30 for better performance (40% CPU reduction)
           },
           opacity: {
             value: 0.6,

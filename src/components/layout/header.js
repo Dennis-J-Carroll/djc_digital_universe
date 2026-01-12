@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Link } from "gatsby"
 import { gsap } from "gsap"
+import { THEMES, SOCIAL_LINKS } from "../../constants"
 
 const Header = ({ siteTitle }) => {
   const headerRef = useRef(null);
@@ -8,13 +9,6 @@ const Header = ({ siteTitle }) => {
   const menuRef = useRef(null);
   const [currentTheme, setCurrentTheme] = useState('dark');
   const [isScrolled, setIsScrolled] = useState(false);
-
-  // Theme configuration
-  const themes = [
-    { id: 'dark', name: 'Dark', icon: '🌙' },
-    { id: 'light', name: 'Light', icon: '☀️' },
-    { id: 'tokyo-afternoon', name: 'Tokyo', icon: '🌸' }
-  ];
 
   // --- Define handleScroll with useCallback ---
   const handleScroll = useCallback(() => {
@@ -80,7 +74,7 @@ const Header = ({ siteTitle }) => {
 
     return () => {
       if (typeof window !== 'undefined') {
-         window.removeEventListener("scroll", handleScroll);
+        window.removeEventListener("scroll", handleScroll);
       }
     };
   }, [handleScroll]); // Dependency: handleScroll (stable due to useCallback)
@@ -89,17 +83,17 @@ const Header = ({ siteTitle }) => {
   const handleThemeChange = (themeId) => {
     if (typeof window !== 'undefined') {
       // Remove all theme classes
-      themes.forEach(theme => {
+      THEMES.forEach(theme => {
         document.body.classList.remove(theme.id + '-theme');
       });
-      
+
       // Add new theme class
       document.body.classList.add(themeId + '-theme');
       setCurrentTheme(themeId);
       localStorage.setItem('theme', themeId);
 
       // Manually trigger scroll handler to update header styles immediately
-      handleScroll(); 
+      handleScroll();
     }
   };
   // -------------------------
@@ -123,7 +117,7 @@ const Header = ({ siteTitle }) => {
       }}
     >
       {/* Logo */}
-      <div 
+      <div
         ref={logoRef}
         style={{
           display: "flex",
@@ -186,6 +180,58 @@ const Header = ({ siteTitle }) => {
           </span>
         </Link>
       </div>
+
+      {/* Navigation Links */}
+      <nav style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.25rem"
+      }}>
+        {[
+          { path: "/", label: "Home" },
+          { path: "/apps", label: "Apps/Projects" },
+          { path: "/stories", label: "Stories" },
+          { path: "/about", label: "About" }
+        ].map((link) => (
+          <Link
+            key={link.path}
+            to={link.path}
+            className="nav-link-item"
+            style={{
+              color: currentTheme === 'light' && isScrolled ? "var(--text-primary)" : "var(--text-secondary)",
+              textDecoration: "none",
+              padding: "0.5rem 0.85rem",
+              borderRadius: "8px",
+              fontSize: "0.9rem",
+              fontWeight: "500",
+              transition: "all 0.2s ease",
+              position: "relative"
+            }}
+            activeStyle={{
+              color: "var(--primary-color)",
+              fontWeight: "600"
+            }}
+            onMouseEnter={(e) => {
+              gsap.to(e.currentTarget, {
+                backgroundColor: currentTheme === 'light'
+                  ? "rgba(0, 111, 174, 0.1)"
+                  : "rgba(0, 188, 212, 0.1)",
+                color: "var(--primary-color)",
+                duration: 0.2
+              });
+            }}
+            onMouseLeave={(e) => {
+              gsap.to(e.currentTarget, {
+                backgroundColor: "transparent",
+                color: currentTheme === 'light' && isScrolled ? "var(--text-primary)" : "var(--text-secondary)",
+                duration: 0.2
+              });
+            }}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
 
       {/* Header Menu Controls */}
       <div
@@ -289,7 +335,7 @@ const Header = ({ siteTitle }) => {
             }}
           >
             <svg height="18" width="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
             </svg>
           </a>
 
@@ -335,7 +381,7 @@ const Header = ({ siteTitle }) => {
             }}
           >
             <svg height="18" width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
             </svg>
           </a>
         </div>
@@ -350,11 +396,11 @@ const Header = ({ siteTitle }) => {
           padding: "0.25rem",
           border: "1px solid rgba(120, 180, 255, 0.1)"
         }}>
-          {themes.map((theme) => (
+          {THEMES.map((theme) => (
             <button
               key={theme.id}
               onClick={() => handleThemeChange(theme.id)}
-              aria-label={`Switch to ${theme.name} theme`}
+              aria-label={theme.ariaLabel}
               title={`Switch to ${theme.name} theme`}
               style={{
                 background: currentTheme === theme.id ? "var(--primary-color)" : "transparent",

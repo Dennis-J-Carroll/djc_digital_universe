@@ -1,0 +1,172 @@
+
+> gatsby-starter-default@0.1.0 build
+> gatsby build
+
+success compile gatsby files - 1.302s
+
+[2K[1A[2K[Gsuccess load gatsby config - 0.219s
+
+[2K[1A[2K[Gsuccess load plugins - 0.489s
+
+[2K[1A[2K[Gwarn gatsby-plugin-react-helmet: Gatsby now has built-in support for modifying
+the document head. Learn more at https://gatsby.dev/gatsby-head
+
+[2K[1A[2K[Gsuccess onPreInit - 0.009s
+
+[2K[1A[2K[Gsuccess delete worker cache from previous builds - 0.006s
+
+[2K[1A[2K[Gsuccess initialize cache - 0.031s
+
+[2K[1A[2K[Gsuccess copy gatsby files - 0.081s
+
+[2K[1A[2K[Gsuccess Compiling Gatsby Functions - 0.275s
+
+[2K[1A[2K[Gsuccess onPreBootstrap - 0.296s
+
+[2K[1A[2K[Gsuccess createSchemaCustomization - 0.006s
+
+[2K[1A[2K[Gsuccess Clean up stale nodes - 0.010s - 9/0 0.00/s
+
+[2K[1A[2K[Gsuccess Checking for changed pages - 0.000s
+
+[2K[1A[2K[Gsuccess source and transform nodes - 0.116s
+
+[2K[1A[2K[Ginfo Writing GraphQL type definitions to /home/dennisjcarroll/everything-persona
+l-website/everything-personal-website/.cache/schema.gql
+
+[2K[1A[2K[Gsuccess building schema - 0.256s
+
+[2K[1A[2K[GStarting createPages function
+
+[2K[1A[2K[GProject template path: /home/dennisjcarroll/everything-personal-website/everythi
+ng-personal-website/src/templates/project-detail.js
+
+[2K[1A[2K[GNumber of MDX nodes found: 2
+
+[2K[1A[2K[GProcessing node: {
+  id: 'c5deef41-d989-5b40-89cb-9a37c805bd04',
+  slug: 'hello-world',
+  sourceInstanceName: 'blog-posts',
+  contentFilePath: '/home/dennisjcarroll/everything-personal-website/everything-
+personal-website/src/blog-posts/hello-world/index.mdx'
+}
+
+[2K[1A[2K[GCreating page with path: /blog/hello-world
+
+[2K[1A[2K[GProcessing node: {
+  id: 'a3a29468-e66f-5d4c-a419-4f9f53607acc',
+  slug: 'the-quantum-observer',
+  sourceInstanceName: 'stories',
+  contentFilePath: '/home/dennisjcarroll/everything-personal-website/everything-
+personal-website/src/stories/first-story/index.mdx'
+}
+
+[2K[1A[2K[GCreating page with path: /stories/the-quantum-observer
+
+[2K[1A[2K[Gsuccess createPages - 0.060s
+
+[2K[1A[2K[Gsuccess createPagesStatefully - 0.170s
+
+[2K[1A[2K[Ginfo Total nodes: 65, SitePage nodes: 9 (use --verbose for breakdown)
+
+[2K[1A[2K[Gsuccess Checking for changed pages - 0.000s
+
+[2K[1A[2K[Gsuccess Cleaning up stale page-data - 0.002s
+
+[2K[1A[2K[Gsuccess onPreExtractQueries - 0.000s
+
+[2K[1A[2K[Gsuccess extract queries from components - 1.837s
+
+[2K[1A[2K[Gsuccess write out redirect data - 0.001s
+
+[2K[1A[2K[Gsuccess Build manifest and related icons - 0.091s
+
+[2K[1A[2K[Gsuccess onPostBootstrap - 0.093s
+
+[2K[1A[2K[Ginfo bootstrap finished - 6.691s
+
+[2K[1A[2K[Gsuccess write out requires - 0.003s
+
+[2K[1A[2K[Gsuccess Building production JavaScript and CSS bundles - 1.512s
+
+[2K[1A[2K[Gsuccess Building HTML renderer - 0.917s
+
+[2K[1A[2K[Gsuccess Execute page configs - 0.044s
+
+[2K[1A[2K[Gsuccess Caching Webpack compilations - 0.001s
+
+[2K[1A[2K[Gsuccess run queries in workers - 0.032s - 2/2 61.95/s
+
+[2K[1A[2K[Gsuccess Merge worker state - 0.001s
+
+[2K[1A[2K[Gsuccess Rewriting compilation hashes - 0.002s
+
+[2K[1A[2K[Ginfo There are no new or changed html files to build.
+
+[2K[1A[2K[Ginfo There are no new or changed slice html files to build.
+
+[2K[1A[2K[Gsuccess stitching slices - 0.010s
+
+[2K[1A[2K[Gsuccess onPostBuild - 0.014s
+
+[2K[1A[2K[G
+
+Pages
+
+┌ src/templates/project-detail.js
+│ ├   /blog/hello-world/
+│ └   /stories/the-quantum-observer/
+├ src/pages/404.js
+│ ├   /404/
+│ └   /404.html
+├ src/pages/about.js
+│ └   /about/
+├ src/pages/contact.js
+│ └   /contact/
+├ src/pages/development-projects.js
+│ └   /development-projects/
+├ src/pages/index.js
+│ └   /
+└ src/pages/stories.js
+  └   /stories/
+
+  ╭────────────────────────────────────────────────────────────────╮
+  │                                                                │
+  │   (SSG) Generated at build time                                │
+  │ D (DSG) Deferred static generation - page generated at runtime │
+  │ ∞ (SSR) Server-side renders at runtime (uses getServerData)    │
+  │ λ (Function) Gatsby function                                   │
+  │                                                                │
+  ╰────────────────────────────────────────────────────────────────╯
+
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo Done building in 11.310059825 sec
+
+
+Pages
+
+┌ src/templates/project-detail.js
+│ ├   /blog/hello-world/
+│ └   /stories/the-quantum-observer/
+├ src/pages/404.js
+│ ├   /404/
+│ └   /404.html
+├ src/pages/about.js
+│ └   /about/
+├ src/pages/contact.js
+│ └   /contact/
+├ src/pages/development-projects.js
+│ └   /development-projects/
+├ src/pages/index.js
+│ └   /
+└ src/pages/stories.js
+  └   /stories/
+
+  ╭────────────────────────────────────────────────────────────────╮
+  │                                                                │
+  │   (SSG) Generated at build time                                │
+  │ D (DSG) Deferred static generation - page generated at runtime │
+  │ ∞ (SSR) Server-side renders at runtime (uses getServerData)    │
+  │ λ (Function) Gatsby function                                   │
+  │                                                                │
+  ╰────────────────────────────────────────────────────────────────╯
+

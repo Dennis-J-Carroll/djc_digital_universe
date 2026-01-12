@@ -3,340 +3,879 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edge AI Theoretical Sandbox</title>
+    <title>Edge AI Sandbox - TensorFlow.js Training Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #141b24;
+            --bg-card: rgba(20, 27, 36, 0.9);
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --accent-red: #ef4444;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(0, 212, 255, 0.2);
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+            background-size: 400% 400%;
+            animation: gradient-shift 20s ease infinite;
+            min-height: 100vh;
+            color: var(--text-primary);
         }
-        .glossary-term {
-            cursor: help;
-            border-bottom: 1px dotted #9ca3af;
-            text-decoration: none;
+        
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        
+        .glow-cyan { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+        .glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+        
+        .stat-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+        
+        .training-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        #networkVisualization {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+        
+        .neuron {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        .neuron.active {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+        
+        .connection {
+            position: absolute;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            height: 2px;
+            transform-origin: left center;
+            opacity: 0.3;
+        }
+        
+        .connection.active {
+            opacity: 1;
+            height: 3px;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            height: 6px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+        
+        select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200">
-
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-white">Edge AI Theoretical Sandbox ✨</h1>
-            <p class="text-gray-400 mt-2">Enhanced with Glossary - Click underlined terms for definitions.</p>
+<body>
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Edge AI Training Lab
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Real-time neural network training with TensorFlow.js. Train models directly in your browser, visualize learning dynamics, and experiment with hyperparameters.
+            </p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- CONTROLS PANEL -->
-            <div class="lg:col-span-1 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                <h2 class="text-2xl font-semibold mb-6 text-white border-b border-gray-600 pb-3">Simulation Parameters</h2>
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Left Column: Controls -->
+            <div class="space-y-6">
+                <!-- Dataset Selection -->
+                <div class="glass-card p-6 glow-cyan">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">[+]</span> Dataset
+                    </h2>
+                    <select id="datasetSelect" class="w-full mb-4">
+                        <option value="xor">XOR Problem (Classification)</option>
+                        <option value="circle">Circle Dataset (Classification)</option>
+                        <option value="spiral">Spiral Dataset (Classification)</option>
+                        <option value="regression">Sine Wave (Regression)</option>
+                    </select>
+                    <div id="dataInfo" class="text-sm text-gray-400">
+                        <p>XOR: Classic non-linear classification problem</p>
+                        <p class="mt-1">Samples: <span class="text-cyan-400 font-mono">200</span></p>
+                    </div>
+                </div>
 
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-blue-400 mb-3">Hardware & Efficiency</h3>
+                <!-- Model Architecture -->
+                <div class="glass-card p-6 glow-purple">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">[=]</span> Architecture
+                    </h2>
                     <div class="space-y-4">
                         <div>
-                            <label for="systolicArraySize" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="sasp">Systolic Array (SASP)</span>
-                            </label>
-                            <select id="systolicArraySize" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
-                                <option value="16">16x16</option>
-                                <option value="32" selected>32x32</option>
-                                <option value="64">64x64</option>
+                            <label class="block text-sm text-gray-400 mb-1">Hidden Layers</label>
+                            <select id="hiddenLayers" class="w-full">
+                                <option value="1">1 Layer</option>
+                                <option value="2" selected>2 Layers</option>
+                                <option value="3">3 Layers</option>
                             </select>
                         </div>
                         <div>
-                            <label for="quantization" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="quantization">Quantization</span>
-                            </label>
-                            <select id="quantization" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
-                                <option value="32">FP32</option>
-                                <option value="8" selected>INT8</option>
-                                <option value="4">INT4</option>
-                            </select>
+                            <label class="block text-sm text-gray-400 mb-1">Neurons per Layer: <span id="neuronsValue" class="text-cyan-400">8</span></label>
+                            <input type="range" id="neuronsPerLayer" min="2" max="32" value="8" class="w-full">
                         </div>
                         <div>
-                            <label for="pruningRate" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="pruning">Pruning Rate</span>: <span id="pruningRateValue">20%</span>
-                            </label>
-                            <input type="range" id="pruningRate" min="0" max="90" value="20" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                            <label class="block text-sm text-gray-400 mb-1">Activation Function</label>
+                            <select id="activation" class="w-full">
+                                <option value="relu">ReLU</option>
+                                <option value="sigmoid">Sigmoid</option>
+                                <option value="tanh" selected>Tanh</option>
+                                <option value="leakyReLU">Leaky ReLU</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-green-400 mb-3">Learning Paradigm</h3>
+                <!-- Training Parameters -->
+                <div class="glass-card p-6 glow-green">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">[x]</span> Training
+                    </h2>
                     <div class="space-y-4">
                         <div>
-                            <label for="nonIID" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="non-iid">Non-IID Data Factor</span>: <span id="nonIIDValue">0.5</span>
-                            </label>
-                            <input type="range" id="nonIID" min="0" max="1" step="0.05" value="0.5" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                            <label class="block text-sm text-gray-400 mb-1">Learning Rate: <span id="lrValue" class="text-green-400">0.1</span></label>
+                            <input type="range" id="learningRate" min="-3" max="0" step="0.1" value="-1" class="w-full">
                         </div>
                         <div>
-                            <label for="numTasks" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="continual-learning">Continual Learning Tasks</span>: <span id="numTasksValue">5</span>
-                            </label>
-                            <input type="range" id="numTasks" min="1" max="20" value="5" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                            <label class="block text-sm text-gray-400 mb-1">Epochs: <span id="epochsValue" class="text-green-400">100</span></label>
+                            <input type="range" id="epochs" min="10" max="500" step="10" value="100" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Batch Size: <span id="batchValue" class="text-green-400">16</span></label>
+                            <input type="range" id="batchSize" min="4" max="64" step="4" value="16" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Optimizer</label>
+                            <select id="optimizer" class="w-full">
+                                <option value="sgd">SGD</option>
+                                <option value="adam" selected>Adam</option>
+                                <option value="rmsprop">RMSprop</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <h3 class="text-lg font-semibold text-purple-400 mb-3">Trust Architecture</h3>
-                    <div class="space-y-4">
+                <!-- Control Buttons -->
+                <div class="flex gap-4">
+                    <button id="trainBtn" class="btn-primary flex-1 flex items-center justify-center gap-2">
+                        <span>[>]</span> Train Model
+                    </button>
+                    <button id="stopBtn" class="btn-secondary" disabled>
+                        [||] Stop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Middle Column: Visualization -->
+            <div class="space-y-6">
+                <!-- Network Visualization -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center justify-between">
+                        <span>Network Architecture</span>
+                        <span id="trainingStatus" class="stat-badge bg-gray-700 text-gray-300">Idle</span>
+                    </h2>
+                    <div id="networkVisualization"></div>
+                    <div class="mt-4 text-center text-sm text-gray-400">
+                        <span>Input (2) → </span>
+                        <span id="archSummary">Hidden (8, 8)</span>
+                        <span> → Output (1)</span>
+                    </div>
+                </div>
+
+                <!-- Training Progress -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Training Progress</h2>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-mono font-bold text-cyan-400" id="currentEpoch">0</div>
+                            <div class="text-xs text-gray-400">Epoch</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-mono font-bold text-green-400" id="currentLoss">-</div>
+                            <div class="text-xs text-gray-400">Loss</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-mono font-bold text-purple-400" id="currentAccuracy">-</div>
+                            <div class="text-xs text-gray-400">Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                        <div id="progressBar" class="h-3 rounded-full transition-all duration-300" style="width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple))"></div>
+                    </div>
+                    <div class="text-center text-xs text-gray-400" id="progressText">Ready to train</div>
+                </div>
+
+                <!-- Decision Boundary Visualization -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Decision Boundary</h2>
+                    <canvas id="decisionCanvas" width="300" height="300" class="w-full border border-gray-700 rounded-lg"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Column: Charts & Logs -->
+            <div class="space-y-6">
+                <!-- Loss Chart -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Loss Curve</h2>
+                    <div class="chart-container">
+                        <canvas id="lossChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Accuracy Chart -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Accuracy Curve</h2>
+                    <div class="chart-container">
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Training Log -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Training Log</h2>
+                    <div id="trainingLog" class="code-block h-40 overflow-y-auto text-gray-400">
+                        <div>[System] Edge AI Sandbox initialized</div>
+                        <div>[TensorFlow.js] Backend: <span class="text-green-400" id="tfBackend">loading...</span></div>
+                        <div>[Ready] Configure parameters and click Train</div>
+                    </div>
+                </div>
+
+                <!-- Model Info -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Model Summary</h2>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <label for="privacyBudget" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="privacy-budget">Privacy Budget (ε)</span>: <span id="privacyBudgetValue">4.0</span>
-                            </label>
-                            <input type="range" id="privacyBudget" min="0.5" max="8" step="0.1" value="4.0" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                            <span class="text-gray-400">Parameters:</span>
+                            <span id="paramCount" class="font-mono text-cyan-400 ml-2">-</span>
                         </div>
                         <div>
-                            <label for="trustOverhead" class="flex justify-between items-center text-sm font-medium text-gray-300">
-                                <span class="glossary-term" data-term="trust-overhead">Trust Overhead</span>
-                            </label>
-                            <select id="trustOverhead" class="w-full mt-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
-                                <option value="0.05">Low</option>
-                                <option value="0.1" selected>Medium</option>
-                                <option value="0.2">High</option>
-                            </select>
+                            <span class="text-gray-400">Memory:</span>
+                            <span id="memoryUsage" class="font-mono text-green-400 ml-2">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Inference:</span>
+                            <span id="inferenceTime" class="font-mono text-purple-400 ml-2">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Training Time:</span>
+                            <span id="trainingTime" class="font-mono text-orange-400 ml-2">-</span>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- VISUALIZATION & RESULTS -->
-            <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex flex-col">
-                <h2 class="text-2xl font-semibold mb-4 text-white border-b border-gray-600 pb-3">System Performance Profile</h2>
-                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div class="w-full h-full min-h-[300px]">
-                        <canvas id="radarChart"></canvas>
-                    </div>
-                    <div>
-                        <div id="results" class="space-y-3 text-lg">
-                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
-                                <span class="font-semibold text-blue-300 glossary-term" data-term="efficiency">Efficiency (EDP⁻¹)</span>
-                                <span id="efficiencyValue" class="font-mono text-xl font-bold text-white">0.750</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
-                                <span class="font-semibold text-green-300 glossary-term" data-term="performance">Performance (mAP)</span>
-                                <span id="performanceValue" class="font-mono text-xl font-bold text-white">0.845</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
-                                <span class="font-semibold text-yellow-300 glossary-term" data-term="adaptability">Adaptability (1-Forget)</span>
-                                <span id="adaptabilityValue" class="font-mono text-xl font-bold text-white">0.692</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg">
-                                <span class="font-semibold text-purple-300 glossary-term" data-term="trust">Trust Score</span>
-                                <span id="trustValue" class="font-mono text-xl font-bold text-white">0.788</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-600">
-                    <h3 class="text-lg font-semibold text-gray-300 mb-2">Simulation Log</h3>
-                    <div id="log" class="w-full h-24 bg-gray-900 rounded-md p-3 text-sm font-mono overflow-y-auto text-gray-400">
-                        > System parameters are balanced. All metrics are within normal operational ranges.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Glossary Modal -->
-    <div id="glossaryModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-8 border border-gray-700 relative">
-            <button id="closeGlossaryModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
-            <h2 id="glossaryTerm" class="text-2xl font-bold text-cyan-400 mb-4"></h2>
-            <p id="glossaryDefinition" class="text-gray-300"></p>
         </div>
     </div>
 
     <script>
-        // Glossary Data
-        const glossaryData = {
-            'sasp': {
-                term: 'Systolic Array Structured Pruning (SASP)',
-                def: 'A hardware-software co-design strategy. It uses highly parallel hardware circuits (Systolic Arrays) that are efficient for AI calculations. The AI model is pruned (simplified) in structured blocks that match the hardware\'s size, allowing the system to skip entire computational chunks, which dramatically boosts speed and saves energy.'
-            },
-            'quantization': {
-                term: 'Quantization',
-                def: 'The process of reducing the numerical precision of a model\'s weights (e.g., from 32-bit numbers to 8-bit integers). This makes the model smaller, faster, and more energy-efficient, which is crucial for edge devices. However, aggressive quantization can sometimes slightly reduce accuracy.'
-            },
-            'pruning': {
-                term: 'Pruning Rate',
-                def: 'The percentage of a model\'s weights (parameters) that are removed or set to zero to make it smaller and faster. A higher pruning rate improves efficiency but can negatively impact the model\'s performance if too many important connections are removed.'
-            },
-            'non-iid': {
-                term: 'Non-IID Data Factor',
-                def: 'Stands for "non-Independent and Identically Distributed." In federated learning, this measures how much the data differs across devices. A high Non-IID factor means each device has a very different, skewed dataset, which can cause "Client Drift" and harm the performance of the shared global model.'
-            },
-            'continual-learning': {
-                term: 'Continual Learning Tasks',
-                def: 'Refers to the model\'s ability to learn from a continuous stream of new tasks over time without forgetting what it has learned before. The main challenge is "Catastrophic Forgetting." A higher number of tasks makes this challenge more difficult.'
-            },
-            'privacy-budget': {
-                term: 'Privacy Budget (ε)',
-                def: 'A key concept in Differential Privacy. Epsilon (ε) is a mathematical measure of how much privacy is lost. A lower epsilon provides stronger, more formal privacy guarantees, but typically requires adding more "noise" to the data, which can reduce model accuracy.'
-            },
-            'trust-overhead': {
-                term: 'Trust Overhead',
-                def: 'The extra computational cost required to run the trust-building mechanisms, such as explainability (to understand model decisions) and auditability (e.g., blockchain verification). Higher overhead makes the system more transparent and trustworthy but consumes more energy and can slow it down.'
-            },
-            'efficiency': {
-                term: 'Efficiency (EDP⁻¹)',
-                def: 'A measure based on the inverse of the Energy-Delay Product (EDP). EDP combines a model\'s latency (how fast it is) and its energy consumption into a single metric. A higher efficiency score means the system is faster and/or consumes less power, making it better suited for battery-powered edge devices.'
-            },
-            'performance': {
-                term: 'Performance (mAP)',
-                def: 'A standard accuracy metric, often "mean Average Precision," used to measure how well the model performs its core task (e.g., object detection, segmentation). A higher score means the model is more accurate in its predictions.'
-            },
-            'adaptability': {
-                term: 'Adaptability (1 - Forgetting)',
-                def: 'Measures how well the model can learn new tasks without forgetting old ones. This score is calculated as 1 minus a "Forgetting" metric. A score of 1.0 means the model has perfect memory and suffers no catastrophic forgetting.'
-            },
-            'trust': {
-                term: 'Trust Score',
-                def: 'A composite metric that combines the system\'s guarantees for privacy (how well it protects user data), explainability (how transparent its decisions are), and auditability. A higher score indicates a more trustworthy system.'
-            }
-        };
-
-        // Chart initialization
-        let radarChart;
-        const ctx = document.getElementById('radarChart').getContext('2d');
+        // ============ GLOBALS ============
+        let model = null;
+        let trainingData = null;
+        let isTraining = false;
+        let stopTraining = false;
+        let lossHistory = [];
+        let accuracyHistory = [];
+        let lossChart, accuracyChart;
         
-        radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Efficiency', 'Performance', 'Adaptability', 'Trust'],
-                datasets: [{
-                    label: 'System Profile',
-                    data: [0.750, 0.845, 0.692, 0.788],
-                    fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    pointBackgroundColor: 'rgb(59, 130, 246)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(59, 130, 246)'
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
-                        grid: { color: 'rgba(255, 255, 255, 0.2)' },
-                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#cbd5e1' },
-                        ticks: { color: '#9ca3af', backdropColor: 'rgba(0,0,0,0)', stepSize: 0.25, font: { size: 10 } },
-                        min: 0,
-                        max: 1
-                    }
-                },
-                plugins: { legend: { labels: { color: '#e5e7eb', font: { size: 14 } } } }
+        // ============ DATASET GENERATION ============
+        function generateXORData(n = 200) {
+            const xs = [], ys = [];
+            for (let i = 0; i < n; i++) {
+                const x1 = Math.random() * 2 - 1;
+                const x2 = Math.random() * 2 - 1;
+                const y = ((x1 > 0) !== (x2 > 0)) ? 1 : 0;
+                xs.push([x1, x2]);
+                ys.push([y]);
             }
-        });
-
-        // Calculation and UI update functions
-        const calculateMetrics = () => {
-            const params = {
-                sasp: Number(document.getElementById('systolicArraySize').value),
-                quant: Number(document.getElementById('quantization').value),
-                prune: Number(document.getElementById('pruningRate').value) / 100,
-                nonIID: Number(document.getElementById('nonIID').value),
-                tasks: Number(document.getElementById('numTasks').value),
-                epsilon: Number(document.getElementById('privacyBudget').value),
-                trustCost: Number(document.getElementById('trustOverhead').value)
+            return { xs: tf.tensor2d(xs), ys: tf.tensor2d(ys), raw: { xs, ys } };
+        }
+        
+        function generateCircleData(n = 200) {
+            const xs = [], ys = [];
+            for (let i = 0; i < n; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = Math.random();
+                const x1 = r * Math.cos(angle);
+                const x2 = r * Math.sin(angle);
+                const y = r < 0.5 ? 1 : 0;
+                xs.push([x1, x2]);
+                ys.push([y]);
+            }
+            return { xs: tf.tensor2d(xs), ys: tf.tensor2d(ys), raw: { xs, ys } };
+        }
+        
+        function generateSpiralData(n = 200) {
+            const xs = [], ys = [];
+            for (let i = 0; i < n / 2; i++) {
+                const angle = (i / (n / 2)) * 4 * Math.PI;
+                const r = (i / (n / 2)) * 0.8 + Math.random() * 0.1;
+                xs.push([r * Math.cos(angle), r * Math.sin(angle)]);
+                ys.push([0]);
+                xs.push([r * Math.cos(angle + Math.PI), r * Math.sin(angle + Math.PI)]);
+                ys.push([1]);
+            }
+            return { xs: tf.tensor2d(xs), ys: tf.tensor2d(ys), raw: { xs, ys } };
+        }
+        
+        function generateRegressionData(n = 200) {
+            const xs = [], ys = [];
+            for (let i = 0; i < n; i++) {
+                const x = Math.random() * 4 - 2;
+                const y = Math.sin(x * Math.PI) + (Math.random() - 0.5) * 0.3;
+                xs.push([x, 0]);
+                ys.push([(y + 1) / 2]); // Normalize to 0-1
+            }
+            return { xs: tf.tensor2d(xs), ys: tf.tensor2d(ys), raw: { xs, ys } };
+        }
+        
+        function loadDataset() {
+            const dataset = document.getElementById('datasetSelect').value;
+            if (trainingData) {
+                trainingData.xs.dispose();
+                trainingData.ys.dispose();
+            }
+            
+            const dataFuncs = {
+                xor: generateXORData,
+                circle: generateCircleData,
+                spiral: generateSpiralData,
+                regression: generateRegressionData
             };
-
-            let logMessages = [];
-
-            // Performance calculation
-            let basePerf = 0.95 - Math.pow(params.prune, 1.5) * 0.5 - (params.quant === 8 ? 0.02 : params.quant === 4 ? 0.08 : 0) - params.nonIID * 0.2 - (8 / (params.epsilon + 1)) * 0.05;
-            if (params.prune > 0.7) logMessages.push("High pruning rate (>70%) is severely degrading model accuracy.");
-            if (params.quant === 4) logMessages.push("Aggressive INT4 quantization may lead to significant performance loss.");
-            if (params.nonIID > 0.75) logMessages.push("High Non-IID factor is causing significant client drift.");
-            const performance = Math.max(0, Math.min(1, basePerf));
-
-            // Efficiency calculation
-            let baseEDP = 100 / (params.sasp / 16) / (32 / params.quant) * (1 - params.prune * 0.6) * (1 + params.trustCost);
-            if(params.trustCost > 0.15) logMessages.push("High trust overhead is increasing system latency.");
-            const efficiency = Math.max(0, Math.min(1, 1 - (baseEDP / 100)));
-
-            // Adaptability calculation
-            let replayQuality = 1 - (8 / (params.epsilon + 4)) * 0.4;
-            let forgetting = (params.tasks / 20) * 0.6 * (1 - replayQuality * 0.7);
-            if (params.tasks > 15) logMessages.push("Learning many sequential tasks increases risk of catastrophic forgetting.");
-            const adaptability = Math.max(0, Math.min(1, 1 - forgetting));
-
-            // Trust calculation
-            let privacyScore = 1 - (params.epsilon / 8.5);
-            let transparencyScore = params.trustCost / 0.2;
-            if (params.epsilon > 6) logMessages.push("High privacy budget (ε > 6) provides weaker privacy guarantees.");
-            const trust = Math.max(0, Math.min(1, (privacyScore * 0.6 + transparencyScore * 0.4)));
-
-            if(logMessages.length === 0) logMessages.push("System parameters are balanced. All metrics are within normal operational ranges.");
-
-            updateUI({ efficiency, performance, adaptability, trust }, logMessages);
-        };
-
-        const updateUI = (metrics, logMessages) => {
-            // Update value displays
-            document.getElementById('pruningRateValue').textContent = `${document.getElementById('pruningRate').value}%`;
-            document.getElementById('nonIIDValue').textContent = document.getElementById('nonIID').value;
-            document.getElementById('numTasksValue').textContent = document.getElementById('numTasks').value;
-            document.getElementById('privacyBudgetValue').textContent = document.getElementById('privacyBudget').value;
-
-            // Update results
-            document.getElementById('efficiencyValue').textContent = metrics.efficiency.toFixed(3);
-            document.getElementById('performanceValue').textContent = metrics.performance.toFixed(3);
-            document.getElementById('adaptabilityValue').textContent = metrics.adaptability.toFixed(3);
-            document.getElementById('trustValue').textContent = metrics.trust.toFixed(3);
-
-            // Update chart
-            radarChart.data.datasets[0].data = [metrics.efficiency, metrics.performance, metrics.adaptability, metrics.trust];
-            radarChart.update();
-
-            // Update log
-            document.getElementById('log').innerHTML = logMessages.map(msg => `<div>&gt; ${msg}</div>`).join('');
-        };
-
-        // Glossary functionality
-        const glossaryModal = document.getElementById('glossaryModal');
-        const glossaryTerm = document.getElementById('glossaryTerm');
-        const glossaryDefinition = document.getElementById('glossaryDefinition');
-        const closeBtn = document.getElementById('closeGlossaryModalBtn');
-        const termSpans = document.querySelectorAll('.glossary-term');
-
-        termSpans.forEach(span => {
-            span.addEventListener('click', (e) => {
-                const termKey = e.target.dataset.term;
-                const termData = glossaryData[termKey];
-                if (termData) {
-                    glossaryTerm.textContent = termData.term;
-                    glossaryDefinition.textContent = termData.def;
-                    glossaryModal.classList.remove('hidden');
+            
+            trainingData = dataFuncs[dataset]();
+            
+            const descriptions = {
+                xor: 'XOR: Classic non-linear classification problem',
+                circle: 'Circle: Points inside/outside classification',
+                spiral: 'Spiral: Interleaved spiral patterns',
+                regression: 'Regression: Sine wave function fitting'
+            };
+            
+            document.getElementById('dataInfo').innerHTML = `
+                <p>${descriptions[dataset]}</p>
+                <p class="mt-1">Samples: <span class="text-cyan-400 font-mono">200</span></p>
+            `;
+            
+            drawDecisionBoundary();
+            log(`Dataset loaded: ${dataset}`);
+        }
+        
+        // ============ MODEL BUILDING ============
+        function buildModel() {
+            if (model) model.dispose();
+            
+            const hiddenLayers = parseInt(document.getElementById('hiddenLayers').value);
+            const neurons = parseInt(document.getElementById('neuronsPerLayer').value);
+            const activation = document.getElementById('activation').value;
+            
+            model = tf.sequential();
+            
+            // First hidden layer
+            model.add(tf.layers.dense({
+                inputShape: [2],
+                units: neurons,
+                activation: activation
+            }));
+            
+            // Additional hidden layers
+            for (let i = 1; i < hiddenLayers; i++) {
+                model.add(tf.layers.dense({
+                    units: neurons,
+                    activation: activation
+                }));
+            }
+            
+            // Output layer
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: 'sigmoid'
+            }));
+            
+            // Compile
+            const optimizer = document.getElementById('optimizer').value;
+            const lr = Math.pow(10, parseFloat(document.getElementById('learningRate').value));
+            
+            let opt;
+            switch(optimizer) {
+                case 'sgd': opt = tf.train.sgd(lr); break;
+                case 'adam': opt = tf.train.adam(lr); break;
+                case 'rmsprop': opt = tf.train.rmsprop(lr); break;
+            }
+            
+            model.compile({
+                optimizer: opt,
+                loss: 'binaryCrossentropy',
+                metrics: ['accuracy']
+            });
+            
+            updateModelSummary();
+            updateNetworkVisualization();
+            log(`Model built: ${hiddenLayers} hidden layers x ${neurons} neurons`);
+            return model;
+        }
+        
+        function updateModelSummary() {
+            if (!model) return;
+            
+            let totalParams = 0;
+            model.layers.forEach(layer => {
+                const weights = layer.getWeights();
+                weights.forEach(w => {
+                    totalParams += w.size;
+                });
+            });
+            
+            document.getElementById('paramCount').textContent = totalParams.toLocaleString();
+            document.getElementById('memoryUsage').textContent = `${(totalParams * 4 / 1024).toFixed(2)} KB`;
+            
+            // Update architecture summary
+            const hiddenLayers = parseInt(document.getElementById('hiddenLayers').value);
+            const neurons = parseInt(document.getElementById('neuronsPerLayer').value);
+            const archStr = Array(hiddenLayers).fill(neurons).join(', ');
+            document.getElementById('archSummary').textContent = `Hidden (${archStr})`;
+        }
+        
+        // ============ TRAINING ============
+        async function trainModel() {
+            if (isTraining) return;
+            
+            isTraining = true;
+            stopTraining = false;
+            lossHistory = [];
+            accuracyHistory = [];
+            
+            document.getElementById('trainBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('trainingStatus').textContent = 'Training';
+            document.getElementById('trainingStatus').className = 'stat-badge bg-green-600 text-white flex items-center gap-2';
+            document.getElementById('trainingStatus').innerHTML = '<div class="training-indicator"></div> Training';
+            
+            buildModel();
+            loadDataset();
+            
+            const epochs = parseInt(document.getElementById('epochs').value);
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            
+            const startTime = performance.now();
+            
+            log(`Training started: ${epochs} epochs, batch size ${batchSize}`);
+            
+            try {
+                await model.fit(trainingData.xs, trainingData.ys, {
+                    epochs: epochs,
+                    batchSize: batchSize,
+                    shuffle: true,
+                    callbacks: {
+                        onEpochEnd: async (epoch, logs) => {
+                            if (stopTraining) {
+                                model.stopTraining = true;
+                                return;
+                            }
+                            
+                            lossHistory.push(logs.loss);
+                            accuracyHistory.push(logs.acc);
+                            
+                            document.getElementById('currentEpoch').textContent = epoch + 1;
+                            document.getElementById('currentLoss').textContent = logs.loss.toFixed(4);
+                            document.getElementById('currentAccuracy').textContent = (logs.acc * 100).toFixed(1) + '%';
+                            
+                            const progress = ((epoch + 1) / epochs) * 100;
+                            document.getElementById('progressBar').style.width = `${progress}%`;
+                            document.getElementById('progressText').textContent = `Epoch ${epoch + 1}/${epochs}`;
+                            
+                            updateCharts();
+                            
+                            if ((epoch + 1) % 10 === 0) {
+                                drawDecisionBoundary();
+                            }
+                            
+                            await tf.nextFrame();
+                        }
+                    }
+                });
+                
+                const trainingTimeMs = performance.now() - startTime;
+                document.getElementById('trainingTime').textContent = `${(trainingTimeMs / 1000).toFixed(2)}s`;
+                
+                // Measure inference time
+                const inferenceStart = performance.now();
+                for (let i = 0; i < 100; i++) {
+                    const pred = model.predict(tf.tensor2d([[0, 0]]));
+                    pred.dispose();
+                }
+                const inferenceTime = (performance.now() - inferenceStart) / 100;
+                document.getElementById('inferenceTime').textContent = `${inferenceTime.toFixed(2)}ms`;
+                
+                drawDecisionBoundary();
+                log(`Training complete! Final accuracy: ${(accuracyHistory[accuracyHistory.length - 1] * 100).toFixed(1)}%`);
+                
+            } catch (e) {
+                log(`Training error: ${e.message}`);
+            }
+            
+            isTraining = false;
+            document.getElementById('trainBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('trainingStatus').textContent = 'Complete';
+            document.getElementById('trainingStatus').className = 'stat-badge bg-purple-600 text-white';
+        }
+        
+        function stopTrainingFn() {
+            stopTraining = true;
+            log('Training stopped by user');
+        }
+        
+        // ============ VISUALIZATION ============
+        function updateNetworkVisualization() {
+            const container = document.getElementById('networkVisualization');
+            container.innerHTML = '';
+            
+            const hiddenLayers = parseInt(document.getElementById('hiddenLayers').value);
+            const neurons = parseInt(document.getElementById('neuronsPerLayer').value);
+            
+            const layers = [2, ...Array(hiddenLayers).fill(neurons), 1];
+            const containerWidth = container.offsetWidth;
+            const containerHeight = 200;
+            
+            const layerSpacing = containerWidth / (layers.length + 1);
+            const neuronElements = [];
+            
+            // Draw neurons
+            layers.forEach((count, layerIdx) => {
+                const x = layerSpacing * (layerIdx + 1);
+                const neuronSpacing = containerHeight / (count + 1);
+                neuronElements[layerIdx] = [];
+                
+                for (let i = 0; i < count; i++) {
+                    const y = neuronSpacing * (i + 1);
+                    const neuron = document.createElement('div');
+                    neuron.className = 'neuron';
+                    neuron.style.left = `${x - 12}px`;
+                    neuron.style.top = `${y - 12}px`;
+                    neuron.textContent = layerIdx === 0 ? `x${i+1}` : layerIdx === layers.length - 1 ? 'y' : '';
+                    container.appendChild(neuron);
+                    neuronElements[layerIdx].push({ x, y });
                 }
             });
-        });
-
-        closeBtn.addEventListener('click', () => {
-            glossaryModal.classList.add('hidden');
-        });
-
-        glossaryModal.addEventListener('click', (e) => {
-            if (e.target === glossaryModal) {
-                glossaryModal.classList.add('hidden');
+            
+            // Draw connections
+            for (let l = 0; l < layers.length - 1; l++) {
+                for (let i = 0; i < neuronElements[l].length; i++) {
+                    for (let j = 0; j < neuronElements[l + 1].length; j++) {
+                        const from = neuronElements[l][i];
+                        const to = neuronElements[l + 1][j];
+                        const dx = to.x - from.x;
+                        const dy = to.y - from.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        const conn = document.createElement('div');
+                        conn.className = 'connection';
+                        conn.style.left = `${from.x}px`;
+                        conn.style.top = `${from.y}px`;
+                        conn.style.width = `${length}px`;
+                        conn.style.transform = `rotate(${angle}deg)`;
+                        container.insertBefore(conn, container.firstChild);
+                    }
+                }
             }
+        }
+        
+        function drawDecisionBoundary() {
+            const canvas = document.getElementById('decisionCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw background gradient based on model predictions
+            if (model) {
+                const resolution = 30;
+                const stepX = 2 / resolution;
+                const stepY = 2 / resolution;
+                
+                for (let i = 0; i < resolution; i++) {
+                    for (let j = 0; j < resolution; j++) {
+                        const x = -1 + i * stepX;
+                        const y = -1 + j * stepY;
+                        
+                        const pred = model.predict(tf.tensor2d([[x, y]]));
+                        const val = pred.dataSync()[0];
+                        pred.dispose();
+                        
+                        const r = Math.floor(val * 168 + (1 - val) * 0);
+                        const g = Math.floor(val * 85 + (1 - val) * 212);
+                        const b = Math.floor(val * 247 + (1 - val) * 255);
+                        
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
+                        ctx.fillRect(
+                            (x + 1) * width / 2,
+                            (1 - y) * height / 2,
+                            width / resolution + 1,
+                            height / resolution + 1
+                        );
+                    }
+                }
+            }
+            
+            // Draw data points
+            if (trainingData && trainingData.raw) {
+                const { xs, ys } = trainingData.raw;
+                for (let i = 0; i < xs.length; i++) {
+                    const x = (xs[i][0] + 1) * width / 2;
+                    const y = (1 - xs[i][1]) * height / 2;
+                    const label = ys[i][0];
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = label > 0.5 ? '#a855f7' : '#00d4ff';
+                    ctx.fill();
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#9ca3af' },
+                        title: { display: true, text: 'Epoch', color: '#9ca3af' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#9ca3af' },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            };
+            
+            lossChart = new Chart(document.getElementById('lossChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { ...chartOptions }
+            });
+            
+            accuracyChart = new Chart(document.getElementById('accuracyChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { ...chartOptions, scales: { ...chartOptions.scales, y: { ...chartOptions.scales.y, max: 1 } } }
+            });
+        }
+        
+        function updateCharts() {
+            lossChart.data.labels = lossHistory.map((_, i) => i + 1);
+            lossChart.data.datasets[0].data = lossHistory;
+            lossChart.update('none');
+            
+            accuracyChart.data.labels = accuracyHistory.map((_, i) => i + 1);
+            accuracyChart.data.datasets[0].data = accuracyHistory;
+            accuracyChart.update('none');
+        }
+        
+        // ============ UTILITY ============
+        function log(message) {
+            const logEl = document.getElementById('trainingLog');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div>[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // ============ EVENT LISTENERS ============
+        document.getElementById('trainBtn').addEventListener('click', trainModel);
+        document.getElementById('stopBtn').addEventListener('click', stopTrainingFn);
+        document.getElementById('datasetSelect').addEventListener('change', loadDataset);
+        
+        ['hiddenLayers', 'neuronsPerLayer', 'activation'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                updateNetworkVisualization();
+                document.getElementById('neuronsValue').textContent = document.getElementById('neuronsPerLayer').value;
+            });
         });
-
-        // Event listeners for controls
-        ['systolicArraySize', 'quantization', 'pruningRate', 'nonIID', 'numTasks', 'privacyBudget', 'trustOverhead'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateMetrics);
+        
+        document.getElementById('neuronsPerLayer').addEventListener('input', function() {
+            document.getElementById('neuronsValue').textContent = this.value;
         });
-
-        // Initialize
-        calculateMetrics();
+        
+        document.getElementById('learningRate').addEventListener('input', function() {
+            document.getElementById('lrValue').textContent = Math.pow(10, parseFloat(this.value)).toFixed(4);
+        });
+        
+        document.getElementById('epochs').addEventListener('input', function() {
+            document.getElementById('epochsValue').textContent = this.value;
+        });
+        
+        document.getElementById('batchSize').addEventListener('input', function() {
+            document.getElementById('batchValue').textContent = this.value;
+        });
+        
+        // ============ INITIALIZATION ============
+        window.onload = async function() {
+            await tf.ready();
+            document.getElementById('tfBackend').textContent = tf.getBackend();
+            log(`TensorFlow.js ${tf.version.tfjs} loaded`);
+            
+            initCharts();
+            loadDataset();
+            updateNetworkVisualization();
+            
+            // Initial network visualization
+            setTimeout(updateNetworkVisualization, 100);
+        };
+        
+        window.addEventListener('resize', updateNetworkVisualization);
     </script>
 </body>
 </html>

@@ -32,6 +32,91 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
   const metaDescription = description || site.siteMetadata.description
   const defaultTitle = site.siteMetadata?.title
   const canonicalUrl = `${site.siteMetadata.siteUrl}${pathname || '/'}`;
+  const ogImage = pageData?.image
+    ? `${site.siteMetadata.siteUrl}${pageData.image}`
+    : `${site.siteMetadata.siteUrl}/og-images/og-default.png`;
+
+  // Generate structured data based on page type
+  const generateStructuredData = () => {
+    const baseSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: site.siteMetadata.title,
+      url: site.siteMetadata.siteUrl,
+      author: {
+        '@type': 'Person',
+        name: 'Dennis J. Carroll',
+        url: site.siteMetadata.siteUrl,
+        sameAs: [
+          'https://github.com/Dennis-J-Carroll',
+          'https://www.linkedin.com/in/dennisjcarroll/',
+          'https://x.com/denniscarrollj'
+        ],
+        jobTitle: 'Data Scientist & Developer',
+        description: 'Full-stack developer and data scientist specializing in AI, web development, and creative problem-solving'
+      }
+    };
+
+    // Return different schemas based on page type
+    switch(pageType) {
+      case 'blog':
+      case 'story':
+        return {
+          ...baseSchema,
+          '@type': 'BlogPosting',
+          headline: pageData?.title || title,
+          datePublished: pageData?.date,
+          dateModified: pageData?.modified || pageData?.date,
+          author: baseSchema.author,
+          description: metaDescription,
+          url: canonicalUrl,
+          image: ogImage,
+          publisher: {
+            '@type': 'Person',
+            name: 'Dennis J. Carroll',
+            url: site.siteMetadata.siteUrl
+          }
+        };
+
+      case 'project':
+        return {
+          ...baseSchema,
+          '@type': 'SoftwareApplication',
+          name: pageData?.title || title,
+          description: metaDescription,
+          author: baseSchema.author,
+          applicationCategory: 'DeveloperApplication',
+          url: canonicalUrl,
+          screenshot: ogImage,
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD'
+          }
+        };
+
+      case 'profile':
+      case 'about':
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: 'Dennis J. Carroll',
+          url: site.siteMetadata.siteUrl,
+          image: ogImage,
+          sameAs: [
+            'https://github.com/Dennis-J-Carroll',
+            'https://www.linkedin.com/in/dennisjcarroll/',
+            'https://x.com/denniscarrollj'
+          ],
+          jobTitle: 'Data Scientist & Developer',
+          description: metaDescription,
+          knowsAbout: ['Data Science', 'Web Development', 'AI', 'Python', 'JavaScript', 'React']
+        };
+
+      default:
+        return baseSchema;
+    }
+  };
 
   return (
     <Helmet
@@ -55,15 +140,43 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
         },
         {
           property: `og:type`,
-          content: `website`,
+          content: pageType === 'blog' || pageType === 'story' ? 'article' : 'website',
+        },
+        {
+          property: `og:url`,
+          content: canonicalUrl,
+        },
+        {
+          property: `og:image`,
+          content: ogImage,
+        },
+        {
+          property: `og:image:width`,
+          content: `1200`,
+        },
+        {
+          property: `og:image:height`,
+          content: `630`,
+        },
+        {
+          property: `og:image:alt`,
+          content: metaDescription,
+        },
+        {
+          property: `og:locale`,
+          content: `en_US`,
         },
         {
           name: `twitter:card`,
-          content: `summary`,
+          content: pageData?.image ? `summary_large_image` : `summary`,
         },
         {
           name: `twitter:creator`,
-          content: site.siteMetadata?.author || ``,
+          content: `@denniscarrollj`,
+        },
+        {
+          name: `twitter:site`,
+          content: `@denniscarrollj`,
         },
         {
           name: `twitter:title`,
@@ -73,12 +186,23 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
           name: `twitter:description`,
           content: metaDescription,
         },
+        {
+          name: `twitter:image`,
+          content: ogImage,
+        },
+        {
+          name: `twitter:image:alt`,
+          content: metaDescription,
+        },
       ].concat(meta)}
     >
       {/* Add canonical URL */}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 
-      {/* JSON-LD Schema Markup temporarily disabled */}
+      {/* JSON-LD Structured Data for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify(generateStructuredData())}
+      </script>
     </Helmet>
   )
 }

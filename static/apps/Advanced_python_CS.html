@@ -1,0 +1,1326 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>S-Tier Python Cheat Sheet: Advanced Functions and Libraries</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fa6.dashgame.com/css/all.min.css"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        'primary': '#1a365d',
+                        'secondary': '#2d3748',
+                        'accent': '#3182ce',
+                        'muted': '#718096',
+                        'neutral': '#f7fafc'
+                    }
+                }
+            }
+        }
+    </script>
+  <base target="_blank">
+</head>
+
+  <body class="bg-neutral text-secondary font-sans leading-relaxed">
+    <!-- Toggle button for mobile -->
+    <button id="toc-toggle" class="fixed top-4 left-4 z-50 p-2 bg-primary text-white rounded-md shadow-lg lg:hidden">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Fixed Table of Contents -->
+    <nav id="toc" class="fixed left-0 top-0 h-screen w-72 bg-white shadow-xl z-40 border-r border-gray-200 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+      <div class="p-6">
+        <h3 class="font-serif font-bold text-lg text-primary mb-4">Table of Contents</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="#core-python" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">1. Core Python &amp; Standard Library Mastery</a>
+          </li>
+          <li class="ml-4">
+            <a href="#built-in-functions" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">1.1 Advanced Built-in Functions</a>
+          </li>
+          <li class="ml-4">
+            <a href="#system-interaction" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">1.2 System and Environment Interaction</a>
+          </li>
+          <li class="ml-4">
+            <a href="#functional-programming" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">1.3 Functional Programming</a>
+          </li>
+          <li class="ml-4">
+            <a href="#context-managers" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">1.4 Context Managers</a>
+          </li>
+          <li>
+            <a href="#data-manipulation" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">2. Data Manipulation and Analysis</a>
+          </li>
+          <li class="ml-4">
+            <a href="#foundational-libraries" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">2.1 Foundational Libraries</a>
+          </li>
+          <li class="ml-4">
+            <a href="#advanced-pandas" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">2.2 Advanced Pandas Techniques</a>
+          </li>
+          <li class="ml-4">
+            <a href="#automating-workflows" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">2.3 Automating Data Workflows</a>
+          </li>
+          <li>
+            <a href="#file-operations" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">3. File I/O and Filesystem Operations</a>
+          </li>
+          <li class="ml-4">
+            <a href="#advanced-file-handling" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">3.1 Advanced File Handling</a>
+          </li>
+          <li class="ml-4">
+            <a href="#different-file-types" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">3.2 Different File Types</a>
+          </li>
+          <li>
+            <a href="#networking" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">4. Networking and IPC</a>
+          </li>
+          <li class="ml-4">
+            <a href="#socket-programming" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">4.1 Socket Programming</a>
+          </li>
+          <li class="ml-4">
+            <a href="#network-automation" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">4.2 Network Automation</a>
+          </li>
+          <li>
+            <a href="#gui" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">5. Graphical User Interfaces</a>
+          </li>
+          <li class="ml-4">
+            <a href="#gui-libraries" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">5.1 Choosing a GUI Library</a>
+          </li>
+          <li class="ml-4">
+            <a href="#advanced-gui" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">5.2 Advanced GUI Concepts</a>
+          </li>
+          <li>
+            <a href="#visualization" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">6. Data Visualization</a>
+          </li>
+          <li class="ml-4">
+            <a href="#matplotlib" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">6.1 Advanced Matplotlib</a>
+          </li>
+          <li class="ml-4">
+            <a href="#seaborn" class="block py-1 px-2 rounded hover:bg-gray-100 text-muted hover:text-primary transition-colors">6.2 Statistical Visualization</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="lg:ml-72 min-h-screen">
+      <!-- Hero Section with Bento Grid -->
+      <section class="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
+        <div class="container mx-auto px-8 py-16">
+          <!-- Bento Grid Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-96">
+            <!-- Main Title Card -->
+            <div class="md:col-span-7 bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-8 flex flex-col justify-center border border-white/20">
+              <h1 class="font-serif text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                <em class="text-blue-300">S-Tier</em> Python Cheat Sheet
+              </h1>
+              <p class="text-base md:text-xl text-blue-100 mb-6">
+                Advanced Functions and Libraries for Masterful Python Programming
+              </p>
+              <div class="flex flex-wrap gap-2 text-sm text-blue-200">
+                <span class="bg-white/20 px-3 py-1 rounded-full">Built-in Functions</span>
+                <span class="bg-white/20 px-3 py-1 rounded-full">Standard Library</span>
+                <span class="bg-white/20 px-3 py-1 rounded-full">Data Science</span>
+                <span class="bg-white/20 px-3 py-1 rounded-full">Advanced Patterns</span>
+              </div>
+            </div>
+
+            <!-- Key Highlights -->
+            <div class="md:col-span-5 space-y-4">
+              <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/20">
+                <h3 class="font-serif text-lg md:text-xl font-bold mb-2 text-blue-200">Core Mastery</h3>
+                <p class="text-xs md:text-sm text-blue-100">Deep dive into iteration, evaluation, and type conversion with Python&#39;s built-in functions</p>
+              </div>
+              <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/20">
+                <h3 class="font-serif text-lg md:text-xl font-bold mb-2 text-blue-200">Data Excellence</h3>
+                <p class="text-xs md:text-sm text-blue-100">Harness the full power of NumPy, Pandas, and advanced data manipulation techniques</p>
+              </div>
+            </div>
+
+            <!-- Visual Element -->
+            <div class="md:col-span-5 bg-gradient-to-r from-blue-600/30 to-indigo-600/30 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/20 flex items-center justify-center">
+              <img src="https://kimi-web-img.moonshot.cn/img/ghost.org/f8927901f6555371f29546aeea3efbaf709c4aed.png" alt="Python code snippet in code editor with syntax highlighting" class="w-full h-32 object-cover rounded-lg opacity-80 max-w-full" size="medium" aspect="wide" query="python code" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="md:col-span-7 bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-white/20">
+              <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div class="text-2xl md:text-3xl font-bold text-blue-300">150+</div>
+                  <div class="text-xs md:text-sm text-blue-200">Functions Covered</div>
+                </div>
+                <div>
+                  <div class="text-2xl md:text-3xl font-bold text-blue-300">6</div>
+                  <div class="text-xs md:text-sm text-blue-200">Core Sections</div>
+                </div>
+                <div>
+                  <div class="text-2xl md:text-3xl font-bold text-blue-300">∞</div>
+                  <div class="text-xs md:text-sm text-blue-200">Possibilities</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Content Sections -->
+      <div class="container mx-auto px-4 md:px-8 py-12">
+
+        <!-- Section 1: Core Python &amp; Standard Library -->
+        <section id="core-python" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            1. Core Python &amp; Standard Library Mastery
+          </h2>
+
+          <div id="built-in-functions" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">1.1 Advanced Built-in Functions</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-sync-alt text-accent mr-3"></i>
+                  Iteration and Looping
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">enumerate()</h5>
+                    <p class="text-sm text-muted mb-2">Adds counters to iterables with optional start parameter</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs overflow-x-auto">for i, val in enumerate([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;], start=1):<br/>
+                                      print(f&#34;{i}: {val}&#34;)</code>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">iter()</h5>
+                    <p class="text-sm text-muted mb-2">Creates iterators with advanced callable/sentinel pattern</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs overflow-x-auto">iterator = iter(lambda: file.read(1), &#39;\n&#39;)</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-code text-accent mr-3"></i>
+                  Code Execution and Evaluation
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">eval()</h5>
+                    <p class="text-sm text-muted mb-2">Evaluates single expressions with optional globals/locals</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs overflow-x-auto">result = eval(&#39;2 * 3&#39;, {&#39;x&#39;: 5})</code>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">exec()</h5>
+                    <p class="text-sm text-muted mb-2">Executes arbitrary code including statements</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs overflow-x-auto">exec(&#39;x = 5; print(x)&#39;, {})</code>
+                  </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400">
+                  <p class="text-xs text-yellow-800"><strong>Security Note:</strong> Always validate input and use restricted execution environments with
+                    <code>globals</code> and
+                    <code>locals</code> parameters.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-search text-accent mr-3"></i>
+                Data Type Conversion and Inspection
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="border-l-4 border-accent pl-4">
+                  <h5 class="font-semibold text-secondary mb-2">Type Conversion</h5>
+                  <div class="space-y-1 text-xs">
+                    <code>int(), str(), float()</code>
+                    <br/>
+                    <code>list(), set(), dict()</code>
+                    <br/>
+                    <code>chr(), ord()</code>
+                  </div>
+                </div>
+                <div class="border-l-4 border-accent pl-4">
+                  <h5 class="font-semibold text-secondary mb-2">Object Inspection</h5>
+                  <div class="space-y-1 text-xs">
+                    <code>isinstance(obj, type)</code>
+                    <br/>
+                    <code>getattr(), setattr()</code>
+                    <br/>
+                    <code>hasattr(), dir()</code>
+                  </div>
+                </div>
+                <div class="border-l-4 border-accent pl-4">
+                  <h5 class="font-semibold text-secondary mb-2">Introspection</h5>
+                  <div class="space-y-1 text-xs">
+                    <code>vars() returns __dict__</code>
+                    <br/>
+                    <code>type() for dynamic types</code>
+                    <br/>
+                    <code>unicodedata.normalize()</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="system-interaction" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">1.2 System and Environment Interaction</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-terminal text-accent mr-3"></i>
+                Environment Variables &amp; Command-Line Arguments
+              </h4>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h5 class="font-semibold text-secondary mb-3">Environment Variables</h5>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <code class="text-xs block mb-2"># Accessing environment variables</code>
+                    <code class="text-xs block">import os</code>
+                    <code class="text-xs block">home = os.environ.get(&#39;HOME&#39;, &#39;/default/path&#39;)</code>
+                    <code class="text-xs block">api_key = os.getenv(&#39;API_KEY&#39;)</code>
+                    <br/>
+                    <code class="text-xs block"># Setting environment variables</code>
+                    <code class="text-xs block">os.environ[&#39;MY_VAR&#39;] = &#39;my_value&#39;</code>
+                  </div>
+                  <p class="text-sm text-muted mt-2">Use
+                    <code>python-dotenv</code> or
+                    <code>Dynaconf</code> for advanced configuration management
+                  </p>
+                </div>
+                <div>
+                  <h5 class="font-semibold text-secondary mb-3">Command-Line Arguments</h5>
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <code class="text-xs block mb-2">import sys</code>
+                    <code class="text-xs block">script_name = sys.argv[0]</code>
+                    <code class="text-xs block">arguments = sys.argv[1:]</code>
+                    <br/>
+                    <code class="text-xs block"># For complex parsing:</code>
+                    <code class="text-xs block">import argparse</code>
+                    <code class="text-xs block">parser = argparse.ArgumentParser()</code>
+                    <code class="text-xs block">parser.add_argument(&#39;--input&#39;, required=True)</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-cogs text-accent mr-3"></i>
+                System-Specific Parameters
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h6 class="font-semibold text-secondary mb-2">Version &amp; Platform</h6>
+                  <code class="text-xs block">import sys</code>
+                  <code class="text-xs block">print(sys.version)</code>
+                  <code class="text-xs block">print(sys.version_info)</code>
+                  <code class="text-xs block">print(sys.platform)</code>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h6 class="font-semibold text-secondary mb-2">I/O Streams</h6>
+                  <code class="text-xs block">sys.stdin</code>
+                  <code class="text-xs block">sys.stdout</code>
+                  <code class="text-xs block">sys.stderr</code>
+                  <code class="text-xs block">sys.exit(code)</code>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h6 class="font-semibold text-secondary mb-2">Module Management</h6>
+                  <code class="text-xs block">sys.path</code>
+                  <code class="text-xs block">sys.modules</code>
+                  <code class="text-xs block">sys.maxsize</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="functional-programming" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">1.3 Functional Programming</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-infinity text-accent mr-3"></i>
+                  itertools: Advanced Iterator Tools
+                </h4>
+
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">tee</h5>
+                    <p class="text-sm text-muted mb-2">Clone iterators for parallel processing</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from itertools import tee<br/>
+                                    it1, it2 = tee(iterable, 2)</code>
+                    <p class="text-xs text-yellow-700 mt-1">⚠️ Be mindful of memory usage with uneven advancement</p>
+                  </div>
+
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">islice</h5>
+                    <p class="text-sm text-muted mb-2">Memory-efficient slicing of iterables</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from itertools import islice<br/>
+                                    first_10 = islice(data, 10)<br/>
+                                    batch = islice(iterator, 100)</code>
+                  </div>
+
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">pairwise</h5>
+                    <p class="text-sm text-muted mb-2">Iterate over consecutive pairs (Python 3.10+)</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from itertools import pairwise<br/>
+                                    for a, b in pairwise([1,2,3,4]):</code>
+                  </div>
+
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">chain &amp; accumulate</h5>
+                    <p class="text-sm text-muted mb-2">Combine iterables and calculate running totals</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from itertools import chain, accumulate<br/>
+                                    combined = chain(&#39;ABC&#39;, &#39;DEF&#39;)<br/>
+                                    running_total = accumulate([1,2,3,4])</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-magic text-accent mr-3"></i>
+                  functools: Function Manipulation
+                </h4>
+
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">singledispatch</h5>
+                    <p class="text-sm text-muted mb-2">Dynamic function dispatch based on type</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from functools import singledispatch<br/>
+                                    @singledispatch<br/>
+                                    def process(data): ...</code>
+                  </div>
+
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">lru_cache</h5>
+                    <p class="text-sm text-muted mb-2">Memoization for performance optimization</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">@lru_cache(maxsize=128)<br/>
+                                    def fibonacci(n): ...</code>
+                  </div>
+
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">wraps</h5>
+                    <p class="text-sm text-muted mb-2">Preserve function metadata in decorators</p>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from functools import wraps<br/>
+                                    @wraps(func)<br/>
+                                    def wrapper(*args, **kwargs): ...</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="context-managers" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">1.4 Context Managers and Resource Handling</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4">Custom Context Managers</h4>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <h5 class="font-semibold text-secondary mb-2">Class-based Approach</h5>
+                    <code class="text-xs block">class DatabaseConnection:<br/>
+                                          def __enter__(self):<br/>
+                                            return self.connect()<br/>
+                                          def __exit__(self, exc_type, ...):<br/>
+                                            self.close()</code>
+                  </div>
+
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h5 class="font-semibold text-secondary mb-2">contextlib Approach</h5>
+                    <code class="text-xs block">from contextlib import contextmanager<br/>
+                                        @contextmanager<br/>
+                                        def managed_resource():<br/>
+                                          yield resource</code>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4">contextlib Utilities</h4>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex items-center">
+                      <i class="fas fa-times-circle text-accent mr-2"></i>
+                      <code>closing()</code> - Auto-close resources
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-ban text-accent mr-2"></i>
+                      <code>suppress()</code> - Suppress specific exceptions
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-exchange-alt text-accent mr-2"></i>
+                      <code>redirect_stdout()</code> - Redirect output streams
+                    </div>
+                    <div class="flex items-center">
+                      <i class="fas fa-layer-group text-accent mr-2"></i>
+                      <code>ExitStack()</code> - Manage multiple context managers
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Data Manipulation -->
+        <section id="data-manipulation" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            2. Data Manipulation and Analysis
+          </h2>
+
+          <div id="foundational-libraries" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">2.1 Foundational Libraries</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-chart-line text-accent mr-3"></i>
+                  NumPy: Numerical Operations
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">ndarray Operations</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import numpy as np<br/>
+                                    arr = np.array([1, 2, 3])<br/>
+                                    result = arr * 2  # Vectorized</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">Broadcasting</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs"># Different shapes compatible<br/>
+                                    a = np.array([[1], [2], [3]])<br/>
+                                    b = np.array([1, 2, 3])<br/>
+                                    result = a + b</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">Key Features</h5>
+                    <ul class="text-sm text-muted space-y-1">
+                      <li>• Multi-dimensional arrays</li>
+                      <li>• Vectorized operations</li>
+                      <li>• Broadcasting mechanism</li>
+                      <li>• Mathematical functions</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-table text-accent mr-3"></i>
+                  Pandas: DataFrame Manipulation
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">Data Structures</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import pandas as pd<br/>
+                                    series = pd.Series([1, 2, 3])<br/>
+                                    df = pd.DataFrame({&#39;col&#39;: [1, 2, 3]})</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">Data Operations</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs"># Selection and filtering<br/>
+                                    df[&#39;col&#39;] &gt; 2<br/>
+                                    df.groupby(&#39;category&#39;).sum()<br/>
+                                    df.merge(other_df, on=&#39;key&#39;)</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary mb-2">Key Features</h5>
+                    <ul class="text-sm text-muted space-y-1">
+                      <li>• DataFrame and Series objects</li>
+                      <li>• SQL-like operations</li>
+                      <li>• Data cleaning tools</li>
+                      <li>• Time series functionality</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="advanced-pandas" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">2.2 Advanced Pandas Techniques</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-pivot text-accent mr-3"></i>
+                Pivot Tables and Data Aggregation
+              </h4>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Pivot Table Creation</h5>
+                  <code class="block text-xs">pd.pivot_table(<br/>
+                                  df,<br/>
+                                  values=&#39;sales&#39;,<br/>
+                                  index=&#39;region&#39;,<br/>
+                                  columns=&#39;product&#39;,<br/>
+                                  aggfunc=&#39;sum&#39;,<br/>
+                                  fill_value=0<br/>
+                                )</code>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Cross-tabulation</h5>
+                  <code class="block text-xs">pd.crosstab(<br/>
+                                  df[&#39;age_group&#39;],<br/>
+                                  df[&#39;gender&#39;]<br/>
+                                )</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-link text-accent mr-3"></i>
+                  Combining DataFrames
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">Merge (SQL-style joins)</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">df1.merge(df2, on=&#39;key&#39;, how=&#39;inner&#39;)</code>
+                  </div>
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">Join (index-based)</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">df1.join(df2, lsuffix=&#39;_left&#39;)</code>
+                  </div>
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">Concatenate</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">pd.concat([df1, df2], axis=0)</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-magic text-accent mr-3"></i>
+                  Data Transformation
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">apply() - Axis operations</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">df.apply(func, axis=1)</code>
+                  </div>
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">map() - Value mapping</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">df[&#39;col&#39;].map(mapping_dict)</code>
+                  </div>
+                  <div>
+                    <h6 class="font-semibold text-secondary text-sm">transform() - Group operations</h6>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">df.groupby(&#39;g&#39;).transform(&#39;mean&#39;)</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="automating-workflows" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">2.3 Automating Data Workflows</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                    <i class="fas fa-robot text-accent mr-3"></i>
+                    Scripting Repetitive Tasks
+                  </h4>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <h5 class="font-semibold text-secondary mb-2">Common Automation Pattern</h5>
+                    <code class="text-xs block">def etl_pipeline(input_file, output_file):<br/>
+                                          # Extract<br/>
+                                          df = pd.read_csv(input_file)<br/>
+                                        <br/>
+                                          # Transform<br/>
+                                          df_clean = clean_data(df)<br/>
+                                          df_transformed = transform_data(df_clean)<br/>
+                                        <br/>
+                                          # Load<br/>
+                                          df_transformed.to_csv(output_file)<br/>
+                                          return df_transformed</code>
+                  </div>
+                  <ul class="text-sm text-muted space-y-1">
+                    <li>• Use functions to encapsulate logic</li>
+                    <li>• Command-line arguments for flexibility</li>
+                    <li>• Error handling and logging</li>
+                    <li>• Workflow management tools (Airflow, Luigi)</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                    <i class="fas fa-clock text-accent mr-3"></i>
+                    Scheduling with APScheduler
+                  </h4>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <code class="text-xs block">from apscheduler.schedulers.blocking import BlockingScheduler<br/>
+                                    <br/>
+                                    scheduler = BlockingScheduler()<br/>
+                                    <br/>
+                                    @scheduler.scheduled_job(&#39;interval&#39;, hours=1)<br/>
+                                    def scheduled_task():<br/>
+                                      print(&#34;Running hourly task&#34;)<br/>
+                                    <br/>
+                                    scheduler.start()</code>
+                  </div>
+                  <div class="space-y-2 text-sm">
+                    <div><strong>Triggers:</strong> date, interval, cron</div>
+                    <div><strong>Executors:</strong> thread pool, process pool</div>
+                    <div><strong>Job Stores:</strong> memory, SQLite, Redis</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: File I/O -->
+        <section id="file-operations" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            3. File I/O and Filesystem Operations
+          </h2>
+
+          <div id="advanced-file-handling" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">3.1 Advanced File Handling</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4">File Paths and Directories</h4>
+                <div class="space-y-4">
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm mb-2">pathlib (Modern)</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from pathlib import Path<br/>
+                                    p = Path(&#39;/home/user/docs&#39;)<br/>
+                                    p.exists()<br/>
+                                    p.is_file()<br/>
+                                    new_file = p / &#39;document.txt&#39;</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm mb-2">os.path (Traditional)</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import os<br/>
+                                    os.path.join(&#39;home&#39;, &#39;user&#39;)<br/>
+                                    os.path.split(path)<br/>
+                                    os.path.dirname(path)</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4">File Metadata</h4>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <code class="block text-xs">import os<br/>
+                                from datetime import datetime<br/>
+                                <br/>
+                                stats = os.stat(&#39;file.txt&#39;)<br/>
+                                size = stats.st_size<br/>
+                                mtime = datetime.fromtimestamp(stats.st_mtime)<br/>
+                                ctime = stats.st_ctime</code>
+                </div>
+                <div class="mt-4 text-sm text-muted">
+                  <strong>Key Attributes:</strong> st_size, st_mtime, st_ctime, st_mode
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-copy text-accent mr-3"></i>
+                High-Level File Operations (shutil)
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Basic Operations</h5>
+                  <div class="space-y-2 text-xs">
+                    <div>
+                      <code>shutil.copy(src, dst)</code> - Copy files
+                    </div>
+                    <div>
+                      <code>shutil.move(src, dst)</code> - Move files
+                    </div>
+                    <div>
+                      <code>shutil.rmtree(path)</code> - Remove directory tree
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Archive Operations</h5>
+                  <div class="space-y-2 text-xs">
+                    <div>
+                      <code>shutil.make_archive()</code> - Create archive
+                    </div>
+                    <div>
+                      <code>shutil.unpack_archive()</code> - Extract archive
+                    </div>
+                    <div>
+                      <code>shutil.get_archive_formats()</code> - Supported formats
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="different-file-types" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">3.2 Working with Different File Types</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-file-alt text-accent mr-3"></i>
+                  Text and Binary Files
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm">Text Files</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">with open(&#39;file.txt&#39;, &#39;r&#39;) as f:<br/>
+                                      content = f.read()</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm">Binary Files</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">with open(&#39;file.bin&#39;, &#39;rb&#39;) as f:<br/>
+                                      data = f.read()</code>
+                  </div>
+                  <div class="text-xs text-muted">
+                    <strong>Modes:</strong> r/w/a, t/b, + (read/write)
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-file-csv text-accent mr-3"></i>
+                  CSV and Structured Data
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm">csv module</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import csv<br/>
+                                    with open(&#39;data.csv&#39;) as f:<br/>
+                                      reader = csv.DictReader(f)<br/>
+                                      for row in reader:</code>
+                  </div>
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm">Pandas approach</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import pandas as pd<br/>
+                                    df = pd.read_csv(&#39;data.csv&#39;)<br/>
+                                    df.to_csv(&#39;output.csv&#39;)</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-file-archive text-accent mr-3"></i>
+                  Serialization with pickle
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <h5 class="font-semibold text-secondary text-sm">Basic Usage</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">import pickle<br/>
+                                    with open(&#39;data.pkl&#39;, &#39;wb&#39;) as f:<br/>
+                                      pickle.dump(obj, f)<br/>
+                                    <br/>
+                                    with open(&#39;data.pkl&#39;, &#39;rb&#39;) as f:<br/>
+                                      obj = pickle.load(f)</code>
+                  </div>
+                  <div class="text-xs text-yellow-700 bg-yellow-50 p-2 rounded">
+                    <strong>Security Warning:</strong> Never unpickle untrusted data
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Networking -->
+        <section id="networking" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            4. Networking and Inter-Process Communication
+          </h2>
+
+          <div id="socket-programming" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">4.1 Socket Programming</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-network-wired text-accent mr-3"></i>
+                TCP/IP Client-Server Architecture
+              </h4>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Server Implementation</h5>
+                  <code class="text-xs block">import socket<br/>
+                                server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)<br/>
+                                server.bind((&#39;localhost&#39;, 12345))<br/>
+                                server.listen(5)<br/>
+                                client, addr = server.accept()<br/>
+                                data = client.recv(1024)<br/>
+                                client.send(b&#39;Response&#39;)</code>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Client Implementation</h5>
+                  <code class="text-xs block">import socket<br/>
+                                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)<br/>
+                                client.connect((&#39;localhost&#39;, 12345))<br/>
+                                client.send(b&#39;Hello&#39;)<br/>
+                                response = client.recv(1024)</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4">Advanced Socket Patterns</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="border-l-4 border-accent pl-4">
+                  <h6 class="font-semibold text-secondary mb-2">Multi-threading</h6>
+                  <p class="text-sm text-muted">Handle multiple clients with threading module</p>
+                </div>
+                <div class="border-l-4 border-accent pl-4">
+                  <h6 class="font-semibold text-secondary mb-2">Non-blocking I/O</h6>
+                  <p class="text-sm text-muted">Use select() for asynchronous operations</p>
+                </div>
+                <div class="border-l-4 border-accent pl-4">
+                  <h6 class="font-semibold text-secondary mb-2">UDP Sockets</h6>
+                  <p class="text-sm text-muted">SOCK_DGRAM for connectionless communication</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="network-automation" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">4.2 Network Automation and Configuration</h3>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                    <i class="fas fa-cogs text-accent mr-3"></i>
+                    Netmiko for Device Configuration
+                  </h4>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <code class="text-xs block">from netmiko import ConnectHandler<br/>
+                                    <br/>
+                                    device = {<br/>
+                                      &#39;device_type&#39;: &#39;cisco_ios&#39;,<br/>
+                                      &#39;host&#39;: &#39;192.168.1.1&#39;,<br/>
+                                      &#39;username&#39;: &#39;admin&#39;,<br/>
+                                      &#39;password&#39;: &#39;password&#39;<br/>
+                                    }<br/>
+                                    <br/>
+                                    with ConnectHandler(**device) as conn:<br/>
+                                      output = conn.send_command(&#39;show ip int brief&#39;)</code>
+                  </div>
+                  <div class="text-sm text-muted">
+                    <strong>Supported Vendors:</strong> Cisco, Juniper, Arista, and more
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                    <i class="fas fa-code-branch text-accent mr-3"></i>
+                    Flexible Function Design
+                  </h4>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <code class="text-xs block">def configure_device(<br/>
+                                      host,<br/>
+                                      username=&#39;admin&#39;,<br/>
+                                      password=None,<br/>
+                                      commands=None,<br/>
+                                      **kwargs<br/>
+                                    ):<br/>
+                                      # Implementation</code>
+                  </div>
+                  <div class="text-sm text-muted">
+                    <strong>Best Practices:</strong>
+                    <ul class="mt-2 space-y-1">
+                      <li>• Use keyword arguments for flexibility</li>
+                      <li>• Provide sensible default values</li>
+                      <li>• Accept **kwargs for extensibility</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: GUI -->
+        <section id="gui" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            5. Graphical User Interfaces (GUIs)
+          </h2>
+
+          <div id="gui-libraries" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">5.1 Choosing a GUI Library</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-window-maximize text-accent mr-3"></i>
+                  Tkinter for Simplicity
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-gray-50 p-3 rounded">
+                    <code class="block text-xs">import tkinter as tk<br/>
+                                    root = tk.Tk()<br/>
+                                    label = tk.Label(root, text=&#34;Hello&#34;)<br/>
+                                    label.pack()<br/>
+                                    root.mainloop()</code>
+                  </div>
+                  <ul class="text-sm text-muted space-y-1">
+                    <li>• Included with Python</li>
+                    <li>• Simple and easy to learn</li>
+                    <li>• Good for small utilities</li>
+                    <li>• Basic widget set</li>
+                  </ul>
+                  <div class="text-xs text-yellow-700 bg-yellow-50 p-2 rounded">
+                    Best for: Beginners and simple applications
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-desktop text-accent mr-3"></i>
+                  PyQt for Professional Apps
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-gray-50 p-3 rounded">
+                    <code class="block text-xs">from PyQt5.QtWidgets import *<br/>
+                                    app = QApplication([])<br/>
+                                    window = QWidget()<br/>
+                                    layout = QVBoxLayout()<br/>
+                                    layout.addWidget(QLabel(&#34;Hello&#34;))<br/>
+                                    window.setLayout(layout)<br/>
+                                    window.show()<br/>
+                                    app.exec_()</code>
+                  </div>
+                  <ul class="text-sm text-muted space-y-1">
+                    <li>• Professional appearance</li>
+                    <li>• Rich widget collection</li>
+                    <li>• Excellent documentation</li>
+                    <li>• Commercial and GPL licenses</li>
+                  </ul>
+                  <div class="text-xs text-blue-700 bg-blue-50 p-2 rounded">
+                    Best for: Professional desktop applications
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-mobile-alt text-accent mr-3"></i>
+                  Kivy for Mobile/Touch
+                </h4>
+                <div class="space-y-4">
+                  <div class="bg-gray-50 p-3 rounded">
+                    <code class="block text-xs">from kivy.app import App<br/>
+                                    from kivy.uix.label import Label<br/>
+                                    <br/>
+                                    class MyApp(App):<br/>
+                                      def build(self):<br/>
+                                        return Label(text=&#34;Hello&#34;)<br/>
+                                    <br/>
+                                    MyApp().run()</code>
+                  </div>
+                  <ul class="text-sm text-muted space-y-1">
+                    <li>• Touch interface support</li>
+                    <li>• Cross-platform (mobile/desktop)</li>
+                    <li>• Modern UI design</li>
+                    <li>• Gesture recognition</li>
+                  </ul>
+                  <div class="text-xs text-green-700 bg-green-50 p-2 rounded">
+                    Best for: Mobile and touch applications
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="advanced-gui" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">5.2 Advanced GUI Concepts</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-palette text-accent mr-3"></i>
+                  Custom Styling and Theming
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">Tkinter ttk</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">from tkinter import ttk<br/>
+                                    style = ttk.Style()<br/>
+                                    style.configure(&#39;TButton&#39;, ...)</code>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">PyQt Style Sheets</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">app.setStyleSheet(&#34;&#34;&#34;<br/>
+                                    QPushButton { background-color: blue; }<br/>
+                                    &#34;&#34;&#34;)</code>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">Kivy Kv Language</h5>
+                    <code class="block bg-gray-50 p-2 rounded text-xs">Button:<br/>
+                                      background_color: 1,0,0,1</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-hand-pointer text-accent mr-3"></i>
+                  Advanced Interactions
+                </h4>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">Drag-and-Drop</h5>
+                    <p class="text-sm text-muted">Implement drag sources and drop targets for intuitive data manipulation.</p>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">Multi-Touch Support</h5>
+                    <p class="text-sm text-muted">Handle gestures and multi-touch events for modern interfaces.</p>
+                  </div>
+                  <div class="border-l-4 border-accent pl-4">
+                    <h5 class="font-semibold text-secondary mb-2">Custom Events</h5>
+                    <p class="text-sm text-muted">Create and handle custom events for application-specific interactions.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6: Data Visualization -->
+        <section id="visualization" class="mb-16">
+          <h2 class="font-serif text-4xl font-bold text-primary mb-8 border-b-2 border-accent pb-4">
+            6. Data Visualization
+          </h2>
+
+          <div id="matplotlib" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">6.1 Advanced Plotting with Matplotlib</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-chart-bar text-accent mr-3"></i>
+                  Customizing Plots
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <code class="block text-xs">import matplotlib.pyplot as plt<br/>
+                                <br/>
+                                fig, ax = plt.subplots()<br/>
+                                ax.plot(x, y, color=&#39;red&#39;, linewidth=2)<br/>
+                                ax.set_title(&#39;Custom Plot&#39;, fontsize=14)<br/>
+                                ax.set_xlabel(&#39;X Axis&#39;)<br/>
+                                ax.set_ylabel(&#39;Y Axis&#39;)<br/>
+                                ax.grid(True)<br/>
+                                ax.legend([&#39;Data Series&#39;])</code>
+                </div>
+                <div class="mt-4 text-sm text-muted">
+                  <strong>Customizable Elements:</strong> Colors, markers, lines, labels, titles, legends, grids
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-th text-accent mr-3"></i>
+                  Subplots and Grid Layouts
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <code class="block text-xs"># Multiple subplots<br/>
+                                fig, axes = plt.subplots(2, 2)<br/>
+                                axes[0, 0].plot(x1, y1)<br/>
+                                axes[0, 1].scatter(x2, y2)<br/>
+                                axes[1, 0].hist(data)<br/>
+                                axes[1, 1].boxplot(data)<br/>
+                                plt.tight_layout()</code>
+                </div>
+                <div class="mt-4 text-sm text-muted">
+                  <strong>Layout Options:</strong> subplots(), subplot2grid(), GridSpec
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-cube text-accent mr-3"></i>
+                3D Plotting and Annotations
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">3D Plots</h5>
+                  <code class="block text-xs">from mpl_toolkits.mplot3d import Axes3D<br/>
+                                    fig = plt.figure()<br/>
+                                    ax = fig.add_subplot(111, projection=&#39;3d&#39;)<br/>
+                                    ax.plot_surface(X, Y, Z)<br/>
+                                    ax.scatter3D(x, y, z)</code>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-secondary mb-3">Annotations</h5>
+                  <code class="block text-xs">ax.annotate(&#39;Important point&#39;,<br/>
+                                      xy=(x, y),<br/>
+                                      xytext=(x+1, y+1),<br/>
+                                      arrowprops=dict(arrowstyle=&#39;-&gt;&#39;))</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="seaborn" class="mb-12">
+            <h3 class="font-serif text-2xl font-bold text-secondary mb-6">6.2 Statistical Visualization with Seaborn</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-project-diagram text-accent mr-3"></i>
+                  Pair Plots and Heatmaps
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                  <code class="block text-xs">import seaborn as sns<br/>
+                                import matplotlib.pyplot as plt<br/>
+                                <br/>
+                                # Pair plot<br/>
+                                sns.pairplot(data, hue=&#39;category&#39;)<br/>
+                                <br/>
+                                # Heatmap<br/>
+                                sns.heatmap(correlation_matrix,<br/>
+                                  annot=True, cmap=&#39;coolwarm&#39;)</code>
+                </div>
+                <div class="text-sm text-muted">
+                  <strong>Key Features:</strong>
+                  <ul class="mt-2 space-y-1">
+                    <li>• Automatic statistical visualization</li>
+                    <li>• Built-in themes and color palettes</li>
+                    <li>• Integration with Pandas DataFrames</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                  <i class="fas fa-chart-area text-accent mr-3"></i>
+                  Facet Grids and Violin Plots
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                  <code class="block text-xs"># Facet Grid<br/>
+                                g = sns.FacetGrid(data, col=&#39;category&#39;)<br/>
+                                g.map(sns.histplot, &#39;value&#39;)<br/>
+                                <br/>
+                                # Violin Plot<br/>
+                                sns.violinplot(x=&#39;category&#39;,<br/>
+                                  y=&#39;value&#39;, data=data)</code>
+                </div>
+                <div class="text-sm text-muted">
+                  <strong>Advanced Features:</strong>
+                  <ul class="mt-2 space-y-1">
+                    <li>• Conditional plotting with FacetGrid</li>
+                    <li>• Distribution visualization</li>
+                    <li>• Categorical data analysis</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+              <h4 class="font-serif text-xl font-bold text-primary mb-4 flex items-center">
+                <i class="fas fa-save text-accent mr-3"></i>
+                Saving and Displaying Plots
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h5 class="font-semibold text-secondary mb-3">Exporting to Files</h5>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <code class="block text-xs"># Multiple formats<br/>
+                                    plt.savefig(&#39;plot.png&#39;, dpi=300)<br/>
+                                    plt.savefig(&#39;plot.pdf&#39;)<br/>
+                                    plt.savefig(&#39;plot.svg&#39;)<br/>
+                                    <br/>
+                                    # Quality settings<br/>
+                                    plt.savefig(&#39;plot.jpg&#39;,<br/>
+                                      quality=95, bbox_inches=&#39;tight&#39;)</code>
+                  </div>
+                  <div class="text-sm text-muted">
+                    <strong>Supported Formats:</strong> PNG, PDF, SVG, JPG, TIFF
+                  </div>
+                </div>
+
+                <div>
+                  <h5 class="font-semibold text-secondary mb-3">Interactive Environments</h5>
+                  <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <code class="block text-xs"># Jupyter Notebook<br/>
+                                    %matplotlib inline<br/>
+                                    # or<br/>
+                                    %matplotlib notebook<br/>
+                                    <br/>
+                                    # Interactive mode<br/>
+                                    plt.ion()<br/>
+                                    plt.show()<br/>
+                                    plt.ioff()</code>
+                  </div>
+                  <div class="text-sm text-muted">
+                    <strong>Interactive Libraries:</strong> Plotly, Bokeh, Altair
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // For mobile, close TOC after clicking a link
+                    if (window.innerWidth < 1024) {
+                        document.getElementById('toc').classList.add('-translate-x-full');
+                    }
+                }
+            });
+        });
+
+        // Highlight active section in TOC
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('nav a[href^="#"]');
+
+        function highlightActiveSection() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                // const sectionHeight = section.clientHeight;  // Not strictly needed for this logic
+                if (window.scrollY >= sectionTop - 100) { // Adjust offset as needed
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.classList.remove('bg-accent', 'text-white');
+                link.classList.add('text-muted');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('text-muted');
+                    link.classList.add('bg-accent', 'text-white');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightActiveSection);
+        highlightActiveSection(); // Initial call
+        
+        // Toggle TOC on mobile
+        document.getElementById('toc-toggle').addEventListener('click', function() {
+            const toc = document.getElementById('toc');
+            toc.classList.toggle('-translate-x-full');
+        });
+    </script>
+  
+
+</body></html>

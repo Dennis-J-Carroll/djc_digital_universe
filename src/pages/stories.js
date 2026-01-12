@@ -30,7 +30,14 @@ const StoriesPage = ({ data, location }) => {
   )
 }
 
-export const Head = () => <Seo title="Creative Writing" />
+export const Head = ({ location }) => (
+  <Seo
+    title="Creative Writing"
+    pathname={location.pathname}
+    pageType="collection"
+    description="Explore creative stories and narrative experiments by Dennis J. Carroll."
+  />
+)
 
 export const query = graphql`
   query {

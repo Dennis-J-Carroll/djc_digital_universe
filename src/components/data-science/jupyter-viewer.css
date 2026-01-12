@@ -1,0 +1,47 @@
+/* Jupyter Notebook Viewer Styles */
+
+.notebook-container {
+  max-width: 100%;
+  margin: 2rem 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notebook-cell {
+  margin: 0;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.notebook-cell:last-child {
+  border-bottom: none;
+}
+
+.notebook-cell-code {
+  background-color: #f8f8f8;
+}
+
+.notebook-cell-markdown {
+  background-color: white;
+}
+
+.notebook-cell-output {
+  background-color: #fafafa;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notebook-cell-number {
+  color: #767676;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.notebook-output-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}

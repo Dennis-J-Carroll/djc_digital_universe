@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Settings - File Converter Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-charcoal: #212529;
+            --dark-grey: #495057;
+            --medium-grey: #ADB5BD;
+            --light-grey: #DEE2E6;
+            --bright-blue: #007BFF;
+            --success-green: #28A745;
+            --warning-amber: #FFC107;
+            --error-red: #DC3545;
+            --pure-white: #FFFFFF;
+            --off-white: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+            min-height: 100vh;
+        }
+        
+        .font-display { font-family: 'Poppins', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .help-card {
+            background: var(--pure-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .help-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-tab {
+            position: relative;
+            color: var(--dark-grey);
+            transition: color 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            color: var(--bright-blue);
+        }
+        
+        .nav-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--bright-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-tab.active::after {
+            width: 100%;
+        }
+        
+        .settings-section {
+            background: var(--pure-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--medium-grey);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--bright-blue);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid var(--light-grey);
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        
+        .faq-question {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            color: var(--bright-blue);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .faq-answer.open {
+            max-height: 200px;
+        }
+        
+        .btn-primary {
+            background: var(--bright-blue);
+            color: var(--pure-white);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #0056B3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--pure-white);
+            border: 1px solid var(--light-grey);
+            color: var(--dark-grey);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--off-white);
+            border-color: var(--medium-grey);
+        }
+        
+        .keyboard-shortcut {
+            background: var(--off-white);
+            border: 1px solid var(--light-grey);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--dark-grey);
+        }
+        
+        .compatibility-matrix {
+            overflow-x: auto;
+        }
+        
+        .compatibility-table {
+            min-width: 600px;
+        }
+        
+        .compatibility-cell {
+            text-align: center;
+            padding: 8px;
+        }
+        
+        .compatibility-yes { color: var(--success-green); }
+        .compatibility-no { color: var(--error-red); }
+        .compatibility-partial { color: var(--warning-amber); }
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tab-button {
+            position: relative;
+            color: var(--dark-grey);
+            transition: color 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--bright-blue);
+        }
+        
+        .tab-button::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--bright-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .tab-button.active::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-xl text-gray-900">File Converter Pro</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-8">
+                    <a href="index.html" class="nav-tab text-sm font-medium">Convert</a>
+                    <a href="batch.html" class="nav-tab text-sm font-medium">Batch</a>
+                    <a href="history.html" class="nav-tab text-sm font-medium">History</a>
+                    <a href="help.html" class="nav-tab active text-sm font-medium">Help</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Help Header -->
+    <section class="bg-gradient-to-r from-green-600 to-green-700 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-white">
+                <h1 class="font-display font-bold text-4xl mb-4">Help & Settings</h1>
+                <p class="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+                    Get help with File Converter Pro, customize your settings, and learn about all the features available.
+                </p>
+                <div class="flex justify-center space-x-6 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-white rounded-full"></div>
+                        <span>150+ Supported Formats</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                        <span>24/7 Support Available</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-blue-300 rounded-full"></div>
+                        <span>Comprehensive Guides</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Help Interface -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Tab Navigation -->
+        <div class="flex justify-center mb-12">
+            <div class="flex space-x-8 border-b border-gray-200">
+                <button class="tab-button active pb-4 px-2 font-medium text-sm" data-tab="faq">
+                    Frequently Asked Questions
+                </button>
+                <button class="tab-button pb-4 px-2 font-medium text-sm" data-tab="settings">
+                    Settings
+                </button>
+                <button class="tab-button pb-4 px-2 font-medium text-sm" data-tab="shortcuts">
+                    Keyboard Shortcuts
+                </button>
+                <button class="tab-button pb-4 px-2 font-medium text-sm" data-tab="compatibility">
+                    Format Compatibility
+                </button>
+                <button class="tab-button pb-4 px-2 font-medium text-sm" data-tab="about">
+                    About
+                </button>
+            </div>
+        </div>
+
+        <!-- FAQ Tab -->
+        <div id="faq-tab" class="tab-content active">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Frequently Asked Questions</h2>
+                
+                <div class="help-card p-6 mb-8">
+                    <div class="faq-item pb-6">
+                        <div class="faq-question flex justify-between items-center py-4">
+                            <h3 class="font-semibold text-lg text-gray-900">How do I convert a file?</h3>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p class="text-gray-600 pb-4">Converting a file is simple: just drag and drop your file into the conversion area, select your target format, and click convert. The system will automatically detect your file type and provide a real-time preview of the converted content.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item pb-6">
+                        <div class="faq-question flex justify-between items-center py-4">
+                            <h3 class="font-semibold text-lg text-gray-900">What file formats are supported?</h3>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p class="text-gray-600 pb-4">File Converter Pro supports over 150 file formats including documents (PDF, DOC, TXT), images (JPG, PNG, SVG), audio (MP3, WAV), video (MP4, AVI), data formats (JSON, XML, CSV), and archives (ZIP, TAR). Check the Format Compatibility tab for a complete list.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item pb-6">
+                        <div class="faq-question flex justify-between items-center py-4">
+                            <h3 class="font-semibold text-lg text-gray-900">Is my data secure?</h3>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p class="text-gray-600 pb-4">Yes, your data is completely secure. All file processing happens locally in your browser - no files are uploaded to our servers. Your data never leaves your device, ensuring complete privacy and security.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item pb-6">
+                        <div class="faq-question flex justify-between items-center py-4">
+                            <h3 class="font-semibold text-lg text-gray-900">Can I convert multiple files at once?</h3>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p class="text-gray-600 pb-4">Absolutely! Use the Batch Conversion feature to convert multiple files simultaneously. You can set different target formats for each file or apply the same format to all files in the queue.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item pb-6">
+                        <div class="faq-question flex justify-between items-center py-4">
+                            <h3 class="font-semibold text-lg text-gray-900">How do I access my conversion history?</h3>
+                            <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p class="text-gray-600 pb-4">Your conversion history is automatically saved and accessible through the History page. You can search, filter, and export your conversion history in various formats. Favorite important conversions for quick access.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Settings</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- General Settings -->
+                    <div class="settings-section p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">General Settings</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Dark Mode</h4>
+                                    <p class="text-sm text-gray-600">Enable dark theme for better visibility</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="darkModeSetting">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Auto-detect Format</h4>
+                                    <p class="text-sm text-gray-600">Automatically detect input file format</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="autoDetectFormat" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Show Preview</h4>
+                                    <p class="text-sm text-gray-600">Display real-time conversion preview</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="showPreview" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Save History</h4>
+                                    <p class="text-sm text-gray-600">Automatically save conversion history</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="saveHistory" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Default Output Format</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">No default</option>
+                                    <option value="json">JSON</option>
+                                    <option value="xml">XML</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="txt">Plain Text</option>
+                                    <option value="pdf">PDF</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum File Size (MB)</label>
+                                <input type="number" value="100" min="1" max="1000" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conversion Settings -->
+                    <div class="settings-section p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">Conversion Settings</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Pretty Print JSON</h4>
+                                    <p class="text-sm text-gray-600">Format JSON with proper indentation</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="prettyPrintJson" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Preserve Comments</h4>
+                                    <p class="text-sm text-gray-600">Keep comments during code conversion</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="preserveComments">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Batch Notifications</h4>
+                                    <p class="text-sm text-gray-600">Show notifications for batch operations</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="batchNotifications" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Default Encoding</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="utf-8">UTF-8</option>
+                                    <option value="ascii">ASCII</option>
+                                    <option value="latin1">Latin-1</option>
+                                    <option value="base64">Base64</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CSV Delimiter</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value=",">Comma (,)</option>
+                                    <option value=";">Semicolon (;)</option>
+                                    <option value="\t">Tab</option>
+                                    <option value="|">Pipe (|)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image Quality</label>
+                                <input type="range" min="1" max="100" value="85" 
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>Low</span>
+                                    <span>High</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Settings -->
+                <div class="text-center mt-8">
+                    <button class="btn-primary px-8 py-3 rounded-lg font-medium text-lg">
+                        Save Settings
+                    </button>
+                    <button class="btn-secondary px-6 py-3 rounded-lg font-medium ml-4">
+                        Reset to Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Tab -->
+        <div id="shortcuts-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Keyboard Shortcuts</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">General Shortcuts</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Open file dialog</span>
+                                <span class="keyboard-shortcut">Ctrl + O</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Start conversion</span>
+                                <span class="keyboard-shortcut">Ctrl + Enter</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Reset form</span>
+                                <span class="keyboard-shortcut">Ctrl + R</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Toggle dark mode</span>
+                                <span class="keyboard-shortcut">Ctrl + D</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Open settings</span>
+                                <span class="keyboard-shortcut">Ctrl + ,</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">Navigation Shortcuts</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Go to Convert</span>
+                                <span class="keyboard-shortcut">Alt + 1</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Go to Batch</span>
+                                <span class="keyboard-shortcut">Alt + 2</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Go to History</span>
+                                <span class="keyboard-shortcut">Alt + 3</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Go to Help</span>
+                                <span class="keyboard-shortcut">Alt + 4</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Focus search</span>
+                                <span class="keyboard-shortcut">Ctrl + /</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">Batch Shortcuts</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Add files to batch</span>
+                                <span class="keyboard-shortcut">Ctrl + B</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Start batch</span>
+                                <span class="keyboard-shortcut">Ctrl + Shift + Enter</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Pause batch</span>
+                                <span class="keyboard-shortcut">Ctrl + P</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Cancel batch</span>
+                                <span class="keyboard-shortcut">Ctrl + Shift + C</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Clear queue</span>
+                                <span class="keyboard-shortcut">Ctrl + Shift + X</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-6">History Shortcuts</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Search history</span>
+                                <span class="keyboard-shortcut">Ctrl + F</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Export history</span>
+                                <span class="keyboard-shortcut">Ctrl + E</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Clear history</span>
+                                <span class="keyboard-shortcut">Ctrl + Shift + Del</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Toggle favorites</span>
+                                <span class="keyboard-shortcut">Ctrl + Shift + F</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Repeat conversion</span>
+                                <span class="keyboard-shortcut">Ctrl + Y</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Format Compatibility Tab -->
+        <div id="compatibility-tab" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Format Compatibility Matrix</h2>
+                
+                <div class="help-card p-6">
+                    <div class="compatibility-matrix">
+                        <table class="compatibility-table w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-900">Format</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-900">Read</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-900">Write</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-900">Preview</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-900">Batch</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-900">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">JSON</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">JavaScript Object Notation</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">XML</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">Extensible Markup Language</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">CSV</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">Comma-Separated Values</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">PDF</td>
+                                    <td class="compatibility-cell compatibility-partial">~</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">Portable Document Format</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">JPG/JPEG</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">Joint Photographic Experts Group</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">PNG</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">Portable Network Graphics</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">MP3</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-no">✗</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">MPEG Audio Layer III</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">MP4</td>
+                                    <td class="compatibility-cell compatibility-partial">~</td>
+                                    <td class="compatibility-cell compatibility-partial">~</td>
+                                    <td class="compatibility-cell compatibility-no">✗</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">MPEG-4 Part 14</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">ZIP</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-no">✗</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">ZIP Archive</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4 font-medium">HTML</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="compatibility-cell compatibility-yes">✓</td>
+                                    <td class="py-3 px-4 text-gray-600">HyperText Markup Language</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-6 flex items-center space-x-6 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <span class="compatibility-yes">✓</span>
+                            <span class="text-gray-600">Fully Supported</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="compatibility-partial">~</span>
+                            <span class="text-gray-600">Partial Support</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="compatibility-no">✗</span>
+                            <span class="text-gray-600">Not Supported</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Tab -->
+        <div id="about-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">About File Converter Pro</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-4">Version Information</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Version</span>
+                                <span class="font-medium">2.1.0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Build Date</span>
+                                <span class="font-medium">January 2024</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Supported Formats</span>
+                                <span class="font-medium">150+</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Last Updated</span>
+                                <span class="font-medium">Jan 4, 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-card p-6">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-4">System Requirements</h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <h4 class="font-medium text-gray-900">Browser</h4>
+                                <p class="text-sm text-gray-600">Chrome 90+, Firefox 88+, Safari 14+, Edge 90+</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">JavaScript</h4>
+                                <p class="text-sm text-gray-600">Must be enabled for full functionality</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Memory</h4>
+                                <p class="text-sm text-gray-600">At least 2GB RAM recommended</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Storage</h4>
+                                <p class="text-sm text-gray-600">Local storage for settings and history</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="help-card p-6 lg:col-span-2">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-4">Features</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">🚀 Fast Conversion</h4>
+                                <p class="text-sm text-gray-600">Real-time conversion with instant preview</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">🔒 Privacy First</h4>
+                                <p class="text-sm text-gray-600">All processing happens locally on your device</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">📁 Batch Processing</h4>
+                                <p class="text-sm text-gray-600">Convert multiple files simultaneously</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">📊 History Tracking</h4>
+                                <p class="text-sm text-gray-600">Comprehensive conversion history with search</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">⚙️ Customizable</h4>
+                                <p class="text-sm text-gray-600">Extensive settings and preferences</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-2">🎯 User Friendly</h4>
+                                <p class="text-sm text-gray-600">Intuitive interface with keyboard shortcuts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-12">
+                    <div class="help-card p-6 inline-block">
+                        <h3 class="font-display font-semibold text-xl text-gray-900 mb-4">Need Help?</h3>
+                        <p class="text-gray-600 mb-6">Contact our support team for assistance</p>
+                        <div class="flex justify-center space-x-4">
+                            <button class="btn-primary px-6 py-2 rounded-lg font-medium">
+                                Contact Support
+                            </button>
+                            <button class="btn-secondary px-6 py-2 rounded-lg font-medium">
+                                Send Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600">© 2024 File Converter Pro. Built for extreme usability and performance.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

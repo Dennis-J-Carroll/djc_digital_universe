@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Theory Lab - Interactive Mathematical Explorations</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Splitting CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <!-- Splide CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-slate: #1a1f36;
+            --primary-charcoal: #2d3748;
+            --accent-cyan: #00d4ff;
+            --accent-green: #4ade80;
+            --math-amber: #fbbf24;
+            --bg-off-white: #fafafa;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-off-white) 0%, #f0f0f0 100%);
+            overflow-x: hidden;
+        }
+        
+        .math-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .hero-bg {
+            background: url('./resources/hero-neural.jpg') center/cover no-repeat;
+            position: relative;
+        }
+        
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(26, 31, 54, 0.8) 0%, rgba(45, 55, 72, 0.6) 100%);
+        }
+        
+        .neural-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .content-overlay {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .network-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .network-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+        }
+        
+        .network-card.active {
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 32px rgba(74, 222, 128, 0.2);
+        }
+        
+        .parameter-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-green) 100%);
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .parameter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+        }
+        
+        .math-equation {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid var(--math-amber);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .network-node {
+            fill: var(--accent-cyan);
+            stroke: var(--primary-slate);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .network-node:hover {
+            fill: var(--accent-green);
+            stroke-width: 3;
+        }
+        
+        .network-connection {
+            stroke: var(--primary-charcoal);
+            stroke-width: 1;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .network-connection:hover {
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            opacity: 1;
+        }
+        
+        .typewriter-text {
+            border-right: 2px solid var(--accent-cyan);
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { border-color: var(--accent-cyan); }
+            51%, 100% { border-color: transparent; }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-math {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 2rem;
+            color: var(--math-amber);
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .data-point {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .data-point:hover {
+            transform: scale(1.2);
+        }
+        
+        .decision-boundary {
+            stroke: var(--accent-green);
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.8;
+        }
+        
+        .loss-curve {
+            stroke: var(--accent-cyan);
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .reveal-on-scroll.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">Neural Theory Lab</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#networks" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Networks</a>
+                    <a href="#math" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Mathematics</a>
+                    <a href="#simulator" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Simulator</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">About</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg min-h-screen flex items-center justify-center relative">
+        <div id="neural-canvas" class="neural-canvas"></div>
+        
+        <!-- Floating Mathematical Equations -->
+        <div class="floating-math" style="top: 20%; left: 10%;">∇J(θ)</div>
+        <div class="floating-math" style="top: 60%; right: 15%;">σ(x) = 1/(1+e^-x)</div>
+        <div class="floating-math" style="top: 30%; right: 25%;">∂L/∂w</div>
+        <div class="floating-math" style="top: 70%; left: 20%;">Attention(Q,K,V)</div>
+        
+        <div class="content-overlay text-center text-white px-4 max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 gradient-text">
+                Neural Theory Lab
+            </h1>
+            <div class="text-xl md:text-2xl mb-8 text-gray-200">
+                <span id="typewriter-text" class="typewriter-text"></span>
+            </div>
+            <p class="text-lg md:text-xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+                Explore the mathematical foundations of neural networks through interactive visualizations, 
+                real-time simulations, and step-by-step derivations. From perceptrons to transformers, 
+                understand the equations that power artificial intelligence.
+            </p>
+            <button onclick="scrollToNetworks()" class="bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                Start Learning
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="relative">
+        <!-- Network Selection Section -->
+        <section id="networks" class="py-20 px-4 max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal-on-scroll">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Explore Neural Networks
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Select a neural network type to explore its mathematical foundations, 
+                    interactive visualizations, and training simulations.
+                </p>
+            </div>
+
+            <!-- Network Type Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('perceptron')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/perceptron.png" alt="Perceptron" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Perceptron</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">The fundamental building block of neural networks. Learn about linear decision boundaries and the perceptron learning algorithm.</p>
+                    <div class="text-sm text-blue-600 font-medium">Single Layer • Linear • Binary Classification</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('mlp')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/mlp.png" alt="MLP" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Multi-Layer Perceptron</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Deep feedforward networks with multiple hidden layers. Explore backpropagation and activation functions.</p>
+                    <div class="text-sm text-green-600 font-medium">Deep • Non-linear • Universal Approximator</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('cnn')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/cnn.png" alt="CNN" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Convolutional Neural Network</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Specialized for image processing with convolutional and pooling layers. Understand feature extraction.</p>
+                    <div class="text-sm text-yellow-600 font-medium">Convolutional • Spatial • Computer Vision</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('rnn')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/rnn.png" alt="RNN" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Recurrent Neural Network</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Processes sequential data with memory. Learn about temporal dynamics and gradient flow through time.</p>
+                    <div class="text-sm text-purple-600 font-medium">Sequential • Recurrent • Temporal</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('lstm')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/lstm.png" alt="LSTM" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Long Short-Term Memory</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Advanced RNN with gating mechanisms. Explore how LSTMs handle long-term dependencies.</p>
+                    <div class="text-sm text-red-600 font-medium">Gated • Long-term Memory • Sequential</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('transformer')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/transformer.png" alt="Transformer" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Transformer</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Attention-based architecture for sequence processing. Understand self-attention and multi-head attention.</p>
+                    <div class="text-sm text-indigo-600 font-medium">Attention-based • Parallel • State-of-the-art</div>
+                </div>
+
+                <div class="network-card rounded-xl p-6 cursor-pointer" onclick="selectNetwork('gan')">
+                    <div class="flex items-center mb-4">
+                        <img src="./resources/icons/gan.png" alt="GAN" class="w-12 h-12 mr-4">
+                        <h3 class="text-xl font-bold text-gray-900">Generative Adversarial Network</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Two networks competing: generator vs discriminator. Learn about adversarial training and Nash equilibrium.</p>
+                    <div class="text-sm text-pink-600 font-medium">Adversarial • Generative • Game Theory</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Lab Section -->
+        <section id="simulator" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-16 reveal-on-scroll">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        Interactive Neural Network Lab
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Experiment with neural networks in real-time. Adjust parameters, 
+                        visualize training, and explore mathematical foundations.
+                    </p>
+                </div>
+
+                <!-- Main Lab Interface -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <!-- Network Visualizer (Left 2/3) -->
+                    <div class="lg:col-span-3">
+                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-2xl font-bold text-gray-900" id="current-network-title">
+                                    Select a Network Type
+                                </h3>
+                                <div class="flex space-x-2">
+                                    <button id="play-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" disabled>
+                                        ▶ Train
+                                    </button>
+                                    <button id="pause-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors" disabled>
+                                        ⏸ Pause
+                                    </button>
+                                    <button id="reset-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" disabled>
+                                        🔄 Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Network SVG Container -->
+                            <div id="network-container" class="bg-white rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex items-center justify-center">
+                                <div class="text-center text-gray-500">
+                                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-lg">Select a neural network type to begin exploration</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mathematical Equations -->
+                        <div id="math-equations" class="bg-white rounded-xl p-6 border border-gray-200" style="display: none;">
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Mathematical Foundation</h3>
+                            <div id="equation-content" class="math-font text-lg">
+                                <!-- Equations will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Control Panel (Right 1/3) -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">Parameters</h3>
+                            
+                            <!-- Learning Rate -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Learning Rate: <span id="learning-rate-value">0.01</span>
+                                </label>
+                                <input type="range" id="learning-rate" class="parameter-slider w-full" 
+                                       min="0.001" max="1" step="0.001" value="0.01">
+                            </div>
+
+                            <!-- Epochs -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Epochs: <span id="epochs-value">100</span>
+                                </label>
+                                <input type="range" id="epochs" class="parameter-slider w-full" 
+                                       min="10" max="1000" step="10" value="100">
+                            </div>
+
+                            <!-- Batch Size -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Batch Size: <span id="batch-size-value">32</span>
+                                </label>
+                                <input type="range" id="batch-size" class="parameter-slider w-full" 
+                                       min="1" max="128" step="1" value="32">
+                            </div>
+
+                            <!-- Activation Function -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Activation Function
+                                </label>
+                                <select id="activation-function" class="w-full p-2 border border-gray-300 rounded-lg">
+                                    <option value="relu">ReLU</option>
+                                    <option value="sigmoid">Sigmoid</option>
+                                    <option value="tanh">Tanh</option>
+                                    <option value="linear">Linear</option>
+                                </select>
+                            </div>
+
+                            <!-- Optimizer -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Optimizer
+                                </label>
+                                <select id="optimizer" class="w-full p-2 border border-gray-300 rounded-lg">
+                                    <option value="sgd">SGD</option>
+                                    <option value="adam">Adam</option>
+                                    <option value="rmsprop">RMSprop</option>
+                                </select>
+                            </div>
+
+                            <!-- Training Progress -->
+                            <div id="training-progress" class="mb-6" style="display: none;">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Training Progress
+                                </label>
+                                <div class="bg-gray-200 rounded-full h-2 mb-2">
+                                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    Epoch: <span id="current-epoch">0</span> / <span id="total-epochs">100</span>
+                                </div>
+                            </div>
+
+                            <!-- Loss Display -->
+                            <div id="loss-display" class="mb-6" style="display: none;">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Current Loss: <span id="current-loss">0.000</span>
+                                </label>
+                                <div id="loss-chart" class="h-32 bg-gray-50 rounded-lg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dataset Playground -->
+        <section id="dataset-playground" class="py-20 bg-gray-50" style="display: none;">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                        Interactive Dataset Playground
+                    </h2>
+                    <p class="text-lg text-gray-600">
+                        Create and modify datasets to see how different neural networks learn patterns
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Data Visualization -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-gray-900">Data Points</h3>
+                                <div class="flex space-x-2">
+                                    <button onclick="loadDataset('xor')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">XOR</button>
+                                    <button onclick="loadDataset('linear')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Linear</button>
+                                    <button onclick="loadDataset('circular')" class="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600">Circular</button>
+                                    <button onclick="clearDataset()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Clear</button>
+                                </div>
+                            </div>
+                            <svg id="dataset-svg" class="w-full h-96 border border-gray-200 rounded-lg cursor-crosshair">
+                                <!-- Dataset visualization will be rendered here -->
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Dataset Controls -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Dataset Info</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Total Points:</span>
+                                    <span id="total-points" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Class A:</span>
+                                    <span id="class-a-count" class="font-medium text-blue-600">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Class B:</span>
+                                    <span id="class-b-count" class="font-medium text-red-600">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="font-semibold text-gray-900 mb-3">Instructions</h4>
+                                <ul class="text-sm text-gray-600 space-y-2">
+                                    <li>• Click to add data points</li>
+                                    <li>• Left click: Class A (blue)</li>
+                                    <li>• Right click: Class B (red)</li>
+                                    <li>• Use preset patterns for quick setup</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mathematics Section -->
+        <section id="math" class="py-20 bg-white">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-16 reveal-on-scroll">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        Mathematical Foundations
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Understand the equations, derivations, and mathematical principles 
+                        that make neural networks work.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Core Mathematical Concepts -->
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Gradient Descent</h3>
+                        <p class="text-gray-600 mb-4">The optimization algorithm that trains neural networks by minimizing loss functions.</p>
+                        <div class="math-equation">
+                            <div class="math-font">θ = θ - α∇J(θ)</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Backpropagation</h3>
+                        <p class="text-gray-600 mb-4">The algorithm that computes gradients by applying the chain rule through the network.</p>
+                        <div class="math-equation">
+                            <div class="math-font">∂L/∂w = ∂L/∂a × ∂a/∂z × ∂z/∂w</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Activation Functions</h3>
+                        <p class="text-gray-600 mb-4">Non-linear functions that enable neural networks to learn complex patterns.</p>
+                        <div class="math-equation">
+                            <div class="math-font">ReLU: max(0, x)</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Attention Mechanism</h3>
+                        <p class="text-gray-600 mb-4">The core innovation behind transformers, allowing models to focus on relevant information.</p>
+                        <div class="math-equation">
+                            <div class="math-font">Attention(Q,K,V) = softmax(QK^T/√d_k)V</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Loss Functions</h3>
+                        <p class="text-gray-600 mb-4">Mathematical functions that measure the difference between predicted and actual values.</p>
+                        <div class="math-equation">
+                            <div class="math-font">MSE: (1/n)Σ(y_true - y_pred)²</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-6 reveal-on-scroll">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Convolution Operations</h3>
+                        <p class="text-gray-600 mb-4">Mathematical operations that extract features from images using learnable filters.</p>
+                        <div class="math-equation">
+                            <div class="math-font">(I * K)(i,j) = ΣΣ I(m,n)K(i-m,j-n)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 bg-gray-50">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <div class="reveal-on-scroll">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        About Neural Theory Lab
+                    </h2>
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                        Neural Theory Lab is an interactive educational platform designed to make the mathematical 
+                        foundations of neural networks accessible through visualization and hands-on experimentation. 
+                        Whether you're a student, researcher, or practitioner, our goal is to help you understand 
+                        the "why" behind neural network architectures.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Interactive Learning</h3>
+                            <p class="text-gray-600">Hands-on experimentation with real-time parameter adjustments and visualizations.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Mathematical Rigor</h3>
+                            <p class="text-gray-600">Step-by-step derivations and comprehensive mathematical explanations.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Comprehensive Coverage</h3>
+                            <p class="text-gray-600">From basic perceptrons to state-of-the-art transformers and GANs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold">Neural Theory Lab</span>
+            </div>
+            <p class="text-gray-400 mb-4">
+                Interactive Mathematical Explorations of Neural Networks
+            </p>
+            <p class="text-sm text-gray-500">
+                © 2025 Neural Theory Lab. Educational platform for understanding neural network mathematics.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Load main JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>

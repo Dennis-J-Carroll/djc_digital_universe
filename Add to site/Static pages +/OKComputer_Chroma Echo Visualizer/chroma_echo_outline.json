@@ -1,0 +1,154 @@
+{
+  "pages": [
+    {
+      "number": 1,
+      "type": "cover",
+      "title": "Chroma Echo",
+      "content": "A Dynamic, Interactive Visualizer & Loop Generator"
+    },
+    {
+      "number": 2,
+      "type": "table_of_contents",
+      "title": "Contents",
+      "content": "01: Core Concept; 02: Initial Interface & First Interaction; 03: Core Interaction Mechanics; 04: Advanced Features; 05: Technical Architecture; 06: Use Cases & Applications; 07: Future Expansions; 08: Monetization & Distribution"
+    },
+    {
+      "number": 3,
+      "type": "chapter",
+      "title": "01: Core Concept",
+      "content": "Transforming digital interaction into living color formations"
+    },
+    {
+      "number": 4,
+      "type": "content",
+      "title": "The Essence of Chroma Echo",
+      "content": "Present the core concept as a minimalist, immersive digital canvas where touch generates living color formations. Explain how it blends nostalgic Windows Media Player visualizations with modern generative art and tactile interaction design, creating a bridge between performance and preservation."
+    },
+    {
+      "number": 5,
+      "type": "chapter",
+      "title": "02: Initial Interface & First Interaction",
+      "content": "The journey from darkness to luminous interaction"
+    },
+    {
+      "number": 6,
+      "type": "content",
+      "title": "First Touch: Birth of Color",
+      "content": "Detail the initial experience sequence: loading state with breathing particles, first touch creating a vibrant color node with organic rhythm, and the emission of concentric light waves that propagate and evolve. Emphasize the haptic feedback layer that synchronizes with visual events."
+    },
+    {
+      "number": 7,
+      "type": "chapter",
+      "title": "03: Core Interaction Mechanics",
+      "content": "Three pillars of tactile digital artistry"
+    },
+    {
+      "number": 8,
+      "type": "content",
+      "title": "Touch Propagation: The Ripple Effect",
+      "content": "Explain how single taps create color seeds with radial symmetry, sustained pressure generates fractal patterns, multi-touch creates interference patterns where colors collide and merge, and velocity-sensitive responses produce different wave characteristics from sharp energetic waves to gentle undulating fields."
+    },
+    {
+      "number": 9,
+      "type": "content",
+      "title": "Drag & Manipulation: Shaping the Digital Canvas",
+      "content": "Describe how dragging creates persistent color trails, pinch/zoom adjusts physics simulation from water-like viscosity to explosive plasma, rotation gestures twist color fields into spirals and vortex formations, and grab-and-throw mechanics let users fling color clusters that bounce off invisible boundaries."
+    },
+    {
+      "number": 10,
+      "type": "content",
+      "title": "Dynamic Color Systems: The Language of Light",
+      "content": "Present the four color systems: harmonic palettes shifting with musical scales, emotional mapping with warm/cool colors, context-aware blending based on color theory, and biomimetic systems mimicking natural phenomena like auroras, bioluminescence, and sunsets."
+    },
+    {
+      "number": 11,
+      "type": "chapter",
+      "title": "04: Advanced Features",
+      "content": "Beyond interaction: audio, physics, and preservation"
+    },
+    {
+      "number": 12,
+      "type": "content",
+      "title": "Audio Responsiveness: Visualizing Sound",
+      "content": "Detail the microphone input transformation where bass frequencies affect wave amplitude, treble influences pattern intricacy, rhythm creates pulsing nodal points. Cover music library integration with genre-specific presets and real-time frequency analysis for live performance visualization."
+    },
+    {
+      "number": 13,
+      "type": "content",
+      "title": "Physics Simulation Layers: Digital Reality",
+      "content": "Explain the four physics layers: fluid dynamics with realistic viscosity, particle systems releasing luminous cascades, wave interference creating complex patterns from multiple touches, and field dynamics with invisible magnetic/gravitational fields that color responds to."
+    },
+    {
+      "number": 14,
+      "type": "content",
+      "title": "Recording & Output System: Preserving the Ephemeral",
+      "content": "Describe the smart recording capturing visual and interaction data, automatic loop perfection, WebM/MKV hybrid container supporting multiple visual layers and interaction metadata. Detail export options for social media, digital signage, live wallpapers, and interactive replays."
+    },
+    {
+      "number": 15,
+      "type": "content",
+      "title": "Customization Suite: Personal Expression",
+      "content": "Present visual presets including Neon Nervous System, Cosmic Plasma, Digital Zen Garden, and Retro CRT. Cover physics customization options and the Color Universe Builder for creating custom palettes, personalities, and environmental moods."
+    },
+    {
+      "number": 16,
+      "type": "chapter",
+      "title": "05: Technical Architecture",
+      "content": "The engine behind the experience"
+    },
+    {
+      "number": 17,
+      "type": "content",
+      "title": "Technical Foundation",
+      "content": "Detail the render engine using WebGL/Canvas for browsers and native GPU acceleration for apps. Explain the recording pipeline from real-time buffer through post-processing to multi-format encoding. Cover the interaction framework with touch/gesture recognition, haptic feedback, and accessibility features."
+    },
+    {
+      "number": 18,
+      "type": "chapter",
+      "title": "06: Use Cases & Applications",
+      "content": "From personal expression to professional performance"
+    },
+    {
+      "number": 19,
+      "type": "content",
+      "title": "Creative & Therapeutic Applications",
+      "content": "Showcase digital art creation without technical barriers, meditation and mindfulness tool with visual breathing guides, music practice accompaniment with responsive feedback, and sensory exploration for neurodiverse users."
+    },
+    {
+      "number": 20,
+      "type": "content",
+      "title": "Professional & Social Impact",
+      "content": "Detail live performance visualizer for musicians/DJs, unique background content for streaming, interactive digital installations in galleries/public spaces, and collaborative art sessions with multi-user support. Explain the bridge between nostalgia and innovation."
+    },
+    {
+      "number": 21,
+      "type": "chapter",
+      "title": "07: Future Expansions",
+      "content": "The evolution of interactive artistry"
+    },
+    {
+      "number": 22,
+      "type": "content",
+      "title": "Expanding Horizons",
+      "content": "Present three expansion directions: Generative AI integration for learning interaction styles and style transfer, Augmented Reality for projecting patterns into physical spaces with environment scanning, and Educational Applications for visualizing mathematical concepts and physics experiments."
+    },
+    {
+      "number": 23,
+      "type": "chapter",
+      "title": "08: Monetization & Distribution",
+      "content": "Building a sustainable creative ecosystem"
+    },
+    {
+      "number": 24,
+      "type": "content",
+      "title": "Business Model & Distribution Strategy",
+      "content": "Detail the freemium model with basic features and watermarking, premium subscription for advanced customization, one-time desktop purchase, commercial licensing for performances/installations, and partnerships with music streaming services for integrated visualization."
+    },
+    {
+      "number": 25,
+      "type": "final",
+      "title": "The Philosophy of Chroma Echo",
+      "content": "Transforming the screen from a passive display to a living, responsive material—digital clay that remembers and evolves. Democratizing generative art while providing depth for professionals. A tool that feels simultaneously futuristic and nostalgic, simple enough for a child, deep enough for an artist, practical enough for tomorrow's concert."
+    }
+  ]
+}

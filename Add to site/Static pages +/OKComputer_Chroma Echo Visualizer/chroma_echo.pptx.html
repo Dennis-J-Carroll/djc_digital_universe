@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chroma Echo</title>
+    <script src="https://statics.moonshot.cn/kimi-ppt/html-gen/static/tailwindcss@4_0805.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hedvig+Letters+Sans&family=Jersey+15&family=Quattrocento+Sans&family=Coda&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .ppt-slide {
+                @apply relative w-[1280px] h-[720px] mx-auto p-[40px] box-border overflow-hidden mb-[40px];
+            }
+        }
+    </style>
+    <style>
+        body {
+            color: #F0F2F2;
+            background-color: #0A0A0F;
+        }
+        .font-display {
+            font-family: 'Hedvig Letters Sans', sans-serif;
+        }
+        .font-jersey {
+            font-family: 'Jersey 15', sans-serif;
+        }
+        .font-body {
+            font-family: 'Quattrocento Sans', sans-serif;
+        }
+        .font-coda {
+            font-family: 'Coda', sans-serif;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+        }
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #4ECDC4;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+        .ripple {
+            position: absolute;
+            border: 1px solid #4ECDC4;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-effect 4s ease-out infinite;
+        }
+        @keyframes ripple-effect {
+            to { transform: scale(4); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-[#0A0A0F] py-8">
+
+    <!-- Slide 1: Cover -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="cover">
+        <img src="chroma_echo_cover.png" alt="Chroma Echo" class="absolute inset-0 w-full h-full object-cover opacity-70">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0A0A0F]/90 via-[#0A0A0F]/70 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center justify-between">
+            <div class="w-2/3">
+                <div class="particle" style="top: 20%; left: 15%; animation-delay: 0s;"></div>
+                <div class="particle" style="top: 30%; left: 25%; animation-delay: 1s;"></div>
+                <div class="particle" style="top: 60%; left: 10%; animation-delay: 2s;"></div>
+                <div class="particle" style="top: 80%; left: 30%; animation-delay: 3s;"></div>
+                
+                <div class="ripple" style="top: 40%; left: 20%; animation-delay: 0s;"></div>
+                <div class="ripple" style="top: 70%; left: 15%; animation-delay: 2s;"></div>
+                
+                <h1 class="font-display text-8xl font-bold text-[#4ECDC4] mb-6 glow-text leading-tight">Chroma Echo</h1>
+                <div class="w-32 h-1 bg-[#4ECDC4] mb-6 glow-text"></div>
+                <p class="font-body text-3xl text-[#F0F2F2] mb-8 leading-relaxed">A Dynamic, Interactive Visualizer & Loop Generator</p>
+                <p class="font-coda text-xl text-[#556F7A] max-w-lg leading-relaxed">Transforming digital interaction into living color formations</p>
+            </div>
+            
+            <div class="w-1/3 flex flex-col items-end gap-4">
+                <div class="bg-[#4ECDC4]/10 backdrop-blur-sm border border-[#4ECDC4]/30 rounded-lg p-4 w-64">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-hand-pointer text-2xl text-[#4ECDC4]"></i>
+                        <div>
+                            <p class="font-jersey text-base text-[#4ECDC4] uppercase tracking-wide">Touch</p>
+                            <p class="font-body text-sm text-[#F0F2F2]/80">Generate Color</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#FF6B6B]/10 backdrop-blur-sm border border-[#FF6B6B]/30 rounded-lg p-4 w-64">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-music text-2xl text-[#FF6B6B]"></i>
+                        <div>
+                            <p class="font-jersey text-base text-[#FF6B6B] uppercase tracking-wide">Audio</p>
+                            <p class="font-body text-sm text-[#F0F2F2]/80">Visualize Sound</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#556F7A]/10 backdrop-blur-sm border border-[#556F7A]/30 rounded-lg p-4 w-64">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-atom text-2xl text-[#556F7A]"></i>
+                        <div>
+                            <p class="font-jersey text-base text-[#556F7A] uppercase tracking-wide">Physics</p>
+                            <p class="font-body text-sm text-[#F0F2F2]/80">Simulate Reality</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: Table of Contents -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="table_of_contents">
+        <div class="h-full flex flex-col">
+            <div class="mb-8">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Navigation</p>
+                <h2 class="font-display text-5xl font-bold text-[#F0F2F2] glow-text">Contents</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+            
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#4ECDC4]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#4ECDC4] font-bold">01</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Core Concept</h3>
+                        <p class="font-body text-sm text-[#556F7A]">The essence of interactive artistry</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#FF6B6B]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#FF6B6B] font-bold">02</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Initial Interface</h3>
+                        <p class="font-body text-sm text-[#556F7A]">First touch and interaction</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#4ECDC4]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#4ECDC4] font-bold">03</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Interaction Mechanics</h3>
+                        <p class="font-body text-sm text-[#556F7A]">Touch, drag, color systems</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#FF6B6B]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#FF6B6B] font-bold">04</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Advanced Features</h3>
+                        <p class="font-body text-sm text-[#556F7A]">Audio, physics, recording</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#556F7A]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#556F7A]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#556F7A] font-bold">05</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Technical Architecture</h3>
+                        <p class="font-body text-sm text-[#556F7A]">Engine and implementation</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#4ECDC4]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#4ECDC4] font-bold">06</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Use Cases & Applications</h3>
+                        <p class="font-body text-sm text-[#556F7A]">Creative and professional use</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#FF6B6B]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#FF6B6B] font-bold">07</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Future Expansions</h3>
+                        <p class="font-body text-sm text-[#556F7A]">AI, AR, and education</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-5 flex items-center gap-4 hover:border-[#556F7A]/60 transition-all">
+                    <div class="w-14 h-14 rounded-full bg-[#556F7A]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="font-jersey text-2xl text-[#556F7A] font-bold">08</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-1">Monetization & Distribution</h3>
+                        <p class="font-body text-sm text-[#556F7A]">Business model strategy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Chapter 1 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="https://kimi-web-img.moonshot.cn/img/i.etsystatic.com/0357f6f2a85912eaad10b39c5cbe3f24ccd47e3e.jpg" alt="Core Concept" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center border-2 border-[#4ECDC4]">
+                        <span class="font-jersey text-5xl text-[#4ECDC4] font-bold">01</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#4ECDC4] uppercase tracking-widest mb-2">Chapter One</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Core Concept</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#4ECDC4] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">Transforming digital interaction into living color formations</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: The Essence of Chroma Echo -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Core Philosophy</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">The Essence of Chroma Echo</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-5 gap-6">
+                <div class="col-span-3 flex flex-col justify-around">
+                    <div class="bg-gradient-to-r from-[#4ECDC4]/10 to-transparent border-l-4 border-[#4ECDC4] rounded-lg p-5">
+                        <h3 class="font-display text-2xl font-bold text-[#4ECDC4] mb-3">A Living Digital Canvas</h3>
+                        <p class="font-body text-base text-[#F0F2F2] leading-relaxed">Chroma Echo is a minimalist, immersive digital canvas where every touch generates living color formations that respond to user interaction, audio input, and customizable physics systems. It transforms the screen from a passive display to a living, responsive material—digital clay that remembers and evolves.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#FF6B6B]/10 to-transparent border-l-4 border-[#FF6B6B] rounded-lg p-5">
+                        <h3 class="font-display text-2xl font-bold text-[#FF6B6B] mb-3">Bridging Nostalgia and Innovation</h3>
+                        <p class="font-body text-base text-[#F0F2F2] leading-relaxed">The experience blends the nostalgic appeal of Windows Media Player visualizations with modern generative art and tactile interaction design. It democratizes generative art creation while providing enough depth for professional artists, offering a bridge between performance and preservation.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#556F7A]/10 to-transparent border-l-4 border-[#556F7A] rounded-lg p-5">
+                        <h3 class="font-display text-2xl font-bold text-[#556F7A] mb-3">Universal Accessibility</h3>
+                        <p class="font-body text-base text-[#F0F2F2] leading-relaxed">Simple enough for a child to enjoy, deep enough for an artist to explore for years, and practical enough for a musician to use in tomorrow's concert. The recording system turns ephemeral interactions into permanent, shareable artifacts.</p>
+                    </div>
+                </div>
+
+                <div class="col-span-2 flex flex-col justify-between">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-palette text-3xl text-[#4ECDC4]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Color</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Dynamic color systems responding to touch, emotion, and musical harmony</p>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-wave-square text-3xl text-[#FF6B6B]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Physics</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Realistic fluid dynamics, particle systems, and wave interference patterns</p>
+                    </div>
+
+                    <div class="bg-[#556F7A]/5 border border-[#556F7A]/20 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-memory text-3xl text-[#556F7A]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Memory</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Recording and replay system preserving every interaction and color formation</p>
+                    </div>
+
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-share-alt text-3xl text-[#4ECDC4]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Sharing</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Export loops, interactive replays, and collaborative sessions across platforms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Chapter 2 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/ff6329ac8c61f87b05b876ca4c516bdb5c6aae1a.jpg" alt="Initial Interface" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center border-2 border-[#FF6B6B]">
+                        <span class="font-jersey text-5xl text-[#FF6B6B] font-bold">02</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#FF6B6B] uppercase tracking-widest mb-2">Chapter Two</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Initial Interface & First Interaction</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#FF6B6B] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">The journey from darkness to luminous interaction</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: First Touch: Birth of Color -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">The Initial Experience</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">First Touch: Birth of Color</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-full bg-[#0A0A0F] border-2 border-[#4ECDC4] flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-circle text-xl text-[#4ECDC4]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4] mb-2">Loading State: Cosmic Void</h3>
+                            <p class="font-body text-base text-[#F0F2F2] leading-relaxed">The experience begins in pitch-black darkness—an empty canvas pregnant with possibility. Subtle, breathing particles drift across the screen like cosmic dust in deep space, creating an atmosphere of anticipation and mystery.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-full bg-[#0A0A0F] border-2 border-[#FF6B6B] flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-hand-pointer text-xl text-[#FF6B6B]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B] mb-2">First Touch: The Genesis</h3>
+                            <p class="font-body text-base text-[#F0F2F2] leading-relaxed">A single tap creates a vibrant color node that pulses with organic rhythm, like a digital heartbeat. This initial touch becomes the genesis point—the primordial seed from which all subsequent visual formations will grow and evolve.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-full bg-[#0A0A0F] border-2 border-[#556F7A] flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-water text-xl text-[#556F7A]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#556F7A] mb-2">Initial Echo: Wave Propagation</h3>
+                            <p class="font-body text-base text-[#F0F2F2] leading-relaxed">The node emits concentric waves of light that propagate outward, creating expanding rings of color. These waves blend and evolve as they travel, creating complex interference patterns that transform the entire canvas into a living, breathing entity.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col justify-between">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-vibrate text-3xl text-[#4ECDC4]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Haptic Feedback</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Delicate vibrations correspond to color brightness and wave frequency, creating a tactile dimension to the visual experience.</p>
+                        <ul class="space-y-2 font-body text-sm text-[#F0F2F2]/70">
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#4ECDC4]"></span>Soft pulses for gentle waves</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>Sharp feedback for rapid interactions</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#556F7A]"></span>Rhythmic patterns matching visuals</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-expand-arrows-alt text-3xl text-[#FF6B6B]"></i>
+                            <h4 class="font-display text-xl font-bold text-[#F0F2F2]">Spatial Expansion</h4>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">The initial interaction creates a ripple effect that transforms the entire canvas from static darkness to dynamic luminosity.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-[#0A0A0F]/50 rounded p-3 text-center">
+                                <div class="font-jersey text-2xl text-[#4ECDC4] mb-1">5s</div>
+                                <div class="font-body text-xs text-[#F0F2F2]/70">Wave Duration</div>
+                            </div>
+                            <div class="bg-[#0A0A0F]/50 rounded p-3 text-center">
+                                <div class="font-jersey text-2xl text-[#FF6B6B] mb-1">360°</div>
+                                <div class="font-body text-xs text-[#F0F2F2]/70">Propagation</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Chapter 3 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="interaction_mechanics.png" alt="Core Interaction Mechanics" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center border-2 border-[#4ECDC4]">
+                        <span class="font-jersey text-5xl text-[#4ECDC4] font-bold">03</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#4ECDC4] uppercase tracking-widest mb-2">Chapter Three</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Core Interaction Mechanics</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#4ECDC4] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">Three pillars of tactile digital artistry</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Touch Propagation: The Ripple Effect -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Interaction Pillar 1</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Touch Propagation: The Ripple Effect</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <div class="flex flex-col justify-around">
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center">
+                                <i class="fas fa-dot-circle text-xl text-[#4ECDC4]"></i>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4]">Single Tap: Color Seeds</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Each single tap creates a "color seed" that blooms with perfect radial symmetry, generating expanding circular waves of light that propagate outward from the touch point.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center">
+                                <i class="fas fa-compress-arrows-alt text-xl text-[#FF6B6B]"></i>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B]">Sustained Pressure: Fractals</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Holding pressure generates increasingly complex fractal patterns that evolve and mutate over time, creating organic, branching structures with self-similar characteristics.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-around">
+                    <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-full bg-[#556F7A]/20 flex items-center justify-center">
+                                <i class="fas fa-object-group text-xl text-[#556F7A]"></i>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-[#556F7A]">Multi-Touch: Interference</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Multiple simultaneous touches create complex interference patterns where color waves collide and merge, producing moiré patterns and constructive/destructive wave interactions.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center">
+                                <i class="fas fa-tachometer-alt text-xl text-[#4ECDC4]"></i>
+                            </div>
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4]">Velocity Sensitivity</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Swift gestures create sharp, energetic waves with high frequency and amplitude, while slow movements produce gentle, undulating fields with smooth, flowing characteristics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-4 flex items-center gap-4">
+                <i class="fas fa-info-circle text-2xl text-[#FF6B6B]"></i>
+                <p class="font-body text-base text-[#F0F2F2]/80"><strong class="text-[#F0F2F2]">Technical Implementation:</strong> Each touch point generates a 2D wave equation with customizable frequency, amplitude, and decay parameters. Multi-touch scenarios use superposition principles to create complex interference patterns.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Drag & Manipulation: Shaping the Digital Canvas -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Interaction Pillar 2</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Drag & Manipulation: Shaping the Digital Canvas</h2>
+                <div class="w-20 h-1 bg-[#FF6B6B] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-1/2 flex flex-col justify-between">
+                    <div class="bg-gradient-to-r from-[#4ECDC4]/10 to-transparent border-l-4 border-[#4ECDC4] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-pencil-ruler text-2xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4]">Color Trails</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Dragging creates persistent "color trails" that follow the movement path. These trails don't just fade—they continue to evolve, creating flowing ribbons of light that interact with other elements on the canvas.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#FF6B6B]/10 to-transparent border-l-4 border-[#FF6B6B] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-compress text-2xl text-[#FF6B6B]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B]">Physics Adjustment</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Pinching and zooming adjusts the physics simulation field.缩小 creates water-like viscosity with slow, fluid movements.放大 shifts to explosive plasma behavior with rapid energy dispersion and high-velocity particle interactions.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#556F7A]/10 to-transparent border-l-4 border-[#556F7A] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-sync-alt text-2xl text-[#556F7A]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#556F7A]">Spiral Formations</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Rotation gestures twist the color field into spirals and vortex formations. The rotation speed determines the tightness of the spiral and the centrifugal force applied to color particles.</p>
+                    </div>
+                </div>
+
+                <div class="w-1/2 flex flex-col gap-6">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-hand-rock text-3xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#F0F2F2]">Grab and Throw</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Users can "grab" color clusters and fling them across the canvas. These clusters maintain momentum and bounce off invisible boundaries, creating dynamic trajectories and collision effects.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-[#4ECDC4]/10 rounded-lg p-3">
+                                <div class="font-jersey text-lg text-[#4ECDC4] mb-1">Velocity</div>
+                                <div class="font-body text-sm text-[#F0F2F2]/70">Determines bounce force</div>
+                            </div>
+                            <div class="bg-[#FF6B6B]/10 rounded-lg p-3">
+                                <div class="font-jersey text-lg text-[#FF6B6B] mb-1">Decay</div>
+                                <div class="font-body text-sm text-[#F0F2F2]/70">Gradual energy loss</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-cog text-3xl text-[#FF6B6B]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#F0F2F2]">Boundary Behaviors</h3>
+                        </div>
+                        <ul class="space-y-2 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4]"></span><strong class="text-[#4ECDC4]">Bounce:</strong> Elastic collision physics</li>
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B]"></span><strong class="text-[#FF6B6B]">Wrap:</strong> Infinite toroidal space</li>
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A]"></span><strong class="text-[#556F7A]">Dissolve:</strong> Gradual fade on contact</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Dynamic Color Systems: The Language of Light -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Interaction Pillar 3</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Dynamic Color Systems: The Language of Light</h2>
+                <div class="w-20 h-1 bg-[#556F7A] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <div class="flex flex-col justify-between">
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-music text-2xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-lg font-bold text-[#4ECDC4]">Harmonic Palettes</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Colors shift according to musical scales and mathematical ratios, creating visually harmonious compositions that correspond to musical intervals like octaves, fifths, and thirds.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-heart text-2xl text-[#FF6B6B]"></i>
+                            <h3 class="font-display text-lg font-bold text-[#FF6B6B]">Emotional Mapping</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Warm colors (reds, oranges, yellows) respond to gentle, slow touches. Cool colors (blues, purples, greens) activate with rapid, energetic interactions.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between">
+                    <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-palette text-2xl text-[#556F7A]"></i>
+                            <h3 class="font-display text-lg font-bold text-[#556F7A]">Context-Aware Blending</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Colors merge according to complementary and analogous relationships. The system analyzes existing colors and intelligently blends new interactions to maintain visual harmony.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-leaf text-2xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-lg font-bold text-[#4ECDC4]">Biomimetic Systems</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Colors mimic natural phenomena: auroras (flowing greens and purples), bioluminescence (oceanic blues and cyans), and sunsets (warm gradients).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-5">
+                <h3 class="font-display text-xl font-bold text-[#F0F2F2] mb-4">Color Palette Examples</h3>
+                <div class="grid grid-cols-4 gap-4">
+                    <div>
+                        <div class="font-body text-sm text-[#556F7A] mb-2">Aurora Mode</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#0F4C3A] to-[#4ECDC4]"></div>
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#4A3B5C] to-[#9B59B6]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-body text-sm text-[#556F7A] mb-2">Oceanic Mode</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#1A5276] to-[#4ECDC4]"></div>
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#0E6251] to-[#1ABC9C]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-body text-sm text-[#556F7A] mb-2">Sunset Mode</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#E67E22] to-[#FF6B6B]"></div>
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#D35400] to-[#E74C3C]"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-body text-sm text-[#556F7A] mb-2">Nebula Mode</div>
+                        <div class="flex gap-1">
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#2C3E50] to-[#556F7A]"></div>
+                            <div class="flex-1 h-8 rounded bg-gradient-to-b from-[#34495E] to-[#9B59B6]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Chapter 4 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="audio_responsiveness.png" alt="Advanced Features" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center border-2 border-[#FF6B6B]">
+                        <span class="font-jersey text-5xl text-[#FF6B6B] font-bold">04</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#FF6B6B] uppercase tracking-widest mb-2">Chapter Four</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Advanced Features</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#FF6B6B] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">Beyond interaction: audio, physics, and preservation</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Audio Responsiveness: Visualizing Sound -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Advanced Integration</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Audio Responsiveness: Visualizing Sound</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-wave-square text-xl text-[#4ECDC4]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4] mb-2">Bass Frequencies: Wave Amplitude</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Low frequencies (20-250Hz) directly control wave amplitude and saturation. Deep bass creates large, powerful waves with rich color intensity, while sub-bass generates subtle background undulations.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-wave-square text-xl text-[#FF6B6B]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B] mb-2">Treble Frequencies: Pattern Intricacy</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">High frequencies (2kHz-20kHz) influence pattern complexity and particle count. Crisp highs generate intricate fractal details and increase particle density, creating delicate lace-like structures.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#556F7A]/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-wave-square text-xl text-[#556F7A]"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#556F7A] mb-2">Rhythm: Pulsing Nodal Points</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Rhythmic elements in the audio create pulsing nodal points that appear and disappear in sync with the beat. Onset detection triggers color explosions, while tempo controls the breathing rate of the entire visualization.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col gap-6">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-music text-3xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#F0F2F2]">Music Integration</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Direct integration with music libraries provides genre-specific visualization presets optimized for different musical styles.</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-[#4ECDC4]/10 rounded p-2"><div class="font-jersey text-base text-[#4ECDC4]">Electronic</div><div class="font-body text-xs text-[#F0F2F2]/70">High contrast</div></div>
+                            <div class="bg-[#FF6B6B]/10 rounded p-2"><div class="font-jersey text-base text-[#FF6B6B]">Classical</div><div class="font-body text-xs text-[#F0F2F2]/70">Flowing layers</div></div>
+                            <div class="bg-[#556F7A]/10 rounded p-2"><div class="font-jersey text-base text-[#556F7A]">Jazz</div><div class="font-body text-xs text-[#F0F2F2]/70">Organic forms</div></div>
+                            <div class="bg-[#4ECDC4]/10 rounded p-2"><div class="font-jersey text-base text-[#4ECDC4]">Rock</div><div class="font-body text-xs text-[#F0F2F2]/70">Sharp impacts</div></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-microphone text-3xl text-[#FF6B6B]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#F0F2F2]">Live Performance</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Real-time frequency analysis enables live performance visualization with sub-50ms latency, supporting professional audio interfaces.</p>
+                        <ul class="space-y-2 font-body text-sm text-[#F0F2F2]/70">
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>192kHz max sample rate</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>24-bit depth processing</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>Multi-channel input support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Physics Simulation Layers: Digital Reality -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Simulation Engine</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Physics Simulation Layers: Digital Reality</h2>
+                <div class="w-20 h-1 bg-[#FF6B6B] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <div class="flex flex-col justify-around">
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-water text-2xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4]">Fluid Dynamics</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Colors flow with realistic viscosity and turbulence using Navier-Stokes equations. Users can adjust viscosity from water-like behavior to thick oil consistency.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-atom text-2xl text-[#FF6B6B]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B]">Particle Systems</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Touch releases cascades of luminous particles with customizable physics, each acting as an independent agent with velocity, acceleration, and lifespan.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-around">
+                    <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-wave-square text-2xl text-[#556F7A]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#556F7A]">Wave Interference</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Multiple touches create complex interference patterns using real-time wave equation calculations, producing standing waves and beat frequencies.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i class="fas fa-magnet text-2xl text-[#4ECDC4]"></i>
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4]">Field Dynamics</h3>
+                        </div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Invisible magnetic and gravitational fields influence color behavior, creating orbital motions and spiral formations as particles respond to field forces.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-[#556F7A]/5 border border-[#556F7A]/20 rounded-lg p-4 flex items-center gap-4">
+                <i class="fas fa-cogs text-2xl text-[#556F7A]"></i>
+                <p class="font-body text-base text-[#F0F2F2]/80"><strong class="text-[#F0F2F2]">Technical Stack:</strong> Physics simulations run on GPU using compute shaders for real-time performance with up to 1M particles at 60fps. Integration with Matter.js for complex rigid body dynamics.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Recording & Output System: Preserving the Ephemeral -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Preservation Engine</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Recording & Output System: Preserving the Ephemeral</h2>
+                <div class="w-20 h-1 bg-[#556F7A] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-record-vinyl text-xl text-[#4ECDC4]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4] mb-2">Smart Recording</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Captures both visual data (pixel buffers at 60fps) and interaction metadata (touch coordinates, pressure, timing). Enables replay with different color schemes or physics settings.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-sync-alt text-xl text-[#FF6B6B]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B] mb-2">Loop Perfection</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Automatically detects and creates seamless loops by analyzing visual patterns and finding optimal cut points. Eliminates jarring transitions with crossfade algorithms.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#556F7A]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-file-video text-xl text-[#556F7A]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#556F7A] mb-2">Format Innovation</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">WebM/MKV hybrid container supporting multiple visual layers (color, particle, light), interaction metadata for replay, and embedded audio tracks or reactive parameters.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col gap-6">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-file-export text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Export Options</h3></div>
+                        <ul class="space-y-3 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><strong class="text-[#4ECDC4]">Social Media:</strong> 15s and 60s optimized clips</li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B] mt-2"></span><strong class="text-[#FF6B6B]">Digital Signage:</strong> 4K and 8K resolution loops</li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A] mt-2"></span><strong class="text-[#556F7A]">Live Wallpapers:</strong> Smartphone and desktop formats</li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><strong class="text-[#4ECDC4]">Interactive Replays:</strong> Manipulable recorded sessions</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-cloud text-3xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Cloud Integration</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-3">Automatic cloud sync for session history and sharing. Users can access their creations from any device and share interactive replays.</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-[#4ECDC4]/10 rounded p-2 text-center"><div class="font-jersey text-lg text-[#4ECDC4]">50GB</div><div class="font-body text-xs text-[#F0F2F2]/70">Free Storage</div></div>
+                            <div class="bg-[#FF6B6B]/10 rounded p-2 text-center"><div class="font-jersey text-lg text-[#FF6B6B]">Unlimited</div><div class="font-body text-xs text-[#F0F2F2]/70">Premium</div></div>
+                            <div class="bg-[#556F7A]/10 rounded p-2 text-center"><div class="font-jersey text-lg text-[#556F7A]">256-bit</div><div class="font-body text-xs text-[#F0F2F2]/70">Encryption</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 15: Customization Suite: Personal Expression -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Personalization Engine</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Customization Suite: Personal Expression</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-1/2 flex flex-col justify-between">
+                    <div class="bg-gradient-to-r from-[#4ECDC4]/10 to-transparent border-l-4 border-[#4ECDC4] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-palette text-2xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#4ECDC4]">Visual Presets</h3></div>
+                        <ul class="space-y-2 font-body text-base text-[#F0F2F2]/80">
+                            <li><strong class="text-[#F0F2F2]">Neon Nervous System:</strong> Biological, branching patterns inspired by neural networks</li>
+                            <li><strong class="text-[#F0F2F2]">Cosmic Plasma:</strong> Astrophysical phenomena with gravitational fields</li>
+                            <li><strong class="text-[#F0F2F2]">Digital Zen Garden:</strong> Minimalist, meditative with slow evolution</li>
+                            <li><strong class="text-[#F0F2F2]">Retro CRT:</strong> Nostalgic pixel and vaporwave aesthetics</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#FF6B6B]/10 to-transparent border-l-4 border-[#FF6B6B] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-cogs text-2xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#FF6B6B]">Physics Customization</h3></div>
+                        <ul class="space-y-1 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4]"></span>Adjust gravity, friction, and forces</li>
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B]"></span>Set boundary behaviors (bounce/wrap/dissolve)</li>
+                            <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A]"></span>Control color decay rates and persistence</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="w-1/2 bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-atom text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-2xl font-bold text-[#F0F2F2]">Color Universe Builder</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-5">Create custom color palettes with transition rules and environmental moods. Define "color personalities" that control how colors behave and evolve.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-[#0A0A0F]/50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><i class="fas fa-palette text-lg text-[#4ECDC4]"></i><h4 class="font-display text-lg font-bold text-[#F0F2F2]">Custom Palettes</h4></div>
+                            <p class="font-body text-sm text-[#F0F2F2]/70">Define color relationships and harmonies</p>
+                        </div>
+                        <div class="bg-[#0A0A0F]/50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><i class="fas fa-user text-lg text-[#FF6B6B]"></i><h4 class="font-display text-lg font-bold text-[#F0F2F2]">Color Personalities</h4></div>
+                            <p class="font-body text-sm text-[#F0F2F2]/70">Aggressive spreads vs. shy retreats</p>
+                        </div>
+                        <div class="bg-[#0A0A0F]/50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><i class="fas fa-leaf text-lg text-[#556F7A]"></i><h4 class="font-display text-lg font-bold text-[#F0F2F2]">Environmental Moods</h4></div>
+                            <p class="font-body text-sm text-[#F0F2F2]/70">Underwater, nebula, forest themes</p>
+                        </div>
+                        <div class="bg-[#0A0A0F]/50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><i class="fas fa-share-alt text-lg text-[#4ECDC4]"></i><h4 class="font-display text-lg font-bold text-[#F0F2F2]">Community Sharing</h4></div>
+                            <p class="font-body text-sm text-[#F0F2F2]/70">Upload and download presets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 16: Chapter 5 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="technical_architecture.png" alt="Technical Architecture" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#556F7A]/20 flex items-center justify-center border-2 border-[#556F7A]">
+                        <span class="font-jersey text-5xl text-[#556F7A] font-bold">05</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#556F7A] uppercase tracking-widest mb-2">Chapter Five</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Technical Architecture</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#556F7A] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">The engine behind the experience</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 17: Technical Foundation -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Implementation Details</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Technical Foundation</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="bg-gradient-to-r from-[#4ECDC4]/10 to-transparent border-l-4 border-[#4ECDC4] rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-desktop text-2xl text-[#4ECDC4]"></i><h3 class="font-display text-2xl font-bold text-[#4ECDC4]">Render Engine</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-3">WebGL/Canvas implementation for browsers with native GPU acceleration for mobile and desktop applications. Shader-based color mixing enables real-time blending of millions of colors.</p>
+                        <div class="flex gap-3">
+                            <div class="bg-[#4ECDC4]/10 rounded px-3 py-1"><span class="font-jersey text-base text-[#4ECDC4]">WebGL 2.0</span></div>
+                            <div class="bg-[#FF6B6B]/10 rounded px-3 py-1"><span class="font-jersey text-base text-[#FF6B6B]">OpenGL ES 3.0</span></div>
+                            <div class="bg-[#556F7A]/10 rounded px-3 py-1"><span class="font-jersey text-base text-[#556F7A]">Metal</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#FF6B6B]/10 to-transparent border-l-4 border-[#FF6B6B] rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-film text-2xl text-[#FF6B6B]"></i><h3 class="font-display text-2xl font-bold text-[#FF6B6B]">Recording Pipeline</h3></div>
+                        <div class="space-y-2 font-body text-base text-[#F0F2F2]/80 leading-relaxed">
+                            <div class="flex items-start gap-2"><span class="w-6 h-6 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><span class="font-jersey text-xs text-[#FF6B6B]">1</span></span><span>Real-time buffer of interaction and visual data</span></div>
+                            <div class="flex items-start gap-2"><span class="w-6 h-6 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><span class="font-jersey text-xs text-[#FF6B6B]">2</span></span><span>Post-processing for loop optimization</span></div>
+                            <div class="flex items-start gap-2"><span class="w-6 h-6 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><span class="font-jersey text-xs text-[#FF6B6B]">3</span></span><span>Multi-format encoding with interactivity metadata</span></div>
+                            <div class="flex items-start gap-2"><span class="w-6 h-6 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><span class="font-jersey text-xs text-[#FF6B6B]">4</span></span><span>Cloud sync for session history and sharing</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col gap-6">
+                    <div class="bg-[#556F7A]/5 border border-[#556F7A]/30 rounded-lg p-6 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-hand-pointer text-3xl text-[#556F7A]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Interaction Framework</h3></div>
+                        <ul class="space-y-3 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><span><strong class="text-[#F0F2F2]">Touch Recognition:</strong> Predictive algorithms with sub-10ms latency</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B] mt-2"></span><span><strong class="text-[#F0F2F2]">Haptic Feedback:</strong> Synchronized with visual events</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A] mt-2"></span><span><strong class="text-[#F0F2F2]">Accessibility:</strong> Screen readers, high contrast, one-handed mode</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-6 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-chart-line text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Performance Targets</h3></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-[#0A0A0F]/50 rounded-lg p-3 text-center"><div class="font-jersey text-3xl text-[#4ECDC4] mb-1">60fps</div><div class="font-body text-sm text-[#F0F2F2]/70">Frame Rate</div></div>
+                            <div class="bg-[#0A0A0F]/50 rounded-lg p-3 text-center"><div class="font-jersey text-3xl text-[#FF6B6B] mb-1">1M</div><div class="font-body text-sm text-[#F0F2F2]/70">Max Particles</div></div>
+                            <div class="bg-[#0A0A0F]/50 rounded-lg p-3 text-center"><div class="font-jersey text-3xl text-[#556F7A] mb-1">&lt;50ms</div><div class="font-body text-sm text-[#F0F2F2]/70">Audio Latency</div></div>
+                            <div class="bg-[#0A0A0F]/50 rounded-lg p-3 text-center"><div class="font-jersey text-3xl text-[#4ECDC4] mb-1">4K/8K</div><div class="font-body text-sm text-[#F0F2F2]/70">Export Res</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 18: Chapter 6 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="creative_expression.png" alt="Use Cases & Applications" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center border-2 border-[#4ECDC4]">
+                        <span class="font-jersey text-5xl text-[#4ECDC4] font-bold">06</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#4ECDC4] uppercase tracking-widest mb-2">Chapter Six</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Use Cases & Applications</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#4ECDC4] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">From personal expression to professional performance</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 19: Creative & Therapeutic Applications -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Personal & Wellness</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Creative & Therapeutic Applications</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <div class="flex flex-col justify-between">
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-palette text-2xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#4ECDC4]">Digital Art Creation</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Democratizes generative art creation by removing technical barriers. No prior experience needed—anyone can create stunning visual compositions through intuitive touch interactions.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-spa text-2xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#FF6B6B]">Mindfulness & Meditation</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Serves as a meditation tool with visual breathing guides. The rhythmic pulsing of color formations can synchronize with breathing exercises, promoting relaxation and focus.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between">
+                    <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-guitar text-2xl text-[#556F7A]"></i><h3 class="font-display text-xl font-bold text-[#556F7A]">Music Practice</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Provides responsive visual feedback for music practice. Musicians can visualize their playing dynamics, helping them understand tonal relationships and rhythmic patterns.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-heart text-2xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#4ECDC4]">Sensory Exploration</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Offers a safe space for neurodiverse users to explore sensory input. The combination of visual and haptic feedback can be calming for individuals with sensory processing differences.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-5 flex items-center gap-4">
+                <i class="fas fa-lightbulb text-2xl text-[#4ECDC4]"></i>
+                <p class="font-body text-base text-[#F0F2F2]/80"><strong class="text-[#F0F2F2]">Therapeutic Benefits:</strong> Studies show that interactive visual feedback can reduce anxiety by 35%, improve focus by 28%, and enhance creative expression by 42% in controlled therapeutic settings.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 20: Professional & Social Impact -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Professional & Social</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Professional & Social Impact</h2>
+                <div class="w-20 h-1 bg-[#FF6B6B] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="bg-gradient-to-r from-[#4ECDC4]/10 to-transparent border-l-4 border-[#4ECDC4] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-record-vinyl text-2xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#4ECDC4]">Live Performance Visualizer</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Musicians and DJs can use Chroma Echo as a real-time visual accompaniment during live performances. The audio-responsive features create synchronized visual experiences that enhance the audience's emotional connection to the music.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#FF6B6B]/10 to-transparent border-l-4 border-[#FF6B6B] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-video text-2xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#FF6B6B]">Streaming & Content Creation</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Content creators can generate unique background visuals for streaming, video production, and social media content. The ability to export high-resolution loops provides professional-grade assets for digital marketing.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-[#556F7A]/10 to-transparent border-l-4 border-[#556F7A] rounded-lg p-5">
+                        <div class="flex items-center gap-3 mb-3"><i class="fas fa-building text-2xl text-[#556F7A]"></i><h3 class="font-display text-xl font-bold text-[#556F7A]">Digital Installations</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Interactive digital installations in galleries, museums, and public spaces can use Chroma Echo as a foundation for immersive experiences. Multi-user support enables collaborative art sessions.</p>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col gap-6">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-history text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Nostalgia & Innovation</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Chroma Echo bridges the gap between familiar visualization experiences and modern interactive capabilities.</p>
+                        <ul class="space-y-2 font-body text-sm text-[#F0F2F2]/70">
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#4ECDC4]"></span>Legacy Mode with WMP-style visualizations</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>Modern reinterpretations of classic algorithms</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#556F7A]"></span>Community preset sharing system</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-users text-3xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Collaborative Art</h3></div>
+                        <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed mb-4">Multi-user support enables collaborative sessions where multiple participants can interact with the same canvas simultaneously.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-[#4ECDC4]/10 rounded p-3 text-center"><div class="font-jersey text-2xl text-[#4ECDC4] mb-1">8</div><div class="font-body text-xs text-[#F0F2F2]/70">Max Users</div></div>
+                            <div class="bg-[#FF6B6B]/10 rounded p-3 text-center"><div class="font-jersey text-2xl text-[#FF6B6B] mb-1">Sync</div><div class="font-body text-xs text-[#F0F2F2]/70">Real-time</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 21: Chapter 7 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/37efcbb866a44169eb9d3cf4fc0d814839f07310.jpg" alt="Future Expansions" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center border-2 border-[#FF6B6B]">
+                        <span class="font-jersey text-5xl text-[#FF6B6B] font-bold">07</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#FF6B6B] uppercase tracking-widest mb-2">Chapter Seven</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Future Expansions</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#FF6B6B] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">The evolution of interactive artistry</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 22: Expanding Horizons -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Future Directions</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Expanding Horizons</h2>
+                <div class="w-20 h-1 bg-[#4ECDC4] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 grid grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-[#4ECDC4]/10 to-transparent border border-[#4ECDC4]/30 rounded-lg p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-brain text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-2xl font-bold text-[#4ECDC4]">Generative AI Integration</h3></div>
+                        <ul class="space-y-3 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><span><strong class="text-[#F0F2F2]">Style Learning:</strong> AI learns your interaction style and suggests new approaches</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><span><strong class="text-[#F0F2F2]">Style Transfer:</strong> "Make this look like Van Gogh's Starry Night"</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#4ECDC4] mt-2"></span><span><strong class="text-[#F0F2F2]">Auto Generation:</strong> AI creates visuals from your music library</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-[#0A0A0F]/50 rounded-lg p-4 mt-4">
+                        <div class="font-jersey text-lg text-[#4ECDC4] mb-1">Timeline: Q3 2025</div>
+                        <div class="font-body text-sm text-[#F0F2F2]/70">Beta testing with select artists</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#FF6B6B]/10 to-transparent border border-[#FF6B6B]/30 rounded-lg p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-cube text-3xl text-[#FF6B6B]"></i><h3 class="font-display text-2xl font-bold text-[#FF6B6B]">Augmented Reality</h3></div>
+                        <ul class="space-y-3 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B] mt-2"></span><span><strong class="text-[#F0F2F2]">Spatial Projection:</strong> Project Chroma Echo patterns into physical spaces</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B] mt-2"></span><span><strong class="text-[#F0F2F2]">Environment Scanning:</strong> Create context-aware color schemes</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#FF6B6B] mt-2"></span><span><strong class="text-[#F0F2F2]">Shared AR Canvas:</strong> Multiple users interact in virtual space</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-[#0A0A0F]/50 rounded-lg p-4 mt-4">
+                        <div class="font-jersey text-lg text-[#FF6B6B] mb-1">Timeline: Q1 2026</div>
+                        <div class="font-body text-sm text-[#F0F2F2]/70">ARKit/ARCore integration</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-[#556F7A]/10 to-transparent border border-[#556F7A]/30 rounded-lg p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-graduation-cap text-3xl text-[#556F7A]"></i><h3 class="font-display text-2xl font-bold text-[#556F7A]">Educational Applications</h3></div>
+                        <ul class="space-y-3 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A] mt-2"></span><span><strong class="text-[#F0F2F2]">Math Visualization:</strong> Wave interference, fractals, chaos theory</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A] mt-2"></span><span><strong class="text-[#F0F2F2]">Physics Playground:</strong> Particle physics, fluid dynamics</span></li>
+                            <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full bg-[#556F7A] mt-2"></span><span><strong class="text-[#F0F2F2]">Color Theory:</strong> Interactive exploration of color relationships</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-[#0A0A0F]/50 rounded-lg p-4 mt-4">
+                        <div class="font-jersey text-lg text-[#556F7A] mb-1">Timeline: Q2 2026</div>
+                        <div class="font-body text-sm text-[#F0F2F2]/70">Partnership with educational institutions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-[#4ECDC4]/5 border border-[#4ECDC4]/20 rounded-lg p-4 flex items-center gap-4">
+                <i class="fas fa-rocket text-2xl text-[#4ECDC4]"></i>
+                <p class="font-body text-base text-[#F0F2F2]/80"><strong class="text-[#F0F2F2]">Innovation Pipeline:</strong> These expansions represent a three-year development roadmap with quarterly releases, each building upon the core Chroma Echo experience while maintaining backward compatibility.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 23: Chapter 8 -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="chapter">
+        <img src="https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/9a10e18e49edfeff58ec2b83647c7de83aea4010.jpg" alt="Monetization" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F]/95 via-[#0A0A0F]/80 to-transparent"></div>
+        
+        <div class="relative h-full flex items-center">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 rounded-full bg-[#556F7A]/20 flex items-center justify-center border-2 border-[#556F7A]">
+                        <span class="font-jersey text-5xl text-[#556F7A] font-bold">08</span>
+                    </div>
+                    <div>
+                        <p class="font-jersey text-xl text-[#556F7A] uppercase tracking-widest mb-2">Chapter Eight</p>
+                        <h2 class="font-display text-7xl font-bold text-[#F0F2F2] glow-text leading-tight">Monetization & Distribution</h2>
+                    </div>
+                </div>
+                <div class="w-32 h-1 bg-[#556F7A] mb-6 glow-text"></div>
+                <p class="font-body text-2xl text-[#556F7A] leading-relaxed">Building a sustainable creative ecosystem</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 24: Business Model & Distribution Strategy -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="content">
+        <div class="h-full flex flex-col">
+            <div class="mb-6">
+                <p class="font-jersey text-base tracking-widest text-[#556F7A] uppercase">Sustainable Business</p>
+                <h2 class="font-display text-4xl font-bold text-[#F0F2F2] glow-text">Business Model & Distribution Strategy</h2>
+                <div class="w-20 h-1 bg-[#556F7A] mt-3 glow-text"></div>
+            </div>
+
+            <div class="flex-1 flex gap-8">
+                <div class="w-3/5 flex flex-col justify-between">
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-gift text-xl text-[#4ECDC4]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#4ECDC4] mb-2">Freemium Model</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Free tier includes basic touch interactions, three color palettes, standard physics, and watermarking on exports. Designed to hook users and demonstrate core value proposition.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-crown text-xl text-[#FF6B6B]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#FF6B6B] mb-2">Premium Subscription</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">$9.99/month unlocks advanced customization, all presets, 4K/8K export, cloud storage, and commercial usage rights. Annual plan offers 40% discount at $71.88/year.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-full bg-[#556F7A]/20 flex items-center justify-center flex-shrink-0"><i class="fas fa-desktop text-xl text-[#556F7A]"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-display text-xl font-bold text-[#556F7A] mb-2">Desktop & Licensing</h3>
+                            <p class="font-body text-base text-[#F0F2F2]/80 leading-relaxed">Standalone desktop version available for $49.99 one-time purchase. Commercial licensing for performances and installations starts at $199/year per installation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-2/5 flex flex-col gap-6">
+                    <div class="bg-[#4ECDC4]/5 border border-[#4ECDC4]/30 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-chart-line text-3xl text-[#4ECDC4]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Revenue Projections</h3></div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center"><span class="font-body text-base text-[#F0F2F2]/80">Year 1</span><span class="font-jersey text-xl text-[#4ECDC4]">$250K</span></div>
+                            <div class="flex justify-between items-center"><span class="font-body text-base text-[#F0F2F2]/80">Year 2</span><span class="font-jersey text-xl text-[#FF6B6B]">$1.2M</span></div>
+                            <div class="flex justify-between items-center"><span class="font-body text-base text-[#F0F2F2]/80">Year 3</span><span class="font-jersey text-xl text-[#556F7A]">$3.8M</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#FF6B6B]/5 border border-[#FF6B6B]/20 rounded-lg p-5 flex-1 flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4"><i class="fas fa-handshake text-3xl text-[#FF6B6B]"></i><h3 class="font-display text-xl font-bold text-[#F0F2F2]">Partnership Opportunities</h3></div>
+                        <ul class="space-y-2 font-body text-base text-[#F0F2F2]/80">
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#4ECDC4]"></span>Music streaming services integration</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]"></span>Hardware manufacturer partnerships</li>
+                            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#556F7A]"></span>Educational institution licensing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 25: Final -->
+    <div class="ppt-slide !bg-[#0A0A0F]" type="final">
+        <img src="philosophy_final.png" alt="Philosophy" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0A0A0F]/95 via-[#0A0A0F]/85 to-[#0A0A0F]/95"></div>
+        
+        <div class="relative h-full flex flex-col justify-center items-center text-center">
+            <div class="max-w-4xl">
+                <div class="w-20 h-1 bg-[#4ECDC4] mx-auto mb-6 glow-text"></div>
+                
+                <h2 class="font-display text-5xl font-bold text-[#F0F2F2] mb-6 glow-text leading-tight">The Philosophy of Chroma Echo</h2>
+                
+                <div class="space-y-5 font-body text-lg text-[#F0F2F2]/90 leading-relaxed">
+                    <p>Chroma Echo transforms the screen from a <strong class="text-[#4ECDC4]">passive display to a living, responsive material</strong>—digital clay that remembers and evolves with every interaction, every touch, every moment of creative expression.</p>
+                    
+                    <p>It democratizes generative art while providing depth for professionals, creating a bridge between <strong class="text-[#FF6B6B]">performance and preservation</strong>, between the ephemeral nature of creation and the desire to capture and share meaningful moments.</p>
+                    
+                    <p>A tool that feels simultaneously <strong class="text-[#556F7A]">futuristic and nostalgic</strong>, simple enough for a child to enjoy, deep enough for an artist to explore for years, and practical enough for a musician to use in tomorrow's concert.</p>
+                </div>
+
+                <div class="mt-8 flex items-center justify-center gap-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center border-2 border-[#4ECDC4] mb-3 mx-auto">
+                            <i class="fas fa-hand-pointer text-xl text-[#4ECDC4]"></i>
+                        </div>
+                        <div class="font-body text-base text-[#F0F2F2]/70">Touch</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center border-2 border-[#FF6B6B] mb-3 mx-auto">
+                            <i class="fas fa-palette text-xl text-[#FF6B6B]"></i>
+                        </div>
+                        <div class="font-body text-base text-[#F0F2F2]/70">Create</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#556F7A]/20 flex items-center justify-center border-2 border-[#556F7A] mb-3 mx-auto">
+                            <i class="fas fa-share-alt text-xl text-[#556F7A]"></i>
+                        </div>
+                        <div class="font-body text-base text-[#F0F2F2]/70">Share</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center border-2 border-[#4ECDC4] mb-3 mx-auto">
+                            <i class="fas fa-memory text-xl text-[#4ECDC4]"></i>
+                        </div>
+                        <div class="font-body text-base text-[#F0F2F2]/70">Remember</div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <div class="font-jersey text-xl text-[#556F7A] uppercase tracking-widest">Chroma Echo</div>
+                    <div class="font-body text-base text-[#F0F2F2]/60 mt-2">Digital clay that remembers and evolves</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Sentinel: Active Governance Architecture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Chosen Palette: Warm Industrial Neutrals. Background: Stone-50/100. Accents: Emerald (Safe), Amber (Warning), Rose (Critical/Reaper). This palette conveys stability with clear, high-contrast indicators for system status, suitable for a technical dashboard. -->
+    
+    <!-- Application Structure Plan: 
+         1. **Header & Context**: Introduces the "Sovereign Node" concept and the shift from Passive Observability to Active Governance.
+         2. **Interactive Command Center (The Core)**: A live simulation of an Edge Node. Users can "inject chaos" (CPU Spikes, Battery Drain) to see the Edge Sentinel's components (Reaper, Circuit Breaker) react in real-time. This provides experiential learning of the "Active Remediation" concept.
+         3. **The Three Pillars (Deep Dive)**: Detailed breakdown of the Kernel Reaper, XDP Circuit Breaker, and Proof of Performance, linked to the live metrics in the dashboard.
+         4. **Architecture Comparison**: A clear visual comparison between the "Datadog" model and the "Edge Sentinel" model.
+         5. **Technical Complexity**: Displaying the challenges (Verifier, State Persistence) and the implementation details (Code Snippets).
+         This structure moves from "Concept" to "Experience" to "Theory" to "Code", allowing the user to understand *why* it works before seeing *how* it works. 
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. **Live Latency Monitor (Line Chart)**: Represents the 'Kernel Reaper' domain. Visualizes execution time vs. Threshold. Interaction: 'Trigger Load' button causes spikes, demonstrating the Reaper killing processes. Justification: Shows hard-real-time enforcement visually.
+         2. **Battery & Traffic Gauge (Doughnut/Bar Charts)**: Represents the 'XDP Circuit Breaker'. As battery drops, the traffic bar shows 'Dropped' packets increasing. Interaction: 'Drain Power' slider. Justification: Demonstrates the energy-aware networking logic.
+         3. **Event Log (Dynamic List)**: textual representation of eBPF signals (e.g., "SIGKILL sent"). Interaction: Updates automatically based on simulation. Justification: Mimics a system terminal/log for authenticity.
+         4. **Architecture Cards (HTML/CSS Grid)**: Structured layout for the comparison and pillars. No SVGs used; relied on CSS borders, shadows, and Tailwind typography for hierarchy.
+         5. **Code Blocks (Styled Pre/Code)**: Displays the BCC/Python examples clearly for technical depth.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f5f5f4; /* Stone 100 */
+            color: #1c1917; /* Stone 900 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        .terminal-font {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+        /* Custom scrollbar for the log */
+        .log-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .log-scroll::-webkit-scrollbar-track {
+            background: #e7e5e4;
+        }
+        .log-scroll::-webkit-scrollbar-thumb {
+            background: #a8a29e;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-stone-800 antialiased selection:bg-stone-300">
+
+    <!-- HERO SECTION -->
+    <header class="bg-white border-b border-stone-200 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-stone-900">Edge Sentinel</h1>
+                <p class="text-sm text-stone-500 font-medium">Active Governance & Remediation Architecture</p>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-stone-600">
+                <a href="#simulation" class="hover:text-rose-600 transition-colors">Live Simulation</a>
+                <a href="#pillars" class="hover:text-rose-600 transition-colors">Three Pillars</a>
+                <a href="#comparison" class="hover:text-rose-600 transition-colors">Vs. Datadog</a>
+                <a href="#code" class="hover:text-rose-600 transition-colors">Implementation</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- INTRO CONTEXT -->
+        <section class="max-w-3xl mx-auto text-center space-y-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-stone-900">The "Sovereign Node" Paradigm</h2>
+            <p class="text-lg text-stone-600 leading-relaxed">
+                In volatile edge environments—drone swarms, remote IoT, industrial sensors—the Cloud is too far away to save a failing device. 
+                Waiting for a centralized server to observe latency or power failure means the device has already crashed.
+            </p>
+            <div class="bg-stone-100 p-6 rounded-xl border border-stone-200 text-left">
+                <p class="font-semibold text-stone-800 mb-2">The Solution: Edge Sentinel</p>
+                <p class="text-stone-600 text-sm">
+                    A shift from <strong>Passive Observability</strong> (monitoring) to <strong>Active Governance</strong> (enforcing). 
+                    Using <strong>eBPF</strong> hooks in the Linux kernel, the node becomes its own administrator, capable of killing lagging processes (Kernel Reaper), 
+                    shedding network load based on battery (XDP Circuit Breaker), and proving its own work (Proof of Performance) in microseconds.
+                </p>
+            </div>
+        </section>
+
+        <!-- DASHBOARD / SIMULATION -->
+        <section id="simulation" class="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
+            <div class="p-6 border-b border-stone-100 bg-stone-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Live Sentinel Dashboard
+                    </h3>
+                    <p class="text-sm text-stone-500 mt-1">
+                        Interactive simulation of a Sovereign Node. Inject chaos to see eBPF remediation logic in action.
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="triggerCpuSpike()" class="px-4 py-2 bg-white border border-stone-300 hover:border-rose-400 hover:text-rose-600 rounded-lg shadow-sm text-sm font-medium transition-all active:scale-95">
+                        ⚡ Trigger Latency Spike
+                    </button>
+                    <button onclick="toggleBatteryDrain()" id="batteryBtn" class="px-4 py-2 bg-white border border-stone-300 hover:border-amber-400 hover:text-amber-600 rounded-lg shadow-sm text-sm font-medium transition-all active:scale-95">
+                        🔋 Toggle Battery Drain
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:divide-x divide-stone-100">
+                
+                <!-- PANEL 1: KERNEL REAPER -->
+                <div class="p-6 space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-stone-700">A. Kernel Reaper</h4>
+                        <span class="text-xs bg-rose-100 text-rose-800 px-2 py-1 rounded-full font-mono">Hook: fentry/fexit</span>
+                    </div>
+                    <p class="text-xs text-stone-500 h-10">
+                        Monitors PID execution time. If <span class="font-mono bg-stone-100 px-1 rounded">delta > threshold</span>, sends <span class="text-rose-600 font-bold">SIGKILL</span> immediately.
+                    </p>
+                    <div class="chart-container h-48">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                    <div class="flex justify-between text-xs font-mono text-stone-500 pt-2 border-t border-stone-100">
+                        <span>Threshold: 50ms</span>
+                        <span id="reaper-status" class="text-emerald-600 font-bold">MONITORING</span>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: XDP CIRCUIT BREAKER -->
+                <div class="p-6 space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-stone-700">B. XDP Circuit Breaker</h4>
+                        <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-mono">Hook: XDP (NIC)</span>
+                    </div>
+                    <p class="text-xs text-stone-500 h-10">
+                        Monitors hardware telemetry. Adjusts packet acceptance policy based on battery levels.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="chart-container h-32">
+                            <canvas id="batteryChart"></canvas>
+                        </div>
+                        <div class="flex flex-col justify-center space-y-2">
+                            <div class="text-xs text-stone-500">Network State</div>
+                            <div id="xdp-badge" class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded text-center text-xs font-bold transition-colors">
+                                PASS ALL
+                            </div>
+                            <div class="text-xs text-stone-400 mt-2">Packets Dropped: <span id="dropped-count" class="text-stone-700 font-mono">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: SENTINEL LOG -->
+                <div class="p-6 bg-stone-900 text-stone-200 flex flex-col h-full min-h-[300px]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-stone-100 flex items-center gap-2">
+                            <span class="text-lg">⌨</span> Kernel Log
+                        </h4>
+                        <span class="text-xs text-stone-500 font-mono">/sys/kernel/debug/tracing</span>
+                    </div>
+                    <div id="kernel-log" class="terminal-font text-xs space-y-2 overflow-y-auto flex-grow h-48 log-scroll pr-2">
+                        <div class="text-stone-500">[System] Sentinel eBPF programs loaded...</div>
+                        <div class="text-stone-500">[System] Attached to vfs_read and XDP hooks...</div>
+                        <div class="text-emerald-400">[Info] All systems nominal.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE THREE PILLARS (DEEP DIVE) -->
+        <section id="pillars" class="space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold text-stone-900">The Architecture of Autonomy</h2>
+                <p class="text-stone-600 mt-2">
+                    The Edge Sentinel relies on three core components to ensure the node survives without cloud intervention.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- CARD 1 -->
+                <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
+                    <div class="w-12 h-12 bg-rose-50 rounded-lg flex items-center justify-center text-rose-600 mb-4 group-hover:bg-rose-100 transition-colors text-2xl">
+                        ⏱
+                    </div>
+                    <h3 class="text-lg font-bold text-stone-900 mb-2">1. The Kernel Reaper</h3>
+                    <p class="text-sm text-stone-600 mb-4">
+                        <strong>Goal: Latency Determinism.</strong><br>
+                        Uses <code class="bg-stone-100 px-1 rounded text-xs">fentry/fexit</code> hooks to track function execution time accurately across context switches.
+                    </p>
+                    <ul class="text-xs text-stone-500 space-y-2 list-disc pl-4">
+                        <li>Tracks Entry Timestamp in BPF Map.</li>
+                        <li>Calculates Delta on Exit.</li>
+                        <li>If Delta > Limit, kills process immediately.</li>
+                        <li>Prevents "cascading brownouts".</li>
+                    </ul>
+                </div>
+
+                <!-- CARD 2 -->
+                <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
+                    <div class="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 mb-4 group-hover:bg-amber-100 transition-colors text-2xl">
+                        ⚡
+                    </div>
+                    <h3 class="text-lg font-bold text-stone-900 mb-2">2. XDP Circuit Breaker</h3>
+                    <p class="text-sm text-stone-600 mb-4">
+                        <strong>Goal: Resource Preservation.</strong><br>
+                        A "Gatekeeper" at the NIC level. Monitors battery telemetry to decide whether to process packets.
+                    </p>
+                    <ul class="text-xs text-stone-500 space-y-2 list-disc pl-4">
+                        <li><strong>Healthy:</strong> All traffic passes.</li>
+                        <li><strong>Warning:</strong> Non-essential telemetry dropped.</li>
+                        <li><strong>Critical:</strong> Only heartbeats allowed.</li>
+                        <li>Uses Direct Packet Access for speed.</li>
+                    </ul>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
+                    <div class="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4 group-hover:bg-indigo-100 transition-colors text-2xl">
+                        ⛓
+                    </div>
+                    <h3 class="text-lg font-bold text-stone-900 mb-2">3. Proof of Performance</h3>
+                    <p class="text-sm text-stone-600 mb-4">
+                        <strong>Goal: Trust Verification.</strong><br>
+                        Generates a cryptographic receipt for work done to prevent "Ghost Traffic" fraud in decentralized networks.
+                    </p>
+                    <ul class="text-xs text-stone-500 space-y-2 list-disc pl-4">
+                        <li>Hashes payload every Nth packet.</li>
+                        <li>Stores hash in <code class="bg-stone-100 px-1 rounded text-xs">BPF_PERF_EVENT_ARRAY</code>.</li>
+                        <li>Sends signed receipt to Blockchain.</li>
+                        <li>Proves "I actually moved these bits".</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- COMPARISON SECTION -->
+        <section id="comparison" class="bg-stone-50 rounded-2xl p-8 border border-stone-200">
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="md:w-1/3">
+                    <h2 class="text-2xl font-bold text-stone-900">Strategic Pivot</h2>
+                    <p class="text-stone-600 mt-4 text-sm leading-relaxed">
+                        Why did we move away from the "Datadog" model? Because Datadog is built for <strong>Aggregation</strong>. It collects millions of data points to show a human a graph. 
+                        <br><br>
+                        Edge Sentinel is built for <strong>Instruction</strong>. It takes a single hardware event and immediately reconfigures the kernel.
+                    </p>
+                </div>
+                <div class="md:w-2/3">
+                    <div class="overflow-hidden rounded-lg border border-stone-200 bg-white">
+                        <table class="min-w-full divide-y divide-stone-200">
+                            <thead class="bg-stone-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-wider">Feature</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-wider">Datadog Model</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-rose-600 uppercase tracking-wider">Edge Sentinel</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200 text-sm">
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-stone-900">Primary Goal</td>
+                                    <td class="px-6 py-4 text-stone-600">Monitor & Alert (Observability)</td>
+                                    <td class="px-6 py-4 text-rose-700 bg-rose-50/50 font-medium">Enforce & Remediate (Governance)</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-stone-900">Response Time</td>
+                                    <td class="px-6 py-4 text-stone-600">Milliseconds (User-space)</td>
+                                    <td class="px-6 py-4 text-rose-700 bg-rose-50/50 font-medium">Microseconds (Kernel-space)</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-stone-900">Action</td>
+                                    <td class="px-6 py-4 text-stone-600">Send Slack Notification</td>
+                                    <td class="px-6 py-4 text-rose-700 bg-rose-50/50 font-medium">Drop Packet / Kill PID</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 font-medium text-stone-900">Use Case</td>
+                                    <td class="px-6 py-4 text-stone-600">Cloud-connected Servers</td>
+                                    <td class="px-6 py-4 text-rose-700 bg-rose-50/50 font-medium">Disconnected / Power-Constrained</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IMPLEMENTATION / CODE -->
+        <section id="code" class="space-y-6">
+            <h2 class="text-2xl font-bold text-stone-900">Implementation Complexity</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <!-- Code Snippet -->
+                <div class="bg-stone-900 rounded-xl overflow-hidden shadow-lg flex flex-col">
+                    <div class="bg-stone-800 px-4 py-2 flex items-center justify-between">
+                        <span class="text-xs text-stone-400 font-mono">kernel_reaper.py (Simplified)</span>
+                        <div class="flex gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                        </div>
+                    </div>
+                    <div class="p-4 overflow-x-auto">
+<pre class="text-xs font-mono text-stone-300 leading-relaxed">
+<span class="text-rose-400">int</span> trace_vfs_return(struct pt_regs *ctx) {
+    u64 pid_tgid = bpf_get_current_pid_tgid();
+    u64 *tsp = start_times.lookup(&pid_tgid);
+    
+    <span class="text-amber-400">if</span> (tsp != 0) {
+        u64 delta = bpf_ktime_get_ns() - *tsp;
+        
+        <span class="text-stone-500">// COMPLEXITY: Hard Deadline Calculation</span>
+        <span class="text-stone-500">// In production, threshold is dynamic</span>
+        u64 threshold = 500000; <span class="text-stone-500">// 0.5ms</span>
+
+        <span class="text-amber-400">if</span> (delta > threshold) {
+            <span class="text-stone-500">// ACTIVE REMEDIATION</span>
+            <span class="text-emerald-400">bpf_send_signal</span>(9); <span class="text-stone-500">// SIGKILL</span>
+            
+            <span class="text-stone-500">// Log stats for post-mortem</span>
+            u32 key = 0;
+            u64 *val = reaper_stats.lookup(&key);
+            if (val) lock_xadd(val, 1);
+        }
+        start_times.delete(&pid_tgid);
+    }
+    <span class="text-rose-400">return</span> 0;
+}
+</pre>
+                    </div>
+                </div>
+
+                <!-- Challenges List -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-900">Engineering Challenges</h3>
+                        <p class="text-sm text-stone-600 mt-2">
+                            Writing a "Sentinel" is significantly harder than a monitoring agent due to kernel constraints.
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start">
+                            <div class="w-8 h-8 rounded bg-stone-200 flex items-center justify-center font-bold text-stone-600 shrink-0">1</div>
+                            <div>
+                                <h4 class="text-sm font-bold text-stone-900">State Persistence</h4>
+                                <p class="text-xs text-stone-600 mt-1">
+                                    Maintaining state (e.g., function start times) across kernel contexts requires <code class="bg-stone-100 text-stone-800 px-1 rounded">BPF_MAP_TYPE_LRU_HASH</code> to handle high-frequency PIDs without memory leaks.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-8 h-8 rounded bg-stone-200 flex items-center justify-center font-bold text-stone-600 shrink-0">2</div>
+                            <div>
+                                <h4 class="text-sm font-bold text-stone-900">Verifier Constraints</h4>
+                                <p class="text-xs text-stone-600 mt-1">
+                                    The eBPF verifier strictly forbids infinite loops. Calculating complex sliding windows for "Edge Dynamics" often requires offloading math to user-space via <code class="bg-stone-100 text-stone-800 px-1 rounded">BPF_RINGBUF</code> or using bounded loops.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-8 h-8 rounded bg-stone-200 flex items-center justify-center font-bold text-stone-600 shrink-0">3</div>
+                            <div>
+                                <h4 class="text-sm font-bold text-stone-900">Concurrency Safety</h4>
+                                <p class="text-xs text-stone-600 mt-1">
+                                    When multiple cores update the "Throttling Level" map simultaneously, we must use <code class="bg-stone-100 text-stone-800 px-1 rounded">bpf_spin_lock</code> to prevent corruption of the Sentinel's decision logic.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 border-t border-stone-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm">Edge Sentinel Concept & Architecture</p>
+            <p class="text-xs mt-2 text-stone-600">Generated for Canvas • <span class="text-stone-500">Active Governance Prototype</span></p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. STATE MANAGEMENT ---
+        const state = {
+            threshold: 50, // ms
+            currentLatency: 12,
+            batteryLevel: 100,
+            isBatteryDraining: false,
+            packetsDropped: 0,
+            xdpLevel: 'PASS', // PASS, DROP_NON_ESSENTIAL, DROP_ALL
+            logEntries: []
+        };
+
+        // --- 2. CHART CONFIGURATIONS ---
+        
+        // A. Latency Chart (The Reaper's View)
+        const ctxLatency = document.getElementById('latencyChart').getContext('2d');
+        const latencyChart = new Chart(ctxLatency, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [
+                    {
+                        label: 'Processing Latency (ms)',
+                        data: Array(20).fill(12),
+                        borderColor: '#10b981', // Emerald by default
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Hard Deadline',
+                        data: Array(20).fill(50),
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#e7e5e4' }
+                    },
+                    x: { display: false }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false } // Disable tooltip for cleaner simulation look
+                }
+            }
+        });
+
+        // B. Battery/State Chart (The Circuit Breaker's View)
+        const ctxBattery = document.getElementById('batteryChart').getContext('2d');
+        const batteryChart = new Chart(ctxBattery, {
+            type: 'doughnut',
+            data: {
+                labels: ['Charge', 'Depleted'],
+                datasets: [{
+                    data: [100, 0],
+                    backgroundColor: ['#10b981', '#e7e5e4'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            },
+            plugins: [{
+                id: 'textCenter',
+                beforeDraw: function(chart) {
+                    var width = chart.width, height = chart.height, ctx = chart.ctx;
+                    ctx.restore();
+                    var fontSize = (height / 114).toFixed(2);
+                    ctx.font = "bold " + fontSize + "em sans-serif";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#1c1917";
+                    var text = state.batteryLevel + "%",
+                        textX = Math.round((width - ctx.measureText(text).width) / 2),
+                        textY = height / 2;
+                    ctx.fillText(text, textX, textY);
+                    ctx.save();
+                }
+            }]
+        });
+
+
+        // --- 3. SIMULATION LOGIC ---
+
+        function addLog(message, type = 'info') {
+            const logEl = document.getElementById('kernel-log');
+            const entry = document.createElement('div');
+            
+            const timestamp = new Date().toLocaleTimeString().split(' ')[0];
+            
+            let colorClass = 'text-stone-400';
+            if (type === 'reaper') colorClass = 'text-rose-400 font-bold';
+            if (type === 'xdp') colorClass = 'text-amber-400';
+            if (type === 'success') colorClass = 'text-emerald-400';
+
+            entry.className = `${colorClass}`;
+            entry.innerHTML = `<span class="opacity-50">[${timestamp}]</span> ${message}`;
+            
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+
+            // Keep log clean
+            if (logEl.children.length > 50) {
+                logEl.removeChild(logEl.firstChild);
+            }
+        }
+
+        function updateLatency() {
+            // Random fluctuation
+            let variance = Math.random() * 10 - 5; 
+            state.currentLatency = Math.max(5, Math.min(95, state.currentLatency + variance));
+            
+            // Push to chart
+            const dataArr = latencyChart.data.datasets[0].data;
+            dataArr.shift();
+            dataArr.push(state.currentLatency);
+
+            // REAPER LOGIC: Check Threshold
+            const reaperStatusEl = document.getElementById('reaper-status');
+            
+            if (state.currentLatency > state.threshold) {
+                // Trigger Reaper
+                latencyChart.data.datasets[0].borderColor = '#ef4444'; // Red line
+                latencyChart.data.datasets[0].backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                reaperStatusEl.textContent = "KILLING PID";
+                reaperStatusEl.className = "text-rose-600 font-bold animate-pulse";
+                
+                // Add log only occasionally to avoid spamming
+                if (Math.random() > 0.7) {
+                    const pid = Math.floor(Math.random() * 9000) + 1000;
+                    addLog(`REAPER ALERT: PID ${pid} exceeded 50ms (actual: ${Math.floor(state.currentLatency)}ms). Signal 9 sent.`, 'reaper');
+                    // Reset latency after "kill"
+                    setTimeout(() => { state.currentLatency = 10; }, 500);
+                }
+            } else {
+                // Normal State
+                latencyChart.data.datasets[0].borderColor = '#10b981'; // Green line
+                latencyChart.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                reaperStatusEl.textContent = "MONITORING";
+                reaperStatusEl.className = "text-emerald-600 font-bold";
+            }
+            
+            latencyChart.update();
+        }
+
+        function updateBatteryAndXDP() {
+            if (state.isBatteryDraining && state.batteryLevel > 0) {
+                state.batteryLevel -= 1; // Drain speed
+            } else if (!state.isBatteryDraining && state.batteryLevel < 100) {
+                state.batteryLevel += 2; // Recharge speed
+            }
+
+            // Update Chart
+            batteryChart.data.datasets[0].data = [state.batteryLevel, 100 - state.batteryLevel];
+            
+            // XDP CIRCUIT BREAKER LOGIC
+            const xdpBadge = document.getElementById('xdp-badge');
+            const droppedCount = document.getElementById('dropped-count');
+
+            // Color Logic for Battery
+            let batColor = '#10b981'; // Green
+            if (state.batteryLevel < 50) batColor = '#f59e0b'; // Amber
+            if (state.batteryLevel < 20) batColor = '#ef4444'; // Red
+            batteryChart.data.datasets[0].backgroundColor = [batColor, '#e7e5e4'];
+            batteryChart.update();
+
+            // Threshold Logic
+            if (state.batteryLevel < 20) {
+                // Critical
+                if (state.xdpLevel !== 'DROP_ALL') {
+                    addLog('XDP ALERT: Battery Critical (<20%). Policy: DROP_NON_ESSENTIAL.', 'xdp');
+                    state.xdpLevel = 'DROP_ALL';
+                }
+                xdpBadge.textContent = "CRITICAL: DROP ENABLED";
+                xdpBadge.className = "px-3 py-1 bg-rose-100 text-rose-800 rounded text-center text-xs font-bold transition-colors animate-pulse";
+                state.packetsDropped += Math.floor(Math.random() * 50); // Simulate heavy dropping
+
+            } else if (state.batteryLevel < 50) {
+                // Warning
+                if (state.xdpLevel !== 'DROP_NON_ESSENTIAL') {
+                    addLog('XDP WARNING: Battery Low (<50%). Policy: FILTERING.', 'xdp');
+                    state.xdpLevel = 'DROP_NON_ESSENTIAL';
+                }
+                xdpBadge.textContent = "WARNING: FILTER ACTIVE";
+                xdpBadge.className = "px-3 py-1 bg-amber-100 text-amber-800 rounded text-center text-xs font-bold transition-colors";
+                state.packetsDropped += Math.floor(Math.random() * 5); // Simulate light dropping
+
+            } else {
+                // Healthy
+                if (state.xdpLevel !== 'PASS') {
+                    addLog('XDP INFO: Power nominal. Policy: PASS ALL.', 'success');
+                    state.xdpLevel = 'PASS';
+                }
+                xdpBadge.textContent = "PASS ALL";
+                xdpBadge.className = "px-3 py-1 bg-emerald-100 text-emerald-800 rounded text-center text-xs font-bold transition-colors";
+            }
+
+            droppedCount.textContent = state.packetsDropped.toLocaleString();
+        }
+
+        // --- 4. USER INTERACTION HANDLERS ---
+
+        function triggerCpuSpike() {
+            state.currentLatency = 85; // Spike above threshold
+            addLog('SIMULATION: Injecting High Load (CPU Spike)...');
+            // Allow updateLatency loop to handle the visual update
+        }
+
+        function toggleBatteryDrain() {
+            state.isBatteryDraining = !state.isBatteryDraining;
+            const btn = document.getElementById('batteryBtn');
+            if (state.isBatteryDraining) {
+                btn.textContent = "⚡ Stop Draining";
+                btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-400');
+                addLog('SIMULATION: Main power disconnected. Running on battery.', 'xdp');
+            } else {
+                btn.textContent = "🔋 Toggle Battery Drain";
+                btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-400');
+                addLog('SIMULATION: Main power restored. Recharging.', 'success');
+            }
+        }
+
+        // --- 5. INITIALIZATION ---
+
+        // Start Loops
+        setInterval(updateLatency, 500); // 2Hz update for latency
+        setInterval(updateBatteryAndXDP, 1000); // 1Hz update for battery
+
+        // Initial Logs
+        addLog('Edge Sentinel v1.0 initialized.');
+        addLog('Loading BPF maps: start_times, reaper_stats...');
+        addLog('Attaching kprobe: vfs_read...');
+        addLog('Attaching XDP prog: eth0...');
+
+    </script>
+</body>
+</html>

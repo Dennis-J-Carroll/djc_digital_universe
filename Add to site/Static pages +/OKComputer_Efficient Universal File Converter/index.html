@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Converter Pro - Convert Any File Type Instantly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-charcoal: #212529;
+            --dark-grey: #495057;
+            --medium-grey: #ADB5BD;
+            --light-grey: #DEE2E6;
+            --bright-blue: #007BFF;
+            --success-green: #28A745;
+            --warning-amber: #FFC107;
+            --error-red: #DC3545;
+            --pure-white: #FFFFFF;
+            --off-white: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+            min-height: 100vh;
+        }
+        
+        .font-display { font-family: 'Poppins', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--deep-charcoal) 0%, var(--dark-grey) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('./resources/hero-abstract.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .drag-zone {
+            border: 3px dashed var(--medium-grey);
+            transition: all 0.3s ease;
+            background: var(--pure-white);
+        }
+        
+        .drag-zone:hover,
+        .drag-zone.dragover {
+            border-color: var(--bright-blue);
+            background: rgba(0, 123, 255, 0.05);
+            transform: scale(1.02);
+        }
+        
+        .format-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .format-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+        
+        .btn-primary {
+            background: var(--bright-blue);
+            color: var(--pure-white);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #0056B3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .nav-tab {
+            position: relative;
+            color: var(--dark-grey);
+            transition: color 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            color: var(--bright-blue);
+        }
+        
+        .nav-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--bright-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-tab.active::after {
+            width: 100%;
+        }
+        
+        .preview-panel {
+            background: var(--off-white);
+            border: 1px solid var(--light-grey);
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .stats-card {
+            background: var(--pure-white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .dark-mode {
+            background: linear-gradient(135deg, #1A1D23 0%, #212529 100%);
+        }
+        
+        .dark-mode .hero-bg {
+            background: linear-gradient(135deg, #0D0F12 0%, #1A1D23 100%);
+        }
+        
+        .dark-mode .drag-zone {
+            background: #2A2F36;
+            border-color: #495057;
+        }
+        
+        .dark-mode .stats-card {
+            background: #2A2F36;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .typewriter-cursor {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-xl text-gray-900">File Converter Pro</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-8">
+                    <a href="index.html" class="nav-tab active text-sm font-medium">Convert</a>
+                    <a href="batch.html" class="nav-tab text-sm font-medium">Batch</a>
+                    <a href="history.html" class="nav-tab text-sm font-medium">History</a>
+                    <a href="help.html" class="nav-tab text-sm font-medium">Help</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg py-16">
+        <div class="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="font-display font-bold text-4xl md:text-5xl text-white mb-4">
+                    <span id="hero-text">Convert Any File Type</span>
+                    <span class="typewriter-cursor">|</span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Transform your files instantly with our powerful conversion engine. 
+                    Support for 100+ formats with real-time preview and batch processing.
+                </p>
+                <div class="flex justify-center space-x-4 text-sm text-gray-400">
+                    <span class="flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                        </svg>
+                        <span>100+ Formats</span>
+                    </span>
+                    <span class="flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                        </svg>
+                        <span>Real-time Preview</span>
+                    </span>
+                    <span class="flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                        </svg>
+                        <span>Batch Processing</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Conversion Interface -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel - File Input -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Upload File</h2>
+                    
+                    <div id="dragZone" class="drag-zone rounded-lg p-8 text-center cursor-pointer">
+                        <div class="particle-container" id="particleContainer"></div>
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-gray-600 mb-2">Drag and drop your file here</p>
+                        <p class="text-sm text-gray-500">or click to browse</p>
+                        <input type="file" id="fileInput" class="hidden" />
+                    </div>
+                    
+                    <div id="fileInfo" class="mt-4 hidden">
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p id="fileName" class="font-medium text-gray-900"></p>
+                                <p id="fileSize" class="text-sm text-gray-500"></p>
+                            </div>
+                            <button id="removeFile" class="text-gray-400 hover:text-red-500 transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Format Options Panel -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Conversion Options</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Encoding</label>
+                            <select id="encodingSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="utf-8">UTF-8</option>
+                                <option value="ascii">ASCII</option>
+                                <option value="base64">Base64</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="prettyPrint" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Pretty print output</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="preserveComments" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">Preserve comments</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Panel - Format Selection -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Select Target Format</h2>
+                    
+                    <div class="relative mb-4">
+                        <input type="text" id="formatSearch" placeholder="Search formats..." 
+                               class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                        </svg>
+                    </div>
+                    
+                    <div id="formatGrid" class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                        <!-- Format cards will be populated by JavaScript -->
+                    </div>
+                    
+                    <div id="conversionProgress" class="mt-6 hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Converting...</span>
+                            <span id="progressPercent" class="text-sm text-gray-500">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="space-y-3">
+                        <button id="convertBtn" class="btn-primary w-full py-3 px-4 rounded-lg font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Convert File
+                        </button>
+                        <button id="resetBtn" class="w-full py-2 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Preview & Download -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="font-display font-semibold text-xl text-gray-900 mb-4">Preview</h2>
+                    
+                    <div id="previewContainer" class="preview-panel p-4 min-h-64 flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                            </svg>
+                            <p>Preview will appear here</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="downloadSection" class="bg-white rounded-xl shadow-lg p-6 hidden">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Download Result</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p id="outputFileName" class="font-medium text-gray-900"></p>
+                                <p id="outputFileSize" class="text-sm text-gray-500"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button id="downloadBtn" class="btn-primary flex-1 py-2 px-4 rounded-lg font-medium">
+                                Download File
+                            </button>
+                            <button id="copyBtn" class="flex-1 py-2 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                Copy to Clipboard
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span id="conversionTime"></span>
+                            <span id="compressionRatio"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-2">
+                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            📁 Add to Batch Queue
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            📊 View Conversion Stats
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            ⚙️ Save as Preset
+                        </button>
+                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            🔗 Share Conversion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Dashboard -->
+        <section class="mt-16 scroll-reveal">
+            <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Conversion Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stats-card p-6 text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 2H4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-bold text-2xl text-gray-900" id="totalConversions">12,847</h3>
+                    <p class="text-gray-600">Total Conversions</p>
+                </div>
+                
+                <div class="stats-card p-6 text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-bold text-2xl text-gray-900" id="successRate">99.2%</h3>
+                    <p class="text-gray-600">Success Rate</p>
+                </div>
+                
+                <div class="stats-card p-6 text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-bold text-2xl text-gray-900" id="supportedFormats">150+</h3>
+                    <p class="text-gray-600">Supported Formats</p>
+                </div>
+                
+                <div class="stats-card p-6 text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-bold text-2xl text-gray-900" id="avgTime">2.3s</h3>
+                    <p class="text-gray-600">Avg. Conversion Time</p>
+                </div>
+            </div>
+            
+            <!-- Chart -->
+            <div class="mt-12">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-display font-semibold text-lg text-gray-900 mb-4">Popular Format Conversions</h3>
+                    <div id="formatChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Recent Conversions -->
+        <section class="mt-16 scroll-reveal">
+            <h2 class="font-display font-bold text-3xl text-gray-900 text-center mb-12">Recent Conversions</h2>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div id="recentConversions" class="space-y-4">
+                    <!-- Recent conversion items will be populated by JavaScript -->
+                </div>
+                <div class="text-center mt-6">
+                    <a href="history.html" class="text-blue-600 hover:text-blue-700 font-medium">View All History →</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600">© 2024 File Converter Pro. Built for extreme usability and performance.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div id="notification" class="notification bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
+        <div class="flex items-center space-x-3">
+            <div id="notificationIcon" class="w-8 h-8 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <p id="notificationMessage" class="font-medium text-gray-900"></p>
+            </div>
+            <button id="closeNotification" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

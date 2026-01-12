@@ -157,3 +157,45 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
     })
   })
 }
+
+/**
+ * @type {import('gatsby').GatsbyNode['onCreateWebpackConfig']}
+ * Configure Webpack for optimal code splitting
+ */
+exports.onCreateWebpackConfig = ({ actions, stage }) => {
+  if (stage === 'build-javascript' || stage === 'develop') {
+    actions.setWebpackConfig({
+      optimization: {
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // Split Framer Motion into separate chunk
+            framerMotion: {
+              test: /[\\/]node_modules[\\/](framer-motion)[\\/]/,
+              name: 'framer-motion',
+              priority: 20,
+            },
+            // Split particles libraries into separate chunk
+            particles: {
+              test: /[\\/]node_modules[\\/](tsparticles|react-tsparticles)[\\/]/,
+              name: 'particles',
+              priority: 18,
+            },
+            // Split GSAP into separate chunk
+            gsap: {
+              test: /[\\/]node_modules[\\/](gsap)[\\/]/,
+              name: 'gsap',
+              priority: 19,
+            },
+            // Split React and ReactDOM
+            react: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              name: 'react-vendor',
+              priority: 25,
+            },
+          },
+        },
+      },
+    });
+  }
+}

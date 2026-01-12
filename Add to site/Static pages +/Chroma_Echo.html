@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chroma Echo</title>
+    <meta name="description" content="A dynamic, interactive visualizer & loop generator.">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --ui-bg: rgba(20, 20, 20, 0.6);
+            --ui-border: rgba(255, 255, 255, 0.1);
+            --accent: #00f0ff;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --font-stack: 'SF Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; 
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            overflow: hidden;
+            font-family: var(--font-stack);
+            color: var(--text-main);
+        }
+
+        /* Canvas Layer */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .ui-element {
+            pointer-events: auto; /* Re-enable clicks for buttons */
+            background: var(--ui-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--ui-border);
+            border-radius: 12px;
+            padding: 15px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .status-indicator {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #444;
+        }
+
+        .dot.active {
+            background-color: #0f0;
+            box-shadow: 0 0 8px #0f0;
+        }
+
+        .dot.recording {
+            background-color: #f00;
+            box-shadow: 0 0 8px #f00;
+            animation: pulse 1s infinite;
+        }
+
+        /* Bottom Controls */
+        .controls-container {
+            align-self: center;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--ui-border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-family: var(--font-stack);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.active-mode {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        .icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+        }
+
+        /* Intro Overlay */
+        #intro-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+
+        #intro-overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, #00f0ff, #ff00aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #intro-overlay p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        #start-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Hidden inputs */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* Range Sliders custom styling */
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            width: 100%;
+        }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -5px; 
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        /* Settings Panel */
+        #settings-panel {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        #settings-panel.visible {
+            display: flex;
+        }
+
+        .setting-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Intro / Start Screen -->
+    <div id="intro-overlay">
+        <h1>CHROMA ECHO</h1>
+        <p>A digital canvas for light, sound, and touch.<br>Use headphones for the best experience.</p>
+        <button id="start-btn">INITIALIZE SYSTEM</button>
+    </div>
+
+    <!-- Canvas -->
+    <div id="canvas-container">
+        <canvas id="main-canvas"></canvas>
+    </div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer">
+        <div class="top-bar ui-element">
+            <div class="logo">CHROMA ECHO</div>
+            <div class="status-indicator">
+                <div class="status-item">
+                    <div id="mic-dot" class="dot"></div> MIC
+                </div>
+                <div class="status-item">
+                    <div id="rec-dot" class="dot"></div> REC
+                </div>
+            </div>
+        </div>
+
+        <div id="toast">Loop Saved!</div>
+
+        <!-- Settings Modal (Popup) -->
+        <div id="settings-panel" class="ui-element">
+            <div class="setting-row">
+                <span>Particle Count</span>
+                <input type="range" id="particle-slider" min="100" max="3000" value="800">
+            </div>
+            <div class="setting-row">
+                <span>Flow Viscosity</span>
+                <input type="range" id="viscosity-slider" min="0.5" max="0.99" step="0.01" value="0.92">
+            </div>
+            <div class="setting-row">
+                <span>Color Shift Speed</span>
+                <input type="range" id="color-slider" min="0" max="10" value="2">
+            </div>
+        </div>
+
+        <div class="controls-container ui-element">
+            <button id="mode-neon" class="active-mode">Neon</button>
+            <button id="mode-cosmic">Cosmic</button>
+            <button id="mode-zen">Zen</button>
+            <button id="mode-plasma">Plasma</button>
+            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+            <button id="btn-mic" class="icon-btn" title="Toggle Mic">🎙️</button>
+            <button id="btn-settings" class="icon-btn" title="Settings">⚙️</button>
+            <button id="btn-clear" class="icon-btn" title="Clear Canvas">✕</button>
+            <button id="btn-record" title="Record Loop">● REC</button>
+        </div>
+    </div>
+
+<script>
+/**
+ * CHROMA ECHO ENGINE
+ * A minimalist interactive particle system with audio reactivity.
+ */
+
+// --- Configuration & State ---
+const CONFIG = {
+    particleCount: 800,
+    baseColorSpeed: 1,
+    dragForce: 0.15,
+    viscosity: 0.92, // Friction
+    fadeRate: 0.08,  // Trail length (lower = longer trails)
+    gravity: 0,
+    interactionRadius: 100,
+    mode: 'neon' // neon, cosmic, zen, plasma
+};
+
+const STATE = {
+    audioContext: null,
+    analyser: null,
+    dataArray: null,
+    isMicActive: false,
+    isRecording: false,
+    mediaRecorder: null,
+    recordedChunks: [],
+    hue: 0,
+    mouseX: 0,
+    mouseY: 0,
+    isMouseDown: false,
+    width: 0,
+    height: 0
+};
+
+// --- DOM Elements ---
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d', { alpha: false }); // Optimize for no transparency on base
+const introOverlay = document.getElementById('intro-overlay');
+const startBtn = document.getElementById('start-btn');
+const micDot = document.getElementById('mic-dot');
+const recDot = document.getElementById('rec-dot');
+const toast = document.getElementById('toast');
+const settingsPanel = document.getElementById('settings-panel');
+
+// Mode Buttons
+const modes = {
+    neon: document.getElementById('mode-neon'),
+    cosmic: document.getElementById('mode-cosmic'),
+    zen: document.getElementById('mode-zen'),
+    plasma: document.getElementById('mode-plasma')
+};
+
+// --- Particle System ---
+
+class Particle {
+    constructor(x, y) {
+        this.init(x, y);
+    }
+
+    init(x, y) {
+        this.x = x || Math.random() * STATE.width;
+        this.y = y || Math.random() * STATE.height;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.size = Math.random() * 2 + 1;
+        this.life = 1; // 1.0 to 0.0
+        this.decay = Math.random() * 0.01 + 0.005;
+        this.hueOffset = Math.random() * 60;
+        
+        // Mode specific inits
+        if (CONFIG.mode === 'zen') {
+            this.vx *= 0.2;
+            this.vy *= 0.2;
+            this.size = Math.random() * 4 + 2;
+        }
+    }
+
+    update(audioData) {
+        // Physics
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Friction
+        this.vx *= CONFIG.viscosity;
+        this.vy *= CONFIG.viscosity;
+
+        // Gravity (Mode dependent)
+        if (CONFIG.mode === 'zen') {
+            this.vy += 0.05;
+        } else if (CONFIG.mode === 'cosmic') {
+            // Slight orbital pull to center
+            const dx = STATE.width / 2 - this.x;
+            const dy = STATE.height / 2 - this.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist > 10) {
+                this.vx += (dx / dist) * 0.05;
+                this.vy += (dy / dist) * 0.05;
+            }
+        }
+
+        // Interaction
+        if (STATE.isMouseDown) {
+            const dx = STATE.mouseX - this.x;
+            const dy = STATE.mouseY - this.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < CONFIG.interactionRadius) {
+                const force = (CONFIG.interactionRadius - dist) / CONFIG.interactionRadius;
+                
+                if (CONFIG.mode === 'plasma') {
+                    // Attraction
+                    this.vx += (dx / dist) * force * 2;
+                    this.vy += (dy / dist) * force * 2;
+                } else {
+                    // Repulsion / Flow
+                    const angle = Math.atan2(dy, dx);
+                    this.vx -= Math.cos(angle) * force * CONFIG.dragForce * 5;
+                    this.vy -= Math.sin(angle) * force * CONFIG.dragForce * 5;
+                }
+            }
+        }
+
+        // Audio Reactivity (Bass Kick)
+        if (audioData && audioData.bass > 200) {
+             const kick = (audioData.bass - 200) / 55; // 0 to 1
+             this.vx += (Math.random() - 0.5) * kick * 2;
+             this.vy += (Math.random() - 0.5) * kick * 2;
+             this.size = Math.min(10, this.size + kick);
+        }
+
+        // Boundaries
+        if (this.x < 0 || this.x > STATE.width || this.y < 0 || this.y > STATE.height) {
+            if (CONFIG.mode === 'zen') {
+                // Reset to top
+                this.y = 0;
+                this.x = Math.random() * STATE.width;
+                this.vy = Math.random() * 2;
+            } else {
+                // Bounce
+                if(this.x < 0 || this.x > STATE.width) this.vx *= -1;
+                if(this.y < 0 || this.y > STATE.height) this.vy *= -1;
+            }
+        }
+    }
+
+    draw() {
+        // Dynamic Color
+        let h = (STATE.hue + this.hueOffset) % 360;
+        let s = '100%';
+        let l = '50%';
+        let a = this.life;
+
+        if (CONFIG.mode === 'zen') {
+            s = '40%';
+            l = '70%';
+        } else if (CONFIG.mode === 'cosmic') {
+            h = (200 + this.hueOffset) % 360; // Blues and Purples
+        }
+
+        ctx.fillStyle = `hsla(${h}, ${s}, ${l}, ${a})`;
+        
+        // Shape
+        ctx.beginPath();
+        if (CONFIG.mode === 'neon') {
+            ctx.rect(this.x, this.y, this.size, this.size);
+        } else {
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        }
+        ctx.fill();
+    }
+}
+
+let particles = [];
+
+function initParticles() {
+    particles = [];
+    for (let i = 0; i < CONFIG.particleCount; i++) {
+        particles.push(new Particle());
+    }
+}
+
+// --- Audio Handling ---
+
+async function setupAudio() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        STATE.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = STATE.audioContext.createMediaStreamSource(stream);
+        STATE.analyser = STATE.audioContext.createAnalyser();
+        STATE.analyser.fftSize = 64; // Low resolution for performance
+        source.connect(STATE.analyser);
+        
+        STATE.dataArray = new Uint8Array(STATE.analyser.frequencyBinCount);
+        STATE.isMicActive = true;
+        micDot.classList.add('active');
+    } catch (err) {
+        console.error("Mic Error:", err);
+        showToast("Mic Access Denied");
+    }
+}
+
+function getAudioData() {
+    if (!STATE.isMicActive || !STATE.analyser) return null;
+    STATE.analyser.getByteFrequencyData(STATE.dataArray);
+    
+    // Simple 3-band analysis
+    const bass = STATE.dataArray[1]; // Low freq
+    const mid = STATE.dataArray[10];
+    const treble = STATE.dataArray[25];
+    
+    return { bass, mid, treble };
+}
+
+// --- Main Loop ---
+
+function resize() {
+    STATE.width = canvas.width = window.innerWidth;
+    STATE.height = canvas.height = window.innerHeight;
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Fade effect for trails
+    // 'source-over' with low opacity black creates trails
+    // 'lighter' creates the additive blending glow
+    
+    // 1. Fade previous frame
+    ctx.globalCompositeOperation = 'source-over';
+    
+    let fadeColor = 'rgba(5, 5, 5, 0.1)';
+    if (CONFIG.mode === 'neon') fadeColor = 'rgba(0, 0, 0, 0.15)';
+    if (CONFIG.mode === 'zen') fadeColor = 'rgba(240, 240, 240, 0.2)'; // Light theme for Zen?? No, keep dark for now, maybe soft grey
+    if (CONFIG.mode === 'zen') fadeColor = 'rgba(20, 20, 25, 0.2)';
+
+    ctx.fillStyle = fadeColor;
+    ctx.fillRect(0, 0, STATE.width, STATE.height);
+
+    // 2. Set blending mode for particles
+    if (CONFIG.mode === 'zen') {
+        ctx.globalCompositeOperation = 'source-over';
+    } else {
+        ctx.globalCompositeOperation = 'lighter'; // Additive blending for glow
+    }
+
+    // 3. Update State
+    STATE.hue += CONFIG.baseColorSpeed;
+    const audioData = getAudioData();
+
+    // 4. Update Particles
+    for (let p of particles) {
+        p.update(audioData);
+        p.draw();
+    }
+
+    // 5. Visualizer Ring (Optional, subtle)
+    if (audioData) {
+        drawAudioRing(audioData);
+    }
+}
+
+function drawAudioRing(data) {
+    if(CONFIG.mode === 'zen') return;
+    
+    const cx = STATE.width / 2;
+    const cy = STATE.height / 2;
+    const radius = Math.min(cx, cy) * 0.3;
+    
+    ctx.strokeStyle = `hsla(${STATE.hue}, 80%, 50%, 0.1)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius + data.bass/2, 0, Math.PI*2);
+    ctx.stroke();
+}
+
+// --- Interaction Handlers ---
+
+window.addEventListener('resize', resize);
+
+// Mouse / Touch
+const handlePointerMove = (x, y) => {
+    STATE.mouseX = x;
+    STATE.mouseY = y;
+    
+    // Spawn particles on move
+    if (STATE.isMouseDown && Math.random() > 0.5) {
+        particles.push(new Particle(x, y));
+        if (particles.length > CONFIG.particleCount + 100) particles.shift();
+    }
+};
+
+canvas.addEventListener('mousedown', (e) => {
+    STATE.isMouseDown = true;
+    handlePointerMove(e.clientX, e.clientY);
+});
+canvas.addEventListener('mousemove', (e) => handlePointerMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', () => STATE.isMouseDown = false);
+
+// Touch support
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    STATE.isMouseDown = true;
+    handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive: false});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive: false});
+
+canvas.addEventListener('touchend', () => STATE.isMouseDown = false);
+
+
+// --- UI Logic ---
+
+// Switch Modes
+const setMode = (modeName) => {
+    CONFIG.mode = modeName;
+    
+    // Update UI
+    Object.keys(modes).forEach(k => modes[k].classList.remove('active-mode'));
+    modes[modeName].classList.add('active-mode');
+
+    // Update Physics Config
+    if (modeName === 'neon') {
+        CONFIG.viscosity = 0.92;
+        CONFIG.dragForce = 0.15;
+        CONFIG.baseColorSpeed = 1;
+        ctx.shadowBlur = 0;
+    } else if (modeName === 'cosmic') {
+        CONFIG.viscosity = 0.99; // Float longer
+        CONFIG.dragForce = 0.05;
+        CONFIG.baseColorSpeed = 0.2;
+    } else if (modeName === 'zen') {
+        CONFIG.viscosity = 0.95;
+        CONFIG.gravity = 0.1;
+    } else if (modeName === 'plasma') {
+        CONFIG.viscosity = 0.85; // Thick
+        CONFIG.dragForce = 0.3;
+    }
+
+    // Re-init specific particle aesthetics
+    initParticles();
+};
+
+Object.keys(modes).forEach(key => {
+    modes[key].addEventListener('click', () => setMode(key));
+});
+
+// Clear
+document.getElementById('btn-clear').addEventListener('click', initParticles);
+
+// Mic Toggle
+document.getElementById('btn-mic').addEventListener('click', () => {
+    if (!STATE.isMicActive) {
+        setupAudio();
+    } else {
+        // We generally don't stop audio context, just stop processing visuals
+        // but for simplicity, we'll just toggle the flag and UI
+        STATE.isMicActive = false;
+        if(STATE.audioContext) STATE.audioContext.suspend();
+        micDot.classList.remove('active');
+    }
+});
+
+// Settings Toggle
+document.getElementById('btn-settings').addEventListener('click', () => {
+    const isVisible = settingsPanel.classList.contains('visible');
+    if (isVisible) settingsPanel.classList.remove('visible');
+    else settingsPanel.classList.add('visible');
+});
+
+// Sliders
+document.getElementById('particle-slider').addEventListener('input', (e) => {
+    const delta = e.target.value - particles.length;
+    if (delta > 0) {
+        for(let i=0; i<delta; i++) particles.push(new Particle());
+    } else {
+        particles.splice(0, -delta);
+    }
+    CONFIG.particleCount = parseInt(e.target.value);
+});
+
+document.getElementById('viscosity-slider').addEventListener('input', (e) => {
+    CONFIG.viscosity = parseFloat(e.target.value);
+});
+
+document.getElementById('color-slider').addEventListener('input', (e) => {
+    CONFIG.baseColorSpeed = parseFloat(e.target.value);
+});
+
+
+// --- Recording System ---
+
+const recBtn = document.getElementById('btn-record');
+
+recBtn.addEventListener('click', () => {
+    if (STATE.isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+
+function startRecording() {
+    const stream = canvas.captureStream(60); // 60 FPS
+    STATE.mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp9'
+    });
+
+    STATE.recordedChunks = [];
+    
+    STATE.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) STATE.recordedChunks.push(e.data);
+    };
+
+    STATE.mediaRecorder.onstop = saveRecording;
+
+    STATE.mediaRecorder.start();
+    STATE.isRecording = true;
+    recDot.classList.add('recording');
+    recBtn.innerText = "■ STOP";
+    showToast("Recording Started...");
+}
+
+function stopRecording() {
+    STATE.mediaRecorder.stop();
+    STATE.isRecording = false;
+    recDot.classList.remove('recording');
+    recBtn.innerText = "● REC";
+}
+
+function saveRecording() {
+    const blob = new Blob(STATE.recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chroma-echo-${Date.now()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("Loop Downloaded!");
+}
+
+function showToast(msg) {
+    toast.innerText = msg;
+    toast.style.opacity = 1;
+    setTimeout(() => toast.style.opacity = 0, 3000);
+}
+
+
+// --- Initialization ---
+
+startBtn.addEventListener('click', () => {
+    introOverlay.style.opacity = 0;
+    setTimeout(() => {
+        introOverlay.style.display = 'none';
+    }, 800);
+    
+    resize();
+    initParticles();
+    animate();
+});
+
+// Initial Setup
+resize();
+
+</script>
+</body>
+</html>

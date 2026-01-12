@@ -2,13 +2,20 @@ import React from "react"
 import { render, screen } from "@testing-library/react"
 import IndexPage from "../index"
 
-// Mock framer-motion
-jest.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-    section: ({ children, ...props }) => <section {...props}>{children}</section>,
-  },
-}))
+// Mock framer-motion with proper prop filtering
+jest.mock("framer-motion", () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: React.forwardRef(({ children, whileInView, initial, animate, transition, viewport, ...props }, ref) =>
+        React.createElement('div', { ref, ...props }, children)
+      ),
+      section: React.forwardRef(({ children, whileInView, initial, animate, transition, viewport, ...props }, ref) =>
+        React.createElement('section', { ref, ...props }, children)
+      ),
+    },
+  };
+});
 
 // Mock Layout component
 jest.mock("../../components/layout/layout", () => {

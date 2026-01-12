@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boolean Analysis & Neural Networks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .math-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 1rem;
+        }
+
+        .bar-container {
+            transition: all 0.3s ease;
+        }
+
+        .bar-fill {
+            transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="max-w-6xl mx-auto mb-12 text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-4">
+            Boolean Analysis <span class="text-slate-500">&</span> Neural Nets
+        </h1>
+        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+            Why are some logic functions easy for AI to learn, while others are nearly impossible? 
+            The answer lies in the <span class="text-cyan-400 font-bold">Fourier Spectrum</span>.
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto space-y-8">
+
+        <!-- Section 1: The Notation Shift -->
+        <section class="glass-panel p-6 md:p-8">
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-white mb-4">1. The Notation Shift</h2>
+                    <p class="text-slate-300 mb-4">
+                        Standard logic uses <span class="math-font text-pink-400">{0, 1}</span>. 
+                        But math and physics prefer <span class="math-font text-cyan-400">{-1, 1}</span>.
+                        This simple translation turns logical rules into algebraic equations.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
+                        <div class="bg-slate-800 p-4 rounded-lg border border-pink-500/30">
+                            <div class="text-pink-400 font-bold mb-2">Computer Science</div>
+                            <div class="text-2xl font-bold">0 / 1</div>
+                            <div class="text-xs text-slate-500 mt-2">Bit</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-lg border border-cyan-500/30">
+                            <div class="text-cyan-400 font-bold mb-2">Fourier Analysis</div>
+                            <div class="text-2xl font-bold">-1 / +1</div>
+                            <div class="text-xs text-slate-500 mt-2">Sign (Spin)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 bg-slate-900 rounded-lg p-6 border border-slate-700">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">The Parity "Trick"</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="text-slate-400">Logic Rule</span>
+                            <span class="math-font text-pink-400">Count 1s. Is count Odd?</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="text-slate-400">Algebraic Rule</span>
+                            <span class="math-font text-cyan-400">\( f(x) = x_1 \cdot x_2 \cdot x_3 ... \)</span>
+                        </div>
+                        <div class="text-xs text-slate-500 italic mt-2">
+                            "Multiplying the inputs allows us to detect 'sameness' or 'difference' purely with math."
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Interactive Analyzer -->
+        <section class="glass-panel p-6 md:p-8 relative overflow-hidden">
+            <!-- Background decoration -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6 border-b border-slate-700 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">2. Interactive Spectrum Analyzer</h2>
+                    <p class="text-slate-400 text-sm mt-1">Select a function (n=3) to see its Fourier "DNA".</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <label class="text-xs font-bold text-slate-500 uppercase mr-2">Function:</label>
+                    <select id="funcSelector" class="bg-slate-800 text-white border border-slate-600 rounded px-4 py-2 focus:outline-none focus:border-cyan-500 transition-colors">
+                        <option value="and">AND (All inputs 1)</option>
+                        <option value="or">OR (Any input 1)</option>
+                        <option value="maj">MAJORITY (More 1s than -1s)</option>
+                        <option value="parity">PARITY / XOR (Product of inputs)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Truth Table Column -->
+                <div class="lg:col-span-1">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">Truth Table ({-1, 1} World)</h3>
+                    <div class="overflow-hidden rounded-lg border border-slate-700">
+                        <table class="w-full text-sm text-left text-slate-300">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-800">
+                                <tr>
+                                    <th class="px-4 py-2">x1</th>
+                                    <th class="px-4 py-2">x2</th>
+                                    <th class="px-4 py-2">x3</th>
+                                    <th class="px-4 py-2 text-right text-cyan-400">Output</th>
+                                </tr>
+                            </thead>
+                            <tbody id="truthTableBody" class="font-mono bg-slate-900/50">
+                                <!-- JS Injects Rows Here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Visualization Column -->
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    
+                    <!-- Spectrum Chart -->
+                    <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50 flex-1">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex justify-between">
+                            <span>Fourier Spectrum (Coefficients Squared)</span>
+                            <span id="spectrumTotal" class="text-xs text-slate-500">Total Mass: 1.0</span>
+                        </h3>
+                        
+                        <!-- Bars Container -->
+                        <div id="spectrumContainer" class="h-48 flex items-end justify-between gap-2 px-2">
+                            <!-- JS Injects Bars Here -->
+                        </div>
+                        
+                        <!-- X Axis Labels -->
+                        <div id="spectrumLabels" class="flex justify-between px-2 mt-2 text-xs text-slate-500 font-mono">
+                            <!-- JS Injects Labels Here -->
+                        </div>
+                    </div>
+
+                    <!-- Difficulty Meter -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Neural Net Difficulty</div>
+                            <div id="difficultyLabel" class="text-2xl font-bold text-green-400">Easy</div>
+                            <p id="difficultyDesc" class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                High linear mass. A single perceptron can learn this easily.
+                            </p>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Linearity (Degree-1 Mass)</div>
+                            <div class="w-full bg-slate-700 h-4 rounded-full mt-2 overflow-hidden">
+                                <div id="linearityBar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-3/4 transition-all duration-700"></div>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-xs text-slate-500">0% (Pure Noise)</span>
+                                <span id="linearityValue" class="text-xs text-white font-mono">75%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-panel p-6 border-t-4 border-green-500">
+                <h3 class="font-bold text-white mb-2">Low Frequency (Easy)</h3>
+                <p class="text-sm text-slate-400">Functions like AND, OR, and MAJORITY have large coefficients on single variables (Degree 1). Neural nets find these gradients immediately.</p>
+            </div>
+            <div class="glass-panel p-6 border-t-4 border-red-500">
+                <h3 class="font-bold text-white mb-2">High Frequency (Hard)</h3>
+                <p class="text-sm text-slate-400">PARITY has all its mass on the highest interaction term. It looks like random noise to a perceptron. It requires depth (layers) to solve.</p>
+            </div>
+            <div class="glass-panel p-6 border-t-4 border-purple-500">
+                <h3 class="font-bold text-white mb-2">The Takeaway</h3>
+                <p class="text-sm text-slate-400">Fourier Analysis gives us an "X-Ray" view of a boolean function's complexity before we even try to train a network on it.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto mt-12 mb-8 text-center text-slate-600 text-sm">
+        <p>Generated by Gemini | Visualizing Boolean Analysis Foundations</p>
+    </footer>
+
+    <script>
+        (function() {
+            // --- Logic & Math Core ---
+
+            const N = 3; // Fixed for this demo visualization
+            
+            // Generate inputs for n=3 (lexicographical)
+            // [-1,-1,-1], [-1,-1,1], ...
+            const generateInputs = (n) => {
+                const inputs = [];
+                const numRows = 1 << n;
+                for (let i = 0; i < numRows; i++) {
+                    const row = [];
+                    for (let j = 0; j < n; j++) {
+                        // Check bit j of i. If 0 -> -1, if 1 -> 1
+                        // Note: standard binary order usually maps 0->-1, 1->1.
+                        // Let's stick to the order used in wht: 
+                        // i=0 (000) -> -1,-1,-1
+                        row.push((i >> j) & 1 ? 1 : -1); 
+                    }
+                    inputs.push(row); // This is technically reversed bit order (x0, x1, x2), but consistent for WHT
+                }
+                return inputs;
+            };
+
+            const inputs = generateInputs(N);
+
+            // Function Definitions
+            const functions = {
+                and: (x) => x.every(val => val === 1) ? 1 : -1,
+                or: (x) => x.some(val => val === 1) ? 1 : -1,
+                maj: (x) => x.reduce((a,b)=>a+b, 0) > 0 ? 1 : -1,
+                parity: (x) => x.reduce((a,b)=>a*b, 1)
+            };
+
+            // Fast Walsh-Hadamard Transform (1D array in-place)
+            function wht(data) {
+                const a = [...data]; // Copy
+                const n = Math.log2(a.length);
+                let h = 1;
+                while (h < a.length) {
+                    for (let i = 0; i < a.length; i += h * 2) {
+                        for (let j = i; j < i + h; j++) {
+                            const x = a[j];
+                            const y = a[j + h];
+                            a[j] = x + y;
+                            a[j + h] = x - y;
+                        }
+                    }
+                    h *= 2;
+                }
+                // Normalize
+                return a.map(val => val / (1 << n));
+            }
+
+            // --- UI & Rendering ---
+
+            const funcSelector = document.getElementById('funcSelector');
+            const tableBody = document.getElementById('truthTableBody');
+            const spectrumContainer = document.getElementById('spectrumContainer');
+            const spectrumLabels = document.getElementById('spectrumLabels');
+            const spectrumTotal = document.getElementById('spectrumTotal');
+            const difficultyLabel = document.getElementById('difficultyLabel');
+            const difficultyDesc = document.getElementById('difficultyDesc');
+            const linearityBar = document.getElementById('linearityBar');
+            const linearityValue = document.getElementById('linearityValue');
+
+            // Helper: Get label for subset index (e.g., 3 -> "x1x2")
+            function getLabel(idx) {
+                if (idx === 0) return "∅"; // Bias
+                let s = "";
+                for (let j = 0; j < N; j++) {
+                    if ((idx >> j) & 1) s += `x${j+1}`;
+                }
+                return s;
+            }
+
+            function render() {
+                const funcKey = funcSelector.value;
+                const func = functions[funcKey];
+
+                // 1. Calculate Truth Table Output
+                const outputs = inputs.map(row => func(row));
+
+                // 2. Render Truth Table
+                tableBody.innerHTML = '';
+                inputs.forEach((row, i) => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-800 hover:bg-white/5 transition-colors";
+                    
+                    // Input Cells
+                    row.forEach(val => {
+                        const td = document.createElement('td');
+                        td.className = `px-4 py-2 ${val === 1 ? 'text-white' : 'text-slate-600'}`;
+                        td.textContent = val === 1 ? '+1' : '-1';
+                        tr.appendChild(td);
+                    });
+
+                    // Output Cell
+                    const tdOut = document.createElement('td');
+                    const val = outputs[i];
+                    tdOut.className = `px-4 py-2 text-right font-bold ${val === 1 ? 'text-cyan-400' : 'text-pink-500'}`;
+                    tdOut.textContent = val === 1 ? '+1' : '-1';
+                    tr.appendChild(tdOut);
+
+                    tableBody.appendChild(tr);
+                });
+
+                // 3. Compute Spectrum
+                const coeffs = wht(outputs);
+                
+                // 4. Render Spectrum Bars
+                spectrumContainer.innerHTML = '';
+                spectrumLabels.innerHTML = '';
+                
+                let degree1Mass = 0;
+                let totalMass = 0;
+
+                coeffs.forEach((c, idx) => {
+                    const magnitude = Math.abs(c);
+                    const power = c * c; // Mass
+                    totalMass += power;
+
+                    // Check degree for metrics
+                    let degree = 0;
+                    for(let b=0; b<N; b++) if((idx>>b)&1) degree++;
+                    if (degree === 1) degree1Mass += power;
+
+                    // Bar Wrapper
+                    const barWrapper = document.createElement('div');
+                    barWrapper.className = "flex-1 flex flex-col justify-end items-center group relative h-full";
+
+                    // Tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = "absolute bottom-full mb-2 bg-black text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10";
+                    tooltip.innerHTML = `Term: ${getLabel(idx)}<br>Coeff: ${c.toFixed(2)}<br>Mass: ${power.toFixed(2)}`;
+                    barWrapper.appendChild(tooltip);
+
+                    // Bar Fill
+                    const bar = document.createElement('div');
+                    // Color based on sign of coeff (Cyan for +, Pink for -)
+                    const isPos = c >= 0;
+                    bar.className = `w-full max-w-[40px] rounded-t-sm bar-fill ${isPos ? 'bg-cyan-500' : 'bg-pink-500'} opacity-80 hover:opacity-100`;
+                    // Height based on MAGNITUDE (scaled up for visibility)
+                    // Max coeff is 1.0. Let's map 1.0 to 100% height.
+                    bar.style.height = `${magnitude * 100}%`;
+                    
+                    // Add faint line for 0 height if needed
+                    if (magnitude < 0.01) {
+                        bar.style.height = "2px";
+                        bar.className = "w-full max-w-[40px] bg-slate-700";
+                    }
+
+                    barWrapper.appendChild(bar);
+                    spectrumContainer.appendChild(barWrapper);
+
+                    // Label
+                    const label = document.createElement('div');
+                    label.className = "flex-1 text-center";
+                    label.innerHTML = getLabel(idx);
+                    spectrumLabels.appendChild(label);
+                });
+
+                // 5. Update Metrics
+                spectrumTotal.textContent = `Total Mass: ${totalMass.toFixed(2)}`;
+                
+                // Linearity
+                const linearityPct = Math.round(degree1Mass * 100);
+                linearityBar.style.width = `${linearityPct}%`;
+                linearityValue.textContent = `${linearityPct}%`;
+
+                // Difficulty Logic
+                if (linearityPct > 60) {
+                    difficultyLabel.textContent = "Easy";
+                    difficultyLabel.className = "text-2xl font-bold text-green-400";
+                    difficultyDesc.textContent = "High linear mass. A simple perceptron will converge quickly.";
+                    linearityBar.className = "bg-gradient-to-r from-green-400 to-emerald-600 h-full transition-all duration-700";
+                } else if (linearityPct > 0) {
+                    difficultyLabel.textContent = "Moderate";
+                    difficultyLabel.className = "text-2xl font-bold text-yellow-400";
+                    difficultyDesc.textContent = "Some linear signal, but significant higher-order interactions exist.";
+                    linearityBar.className = "bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-700";
+                } else {
+                    difficultyLabel.textContent = "Hard / Impossible";
+                    difficultyLabel.className = "text-2xl font-bold text-red-500";
+                    difficultyDesc.textContent = "Zero linear signal. The gradient for a perceptron is effectively blind. Requires hidden layers.";
+                    linearityBar.className = "bg-gradient-to-r from-red-500 to-pink-600 h-full transition-all duration-700";
+                }
+            }
+
+            // Listeners
+            funcSelector.addEventListener('change', render);
+
+            // Initial Render
+            render();
+        })();
+    </script>
+</body>
+</html>

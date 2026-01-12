@@ -1,16 +1,20 @@
-import React, { useEffect } from "react"
+import React, { useEffect, lazy, Suspense } from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import "../../styles/global.css"
 import "../../styles/futuristic-ui.css"
 import Header from "./header.js"
 import Footer from "./footer.js"
 import { Helmet } from "react-helmet"
-import SpaceBackground from "../shared/space-background"
 import { initAllAnimations } from "../../scripts/animations"
 import Navigation from "../shared/navigation-component"
+import ErrorBoundary from "../shared/error-boundary"
+import InteractiveCursor from "../shared/interactive-cursor"
 
 // This ensures Tailwind styles are included
 import "../../styles/tailwind.css"
+
+// Lazy load SpaceBackground for better initial bundle size
+const SpaceBackground = lazy(() => import("../shared/space-background"))
 
 const Layout = ({ children, pageContext, location }) => {
   const data = useStaticQuery(graphql`
@@ -29,6 +33,7 @@ const Layout = ({ children, pageContext, location }) => {
   const getCurrentSection = () => {
     const path = location?.pathname || "";
     if (path.includes("/development-projects")) return "dev-projects";
+    if (path.includes("/apps")) return "apps";
     if (path.includes("/stories")) return "stories";
     if (path.includes("/about")) return "about";
     if (path.includes("/contact")) return "contact";
@@ -37,12 +42,19 @@ const Layout = ({ children, pageContext, location }) => {
   }
 
   useEffect(() => {
-    // Initialize the default theme
-    document.body.classList.add('dark-theme');
-    
+    // Initialize theme from localStorage or default to dark
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      // Only add if no theme class exists
+      const hasTheme = document.body.className.includes('-theme');
+      if (!hasTheme) {
+        document.body.classList.add(savedTheme + '-theme');
+      }
+    }
+
     // Initialize animations
     const cleanupAnimations = initAllAnimations();
-    
+
     return () => {
       // Cleanup animations when component unmounts
       if (cleanupAnimations) cleanupAnimations();
@@ -60,19 +72,28 @@ const Layout = ({ children, pageContext, location }) => {
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </Helmet>
 
+      {/* Interactive Cursor Effect */}
+      <InteractiveCursor />
+
       <div className="site-wrapper min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-        {/* Add the space background to all pages */}
-        {getCurrentSection() !== "home" && <SpaceBackground />}
-        
+        {/* Skip to main content link for accessibility */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+
+        {/* Lazy load space background for better performance */}
+        {getCurrentSection() !== "home" && (
+          <Suspense fallback={<div className="space-background-placeholder" />}>
+            <SpaceBackground />
+          </Suspense>
+        )}
+
         <Header siteTitle={siteTitle} currentSection={getCurrentSection()} />
-        
-        {/* Main Navigation */}
-        <div className="navigation-container py-4 mt-20 sticky top-0 z-[150] bg-black/70 backdrop-blur-md border-b border-teal-900/30">
-          <Navigation />
-        </div>
-        
-        <main className="relative z-10">{children}</main>
-        
+
+        <ErrorBoundary>
+          <main id="main-content" className="relative z-10" style={{ paddingTop: '8rem' }}>{children}</main>
+        </ErrorBoundary>
+
         <Footer siteTitle={siteTitle} />
       </div>
     </>

@@ -1,543 +1,861 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linear Algebra Holo-Interface 7000 v2</title>
+    <title>Matrix Visualization Lab - 3D Linear Algebra Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary-glow: #00d9ff;
-            --secondary-glow: #ff00c8;
-            --accent-glow: #f3ff00;
-            --bg-dark: #0a0a14;
-            --glass-bg: rgba(20, 20, 40, 0.6);
-            --glass-border: rgba(0, 217, 255, 0.2);
+            --bg-primary: #0a0e14;
+            --bg-secondary: #141b24;
+            --bg-card: rgba(20, 27, 36, 0.95);
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-yellow: #fbbf24;
+            --accent-pink: #ec4899;
             --text-primary: #e5e7eb;
             --text-secondary: #9ca3af;
+            --border-color: rgba(0, 212, 255, 0.2);
         }
 
         body {
-            background-color: var(--bg-dark);
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
             color: var(--text-primary);
-            font-family: 'Rajdhani', sans-serif;
             overflow-x: hidden;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, var(--bg-dark), #100f28, var(--bg-dark), #231a33);
-            background-size: 400% 400%;
-            animation: gradient-animation 25s ease infinite;
-            z-index: -2;
-        }
-
-        @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        h1, h2, h3 {
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 8px var(--primary-glow);
-        }
-
-        .operation-card {
-            background: var(--glass-bg);
-            border-radius: 1rem;
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 1.5rem;
-            box-shadow: 0 0 20px rgba(0, 217, 255, 0.1);
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
         }
 
-        .operation-card:hover {
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        .glass-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
         }
-        
-        .result-box, pre {
-            background: rgba(0,0,0,0.3);
-            border: 1px dashed var(--glass-border);
-            border-radius: 0.5rem;
-            min-height: 50px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: var(--text-primary);
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            flex-grow: 1;
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #visualization3d {
+            width: 100%;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0e14, #141b24);
         }
 
         .btn {
-            font-family: 'Orbitron', sans-serif;
-            background: transparent;
-            border: 2px solid var(--primary-glow);
-            color: var(--primary-glow);
-            text-shadow: 0 0 5px var(--primary-glow);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
             cursor: pointer;
-        }
-        
-        .btn::before {
-            content: '';
-            position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
-            transition: left 0.4s ease;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
-        .btn:hover {
-            background: var(--primary-glow); color: var(--bg-dark);
-            box-shadow: 0 0 20px var(--primary-glow); text-shadow: none;
-        }
-        
-        .btn:hover::before { left: 100%; }
-        
-        .btn-secondary {
-            border-color: var(--secondary-glow); color: var(--secondary-glow);
-            text-shadow: 0 0 5px var(--secondary-glow);
-        }
-        .btn-secondary:hover { background: var(--secondary-glow); box-shadow: 0 0 20px var(--secondary-glow); }
-        .btn-secondary::before { background: linear-gradient(90deg, transparent, var(--secondary-glow), transparent); }
-
-        .btn-accent {
-            border-color: var(--accent-glow); color: var(--accent-glow);
-            text-shadow: 0 0 5px var(--accent-glow);
-        }
-        .btn-accent:hover { background: var(--accent-glow); box-shadow: 0 0 20px var(--accent-glow); }
-        .btn-accent::before { background: linear-gradient(90deg, transparent, var(--accent-glow), transparent); }
-
-        input, textarea, select {
-            background: transparent; border: none;
-            border-bottom: 2px solid var(--glass-border); border-radius: 0;
-            padding: 0.5rem 0.25rem; color: var(--text-primary);
-            transition: border-color 0.3s ease;
-            font-family: 'Rajdhani', sans-serif; font-size: 1.1rem;
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
         }
 
-        input:focus, textarea:focus, select:focus {
-            outline: none; border-bottom-color: var(--primary-glow);
-            box-shadow: 0 5px 15px -10px var(--primary-glow);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
         }
 
-        textarea { min-height: 100px; }
+        .btn-outline {
+            background: transparent;
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .matrix-input {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.75rem;
+            resize: none;
+        }
+
+        .matrix-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .result-display {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .katex {
+            font-size: 1.1em !important;
+        }
+
+        .eigenvalue-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
 
         select {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat; background-position: right 0.5rem center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            cursor: pointer;
         }
-        
-        select option { background: var(--bg-dark); color: var(--text-primary); }
 
-        label {
-            color: var(--text-secondary); font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        
-        .katex-display { margin: 0.5em 0; }
-        .katex { font-size: 1.1em !important; text-shadow: 0 0 5px var(--primary-glow); }
-        
-        #plot-container {
-            position: relative;
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            height: 6px;
             width: 100%;
-            height: 400px;
-            border-radius: 1rem;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
         }
-        #plot-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-cyan);
         }
     </style>
 </head>
-<body>
 
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-12">
-            <h1 class="text-5xl font-bold text-white">Holo-Interface 7000</h1>
-            <p class="text-lg text-gray-400 mt-2 tracking-wider">Advanced Linear Algebra Core</p>
+<body>
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 gradient-text">
+                Matrix Visualization Lab
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Explore linear transformations in 3D space. Visualize matrix operations, eigenvectors, and geometric
+                transformations interactively.
+            </p>
         </header>
 
-        <div class="grid lg:grid-cols-2 gap-8">
+        <div class="grid lg:grid-cols-5 gap-6">
+            <!-- Left Panel: Controls -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Matrix Input -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-cyan-400">[M]</span> Transformation Matrix
+                    </h2>
+                    <textarea id="matrixInput" class="matrix-input w-full h-24"
+                        placeholder="Enter 3x3 matrix (rows separated by newlines)">1, 0, 0
+0, 1, 0
+0, 0, 1</textarea>
 
-            <!-- Basic Operations -->
-            <div class="operation-card">
-                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Core Operations</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="vectorA" class="block mb-2">Vector A / v</label>
-                        <input type="text" id="vectorA" class="w-full" placeholder="e.g., 1, 2, 0">
+                    <div class="mt-4">
+                        <label class="block text-sm text-gray-400 mb-2">Preset Transformations</label>
+                        <select id="presetSelect" class="w-full">
+                            <option value="">-- Select Preset --</option>
+                            <option value="identity">Identity</option>
+                            <option value="scale">Scale (2x)</option>
+                            <option value="rotateX">Rotate X (45°)</option>
+                            <option value="rotateY">Rotate Y (45°)</option>
+                            <option value="rotateZ">Rotate Z (45°)</option>
+                            <option value="shear">Shear XY</option>
+                            <option value="reflection">Reflection XY</option>
+                            <option value="projection">Projection to XY</option>
+                            <option value="stretch">Stretch (Eigen Demo)</option>
+                        </select>
                     </div>
-                    <div>
-                        <label for="vectorB" class="block mb-2">Vector B</label>
-                        <input type="text" id="vectorB" class="w-full" placeholder="e.g., 4, 5, 0">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="matrixA" class="block mb-2">Matrix A</label>
-                        <textarea id="matrixA" class="w-full" placeholder="1, 2, 0&#10;3, 4, 0&#10;0, 0, 1"></textarea>
-                    </div>
-                    <div>
-                        <label for="matrixB" class="block mb-2">Matrix B</label>
-                        <textarea id="matrixB" class="w-full" placeholder="5, 6, 0&#10;7, 8, 0&#10;0, 0, 1"></textarea>
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <button id="applyBtn" class="btn btn-primary">[+] Apply</button>
+                        <button id="animateBtn" class="btn btn-outline">[>] Animate</button>
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-3 mb-6">
-                     <button id="matAddBtn" class="btn">A + B</button>
-                     <button id="matMulBtn" class="btn">A * B</button>
-                     <button id="matVecMulBtn" class="btn btn-secondary">A * v</button>
+
+                <!-- Transformation Slider -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-purple-400">[T]</span> Interpolation
+                    </h2>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-2">Transform Factor: <span id="tValueDisplay"
+                                class="text-cyan-400">0.00</span></label>
+                        <input type="range" id="tSlider" min="0" max="1" step="0.01" value="0">
+                    </div>
+                    <p class="text-sm text-gray-500">Interpolate between identity matrix and your transformation</p>
                 </div>
-                <h3 class="font-bold text-lg mb-2">Output:</h3>
-                <div id="basicResult" class="result-box p-4 rounded-lg text-lg"></div>
+
+                <!-- Vector Controls -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-green-400">[V]</span> Vectors
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showBasis" checked class="w-4 h-4">
+                            <label for="showBasis" class="text-sm">Show Standard Basis (e₁, e₂, e₃)</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showTransformed" checked class="w-4 h-4">
+                            <label for="showTransformed" class="text-sm">Show Transformed Vectors</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showEigenvectors" class="w-4 h-4">
+                            <label for="showEigenvectors" class="text-sm">Show Eigenvectors (2D only)</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showUnitCube" checked class="w-4 h-4">
+                            <label for="showUnitCube" class="text-sm">Show Unit Cube</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-yellow-400">[=]</span> Properties
+                    </h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Determinant:</span>
+                            <span id="determinant" class="font-mono text-cyan-400">1.000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Trace:</span>
+                            <span id="trace" class="font-mono text-green-400">3.000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Rank:</span>
+                            <span id="rank" class="font-mono text-purple-400">3</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Type:</span>
+                            <span id="matrixType" class="font-mono text-yellow-400">Identity</span>
+                        </div>
+                    </div>
+
+                    <div id="eigenSection" class="mt-4 pt-4 border-t border-gray-700 hidden">
+                        <h3 class="text-sm font-bold text-gray-300 mb-2">Eigenvalues (2x2)</h3>
+                        <div id="eigenvalues" class="space-y-2"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Advanced Operations & Visualization -->
-            <div class="operation-card row-span-2">
-                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Advanced Analysis & Visualization</h2>
-                
-                <div class="mb-6">
-                    <h3 class="font-bold text-lg mb-2">Eigen-Analysis (for Matrix A)</h3>
-                    <p class="text-sm text-gray-400 mb-2">Calculates eigenvalues/eigenvectors for 2x2 matrices. Input a 2x2 matrix in the 'Matrix A' field.</p>
-                    <div class="flex gap-3">
-                        <button id="eigenBtn" class="btn btn-accent">Calculate Eigen-Data</button>
+            <!-- Right Panel: 3D Visualization -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">3D Transformation Visualizer</h2>
+                        <div class="flex gap-2">
+                            <button id="resetViewBtn" class="btn btn-outline text-sm">[↺] Reset View</button>
+                            <button id="toggleGridBtn" class="btn btn-outline text-sm">[#] Grid</button>
+                        </div>
                     </div>
-                    <div id="eigenResult" class="result-box p-4 mt-4 text-base"></div>
+                    <div id="visualization3d"></div>
+
+                    <!-- Legend -->
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <div class="legend-item">
+                            <div class="color-dot" style="background: #ff4136;"></div>
+                            <span class="text-sm">X-axis (e₁)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-dot" style="background: #2ecc40;"></div>
+                            <span class="text-sm">Y-axis (e₂)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-dot" style="background: #0074d9;"></div>
+                            <span class="text-sm">Z-axis (e₃)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-dot" style="background: #ff851b;"></div>
+                            <span class="text-sm">Transformed</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-dot" style="background: #b10dc9;"></div>
+                            <span class="text-sm">Eigenvectors</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex-grow flex flex-col">
-                    <h3 class="font-bold text-lg mb-2">3D Holo-Plotter</h3>
-                     <p class="text-sm text-gray-400 mb-2">Visualizes vectors and matrix transformations. Use mouse to rotate/zoom. Vectors are plotted from the 'Vector A' field.</p>
-                    <div id="plot-container" class="flex-grow">
-                        <canvas id="plot-canvas"></canvas>
+                <!-- Matrix Display -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Current Matrix</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-sm text-gray-400 mb-2">Interpolated Matrix (t = <span
+                                    id="tDisplay">0.00</span>)</h3>
+                            <div id="matrixDisplay" class="result-display text-lg"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm text-gray-400 mb-2">Transformed Basis Vectors</h3>
+                            <div id="basisDisplay" class="result-display text-sm">
+                                <div class="text-red-400">T(e₁) = [1.00, 0.00, 0.00]</div>
+                                <div class="text-green-400">T(e₂) = [0.00, 1.00, 0.00]</div>
+                                <div class="text-blue-400">T(e₃) = [0.00, 0.00, 1.00]</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-3 mt-4">
-                        <button id="plotVecBtn" class="btn">Plot Vector 'v'</button>
-                        <button id="plotMatBtn" class="btn btn-secondary">Plot Matrix 'A'</button>
-                        <button id="plotTransformBtn" class="btn btn-accent">Plot A * v</button>
-                        <button id="plotClearBtn" class="btn bg-red-500/50 border-red-500 text-red-300">Clear Plot</button>
+                </div>
+
+                <!-- Quick Operations -->
+                <div class="glass-card p-6">
+                    <h2 class="text-xl font-bold mb-4">Matrix Operations</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onclick="computeInverse()" class="btn btn-outline">Inverse</button>
+                        <button onclick="computeTranspose()" class="btn btn-outline">Transpose</button>
+                        <button onclick="computeSquare()" class="btn btn-outline">M²</button>
+                        <button onclick="computeNormalize()" class="btn btn-outline">Normalize</button>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Python/NumPy Code Demonstrations -->
-            <div class="operation-card">
-                <h2 class="text-2xl font-bold mb-6 border-b-2 border-cyan-500/20 pb-2">Python Simulation</h2>
-                <div class="mb-6">
-                    <label for="pythonOpSelect" class="block mb-2">Select Simulation:</label>
-                    <select id="pythonOpSelect" class="w-full p-2">
-                        <option value="intro" selected>-- Select an Operation --</option>
-                        <optgroup label="Vector/Matrix">
-                            <option value="vec_add">Vector Addition</option>
-                            <option value="mat_mul">Matrix Multiplication</option>
-                            <option value="mat_transpose">Matrix Transpose</option>
-                        </optgroup>
-                        <optgroup label="Advanced">
-                            <option value="np_eigen">Eigenvalues & Eigenvectors</option>
-                            <option value="np_svd">Singular Value Decomposition (SVD)</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="mb-4 flex-grow flex flex-col">
-                    <h3 class="font-bold text-lg mb-2">Code Simulation:</h3>
-                    <pre class="p-4 text-sm overflow-x-auto flex-grow"><code id="pythonCodeSnippet" class="language-python"># Select a simulation...</code></pre>
-                </div>
-                <div>
-                    <h3 class="font-bold text-lg mb-2">Simulated Output:</h3>
-                    <div id="pythonOutput" class="result-box p-4 text-lg"></div>
+                    <div id="operationResult" class="mt-4 result-display hidden"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- UTILITY & PARSING ---
-        const parseVector = (str) => {
-            try {
-                if (!str) return null;
-                const arr = str.split(',').map(s => parseFloat(s.trim()));
-                return arr.some(isNaN) ? null : arr;
-            } catch { return null; }
-        };
-        const parseMatrix = (str) => {
-            try {
-                if (!str) return null;
-                const matrix = str.trim().split('\n').map(row => parseVector(row));
-                if (matrix.some(row => row === null)) return null;
-                const len = matrix[0]?.length || 0;
-                return matrix.every(row => row.length === len) ? matrix : null;
-            } catch { return null; }
-        };
-        const formatVector = (v) => `[ ${v.map(n => n.toFixed(2)).join(', ')} ]`;
-        const formatMatrix = (m) => m.map(row => `  ${formatVector(row)}`).join('\n');
+        // ============ THREE.JS SETUP ============
+        let scene, camera, renderer, controls;
+        let basisArrows = [], transformedArrows = [], eigenvectorArrows = [];
+        let unitCubeOriginal, unitCubeTransformed;
+        let gridHelper;
+        let currentMatrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        let targetMatrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        let animationId = null;
+        let isAnimating = false;
 
-        // --- CORE LINEAR ALGEBRA ---
-        const addMatrices = (m1, m2) => (m1.length !== m2.length || m1[0].length !== m2[0].length) ? { error: "Matrices must have same dimensions." } : { result: m1.map((r, i) => r.map((v, j) => v + m2[i][j])) };
-        const multiplyMatrices = (m1, m2) => {
-            if (m1[0].length !== m2.length) return { error: "Cols of A must equal rows of B." };
-            const res = Array(m1.length).fill(0).map(() => Array(m2[0].length).fill(0));
-            for (let i = 0; i < m1.length; i++) {
-                for (let j = 0; j < m2[0].length; j++) {
-                    for (let k = 0; k < m1[0].length; k++) {
-                        res[i][j] += m1[i][k] * m2[k][j];
-                    }
+        function init3D() {
+            const container = document.getElementById('visualization3d');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0e14);
+
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(4, 3, 4);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Grid
+            gridHelper = new THREE.GridHelper(6, 12, 0x00d4ff, 0x333333);
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+
+            // Axes
+            const axesHelper = new THREE.AxesHelper(3);
+            scene.add(axesHelper);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            createBasisVectors();
+            createUnitCube();
+
+            animate();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createArrow(dir, origin, color, length = 1) {
+            const direction = new THREE.Vector3(dir[0], dir[1], dir[2]).normalize();
+            const arrow = new THREE.ArrowHelper(
+                direction,
+                new THREE.Vector3(origin[0], origin[1], origin[2]),
+                length,
+                color,
+                0.2,
+                0.1
+            );
+            return arrow;
+        }
+
+        function createBasisVectors() {
+            // Clear existing
+            basisArrows.forEach(a => scene.remove(a));
+            transformedArrows.forEach(a => scene.remove(a));
+            basisArrows = [];
+            transformedArrows = [];
+
+            const colors = [0xff4136, 0x2ecc40, 0x0074d9]; // RGB for XYZ
+            const basis = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+
+            basis.forEach((v, i) => {
+                const arrow = createArrow(v, [0, 0, 0], colors[i], 2);
+                basisArrows.push(arrow);
+                if (document.getElementById('showBasis').checked) {
+                    scene.add(arrow);
                 }
+
+                // Transformed
+                const tv = multiplyMatrixVector(currentMatrix, v);
+                const tArrow = createArrow(tv, [0, 0, 0], 0xff851b, vectorLength(tv));
+                transformedArrows.push(tArrow);
+                if (document.getElementById('showTransformed').checked) {
+                    scene.add(tArrow);
+                }
+            });
+        }
+
+        function createUnitCube() {
+            if (unitCubeOriginal) scene.remove(unitCubeOriginal);
+            if (unitCubeTransformed) scene.remove(unitCubeTransformed);
+
+            // Original cube (wireframe)
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            geometry.translate(0.5, 0.5, 0.5);
+
+            const edges = new THREE.EdgesGeometry(geometry);
+            unitCubeOriginal = new THREE.LineSegments(
+                edges,
+                new THREE.LineBasicMaterial({ color: 0x444444, opacity: 0.5, transparent: true })
+            );
+
+            if (document.getElementById('showUnitCube').checked) {
+                scene.add(unitCubeOriginal);
             }
-            return { result: res };
-        };
-        const multiplyMatrixVector = (m, v) => {
-            if (m[0].length !== v.length) return { error: "Matrix cols must equal vector length." };
-            return { result: m.map(row => row.reduce((acc, val, i) => acc + val * v[i], 0)) };
-        };
-        
-        // --- EIGENVALUE CALCULATION for 2x2 ---
-        const calculateEigen2x2 = (m) => {
-            if (m.length !== 2 || m[0].length !== 2) return { error: "Eigen-analysis requires a 2x2 matrix." };
+
+            // Transformed cube
+            const transformedGeometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const cubeCorners = [
+                [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
+                [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]
+            ];
+            const cubeEdges = [
+                [0, 1], [1, 2], [2, 3], [3, 0],
+                [4, 5], [5, 6], [6, 7], [7, 4],
+                [0, 4], [1, 5], [2, 6], [3, 7]
+            ];
+
+            cubeEdges.forEach(edge => {
+                const p1 = multiplyMatrixVector(currentMatrix, cubeCorners[edge[0]]);
+                const p2 = multiplyMatrixVector(currentMatrix, cubeCorners[edge[1]]);
+                vertices.push(p1[0], p1[1], p1[2]);
+                vertices.push(p2[0], p2[1], p2[2]);
+            });
+
+            transformedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            unitCubeTransformed = new THREE.LineSegments(
+                transformedGeometry,
+                new THREE.LineBasicMaterial({ color: 0x00d4ff, linewidth: 2 })
+            );
+
+            if (document.getElementById('showUnitCube').checked) {
+                scene.add(unitCubeTransformed);
+            }
+        }
+
+        function updateVisualization() {
+            createBasisVectors();
+            createUnitCube();
+            updateEigenvectors();
+            updateMatrixDisplay();
+            updateProperties();
+        }
+
+        function updateEigenvectors() {
+            eigenvectorArrows.forEach(a => scene.remove(a));
+            eigenvectorArrows = [];
+
+            if (!document.getElementById('showEigenvectors').checked) return;
+
+            // Only for 2x2 submatrix
+            const m = [[currentMatrix[0][0], currentMatrix[0][1]],
+            [currentMatrix[1][0], currentMatrix[1][1]]];
+            const eigen = calculateEigen2x2(m);
+
+            if (eigen.eigenvectors) {
+                eigen.eigenvectors.forEach(v => {
+                    const arrow = createArrow([v[0], v[1], 0], [0, 0, 0], 0xb10dc9, 2);
+                    eigenvectorArrows.push(arrow);
+                    scene.add(arrow);
+                });
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('visualization3d');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // ============ MATRIX OPERATIONS ============
+        function parseMatrix(str) {
+            try {
+                const rows = str.trim().split('\n');
+                return rows.map(row => row.split(',').map(n => parseFloat(n.trim())));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function multiplyMatrixVector(m, v) {
+            const result = [];
+            for (let i = 0; i < m.length; i++) {
+                let sum = 0;
+                for (let j = 0; j < v.length; j++) {
+                    sum += m[i][j] * (v[j] || 0);
+                }
+                result.push(sum);
+            }
+            return result;
+        }
+
+        function vectorLength(v) {
+            return Math.sqrt(v.reduce((sum, x) => sum + x * x, 0));
+        }
+
+        function interpolateMatrix(m1, m2, t) {
+            const result = [];
+            for (let i = 0; i < m1.length; i++) {
+                const row = [];
+                for (let j = 0; j < m1[i].length; j++) {
+                    row.push(m1[i][j] * (1 - t) + m2[i][j] * t);
+                }
+                result.push(row);
+            }
+            return result;
+        }
+
+        function determinant3x3(m) {
+            return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+                - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+                + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+        }
+
+        function trace3x3(m) {
+            return m[0][0] + m[1][1] + m[2][2];
+        }
+
+        function calculateEigen2x2(m) {
             const [[a, b], [c, d]] = m;
             const trace = a + d;
             const det = a * d - b * c;
             const discriminant = trace * trace - 4 * det;
 
-            if (discriminant < 0) return { eigenvalues: "Complex eigenvalues not supported.", eigenvectors: "" };
-            
+            if (discriminant < 0) return { eigenvalues: null, eigenvectors: null, complex: true };
+
             const lambda1 = (trace + Math.sqrt(discriminant)) / 2;
             const lambda2 = (trace - Math.sqrt(discriminant)) / 2;
 
-            let v1 = [0, 0], v2 = [0, 0];
+            let v1 = [1, 0], v2 = [0, 1];
             if (c !== 0) {
                 v1 = [lambda1 - d, c];
                 v2 = [lambda2 - d, c];
             } else if (b !== 0) {
                 v1 = [b, lambda1 - a];
                 v2 = [b, lambda2 - a];
-            } else { // Diagonal matrix
-                v1 = [1, 0];
-                v2 = [0, 1];
             }
-            // Normalize vectors
-            const norm1 = Math.sqrt(v1[0]**2 + v1[1]**2);
-            const norm2 = Math.sqrt(v2[0]**2 + v2[1]**2);
-            v1 = norm1 === 0 ? v1 : [v1[0]/norm1, v1[1]/norm1];
-            v2 = norm2 === 0 ? v2 : [v2[0]/norm2, v2[1]/norm2];
 
-            return {
-                eigenvalues: `&lambda;₁ = ${lambda1.toFixed(3)}, &lambda;₂ = ${lambda2.toFixed(3)}`,
-                eigenvectors: [v1, v2]
-            };
+            // Normalize
+            const norm1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2);
+            const norm2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2);
+            v1 = [v1[0] / norm1, v1[1] / norm1];
+            v2 = [v2[0] / norm2, v2[1] / norm2];
+
+            return { eigenvalues: [lambda1, lambda2], eigenvectors: [v1, v2], complex: false };
+        }
+
+        // ============ UI UPDATES ============
+        function updateMatrixDisplay() {
+            const display = document.getElementById('matrixDisplay');
+            display.innerHTML = currentMatrix.map(row =>
+                `[ ${row.map(n => n.toFixed(3).padStart(7)).join(', ')} ]`
+            ).join('\n');
+
+            // Update basis display
+            const basis = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+            const colors = ['text-red-400', 'text-green-400', 'text-blue-400'];
+            const labels = ['e₁', 'e₂', 'e₃'];
+
+            const basisDisplay = document.getElementById('basisDisplay');
+            basisDisplay.innerHTML = basis.map((v, i) => {
+                const tv = multiplyMatrixVector(currentMatrix, v);
+                return `<div class="${colors[i]}">T(${labels[i]}) = [${tv.map(n => n.toFixed(2)).join(', ')}]</div>`;
+            }).join('');
+
+            document.getElementById('tDisplay').textContent = document.getElementById('tSlider').value;
+        }
+
+        function updateProperties() {
+            const det = determinant3x3(currentMatrix);
+            const tr = trace3x3(currentMatrix);
+
+            document.getElementById('determinant').textContent = det.toFixed(3);
+            document.getElementById('trace').textContent = tr.toFixed(3);
+
+            // Determine matrix type
+            let type = 'General';
+            if (Math.abs(det - 1) < 0.001 && Math.abs(det) > 0.001) type = 'Orthogonal';
+            else if (Math.abs(det) < 0.001) type = 'Singular';
+            else if (det < 0) type = 'Reflection';
+            else if (det > 1.5) type = 'Scaling';
+
+            document.getElementById('matrixType').textContent = type;
+            document.getElementById('rank').textContent = Math.abs(det) > 0.001 ? '3' : '<3';
+
+            // Eigenvalues for 2x2
+            const m2x2 = [[currentMatrix[0][0], currentMatrix[0][1]],
+            [currentMatrix[1][0], currentMatrix[1][1]]];
+            const eigen = calculateEigen2x2(m2x2);
+
+            const eigenSection = document.getElementById('eigenSection');
+            const eigenDisplay = document.getElementById('eigenvalues');
+
+            if (eigen.eigenvalues && !eigen.complex) {
+                eigenSection.classList.remove('hidden');
+                eigenDisplay.innerHTML = eigen.eigenvalues.map((lambda, i) =>
+                    `<div class="eigenvalue-badge" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5);">
+                        λ${i + 1} = ${lambda.toFixed(3)}
+                    </div>`
+                ).join('');
+            } else if (eigen.complex) {
+                eigenSection.classList.remove('hidden');
+                eigenDisplay.innerHTML = '<div class="text-sm text-gray-400">Complex eigenvalues (rotation)</div>';
+            } else {
+                eigenSection.classList.add('hidden');
+            }
+        }
+
+        // ============ PRESETS ============
+        const presets = {
+            identity: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+            scale: [[2, 0, 0], [0, 2, 0], [0, 0, 2]],
+            rotateX: [[1, 0, 0], [0, Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4)], [0, Math.sin(Math.PI / 4), Math.cos(Math.PI / 4)]],
+            rotateY: [[Math.cos(Math.PI / 4), 0, Math.sin(Math.PI / 4)], [0, 1, 0], [-Math.sin(Math.PI / 4), 0, Math.cos(Math.PI / 4)]],
+            rotateZ: [[Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4), 0], [Math.sin(Math.PI / 4), Math.cos(Math.PI / 4), 0], [0, 0, 1]],
+            shear: [[1, 0.5, 0], [0.5, 1, 0], [0, 0, 1]],
+            reflection: [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+            projection: [[1, 0, 0], [0, 1, 0], [0, 0, 0]],
+            stretch: [[2, 1, 0], [0, 0.5, 0], [0, 0, 1]]
         };
 
-        // --- 3D VISUALIZATION (three.js) ---
-        let scene, camera, renderer, gridHelper, axesHelper;
-        const plotObjects = [];
-
-        function init3DPlot() {
-            const container = document.getElementById('plot-container');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(5, 5, 5);
-            camera.lookAt(0, 0, 0);
-
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('plot-canvas'), antialias: true, alpha: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-
-            gridHelper = new THREE.GridHelper(10, 10, 0x00d9ff, 0xaaaaaa);
-            gridHelper.material.opacity = 0.2;
-            gridHelper.material.transparent = true;
-            scene.add(gridHelper);
-
-            axesHelper = new THREE.AxesHelper(5);
-            axesHelper.material.opacity = 0.5;
-            axesHelper.material.transparent = true;
-            scene.add(axesHelper);
-
-            const light = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(light);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7.5);
-            scene.add(directionalLight);
-
-            let isDragging = false;
-            let previousMousePosition = { x: 0, y: 0 };
-            
-            const onMouseDown = (e) => { isDragging = true; };
-            const onMouseUp = (e) => { isDragging = false; };
-            const onMouseMove = (e) => {
-                if (!isDragging) return;
-                const deltaMove = {
-                    x: e.offsetX - previousMousePosition.x,
-                    y: e.offsetY - previousMousePosition.y
-                };
-                
-                const deltaRotationQuaternion = new THREE.Quaternion()
-                    .setFromEuler(new THREE.Euler(
-                        (deltaMove.y * Math.PI) / 180,
-                        (deltaMove.x * Math.PI) / 180,
-                        0,
-                        'XYZ'
-                    ));
-                
-                camera.position.applyQuaternion(deltaRotationQuaternion);
-                camera.lookAt(0,0,0);
-                previousMousePosition = { x: e.offsetX, y: e.offsetY };
-            };
-            const onWheel = (e) => {
-                camera.position.z += e.deltaY * 0.01;
-            };
-
-            container.addEventListener('mousedown', onMouseDown);
-            container.addEventListener('mouseup', onMouseUp);
-            container.addEventListener('mousemove', onMouseMove);
-            container.addEventListener('wheel', onWheel);
-
-            animate();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        
-        function addVectorToPlot(vec, color = 0x00d9ff, name = 'vector') {
-            const [x, y, z] = [vec[0] || 0, vec[1] || 0, vec[2] || 0];
-            const dir = new THREE.Vector3(x, y, z);
-            const origin = new THREE.Vector3(0, 0, 0);
-            const length = dir.length();
-            const arrowHelper = new THREE.ArrowHelper(dir.normalize(), origin, length, color);
-            arrowHelper.name = name;
-            scene.add(arrowHelper);
-            plotObjects.push(arrowHelper);
-        }
-        
-        function clearPlot() {
-            plotObjects.forEach(obj => scene.remove(obj));
-            plotObjects.length = 0;
-        }
-
-        // --- EVENT LISTENERS ---
-        const basicResultEl = document.getElementById('basicResult');
-        const eigenResultEl = document.getElementById('eigenResult');
-
-        document.getElementById('matAddBtn').addEventListener('click', () => {
-            const mA = parseMatrix(document.getElementById('matrixA').value);
-            const mB = parseMatrix(document.getElementById('matrixB').value);
-            if (!mA || !mB) { basicResultEl.textContent = 'Error: Invalid matrix input.'; return; }
-            const { result, error } = addMatrices(mA, mB);
-            basicResultEl.textContent = error ? `Error: ${error}` : formatMatrix(result);
-        });
-        document.getElementById('matMulBtn').addEventListener('click', () => {
-            const mA = parseMatrix(document.getElementById('matrixA').value);
-            const mB = parseMatrix(document.getElementById('matrixB').value);
-            if (!mA || !mB) { basicResultEl.textContent = 'Error: Invalid matrix input.'; return; }
-            const { result, error } = multiplyMatrices(mA, mB);
-            basicResultEl.textContent = error ? `Error: ${error}` : formatMatrix(result);
-        });
-        document.getElementById('matVecMulBtn').addEventListener('click', () => {
-            const mA = parseMatrix(document.getElementById('matrixA').value);
-            const vA = parseVector(document.getElementById('vectorA').value);
-            if (!mA || !vA) { basicResultEl.textContent = 'Error: Invalid matrix or vector input.'; return; }
-            const { result, error } = multiplyMatrixVector(mA, vA);
-            basicResultEl.textContent = error ? `Error: ${error}` : formatVector(result);
-        });
-
-        document.getElementById('eigenBtn').addEventListener('click', () => {
-            const mA = parseMatrix(document.getElementById('matrixA').value);
-            if (!mA) { eigenResultEl.textContent = 'Error: Invalid matrix input.'; return; }
-            const { eigenvalues, eigenvectors, error } = calculateEigen2x2(mA);
-            if (error) {
-                eigenResultEl.innerHTML = `<p>${error}</p>`;
+        // ============ OPERATIONS ============
+        function computeInverse() {
+            const det = determinant3x3(currentMatrix);
+            if (Math.abs(det) < 0.0001) {
+                showOperationResult('Matrix is singular (det ≈ 0), no inverse exists');
                 return;
             }
-            let html = `<p class="mb-2">Eigenvalues: ${eigenvalues}</p>`;
-            if (eigenvectors) {
-                html += `<p>Eigenvector 1: ${formatVector(eigenvectors[0])}</p>`;
-                html += `<p>Eigenvector 2: ${formatVector(eigenvectors[1])}</p>`;
-                clearPlot();
-                addVectorToPlot(eigenvectors[0], 0xff00c8, 'eigenvector1');
-                addVectorToPlot(eigenvectors[1], 0xff00c8, 'eigenvector2');
-            }
-            eigenResultEl.innerHTML = html;
-        });
-        
-        // Plotting listeners
-        document.getElementById('plotVecBtn').addEventListener('click', () => {
-            const v = parseVector(document.getElementById('vectorA').value);
-            if(v) addVectorToPlot(v, 0x00d9ff, 'vector_v');
-        });
-        document.getElementById('plotMatBtn').addEventListener('click', () => {
-            const m = parseMatrix(document.getElementById('matrixA').value);
-            if(m) {
-                const basisX = [1,0,0], basisY = [0,1,0];
-                const transformedX = multiplyMatrixVector(m, basisX).result;
-                const transformedY = multiplyMatrixVector(m, basisY).result;
-                if(transformedX) addVectorToPlot(transformedX, 0xf3ff00, 'basis_x');
-                if(transformedY) addVectorToPlot(transformedY, 0xf3ff00, 'basis_y');
-            }
-        });
-        document.getElementById('plotTransformBtn').addEventListener('click', () => {
-            const m = parseMatrix(document.getElementById('matrixA').value);
-            const v = parseVector(document.getElementById('vectorA').value);
-            if (m && v) {
-                const { result, error } = multiplyMatrixVector(m, v);
-                if (!error) {
-                    addVectorToPlot(v, 0x00d9ff, 'original_v');
-                    addVectorToPlot(result, 0xff00c8, 'transformed_v');
+
+            // Calculate inverse using adjugate
+            const m = currentMatrix;
+            const adj = [
+                [(m[1][1] * m[2][2] - m[1][2] * m[2][1]) / det, -(m[0][1] * m[2][2] - m[0][2] * m[2][1]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
+                [-(m[1][0] * m[2][2] - m[1][2] * m[2][0]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, -(m[0][0] * m[1][2] - m[0][2] * m[1][0]) / det],
+                [(m[1][0] * m[2][1] - m[1][1] * m[2][0]) / det, -(m[0][0] * m[2][1] - m[0][1] * m[2][0]) / det, (m[0][0] * m[1][1] - m[0][1] * m[1][0]) / det]
+            ];
+
+            showOperationResult('M⁻¹ =\n' + adj.map(row => `[ ${row.map(n => n.toFixed(3).padStart(7)).join(', ')} ]`).join('\n'));
+        }
+
+        function computeTranspose() {
+            const t = currentMatrix[0].map((_, i) => currentMatrix.map(row => row[i]));
+            showOperationResult('Mᵀ =\n' + t.map(row => `[ ${row.map(n => n.toFixed(3).padStart(7)).join(', ')} ]`).join('\n'));
+        }
+
+        function computeSquare() {
+            const result = [];
+            for (let i = 0; i < 3; i++) {
+                const row = [];
+                for (let j = 0; j < 3; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < 3; k++) {
+                        sum += currentMatrix[i][k] * currentMatrix[k][j];
+                    }
+                    row.push(sum);
                 }
+                result.push(row);
+            }
+            showOperationResult('M² =\n' + result.map(row => `[ ${row.map(n => n.toFixed(3).padStart(7)).join(', ')} ]`).join('\n'));
+        }
+
+        function computeNormalize() {
+            const det = determinant3x3(currentMatrix);
+            const scale = Math.pow(Math.abs(det), 1 / 3);
+            if (scale < 0.0001) {
+                showOperationResult('Cannot normalize singular matrix');
+                return;
+            }
+            const normalized = currentMatrix.map(row => row.map(n => n / scale));
+            showOperationResult('Normalized (det=1):\n' + normalized.map(row => `[ ${row.map(n => n.toFixed(3).padStart(7)).join(', ')} ]`).join('\n'));
+        }
+
+        function showOperationResult(text) {
+            const el = document.getElementById('operationResult');
+            el.classList.remove('hidden');
+            el.textContent = text;
+        }
+
+        // ============ EVENT LISTENERS ============
+        document.getElementById('applyBtn').addEventListener('click', () => {
+            const input = document.getElementById('matrixInput').value;
+            const parsed = parseMatrix(input);
+            if (parsed && parsed.length === 3 && parsed[0].length === 3) {
+                targetMatrix = parsed;
+                currentMatrix = parsed;
+                updateVisualization();
+            } else {
+                alert('Please enter a valid 3x3 matrix');
             }
         });
-        document.getElementById('plotClearBtn').addEventListener('click', clearPlot);
 
-        // --- PYTHON SIMULATION ---
-        const pythonCodeEl = document.getElementById('pythonCodeSnippet');
-        const pythonOutputEl = document.getElementById('pythonOutput');
-        const pythonSelectEl = document.getElementById('pythonOpSelect');
-        const pythonOperations = {
-            intro: { code: `# Select a simulation...`, output: `` },
-            vec_add: { code: `import numpy as np\na = np.array([1, 2, 3])\nb = np.array([4, 5, 6])\nc = a + b\nprint(c)`, output: `[5 7 9]` },
-            mat_mul: { code: `import numpy as np\nA = np.array([[1, 2], [3, 4]])\nB = np.array([[5, 6], [7, 8]])\nC = A @ B\nprint(C)`, output: `[[19 22]\n [43 50]]` },
-            mat_transpose: { code: `import numpy as np\nA = np.array([[1, 2, 3], [4, 5, 6]])\nB = A.T\nprint(B)`, output: `[[1 4]\n [2 5]\n [3 6]]` },
-            np_eigen: { code: `import numpy as np\nA = np.array([[4, 1], [2, 3]])\neigenvalues, eigenvectors = np.linalg.eig(A)\nprint("Eigenvalues:\\n", eigenvalues)\nprint("\\nEigenvectors:\\n", eigenvectors)`, output: `Eigenvalues:\n [5. 2.]\n\nEigenvectors:\n [[ 0.70710678 -0.4472136 ]\n [ 0.70710678  0.89442719]]` },
-            np_svd: { code: `import numpy as np\nA = np.array([[1, 2], [3, 4], [5, 6]])\nU, s, VT = np.linalg.svd(A)\nprint("U (Left Singular Vectors):\\n", U)\nprint("\\ns (Singular Values):\\n", s)\nprint("\\nVT (Right Singular Vectors Transposed):\\n", VT)`, output: `U (Left Singular Vectors):\n [[-0.2298477  0.88346102 0.40824829]\n [-0.52474482 0.24078249 -0.81649658]\n [-0.81964194 -0.40189603 0.40824829]]\n\ns (Singular Values):\n [9.52551809 0.51430058]\n\nVT (Right Singular Vectors Transposed):\n [[-0.61962948 -0.78489445]\n [-0.78489445  0.61962948]]` }
-        };
-        pythonSelectEl.addEventListener('change', (e) => {
-            const data = pythonOperations[e.target.value];
-            if (data) {
-                pythonCodeEl.textContent = data.code;
-                pythonOutputEl.textContent = data.output;
+        document.getElementById('presetSelect').addEventListener('change', (e) => {
+            if (presets[e.target.value]) {
+                const m = presets[e.target.value];
+                document.getElementById('matrixInput').value = m.map(row => row.map(n => n.toFixed(2)).join(', ')).join('\n');
+                targetMatrix = m;
+                document.getElementById('tSlider').value = 0;
+                document.getElementById('tValueDisplay').textContent = '0.00';
             }
         });
 
-        // --- ONLOAD INITIALIZATION ---
-        window.onload = () => {
-            document.getElementById('vectorA').value = '1, 2, 0';
-            document.getElementById('vectorB').value = '4, 5, 0';
-            document.getElementById('matrixA').value = '1, 2, 0\n3, 4, 0\n0, 0, 1';
-            document.getElementById('matrixB').value = '5, 6, 0\n7, 8, 0\n0, 0, 1';
-            pythonOutputEl.textContent = pythonOperations.intro.output;
-            pythonCodeEl.textContent = pythonOperations.intro.code;
-            init3DPlot();
+        document.getElementById('tSlider').addEventListener('input', (e) => {
+            const t = parseFloat(e.target.value);
+            document.getElementById('tValueDisplay').textContent = t.toFixed(2);
+
+            const identity = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+            currentMatrix = interpolateMatrix(identity, targetMatrix, t);
+            updateVisualization();
+        });
+
+        document.getElementById('animateBtn').addEventListener('click', () => {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            let t = 0;
+            const identity = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+
+            const animateStep = () => {
+                t += 0.02;
+                if (t > 1) {
+                    t = 1;
+                    isAnimating = false;
+                }
+
+                document.getElementById('tSlider').value = t;
+                document.getElementById('tValueDisplay').textContent = t.toFixed(2);
+                currentMatrix = interpolateMatrix(identity, targetMatrix, t);
+                updateVisualization();
+
+                if (t < 1) {
+                    requestAnimationFrame(animateStep);
+                }
+            };
+
+            animateStep();
+        });
+
+        document.getElementById('resetViewBtn').addEventListener('click', () => {
+            camera.position.set(4, 3, 4);
+            camera.lookAt(0, 0, 0);
+            controls.reset();
+        });
+
+        document.getElementById('toggleGridBtn').addEventListener('click', () => {
+            gridHelper.visible = !gridHelper.visible;
+        });
+
+        ['showBasis', 'showTransformed', 'showEigenvectors', 'showUnitCube'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateVisualization);
+        });
+
+        // ============ INITIALIZATION ============
+        window.onload = function () {
+            init3D();
+            updateVisualization();
         };
     </script>
 </body>
+
 </html>

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prose Analytics: Quantifying Reader Engagement</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome (for icons, using CDN for standard web fonts/icons) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chosen Palette: Literary Analytics -->
+    <!-- Background: Warm Neutral (Stone-50) representing paper. -->
+    <!-- Text: Slate-800 for readability, Serif headings for academic authority. -->
+    <!-- Accents: Indigo-600 (Analysis), Emerald-600 (Success), Amber-600 (Caution/Highlights). -->
+    <!-- The palette is designed to feel like a modern digital research paper: clean, readable, and data-focused. -->
+
+    <!-- Application Structure Plan:
+         1. Dashboard Header: Sets the context of the study (Prose Techniques vs. Engagement).
+         2. Executive Summary/Scope: Interactive counters and grid showing the genres and metrics defined in the proposal.
+         3. The "Technique Lab": A section dedicated to the 4 specific prose techniques. Uses a tabbed interface to keep the UI clean while allowing deep dives into 'Sensory', 'Visual', 'Style', and 'Imagery'.
+         4. Projected Insights (The Core Viz): Interactive charts simulating the *types* of findings the study aims to produce.
+            - Radar Chart: Sensory profiles per genre.
+            - Scatter Plot: Complexity vs. Retention.
+            - Bar Chart: Impact of Kinetic verbs.
+            - Controls: A genre switcher (Fantasy/Sci-Fi/Action) that updates these charts to show hypothetical genre-specific patterns.
+         5. Methodology Roadmap: A vertical timeline (CSS-styled) visualizing the 4-phase execution plan.
+         6. Tool Stack: Simple cards showing the NLP/Data pipeline.
+         Rationale: This structure moves from high-level scope -> specific definitions -> visualized expected outcomes -> execution plan. It prioritizes understanding *why* the study matters (the insights) before showing *how* it will be done.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Genre Sensory Profile (Radar Chart):
+            - Goal: Visualizing how different genres might prioritize different sensory inputs (Report: "Sensory Descriptors").
+            - Interaction: Switch genre to see the shape change (e.g., Action peaks at 'Kinetic', Fantasy at 'Visual').
+            - Justification: Radar charts are excellent for multivariate comparison of qualitative categories.
+         2. Engagement Correlations (Scatter Plot):
+            - Goal: Showing the relationship between Style (Gunning Fog) and Retention (Completion %).
+            - Interaction: Toggle between 'Debut' vs 'Established' authors (Simulated).
+            - Justification: Scatter plots are the standard for showing correlation, fitting the "Quantifiable Relationships" theme.
+         3. Metric Priorities (Donut Chart):
+            - Goal: Visualizing the weighting of Sales vs. Retention vs. Audience Reach.
+            - Interaction: Hover for definitions.
+            - Justification: Simple part-to-whole comparison for the "Success Metrics".
+         4. Roadmap (HTML/CSS Timeline):
+            - Goal: Display the project schedule.
+            - Interaction: Hover effects on phases.
+            - Justification: Clean HTML structure is more accessible and responsive than a complex Gantt chart library for this level of detail.
+         CONFIRMATION: NO SVG graphics used (beyond FA font icons). NO Mermaid JS used.
+    -->
+
+    <style>
+        /* Custom Font Settings */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        h1, h2, h3, h4, h5 {
+            font-family: 'Georgia', serif;
+        }
+        
+        /* Chart Container Utilities */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width constraint */
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;    /* Default responsive height */
+            max-height: 400px; /* Hard cap */
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Custom Scrollbar for inner content if needed */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Timeline Connector Line */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 1.25rem; /* Center of the 2.5rem circle */
+            width: 2px;
+            background-color: #e2e8f0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold font-serif">P</div>
+                    <span class="font-serif text-xl font-bold text-slate-900 tracking-tight">Prose Analytics</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('scope')" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Scope</button>
+                    <button onclick="scrollToSection('techniques')" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Techniques</button>
+                    <button onclick="scrollToSection('insights')" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Projected Insights</button>
+                    <button onclick="scrollToSection('roadmap')" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Roadmap</button>
+                </div>
+                <!-- Mobile Menu Button (Icon only) -->
+                <div class="md:hidden text-slate-600">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-white border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+            <div class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold uppercase tracking-wide mb-4">
+                Research Proposal Overview
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
+                Decoding the DNA of <span class="text-indigo-600">Bestselling Prose</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 leading-relaxed mb-8">
+                Investigating quantifiable relationships between sensory techniques, visual density, and stylistic patterns against reader retention and sales volume in the modern digital era (2010–2024).
+            </p>
+            <div class="flex justify-center gap-4">
+                <button onclick="scrollToSection('insights')" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                    Explore Projected Data
+                </button>
+                <button onclick="scrollToSection('roadmap')" class="bg-white text-slate-700 border border-slate-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-50 transition">
+                    View Methodology
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- SECTION 1: STUDY SCOPE -->
+        <section id="scope" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Study Scope & Definition</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto">
+                    This research targets high-immersion genres to isolate the specific mechanical elements of writing that drive commercial success and reader retention.
+                </p>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <!-- Genre Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-indigo-300 transition-colors">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Target Genres</h3>
+                    <ul class="text-slate-600 space-y-2 text-sm">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> High/Epic Fantasy</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Science Fiction</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Action/Thriller</li>
+                    </ul>
+                    <div class="mt-4 pt-4 border-t border-stone-100">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Corpus Size</span>
+                        <p class="text-2xl font-bold text-indigo-600">600+ Novels</p>
+                    </div>
+                </div>
+
+                <!-- Success Metrics Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-indigo-300 transition-colors">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Success Metrics</h3>
+                    <p class="text-sm text-slate-600 mb-4">Measuring impact beyond simple sales figures.</p>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-700">Retention (Completion %)</span>
+                            <div class="w-24 bg-stone-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-700">Sales Volume</span>
+                            <div class="w-24 bg-stone-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-700">Audience Reach</span>
+                            <div class="w-24 bg-stone-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeframe Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 hover:border-indigo-300 transition-colors">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Timeframe: 2010–2024</h3>
+                    <p class="text-sm text-slate-600 mb-4">Analyzing the modern digital-first reading era.</p>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-stone-50 p-3 rounded-lg">
+                            <span class="block text-2xl font-bold text-slate-800">14</span>
+                            <span class="text-xs text-slate-500">Years Data</span>
+                        </div>
+                        <div class="bg-stone-50 p-3 rounded-lg">
+                            <span class="block text-2xl font-bold text-slate-800">2k+</span>
+                            <span class="text-xs text-slate-500">Survey Target</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: PROSE TECHNIQUES -->
+        <section id="techniques" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-6">Analyzing Prose Mechanics</h2>
+                    <p class="text-slate-600 mb-6">
+                        We move beyond "good writing" to measure four specific dimensions of prose. By quantifying these, we can correlate specific techniques with high-retention outcomes.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <!-- Interactive Technique List -->
+                        <div onclick="selectTechnique(0)" id="tech-btn-0" class="cursor-pointer border-l-4 border-indigo-600 bg-indigo-50 p-4 rounded-r-lg transition-all">
+                            <h4 class="font-bold text-slate-900">1. Sensory Descriptors</h4>
+                            <p class="text-sm text-slate-600">Density of visual, auditory, kinetic, and tactile cues per 1,000 words.</p>
+                        </div>
+                        <div onclick="selectTechnique(1)" id="tech-btn-1" class="cursor-pointer border-l-4 border-transparent hover:border-indigo-300 hover:bg-stone-50 p-4 rounded-r-lg transition-all">
+                            <h4 class="font-bold text-slate-900">2. Visual Density</h4>
+                            <p class="text-sm text-slate-600">Frequency of environmental vs. character description and spatial anchoring.</p>
+                        </div>
+                        <div onclick="selectTechnique(2)" id="tech-btn-2" class="cursor-pointer border-l-4 border-transparent hover:border-indigo-300 hover:bg-stone-50 p-4 rounded-r-lg transition-all">
+                            <h4 class="font-bold text-slate-900">3. Stylistic Patterns</h4>
+                            <p class="text-sm text-slate-600">Sentence complexity (Fog Index), pacing metrics, and dialogue ratios.</p>
+                        </div>
+                        <div onclick="selectTechnique(3)" id="tech-btn-3" class="cursor-pointer border-l-4 border-transparent hover:border-indigo-300 hover:bg-stone-50 p-4 rounded-r-lg transition-all">
+                            <h4 class="font-bold text-slate-900">4. Imagery Archetypes</h4>
+                            <p class="text-sm text-slate-600">Recurrence of symbols (light/dark) and NLP originality scores.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Content Panel -->
+                <div class="bg-white rounded-2xl shadow-lg border border-stone-200 p-8 h-full flex flex-col justify-center">
+                    <div id="technique-display">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded uppercase">Focus Area</span>
+                            <span class="text-slate-400 text-sm">Technique #1</span>
+                        </div>
+                        <h3 class="text-2xl font-serif font-bold text-slate-900 mb-4">Sensory Descriptors</h3>
+                        <p class="text-slate-600 mb-6">
+                            The hypothesis suggests that commercially successful novels maintain a specific "sensory rhythm." We analyze the ratio of cues (Sight, Sound, Touch, Movement) to identify patterns that reduce skimming.
+                        </p>
+                        <div class="bg-stone-50 rounded-lg p-6 border border-stone-200">
+                            <h4 class="text-sm font-bold text-slate-800 mb-3 uppercase tracking-wide">Measurement Method</h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                <li class="flex items-start"><i class="fas fa-robot mt-1 mr-2 text-indigo-500"></i> BERT-NER & SpaCy tagging pipelines.</li>
+                                <li class="flex items-start"><i class="fas fa-calculator mt-1 mr-2 text-indigo-500"></i> Count per 1k words normalized by genre.</li>
+                                <li class="flex items-start"><i class="fas fa-search mt-1 mr-2 text-indigo-500"></i> Correlation with Kindle "Popular Highlights".</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PROJECTED INSIGHTS (INTERACTIVE CHARTS) -->
+        <section id="insights" class="scroll-mt-24 bg-stone-100 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">Projected Findings & Data Models</h2>
+                    <p class="text-slate-600 max-w-3xl mx-auto mb-8">
+                        Explore hypothetical data visualizations demonstrating the types of actionable insights this study aims to uncover. 
+                        <br><span class="text-indigo-600 font-semibold">Select a genre to see how optimal prose profiles might shift.</span>
+                    </p>
+                    
+                    <!-- Genre Controls -->
+                    <div class="inline-flex bg-white rounded-lg shadow-sm border border-stone-200 p-1 mb-8">
+                        <button onclick="updateGenreData('fantasy')" id="btn-fantasy" class="px-6 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white shadow-sm transition-all">Fantasy</button>
+                        <button onclick="updateGenreData('scifi')" id="btn-scifi" class="px-6 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-stone-50 transition-all">Sci-Fi</button>
+                        <button onclick="updateGenreData('action')" id="btn-action" class="px-6 py-2 rounded-md text-sm font-medium text-slate-600 hover:bg-stone-50 transition-all">Action</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- Chart 1: Sensory Profile (Radar) -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Optimal Sensory Profile</h3>
+                            <p class="text-sm text-slate-500">Hypothetical distribution of descriptor types for top 10% bestsellers.</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="sensoryRadarChart"></canvas>
+                        </div>
+                        <p id="radar-caption" class="mt-4 text-xs text-center text-slate-500 italic">
+                            Fantasy novels show high dependency on Visual and Tactile descriptors for worldbuilding.
+                        </p>
+                    </div>
+
+                    <!-- Chart 2: Kinetic Verbs vs Retention (Bar) -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Kinetic Density vs. Retention</h3>
+                            <p class="text-sm text-slate-500">Impact of kinetic verb frequency in climactic scenes on completion rate.</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="retentionBarChart"></canvas>
+                        </div>
+                        <p id="bar-caption" class="mt-4 text-xs text-center text-slate-500 italic">
+                            High kinetic density correlates with a +20% boost in retention for this genre.
+                        </p>
+                    </div>
+
+                    <!-- Chart 3: Complexity vs. Reach (Scatter) -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 md:col-span-2">
+                        <div class="flex justify-between items-end mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Syntactic Complexity vs. Audience Reach</h3>
+                                <p class="text-sm text-slate-500">Gunning Fog Index plotted against Goodreads Rating Count (Audience Reach).</p>
+                            </div>
+                            <div class="text-right hidden sm:block">
+                                <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Analysis Target</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="complexityScatterChart"></canvas>
+                        </div>
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-600">
+                            <div class="bg-stone-50 p-3 rounded">
+                                <span class="font-bold text-slate-800 block">Sweet Spot:</span>
+                                Novels in this genre typically maximize reach at a Fog Index of <span id="fog-target" class="font-bold text-indigo-600">8.5 (Grade 8-9)</span>.
+                            </div>
+                            <div class="bg-stone-50 p-3 rounded">
+                                <span class="font-bold text-slate-800 block">Fatigue Point:</span>
+                                Ratings drop significantly when descriptive density exceeds <span id="density-target" class="font-bold text-red-500">45%</span> per page.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: OPERATIONAL ROADMAP -->
+        <section id="roadmap" class="scroll-mt-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Execution Roadmap</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    A structured 12-week plan to move from raw text to actionable literary frameworks.
+                </p>
+            </div>
+
+            <div class="relative max-w-4xl mx-auto timeline-line pl-4 sm:pl-0">
+                
+                <!-- Phase 1 -->
+                <div class="relative pl-16 sm:pl-24 py-6 group">
+                    <div class="absolute left-2 sm:left-[1rem] top-8 w-6 h-6 bg-white border-4 border-slate-300 rounded-full group-hover:border-indigo-600 transition-colors z-10"></div>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-slate-900">Phase 1: Corpus Construction</h3>
+                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">Weeks 1-3</span>
+                        </div>
+                        <p class="text-slate-600 mb-4">Identification of 150 novels (50/genre) and extraction of key scenes via compliant previews.</p>
+                        <ul class="text-sm text-slate-500 space-y-1">
+                            <li>• Sourcing: Amazon "Look Inside", Google Books, Project Gutenberg.</li>
+                            <li>• Filtering: Stratification by Debut vs. Established authors.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative pl-16 sm:pl-24 py-6 group">
+                    <div class="absolute left-2 sm:left-[1rem] top-8 w-6 h-6 bg-white border-4 border-slate-300 rounded-full group-hover:border-indigo-600 transition-colors z-10"></div>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-slate-900">Phase 2: Metrics Harvesting</h3>
+                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">Weeks 4-5</span>
+                        </div>
+                        <p class="text-slate-600 mb-4">Collection of commercial and engagement data points to serve as the ground truth.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded border border-stone-200">NYT Lists</span>
+                            <span class="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded border border-stone-200">Kindle Highlights</span>
+                            <span class="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded border border-stone-200">Goodreads Sentiment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="relative pl-16 sm:pl-24 py-6 group">
+                    <div class="absolute left-2 sm:left-[1rem] top-8 w-6 h-6 bg-white border-4 border-slate-300 rounded-full group-hover:border-indigo-600 transition-colors z-10"></div>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-slate-900">Phase 3: Computational Analysis (NLP)</h3>
+                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded">Weeks 6-9</span>
+                        </div>
+                        <p class="text-slate-600 mb-4">Running the descriptor pipelines, style metrics, and imagery network mapping.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <div class="bg-stone-50 p-2 rounded border border-stone-100">
+                                <span class="font-bold block text-slate-800">Tools:</span> Python, spaCy, BERT, LIWC-22
+                            </div>
+                            <div class="bg-stone-50 p-2 rounded border border-stone-100">
+                                <span class="font-bold block text-slate-800">Output:</span> Correlation Matrices, Heatmaps
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="relative pl-16 sm:pl-24 py-6 group">
+                    <div class="absolute left-2 sm:left-[1rem] top-8 w-6 h-6 bg-white border-4 border-slate-300 rounded-full group-hover:border-indigo-600 transition-colors z-10"></div>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-slate-900">Phase 4: Synthesis & Frameworks</h3>
+                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">Weeks 10-12</span>
+                        </div>
+                        <p class="text-slate-600 mb-4">Validating findings via reader surveys and constructing the final prescriptive tools for authors.</p>
+                        <ul class="text-sm text-slate-500 space-y-1">
+                            <li>• A/B Testing excerpts with 2k+ readers.</li>
+                            <li>• Creation of "Writer's Checklist" and genre templates.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-stone-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h4 class="font-serif text-xl font-bold text-slate-900 mb-4">Prose Analytics Proposal</h4>
+            <p class="text-slate-500 text-sm mb-6">
+                Bridging the gap between literary art and data science.
+            </p>
+            <div class="text-xs text-slate-400">
+                &copy; 2024 Research Proposal | Generated for Analysis
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const appState = {
+            currentGenre: 'fantasy',
+            currentTechnique: 0
+        };
+
+        // --- Data Models (Simulated for Proposal) ---
+        
+        // 1. Technique Content Dictionary
+        const techniqueData = [
+            {
+                title: "Sensory Descriptors",
+                desc: "The hypothesis suggests that commercially successful novels maintain a specific 'sensory rhythm.' We analyze the ratio of cues (Sight, Sound, Touch, Movement) to identify patterns that reduce skimming.",
+                methods: ["BERT-NER & SpaCy tagging pipelines.", "Count per 1k words normalized by genre.", "Correlation with Kindle 'Popular Highlights'."]
+            },
+            {
+                title: "Visual Density",
+                desc: "Examining the frequency of environmental vs. character descriptions. We aim to quantify the 'optimal density threshold' that prevents reader fatigue while maintaining immersion.",
+                methods: ["Spatial anchoring analysis (e.g., 'crystalline spires').", "Eye-tracking heatmaps simulation.", "Comparison of debut vs. established authors."]
+            },
+            {
+                title: "Stylistic Patterns",
+                desc: "Measuring sentence complexity and pacing. Does simpler syntax during climactic action scenes correlate with higher sales? We use the Gunning Fog Index to find out.",
+                methods: ["LIWC-22 for psychological tone.", "Clause length analysis in action scenes.", "Dialogue-to-narrative ratios."]
+            },
+            {
+                title: "Imagery Archetypes",
+                desc: "Mapping the recurrence of symbolic imagery. We track archetypes (e.g., light/dark, organic/mechanized) to see which resonate most in the post-2020 market.",
+                methods: ["NLP originality scores.", "Symbol recurrence frequency mapping.", "Resonance testing with reader surveys."]
+            }
+        ];
+
+        // 2. Chart Data Dictionary (Simulated Findings per Genre)
+        const genreChartData = {
+            fantasy: {
+                radar: [90, 40, 70, 50], // Visual, Auditory, Tactile, Kinetic
+                radarCaption: "Fantasy novels show high dependency on Visual and Tactile descriptors for worldbuilding.",
+                bar: [15, 60, 85, 40], // Low, Med, High, Overkill (Kinetic Density)
+                barCaption: "In Fantasy, moderate-high kinetic density aids retention, but worldbuilding slows pacing.",
+                scatterFog: 8.5,
+                scatterDensity: "45%"
+            },
+            scifi: {
+                radar: [70, 30, 40, 60], 
+                radarCaption: "Sci-Fi prioritizes Visual (Tech) and Kinetic (Action), with less emphasis on Tactile.",
+                bar: [20, 50, 75, 50],
+                barCaption: "Sci-Fi readers tolerate higher technical density but require kinetic breaks.",
+                scatterFog: 9.2,
+                scatterDensity: "55%"
+            },
+            action: {
+                radar: [50, 60, 50, 95], 
+                radarCaption: "Action thrillers are dominated by Kinetic descriptors, with Auditory cues for tension.",
+                bar: [10, 40, 95, 80],
+                barCaption: "High Kinetic density is critical. Retention drops immediately if action slows.",
+                scatterFog: 7.1,
+                scatterDensity: "30%"
+            }
+        };
+
+        // --- Chart Instances ---
+        let sensoryRadarChart = null;
+        let retentionBarChart = null;
+        let complexityScatterChart = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateGenreUI('fantasy'); // Initial Load
+        });
+
+        // --- Interactive Functions ---
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function selectTechnique(index) {
+            appState.currentTechnique = index;
+            
+            // Update UI Style
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`tech-btn-${i}`);
+                if (i === index) {
+                    btn.classList.remove('border-transparent', 'hover:bg-stone-50');
+                    btn.classList.add('border-indigo-600', 'bg-indigo-50');
+                } else {
+                    btn.classList.add('border-transparent', 'hover:bg-stone-50');
+                    btn.classList.remove('border-indigo-600', 'bg-indigo-50');
+                }
+            }
+
+            // Update Content
+            const data = techniqueData[index];
+            const display = document.getElementById('technique-display');
+            
+            // Simple Fade Animation simulation via opacity
+            display.style.opacity = '0';
+            setTimeout(() => {
+                display.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded uppercase">Focus Area</span>
+                        <span class="text-slate-400 text-sm">Technique #${index + 1}</span>
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold text-slate-900 mb-4">${data.title}</h3>
+                    <p class="text-slate-600 mb-6 leading-relaxed">${data.desc}</p>
+                    <div class="bg-stone-50 rounded-lg p-6 border border-stone-200">
+                        <h4 class="text-sm font-bold text-slate-800 mb-3 uppercase tracking-wide">Measurement Method</h4>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            ${data.methods.map(m => `<li class="flex items-start"><i class="fas fa-check mt-1 mr-2 text-indigo-500"></i> ${m}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                display.style.opacity = '1';
+            }, 200);
+        }
+
+        function updateGenreData(genre) {
+            appState.currentGenre = genre;
+            updateGenreUI(genre);
+            
+            const data = genreChartData[genre];
+            
+            // Update Text
+            document.getElementById('radar-caption').innerText = data.radarCaption;
+            document.getElementById('bar-caption').innerText = data.barCaption;
+            document.getElementById('fog-target').innerText = data.scatterFog;
+            document.getElementById('density-target').innerText = data.scatterDensity;
+
+            // Update Charts
+            
+            // 1. Radar
+            sensoryRadarChart.data.datasets[0].data = data.radar;
+            sensoryRadarChart.update();
+
+            // 2. Bar
+            retentionBarChart.data.datasets[0].data = data.bar;
+            retentionBarChart.update();
+
+            // 3. Scatter (Simulate data point shift)
+            const newData = generateSimulatedScatterData(data.scatterFog);
+            complexityScatterChart.data.datasets[0].data = newData;
+            complexityScatterChart.update();
+        }
+
+        function updateGenreUI(activeGenre) {
+            const genres = ['fantasy', 'scifi', 'action'];
+            genres.forEach(g => {
+                const btn = document.getElementById(`btn-${g}`);
+                if (g === activeGenre) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('text-slate-600', 'hover:bg-stone-50');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.add('text-slate-600', 'hover:bg-stone-50');
+                }
+            });
+        }
+
+        // --- Chart Configs ---
+
+        function initCharts() {
+            // common options
+            const commonFont = {
+                family: "'Inter', sans-serif",
+                size: 11
+            };
+
+            // 1. Sensory Radar Chart
+            const ctxRadar = document.getElementById('sensoryRadarChart').getContext('2d');
+            sensoryRadarChart = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Visual', 'Auditory', 'Tactile', 'Kinetic'],
+                    datasets: [{
+                        label: 'Sensory Intensity (Normalized)',
+                        data: genreChartData.fantasy.radar,
+                        fill: true,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo-600 low alpha
+                        borderColor: 'rgb(79, 70, 229)',
+                        pointBackgroundColor: 'rgb(79, 70, 229)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(79, 70, 229)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: {
+                                font: { ...commonFont, weight: 'bold' },
+                                color: '#475569'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+
+            // 2. Retention Bar Chart
+            const ctxBar = document.getElementById('retentionBarChart').getContext('2d');
+            retentionBarChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Low', 'Moderate', 'High', 'Excessive'],
+                    datasets: [{
+                        label: 'Est. Retention Rate (%)',
+                        data: genreChartData.fantasy.bar,
+                        backgroundColor: [
+                            'rgba(148, 163, 184, 0.5)', 
+                            'rgba(148, 163, 184, 0.5)', 
+                            'rgba(16, 185, 129, 0.7)', // Emerald for high
+                            'rgba(245, 158, 11, 0.7)'  // Amber for dropoff
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Completion Rate %', font: commonFont }
+                        },
+                        x: {
+                            grid: { display: false },
+                            title: { display: true, text: 'Kinetic Verb Density', font: commonFont }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 3. Complexity Scatter Chart
+            const ctxScatter = document.getElementById('complexityScatterChart').getContext('2d');
+            complexityScatterChart = new Chart(ctxScatter, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Successful Novels (Sample)',
+                        data: generateSimulatedScatterData(8.5),
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                        borderColor: 'transparent'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Gunning Fog Index (Complexity)', font: commonFont },
+                            min: 4,
+                            max: 16,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Audience Reach (Log Scale)', font: commonFont },
+                            min: 0,
+                            max: 100,
+                            grid: { color: '#f1f5f9' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Fog: ${context.parsed.x}, Score: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper to generate fake scatter data clustered around a "Sweet Spot"
+        function generateSimulatedScatterData(sweetSpot) {
+            const points = [];
+            for (let i = 0; i < 50; i++) {
+                // Random fog index between 5 and 15
+                const fog = 5 + Math.random() * 10;
+                // Reach score is higher if fog is close to sweetSpot
+                const distance = Math.abs(fog - sweetSpot);
+                const baseScore = 90 - (distance * 15); 
+                const noise = (Math.random() * 20) - 10;
+                points.push({
+                    x: parseFloat(fog.toFixed(1)),
+                    y: Math.max(0, Math.min(100, baseScore + noise))
+                });
+            }
+            return points;
+        }
+
+    </script>
+</body>
+</html>

@@ -1,19 +1,11 @@
 import React, { useEffect, useRef } from "react"
 import { Link } from "gatsby"
 import { gsap } from "gsap"
+import { QUICK_LINKS, SOCIAL_LINKS } from "../../constants"
 
 const Footer = ({ siteTitle }) => {
   const footerRef = useRef(null);
   const circuitRef = useRef(null);
-
-  // List of quick links for the footer
-  const quickLinks = [
-    { label: "Home", url: "/" },
-    { label: "Development Projects", url: "/development-projects" },
-    { label: "Creative", url: "/stories" },
-    { label: "About", url: "/about" },
-    { label: "Contact", url: "/contact" }
-  ];
 
   // Setup animations on mount
   useEffect(() => {
@@ -396,7 +388,7 @@ const Footer = ({ siteTitle }) => {
             padding: 0,
             margin: 0
           }}>
-            {quickLinks.map((link, index) => (
+            {QUICK_LINKS.map((link, index) => (
               <li key={index} style={{ marginBottom: "0.75rem" }}>
                 <Link
                   to={link.url}
@@ -464,14 +456,25 @@ const Footer = ({ siteTitle }) => {
           </p>
           
           {/* Newsletter Signup Form (placeholder) */}
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem"
-          }}>
+          <form
+            aria-label="Newsletter subscription"
+            onSubmit={(e) => e.preventDefault()}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem"
+            }}
+          >
+            <label htmlFor="newsletter-email" className="sr-only">
+              Email address for newsletter updates
+            </label>
             <input
+              id="newsletter-email"
               type="email"
+              name="email"
               placeholder="Your email address"
+              aria-required="true"
+              aria-describedby="newsletter-description"
               style={{
                 padding: "0.75rem 1rem",
                 borderRadius: "8px",
@@ -482,7 +485,12 @@ const Footer = ({ siteTitle }) => {
                 fontSize: "0.9rem"
               }}
             />
+            <span id="newsletter-description" className="sr-only">
+              Subscribe to receive updates on new projects and stories
+            </span>
             <button
+              type="submit"
+              aria-label="Subscribe to newsletter"
               style={{
                 padding: "0.75rem 1rem",
                 borderRadius: "8px",
@@ -512,7 +520,7 @@ const Footer = ({ siteTitle }) => {
             >
               Subscribe
             </button>
-          </div>
+          </form>
         </div>
       </div>
       

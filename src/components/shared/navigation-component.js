@@ -3,15 +3,7 @@ import { Link } from "gatsby"
 import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { useLocation } from "@reach/router"
-
-// Navigation links configuration (moved outside component to prevent recreation)
-const navLinks = [
-  { id: "home", label: "Home", path: "/" },
-  { id: "dev-projects", label: "Development Projects", path: "/development-projects" },
-  { id: "stories", label: "Stories & More", path: "/stories" },
-  { id: "about", label: "About", path: "/about" },
-  { id: "contact", label: "Contact", path: "/contact" }
-];
+import { NAV_LINKS } from "../../constants";
 
 const Navigation = () => {
   const navRef = useRef(null);
@@ -24,7 +16,7 @@ const Navigation = () => {
     if (!navRef.current || !indicatorRef.current) return;
 
     // Find the active item based on the current location path
-    const activeLink = navLinks.find(link =>
+    const activeLink = NAV_LINKS.find(link =>
       location.pathname === link.path ||
       (link.path !== "/" && location.pathname.startsWith(link.path + "/"))
     );
@@ -95,7 +87,7 @@ const Navigation = () => {
         }}
         aria-label="Main Navigation"
       >
-        {navLinks.map(link => {
+        {NAV_LINKS.map(link => {
           const isActive = location.pathname === link.path || (link.path !== "/" && location.pathname.startsWith(link.path + "/"));
           return (
             <li

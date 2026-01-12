@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Perpetual Impulse: An Interactive History of the Voltaic Pile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Copper, Zinc, Parchment) -->
+    <!-- Application Structure Plan: The SPA uses a thematic, non-linear structure with a sticky top navigation bar ("The Shift", "The Imagination", "The Infrastructure"). This design encourages user-led exploration over the report's linear narrative. The structure is chosen for usability, allowing users to jump directly to the aspect of the story they find most compelling—be it the core technological change, the cultural impact, or the long-term consequences. Key interactions include a comparative chart, interactive diagrams, a tabbed interface for dual narratives, and a clickable timeline, all designed to make the dense information digestible and engaging. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Table 1 comparing Leyden Jar vs. Voltaic Pile. -> Goal: Compare. -> Viz: Chart.js Bar Chart. -> Interaction: Hover tooltips. -> Justification: A chart provides a more immediate and visually striking comparison of quantitative differences (voltage, current, duration) than a static table. -> Library: Chart.js.
+        2. Report Info: The dual cultural impact (Aldini's gothic theater vs. Davy's electrochemistry). -> Goal: Organize/Compare. -> Viz: Tabbed content block. -> Interaction: Clicking tabs to switch views. -> Justification: Tabs allow for a direct A/B comparison of the two opposing narratives within the same screen space, highlighting the dualism effectively. -> Library/Method: Vanilla JS + Tailwind.
+        3. Report Info: The pile's role in enabling future technologies. -> Goal: Show Change/Process. -> Viz: Horizontal HTML/CSS Timeline. -> Interaction: Clicking timeline nodes to reveal detailed info. -> Justification: A timeline is the most intuitive way to represent a historical progression and show the cause-and-effect relationship between the pile and subsequent inventions. -> Library/Method: Vanilla JS + Tailwind.
+        4. Report Info: The pile's construction from mundane materials. -> Goal: Inform/Explore. -> Viz: Interactive HTML/CSS Diagram. -> Interaction: Hovering over parts reveals descriptive tooltips. -> Justification: An interactive diagram makes the abstract description of the pile's construction tangible and reinforces the key theme of its simplicity. -> Library/Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF5; /* Parchment */
+            color: #4A4A4A;
+        }
+        h1, h2, h3 {
+            font-family: 'Lora', serif;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #B87333; /* Copper */
+            border-bottom-color: #B87333;
+        }
+        .copper-accent { color: #B87333; }
+        .zinc-accent { color: #717D7E; }
+        .btn-primary {
+            background-color: #B87333;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #935d29;
+        }
+        .tab {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #B87333;
+            color: #B87333;
+            font-weight: 600;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+        .timeline-dot {
+            position: absolute;
+            top: 4px;
+            left: -0.4rem;
+            width: 0.8rem;
+            height: 0.8rem;
+            border-radius: 50%;
+            background-color: #717D7E; /* Zinc */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .timeline-dot:hover {
+            transform: scale(1.5);
+        }
+        .timeline-line {
+            position: absolute;
+            top: 4px;
+            left: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ccc;
+        }
+        .pile-component {
+            transition: all 0.2s ease-in-out;
+        }
+        .pile-component:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-semibold text-gray-700">The Perpetual Impulse</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#shift" class="nav-link pb-1">The Shift</a>
+                <a href="#imagination" class="nav-link pb-1">The Imagination</a>
+                <a href="#infrastructure" class="nav-link pb-1">The Infrastructure</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Hero Section -->
+        <section class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">How a Simple Stack of Metal Discs <br class="hidden md:block"> <span class="copper-accent">Domesticated Lightning</span></h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                In 1800, Alessandro Volta's pile of copper, zinc, and brine-soaked cardboard transformed electricity from an ephemeral, violent spectacle into a controllable, sustained current. Explore how this humble invention rewired our world.
+            </p>
+        </section>
+
+        <!-- Section 1: The Shift -->
+        <section id="shift" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-4 zinc-accent">The Shift: From Ephemeral Shock to Steady Flow</h3>
+            <p class="text-center max-w-3xl mx-auto mb-12">
+                The Voltaic Pile's greatest innovation was its ability to produce a continuous, low-voltage current, a stark contrast to the violent, high-voltage, instantaneous discharge of the Leyden Jar. This section explores that fundamental perceptual and material shift. This new experience—a predictable, sustained tingle rather than a frightening jolt—was the first step in taming electricity.
+            </p>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h4 class="text-2xl font-bold mb-4">A Tale of Two Powers</h4>
+                    <p class="mb-6 text-gray-600">The chart visually contrasts the characteristics of the era's two primary electrical sources. The Leyden Jar provided a powerful but momentary shock, like "captured lightning." The Voltaic Pile offered a weaker but "perpetual impulse," a controllable flow that changed everything.</p>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+                <div class="relative">
+                    <h4 class="text-2xl font-bold mb-4">Anatomy of a Revolution</h4>
+                    <p class="mb-6 text-gray-600">The pile's power came from its mundane construction. Hover over the components of this "artificial electrical organ" to see how common materials created a continuous current, demystifying electricity and making it a tool of the workshop, not just the salon.</p>
+                    <div id="pileDiagram" class="relative flex flex-col items-center space-y-1 p-4 rounded-lg bg-gray-50">
+                        <!-- Pile Components will be inserted by JS -->
+                    </div>
+                    <div id="pileTooltip" class="absolute hidden bg-gray-800 text-white text-sm rounded-lg px-3 py-1.5 z-10 pointer-events-none transition-opacity duration-300"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Imagination -->
+        <section id="imagination" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-4 copper-accent">The Imagination: Gothic Horror & Chemical Miracles</h3>
+            <p class="text-center max-w-3xl mx-auto mb-12">
+                The pile's continuous current immediately created a powerful and dualistic public image. It was used in grotesque spectacles that seemed to animate the dead, fueling gothic fears, while simultaneously becoming a miraculous tool in the laboratory for deconstructing matter. This section lets you explore these two competing narratives that captivated the 19th-century mind.
+            </p>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-center border-b mb-8 space-x-4 md:space-x-8">
+                    <button class="tab active py-2 px-4" data-tab="gothic">💀 The Gothic Theater</button>
+                    <button class="tab py-2 px-4" data-tab="chemical">🧪 The Chemical Miracle</button>
+                </div>
+                <div id="tabContent">
+                    <!-- Tab content will be inserted by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Infrastructure -->
+        <section id="infrastructure" class="scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-4 zinc-accent">The Infrastructure: From Current to Network</h3>
+             <p class="text-center max-w-3xl mx-auto mb-12">
+                The pile's sustained flow provided the conceptual tools to envision electricity as a networked, infrastructural force. New metaphors like "current" made it understandable, while its first killer application, the telegraph, proved it could conquer distance. This section traces the path from a standalone device to a global system.
+            </p>
+            <div class="grid md:grid-cols-5 gap-12">
+                <div class="md:col-span-3">
+                    <h4 class="text-2xl font-bold mb-4">The Path to a Wired World</h4>
+                    <p class="mb-6 text-gray-600">The pile was the "Model T" of batteries—the prototype that sparked decades of innovation. Click on the nodes of the timeline to see how this simple device created the momentum for the electrical age, leading to improved batteries, the telegraph, and eventually, the modern power grid.</p>
+                    <div id="timeline" class="relative pl-4 border-l-2 border-gray-200">
+                        <!-- Timeline items will be inserted by JS -->
+                    </div>
+                </div>
+                <div id="timeline-details" class="md:col-span-2 bg-gray-50 p-6 rounded-lg h-fit">
+                    <h5 class="font-bold text-lg mb-2">Click an event to learn more</h5>
+                    <p class="text-gray-600">Details about the selected timeline event will appear here.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>This interactive experience explores the profound impact of Alessandro Volta's 1800 invention.</p>
+            <p class="text-sm text-gray-400 mt-2">From a simple chemical reaction, the modern, electrified world was born.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- Data Store ---
+    const appData = {
+        comparison: {
+            labels: ['Voltage (Relative)', 'Current (Relative)', 'Duration (Relative)'],
+            leydenJar: [100, 1, 1],
+            voltaicPile: [5, 30, 100]
+        },
+        pileComponents: [
+            { name: 'Copper Disc', color: 'bg-orange-400', description: 'A disc of copper, one of the two dissimilar metals whose electrochemical potential difference drives the reaction.' },
+            { name: 'Brine-soaked Cardboard', color: 'bg-yellow-200', description: 'A porous separator soaked in an electrolyte (like salt water) that allows ions to flow between the metal discs.' },
+            { name: 'Zinc Disc', color: 'bg-gray-400', description: 'A disc of zinc. The chemical reaction between the zinc, copper, and electrolyte generates the continuous flow of electrons.' }
+        ],
+        imaginationTabs: {
+            gothic: {
+                title: 'Giovanni Aldini and the Theater of Galvanism',
+                content: "Volta's nephew, Giovanni Aldini, used large Voltaic piles in sensational public experiments on the corpses of executed criminals. The powerful, sustained current caused limbs to convulse and faces to grimace, horrifying audiences and cementing a powerful gothic association in the public mind. Electricity became a necromantic tool, a 'spark of being' that could seemingly erase the line between life and death, deeply influencing works like Mary Shelley's *Frankenstein*."
+            },
+            chemical: {
+                title: 'Humphry Davy and the Birth of Electrochemistry',
+                content: "Simultaneously, chemist Humphry Davy used enormous piles at the Royal Institution as a revolutionary analytical tool. By passing a powerful current through substances thought to be fundamental elements, like potash, he decomposed them and isolated new metals like potassium and sodium for the first time. This recast electricity as an 'electric scalpel,' a force of rational analysis that could reveal the hidden building blocks of the world."
+            }
+        },
+        timelineEvents: [
+            { year: '1800', title: 'Volta Announces the Pile', content: 'Alessandro Volta describes his "artificial electrical organ" in a letter to the Royal Society. Its ability to produce a sustained current revolutionizes science.' },
+            { year: '1800', title: 'Electrolysis of Water', content: 'Almost immediately, William Nicholson and Anthony Carlisle use a Voltaic pile to decompose water into hydrogen and oxygen, founding the science of electrochemistry.'},
+            { year: '1804', title: 'First Practical Telegraph Design', content: 'Spanish physician Francisco Salvá y Campillo designs a telegraph system powered by a Voltaic Pile, the first to leverage its sustained current for communication.'},
+            { year: '1807', title: 'Davy Isolates New Elements', content: 'Using a massive 2,000-plate Voltaic pile, Humphry Davy isolates potassium and sodium, demonstrating the pile\'s immense power for chemical discovery.'},
+            { year: '1836', title: 'The Daniell Cell', content: 'John Frederic Daniell invents a new type of battery that provides a more stable, longer-lasting current than the original pile, a crucial improvement for the growing telegraph industry.'}
+        ]
+    };
+
+    // --- Section 1: The Shift ---
+
+    // Comparison Chart
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: appData.comparison.labels,
+            datasets: [
+                {
+                    label: 'Leyden Jar (Static)',
+                    data: appData.comparison.leydenJar,
+                    backgroundColor: '#717D7E', // Zinc
+                    borderColor: '#5e696a',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Voltaic Pile (Current)',
+                    data: appData.comparison.voltaicPile,
+                    backgroundColor: '#B87333', // Copper
+                    borderColor: '#935d29',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Electrical Source Characteristics (c. 1800)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Pile Diagram
+    const pileDiagram = document.getElementById('pileDiagram');
+    const pileTooltip = document.getElementById('pileTooltip');
+    let components = [];
+    for(let i=0; i<3; i++) {
+        components.push(...appData.pileComponents);
+    }
+
+    components.forEach((comp, index) => {
+        const el = document.createElement('div');
+        el.className = `pile-component w-32 h-6 rounded-md flex items-center justify-center text-xs font-semibold shadow-md ${comp.color}`;
+        el.textContent = comp.name;
+        el.dataset.description = comp.description;
+        pileDiagram.appendChild(el);
+
+        el.addEventListener('mouseenter', (e) => {
+            pileTooltip.textContent = e.target.dataset.description;
+            pileTooltip.style.display = 'block';
+            const rect = e.target.getBoundingClientRect();
+            const containerRect = pileDiagram.getBoundingClientRect();
+            pileTooltip.style.left = `${rect.right - containerRect.left + 10}px`;
+            pileTooltip.style.top = `${rect.top - containerRect.top + rect.height / 2 - pileTooltip.offsetHeight / 2}px`;
+            pileTooltip.style.opacity = '1';
+        });
+
+        el.addEventListener('mouseleave', () => {
+             pileTooltip.style.opacity = '0';
+             setTimeout(() => { pileTooltip.style.display = 'none'; }, 300);
+        });
+    });
+
+
+    // --- Section 2: The Imagination ---
+    const tabs = document.querySelectorAll('.tab');
+    const tabContent = document.getElementById('tabContent');
+
+    function updateTabContent(tabId) {
+        const data = appData.imaginationTabs[tabId];
+        tabContent.innerHTML = `
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h4 class="text-2xl font-bold mb-3">${data.title}</h4>
+                <p class="text-gray-600 leading-relaxed">${data.content}</p>
+            </div>
+        `;
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            updateTabContent(tab.dataset.tab);
+        });
+    });
+    updateTabContent('gothic'); // Initial load
+
+
+    // --- Section 3: The Infrastructure ---
+    const timeline = document.getElementById('timeline');
+    const timelineDetails = document.getElementById('timeline-details');
+
+    appData.timelineEvents.forEach(event => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item ml-4';
+        
+        const dot = document.createElement('div');
+        dot.className = 'timeline-dot';
+        dot.dataset.year = event.year;
+
+        dot.addEventListener('click', () => {
+            timelineDetails.innerHTML = `
+                <h5 class="font-bold text-lg mb-2">${event.year}: ${event.title}</h5>
+                <p class="text-gray-600">${event.content}</p>
+            `;
+            document.querySelectorAll('.timeline-dot').forEach(d => d.style.backgroundColor = '#717D7E');
+            dot.style.backgroundColor = '#B87333';
+        });
+
+        const content = document.createElement('div');
+        content.innerHTML = `<h5 class="font-semibold">${event.year} - ${event.title}</h5>`;
+        
+        item.appendChild(dot);
+        item.appendChild(content);
+        timeline.appendChild(item);
+    });
+
+    timelineDetails.innerHTML = `
+        <h5 class="font-bold text-lg mb-2">${appData.timelineEvents[0].year}: ${appData.timelineEvents[0].title}</h5>
+        <p class="text-gray-600">${appData.timelineEvents[0].content}</p>
+    `;
+    document.querySelector('.timeline-dot').style.backgroundColor = '#B87333';
+
+    // Smooth scrolling for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>

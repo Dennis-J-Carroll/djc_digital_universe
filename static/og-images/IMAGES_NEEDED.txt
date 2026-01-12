@@ -1,0 +1,26 @@
+PLACEHOLDER DIRECTORY - OG IMAGES NEEDED
+
+This directory needs 1200x630px PNG images for Open Graph social sharing:
+
+Required files:
+- og-default.png (site-wide fallback)
+- og-home.png (homepage)
+- og-projects.png (development projects page)
+- og-stories.png (stories page)
+- og-about.png (about page)
+
+See README.md for detailed specifications and design guidelines.
+
+The SEO component currently references these images. Until they are created,
+the meta tags will point to non-existent files. This won't break the site,
+but social sharing previews won't display images.
+
+Recommended tools:
+- Canva (free templates)
+- Figma (professional design)
+- Photoshop/Illustrator
+
+Color scheme to match:
+- Primary: #14b8a6 (teal)
+- Secondary: #06b6d4 (cyan)
+- Background: #0a0e14 to #1a1f2c (dark gradient)

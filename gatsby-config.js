@@ -66,7 +66,6 @@ module.exports = {
         icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
       },
     },
-    `gatsby-plugin-styled-components`,
     {
       resolve: `gatsby-plugin-postcss`,
       options: {
@@ -76,12 +75,68 @@ module.exports = {
         ],
       },
     },
-    // Add sitemap plugin for SEO
+    // Enhanced sitemap plugin for SEO with priorities and lastmod
     {
       resolve: `gatsby-plugin-sitemap`,
       options: {
-        output: `/sitemap.xml`,
+        output: `/`,
         createLinkInHead: true,
+        query: `
+          {
+            site {
+              siteMetadata {
+                siteUrl
+              }
+            }
+            allSitePage {
+              nodes {
+                path
+              }
+            }
+            allMdx {
+              nodes {
+                frontmatter {
+                  date(formatString: "YYYY-MM-DD")
+                }
+                fields {
+                  slug
+                }
+              }
+            }
+          }
+        `,
+        resolveSiteUrl: () => 'https://denniscarroll.com',
+        serialize: ({ path, allMdx }) => {
+          // Find matching MDX node for this path
+          const mdxNode = allMdx?.nodes?.find(node =>
+            node.fields?.slug && path.includes(node.fields.slug)
+          );
+
+          // Determine priority based on path
+          let priority = 0.7; // default
+          let changefreq = 'monthly';
+
+          if (path === '/') {
+            priority = 1.0;
+            changefreq = 'weekly';
+          } else if (path.includes('/development-projects')) {
+            priority = 0.9;
+            changefreq = 'weekly';
+          } else if (path.includes('/about') || path.includes('/contact')) {
+            priority = 0.8;
+            changefreq = 'monthly';
+          } else if (path.includes('/stories')) {
+            priority = 0.8;
+            changefreq = 'weekly';
+          }
+
+          return {
+            url: path,
+            lastmod: mdxNode?.frontmatter?.date || new Date().toISOString(),
+            changefreq: changefreq,
+            priority: priority,
+          };
+        }
       }
     },
   ],

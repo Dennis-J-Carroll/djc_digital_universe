@@ -1,55 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StaticQuery, graphql } from 'gatsby';
-import styled from 'styled-components';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-
-// Styled components for the notebook viewer
-const NotebookContainer = styled.div`
-  max-width: 100%;
-  margin: 2rem 0;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const Cell = styled.div`
-  margin: 0;
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const CodeCell = styled(Cell)`
-  background-color: #f8f8f8;
-`;
-
-const MarkdownCell = styled(Cell)`
-  background-color: white;
-`;
-
-const OutputCell = styled(Cell)`
-  background-color: #fafafa;
-  max-height: 400px;
-  overflow-y: auto;
-`;
-
-const CellNumber = styled.div`
-  color: #767676;
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-`;
-
-const OutputImage = styled.img`
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-`;
+import './jupyter-viewer.css';
 
 /**
  * JupyterViewer component renders Jupyter notebooks stored as JSON
@@ -162,27 +115,27 @@ const JupyterViewer = ({ notebookPath }) => {
 
   // Render the notebook
   return (
-    <NotebookContainer>
+    <div className="notebook-container">
       {notebook.cells.map((cell, index) => {
         if (cell.cell_type === "markdown") {
           return (
-            <MarkdownCell key={index}>
+            <div key={index} className="notebook-cell notebook-cell-markdown">
               <div dangerouslySetInnerHTML={{ __html: cell.source.join("") }} />
-            </MarkdownCell>
+            </div>
           );
         } else if (cell.cell_type === "code") {
           return (
             <React.Fragment key={index}>
-              <CodeCell>
-                <CellNumber>In [{cell.execution_count || ' '}]:</CellNumber>
+              <div className="notebook-cell notebook-cell-code">
+                <div className="notebook-cell-number">In [{cell.execution_count || ' '}]:</div>
                 <SyntaxHighlighter language="python" style={atomOneDark}>
                   {cell.source.join("")}
                 </SyntaxHighlighter>
-              </CodeCell>
-              
+              </div>
+
               {cell.outputs && cell.outputs.length > 0 && (
-                <OutputCell>
-                  <CellNumber>Out [{cell.execution_count || ' '}]:</CellNumber>
+                <div className="notebook-cell notebook-cell-output">
+                  <div className="notebook-cell-number">Out [{cell.execution_count || ' '}]:</div>
                   {cell.outputs.map((output, outputIndex) => {
                     if (output.output_type === "stream") {
                       return (
@@ -195,9 +148,10 @@ const JupyterViewer = ({ notebookPath }) => {
                       return (
                         <div key={outputIndex}>
                           {output.data["image/png"] && (
-                            <OutputImage 
-                              src={`data:image/png;base64,${output.data["image/png"]}`} 
-                              alt="Notebook output" 
+                            <img
+                              className="notebook-output-image"
+                              src={`data:image/png;base64,${output.data["image/png"]}`}
+                              alt="Notebook output"
                             />
                           )}
                           {output.data["text/plain"] && (
@@ -208,14 +162,14 @@ const JupyterViewer = ({ notebookPath }) => {
                     }
                     return null;
                   })}
-                </OutputCell>
+                </div>
               )}
             </React.Fragment>
           );
         }
         return null;
       })}
-    </NotebookContainer>
+    </div>
   );
 };
 

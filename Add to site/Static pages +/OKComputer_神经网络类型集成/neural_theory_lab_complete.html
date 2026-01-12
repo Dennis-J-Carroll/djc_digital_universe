@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Theory Laboratory - Complete Interactive Edition</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    
+    <style>
+        :root {
+            --misty-bg: #e8eef3;
+            --misty-card: #f5f8fa;
+            --misty-border: #d4dce4;
+            --misty-text: #4a5568;
+            --misty-heading: #2d3748;
+            --accent-soft: #7c9cbf;
+            --accent-medium: #5b8db8;
+            --accent-light: #a8c5e4;
+            --accent-cyan: #00d4ff;
+            --accent-green: #4ade80;
+            --accent-amber: #fbbf24;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8eef3 0%, #d4dce4 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--misty-text);
+        }
+
+        .misty-card {
+            background: rgba(245, 248, 250, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--misty-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .misty-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08), 0 16px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .neural-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .neural-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+        }
+
+        .neural-card.active {
+            border-color: var(--accent-green);
+            box-shadow: 0 8px 32px rgba(74, 222, 128, 0.2);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-medium), var(--accent-soft));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .theory-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent-soft));
+            color: white;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--misty-border);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-medium);
+        }
+
+        /* Neural Network Visualization Styles */
+        .network-node {
+            fill: var(--accent-cyan);
+            stroke: var(--misty-heading);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-node:hover {
+            fill: var(--accent-green);
+            stroke-width: 3;
+        }
+
+        .network-connection {
+            stroke: var(--misty-text);
+            stroke-width: 1;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .network-connection:hover {
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            opacity: 1;
+        }
+
+        .math-equation {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid var(--accent-amber);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .parameter-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-green) 100%);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .parameter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+        }
+
+        .data-point {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .data-point:hover {
+            transform: scale(1.2);
+        }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal-on-scroll.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Neural Canvas Background */
+        .neural-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .content-overlay {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Typewriter Effect */
+        .typewriter-text {
+            border-right: 2px solid var(--accent-cyan);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: var(--accent-cyan); }
+            51%, 100% { border-color: transparent; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold gradient-text">Neural Theory Lab</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#architectures" class="text-sm hover:text-gray-900 transition">Architectures</a>
+                    <a href="#interactive" class="text-sm hover:text-gray-900 transition">Interactive Lab</a>
+                    <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
+                    <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative">
+        <div id="neural-canvas" class="neural-canvas"></div>
+        <div class="max-w-7xl mx-auto text-center fade-in content-overlay">
+            <h2 class="text-5xl font-bold mb-6">
+                <span class="gradient-text">Neural Network Theory Laboratory</span>
+            </h2>
+            <div class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+                <span id="typewriter-text" class="typewriter-text"></span>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
+                <div class="misty-card p-6">
+                    <div class="stat-number">7</div>
+                    <div class="text-sm text-gray-600">Core Architectures</div>
+                </div>
+                <div class="misty-card p-6">
+                    <div class="stat-number">1957</div>
+                    <div class="text-sm text-gray-600">First Perceptron</div>
+                </div>
+                <div class="misty-card p-6">
+                    <div class="stat-number">∞</div>
+                    <div class="text-sm text-gray-600">Mathematical Depth</div>
+                </div>
+                <div class="misty-card p-6">
+                    <div class="stat-number">2024</div>
+                    <div class="text-sm text-gray-600">Modern Architectures</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Neural Network Selection -->
+    <section id="architectures" class="py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Neural Network Architectures</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12" id="network-selector">
+                <!-- Network cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Lab Section -->
+    <section id="interactive" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Interactive Neural Network Lab</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Network Visualizer (Left 2/3) -->
+                <div class="lg:col-span-3">
+                    <div class="misty-card p-6 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold text-gray-900" id="current-network-title">
+                                Select a Network Type
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button id="play-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" disabled>
+                                    ▶ Train
+                                </button>
+                                <button id="pause-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors" disabled>
+                                    ⏸ Pause
+                                </button>
+                                <button id="reset-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" disabled>
+                                    🔄 Reset
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Network SVG Container -->
+                        <div id="network-container" class="bg-white rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="text-lg">Select a neural network type to begin exploration</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mathematical Equations -->
+                    <div id="math-equations" class="misty-card p-6" style="display: none;">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Mathematical Foundation</h3>
+                        <div id="equation-content" class="font-mono text-lg">
+                            <!-- Equations will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Dataset Playground -->
+                    <div id="dataset-playground" class="misty-card p-6 mt-6" style="display: none;">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Interactive Dataset Playground</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="text-lg font-semibold">Data Points</h4>
+                                    <div class="flex space-x-2">
+                                        <button onclick="loadDataset('xor')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">XOR</button>
+                                        <button onclick="loadDataset('linear')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Linear</button>
+                                        <button onclick="loadDataset('circular')" class="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600">Circular</button>
+                                        <button onclick="clearDataset()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Clear</button>
+                                    </div>
+                                </div>
+                                <svg id="dataset-svg" class="w-full h-80 border border-gray-200 rounded-lg cursor-crosshair">
+                                    <!-- Dataset visualization will be rendered here -->
+                                </svg>
+                            </div>
+                            <div class="lg:col-span-1">
+                                <h4 class="text-lg font-semibold mb-3">Dataset Info</h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Total Points:</span>
+                                        <span id="total-points" class="font-medium">0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Class A:</span>
+                                        <span id="class-a-count" class="font-medium text-blue-600">0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Class B:</span>
+                                        <span id="class-b-count" class="font-medium text-red-600">0</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-gray-200">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Instructions</h4>
+                                    <ul class="text-sm text-gray-600 space-y-2">
+                                        <li>• Click to add data points</li>
+                                        <li>• Left click: Class A (blue)</li>
+                                        <li>• Right click: Class B (red)</li>
+                                        <li>• Use preset patterns for quick setup</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Panel (Right 1/3) -->
+                <div class="lg:col-span-1">
+                    <div class="misty-card p-6 sticky top-24">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Parameters</h3>
+                        
+                        <!-- Learning Rate -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Learning Rate: <span id="learning-rate-value">0.01</span>
+                            </label>
+                            <input type="range" id="learning-rate" class="parameter-slider w-full" 
+                                   min="0.001" max="1" step="0.001" value="0.01">
+                        </div>
+
+                        <!-- Epochs -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Epochs: <span id="epochs-value">100</span>
+                            </label>
+                            <input type="range" id="epochs" class="parameter-slider w-full" 
+                                   min="10" max="1000" step="10" value="100">
+                        </div>
+
+                        <!-- Batch Size -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Batch Size: <span id="batch-size-value">32</span>
+                            </label>
+                            <input type="range" id="batch-size" class="parameter-slider w-full" 
+                                   min="1" max="128" step="1" value="32">
+                        </div>
+
+                        <!-- Activation Function -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Activation Function
+                            </label>
+                            <select id="activation-function" class="w-full p-2 border border-gray-300 rounded-lg">
+                                <option value="relu">ReLU</option>
+                                <option value="sigmoid">Sigmoid</option>
+                                <option value="tanh">Tanh</option>
+                                <option value="linear">Linear</option>
+                            </select>
+                        </div>
+
+                        <!-- Optimizer -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Optimizer
+                            </label>
+                            <select id="optimizer" class="w-full p-2 border border-gray-300 rounded-lg">
+                                <option value="sgd">SGD</option>
+                                <option value="adam">Adam</option>
+                                <option value="rmsprop">RMSprop</option>
+                            </select>
+                        </div>
+
+                        <!-- Training Progress -->
+                        <div id="training-progress" class="mb-6" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Training Progress
+                            </label>
+                            <div class="bg-gray-200 rounded-full h-2 mb-2">
+                                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                Epoch: <span id="current-epoch">0</span> / <span id="total-epochs">100</span>
+                            </div>
+                        </div>
+
+                        <!-- Loss Display -->
+                        <div id="loss-display" class="mb-6" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Current Loss: <span id="current-loss">0.000</span>
+                            </label>
+                            <div id="loss-chart" class="h-32 bg-gray-50 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance Comparison -->
+    <section id="comparison" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/30">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Performance Comparison</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="misty-card p-6">
+                    <h4 class="text-lg font-semibold mb-4">Training Efficiency</h4>
+                    <div class="chart-container">
+                        <canvas id="training-chart"></canvas>
+                    </div>
+                </div>
+                <div class="misty-card p-6">
+                    <h4 class="text-lg font-semibold mb-4">Architecture Comparison</h4>
+                    <div class="chart-container">
+                        <canvas id="radar-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Matrix -->
+            <div class="misty-card p-6">
+                <h4 class="text-lg font-semibold mb-4">Performance Matrix</h4>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="performance-matrix"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Insights -->
+    <section id="research" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Research Insights</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="misty-card p-6">
+                    <h4 class="text-lg font-semibold mb-3 text-blue-600">Pattern Discovery</h4>
+                    <p class="text-sm text-gray-600">Attention mechanisms consistently outperform recurrence in long-sequence tasks, showing 34% improvement in benchmark tests.</p>
+                </div>
+                <div class="misty-card p-6">
+                    <h4 class="text-lg font-semibold mb-3 text-green-600">Hybrid Opportunity</h4>
+                    <p class="text-sm text-gray-600">CNN feature extraction combined with Transformer attention shows 23% improvement over single-architecture approaches.</p>
+                </div>
+                <div class="misty-card p-6">
+                    <h4 class="text-lg font-semibold mb-3 text-purple-600">Mathematical Foundations</h4>
+                    <p class="text-sm text-gray-600">Understanding gradient flow and optimization dynamics is crucial for effective neural network design and training.</p>
+                </div>
+            </div>
+
+            <!-- Research Timeline -->
+            <div class="misty-card p-6">
+                <h4 class="text-lg font-semibold mb-4">Evolution Timeline</h4>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Neural Network Types and their configurations
+        const networkTypes = {
+            perceptron: {
+                name: 'Perceptron',
+                description: 'The fundamental building block of neural networks, a linear classifier that learns to separate data using a single decision boundary.',
+                equations: [
+                    'y = σ(w·x + b)',
+                    'σ(z) = 1/(1 + e^(-z))',
+                    'w ← w + α(y_true - y_pred)x',
+                    'b ← b + α(y_true - y_pred)'
+                ],
+                nodes: [2, 1],
+                connections: [[0, 2], [1, 2]],
+                complexity: 'O(n)',
+                invented: 1957,
+                color: '#7c9cbf'
+            },
+            mlp: {
+                name: 'Multi-Layer Perceptron',
+                description: 'A feedforward neural network with multiple hidden layers, capable of learning complex non-linear mappings through backpropagation.',
+                equations: [
+                    'h₁ = σ(W₁x + b₁)',
+                    'h₂ = σ(W₂h₁ + b₂)',
+                    'ŷ = W₃h₂ + b₃',
+                    'L = -Σy log(ŷ)'
+                ],
+                nodes: [3, 4, 4, 2],
+                connections: 'fully-connected',
+                complexity: 'O(n²)',
+                invented: 1986,
+                color: '#5b8db8'
+            },
+            cnn: {
+                name: 'Convolutional Neural Network',
+                description: 'Specialized for processing grid-like data such as images, using convolutional layers to detect local features and spatial hierarchies.',
+                equations: [
+                    '(I * K)(i,j) = ΣΣ I(m,n)K(i-m,j-n)',
+                    'P(i,j) = max(R(i×s:(i+1)×s, j×s:(j+1)×s))',
+                    'F = flatten(P)',
+                    'ŷ = σ(W·F + b)'
+                ],
+                nodes: [1, 3, 3, 2],
+                connections: 'convolutional',
+                complexity: 'O(n log n)',
+                invented: 1989,
+                color: '#4a7ba7'
+            },
+            rnn: {
+                name: 'Recurrent Neural Network',
+                description: 'Networks with memory that can process sequential data by maintaining hidden states across time steps.',
+                equations: [
+                    'h_t = tanh(W_h·h_{t-1} + W_x·x_t + b)',
+                    'ŷ_t = σ(V·h_t + c)',
+                    '∂L/∂W = Σ_t ∂L_t/∂W',
+                    '∂h_t/∂h_k = ∏_{i=k+1}^t ∂h_i/∂h_{i-1}'
+                ],
+                nodes: [2, 3, 2],
+                connections: 'recurrent',
+                complexity: 'O(n)',
+                invented: 1986,
+                color: '#8faac4'
+            },
+            lstm: {
+                name: 'Long Short-Term Memory',
+                description: 'Advanced RNN with gating mechanisms to handle long-term dependencies more effectively.',
+                equations: [
+                    'f_t = σ(W_f·[h_{t-1}, x_t] + b_f)',
+                    'i_t = σ(W_i·[h_{t-1}, x_t] + b_i)',
+                    'C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t',
+                    'o_t = σ(W_o·[h_{t-1}, x_t] + b_o)'
+                ],
+                nodes: [2, 4, 2],
+                connections: 'lstm-gates',
+                complexity: 'O(n)',
+                invented: 1997,
+                color: '#6b93b5'
+            },
+            transformer: {
+                name: 'Transformer',
+                description: 'Attention-based architecture that processes sequences in parallel, revolutionizing natural language processing.',
+                equations: [
+                    'Attention(Q,K,V) = softmax(QK^T/√d_k)V',
+                    'MultiHead(Q,K,V) = Concat(head_1,...,head_h)W^O',
+                    'FFN(x) = max(0, xW_1 + b_1)W_2 + b_2',
+                    'LayerNorm(x + Sublayer(x))'
+                ],
+                nodes: [4, 4, 4],
+                connections: 'attention',
+                complexity: 'O(n²)',
+                invented: 2017,
+                color: '#5d87ad'
+            },
+            gan: {
+                name: 'Generative Adversarial Network',
+                description: 'Two networks competing: generator vs discriminator, learning to generate realistic data.',
+                equations: [
+                    'min_G max_D V(D,G) = E_x[log D(x)] + E_z[log(1-D(G(z)))]',
+                    'G(z) = tanh(W_g·z + b_g)',
+                    'D(x) = σ(W_d·x + b_d)',
+                    'L_G = -E_z[log D(G(z))]'
+                ],
+                nodes: [2, 4, 2],
+                connections: 'adversarial',
+                complexity: 'O(n²)',
+                invented: 2014,
+                color: '#a8c5e4'
+            }
+        };
+
+        // Global variables
+        let currentNetwork = null;
+        let neuralNetworkSketch = null;
+        let trainingInProgress = false;
+        let dataset = [];
+        let lossChart = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTypewriter();
+            initializeNeuralCanvas();
+            populateNetworkSelector();
+            initializeParameterControls();
+            initializeDatasetPlayground();
+            setupEventListeners();
+            initializeCharts();
+            initializeScrollAnimations();
+        });
+
+        // Typewriter effect for hero section
+        function initializeTypewriter() {
+            const typewriterStrings = [
+                'Interactive Mathematical Explorations',
+                'Visualize Neural Network Architectures',
+                'Understand the Mathematics of AI',
+                'Explore Gradient Descent and Backpropagation',
+                'Master Attention Mechanisms'
+            ];
+            
+            new Typed('#typewriter-text', {
+                strings: typewriterStrings,
+                typeSpeed: 50,
+                backSpeed: 30,
+                backDelay: 2000,
+                loop: true,
+                showCursor: true,
+                cursorChar: '|'
+            });
+        }
+
+        // Initialize p5.js neural network background
+        function initializeNeuralCanvas() {
+            neuralNetworkSketch = new p5((p) => {
+                let nodes = [];
+                let connections = [];
+                
+                p.setup = function() {
+                    const canvas = p.createCanvas(p.windowWidth, 400);
+                    canvas.parent('neural-canvas');
+                    
+                    // Create nodes
+                    for (let i = 0; i < 30; i++) {
+                        nodes.push({
+                            x: p.random(p.width),
+                            y: p.random(p.height),
+                            vx: p.random(-0.3, 0.3),
+                            vy: p.random(-0.3, 0.3),
+                            size: p.random(3, 6),
+                            alpha: p.random(0.3, 0.7)
+                        });
+                    }
+                };
+                
+                p.draw = function() {
+                    p.clear();
+                    
+                    // Update and draw connections
+                    p.stroke(0, 212, 255, 30);
+                    p.strokeWeight(1);
+                    for (let i = 0; i < nodes.length; i++) {
+                        for (let j = i + 1; j < nodes.length; j++) {
+                            let dist = p.dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+                            if (dist < 100) {
+                                p.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+                            }
+                        }
+                    }
+                    
+                    // Update and draw nodes
+                    p.noStroke();
+                    for (let node of nodes) {
+                        node.x += node.vx;
+                        node.y += node.vy;
+                        
+                        if (node.x < 0 || node.x > p.width) node.vx *= -1;
+                        if (node.y < 0 || node.y > p.height) node.vy *= -1;
+                        
+                        p.fill(0, 212, 255, node.alpha * 255);
+                        p.ellipse(node.x, node.y, node.size);
+                    }
+                };
+                
+                p.windowResized = function() {
+                    p.resizeCanvas(p.windowWidth, 400);
+                };
+            });
+        }
+
+        // Populate network selector
+        function populateNetworkSelector() {
+            const selector = document.getElementById('network-selector');
+            
+            Object.entries(networkTypes).forEach(([key, network]) => {
+                const card = document.createElement('div');
+                card.className = 'neural-card p-6 cursor-pointer';
+                card.onclick = () => selectNetwork(key);
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800">${network.name}</h4>
+                        <span class="theory-badge">${network.invented}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">${network.description}</p>
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                        <span>Complexity: ${network.complexity}</span>
+                        <span class="text-blue-600 font-medium">Explore →</span>
+                    </div>
+                `;
+                
+                selector.appendChild(card);
+            });
+        }
+
+        // Network selection
+        function selectNetwork(networkType) {
+            // Update active card
+            document.querySelectorAll('.neural-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.neural-card').classList.add('active');
+            
+            currentNetwork = networkTypes[networkType];
+            
+            // Update UI
+            document.getElementById('current-network-title').textContent = currentNetwork.name;
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = false;
+            document.getElementById('reset-btn').disabled = false;
+            
+            // Show dataset playground for supervised learning networks
+            const supervisedNetworks = ['perceptron', 'mlp', 'cnn'];
+            if (supervisedNetworks.includes(networkType)) {
+                document.getElementById('dataset-playground').style.display = 'block';
+            } else {
+                document.getElementById('dataset-playground').style.display = 'none';
+            }
+            
+            // Show mathematical equations
+            document.getElementById('math-equations').style.display = 'block';
+            updateEquations();
+            
+            // Visualize the network
+            visualizeNetwork(networkType);
+            
+            // Animate the transition
+            anime({
+                targets: '#network-container',
+                scale: [0.9, 1],
+                opacity: [0.7, 1],
+                duration: 500,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // Visualize network
+        function visualizeNetwork(networkType) {
+            const container = document.getElementById('network-container');
+            container.innerHTML = '';
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '400');
+            svg.setAttribute('viewBox', '0 0 800 400');
+            svg.classList.add('w-full', 'h-96');
+            
+            const network = networkTypes[networkType];
+            const layerCount = network.nodes.length;
+            const layerWidth = 800 / (layerCount + 1);
+            
+            // Create nodes
+            const nodeElements = [];
+            let nodeIndex = 0;
+            
+            network.nodes.forEach((nodeCount, layerIndex) => {
+                const x = layerWidth * (layerIndex + 1);
+                const layerHeight = 400 / (nodeCount + 1);
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const y = layerHeight * (i + 1);
+                    
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('r', '20');
+                    circle.classList.add('network-node');
+                    circle.setAttribute('data-node', nodeIndex);
+                    
+                    svg.appendChild(circle);
+                    nodeElements.push({ x, y, element: circle });
+                    nodeIndex++;
+                }
+            });
+            
+            // Create connections
+            if (network.connections === 'fully-connected') {
+                let currentNodeIndex = 0;
+                for (let layerIndex = 0; layerIndex < network.nodes.length - 1; layerIndex++) {
+                    const currentLayerSize = network.nodes[layerIndex];
+                    const nextLayerSize = network.nodes[layerIndex + 1];
+                    
+                    for (let i = 0; i < currentLayerSize; i++) {
+                        for (let j = 0; j < nextLayerSize; j++) {
+                            const fromNode = nodeElements[currentNodeIndex + i];
+                            const toNode = nodeElements[currentNodeIndex + currentLayerSize + j];
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', fromNode.x);
+                            line.setAttribute('y1', fromNode.y);
+                            line.setAttribute('x2', toNode.x);
+                            line.setAttribute('y2', toNode.y);
+                            line.classList.add('network-connection');
+                            
+                            svg.appendChild(line);
+                        }
+                    }
+                    currentNodeIndex += currentLayerSize;
+                }
+            }
+            
+            container.appendChild(svg);
+            
+            // Animate nodes appearing
+            anime({
+                targets: '.network-node',
+                scale: [0, 1],
+                opacity: [0, 1],
+                duration: 800,
+                delay: anime.stagger(100),
+                easing: 'easeOutElastic(1, .8)'
+            });
+        }
+
+        // Update mathematical equations
+        function updateEquations() {
+            const equationContent = document.getElementById('equation-content');
+            equationContent.innerHTML = '';
+            
+            if (!currentNetwork) return;
+            
+            currentNetwork.equations.forEach((equation, index) => {
+                const equationDiv = document.createElement('div');
+                equationDiv.className = 'math-equation mb-4';
+                equationDiv.innerHTML = `<div>${equation}</div>`;
+                equationContent.appendChild(equationDiv);
+                
+                // Animate equation appearance
+                anime({
+                    targets: equationDiv,
+                    translateX: [-50, 0],
+                    opacity: [0, 1],
+                    duration: 600,
+                    delay: index * 200,
+                    easing: 'easeOutQuart'
+                });
+            });
+        }
+
+        // Parameter controls
+        function initializeParameterControls() {
+            const learningRateSlider = document.getElementById('learning-rate');
+            const learningRateValue = document.getElementById('learning-rate-value');
+            const epochsSlider = document.getElementById('epochs');
+            const epochsValue = document.getElementById('epochs-value');
+            const batchSizeSlider = document.getElementById('batch-size');
+            const batchSizeValue = document.getElementById('batch-size-value');
+            
+            learningRateSlider.addEventListener('input', (e) => {
+                learningRateValue.textContent = parseFloat(e.target.value).toFixed(3);
+            });
+            
+            epochsSlider.addEventListener('input', (e) => {
+                epochsValue.textContent = e.target.value;
+                document.getElementById('total-epochs').textContent = e.target.value;
+            });
+            
+            batchSizeSlider.addEventListener('input', (e) => {
+                batchSizeValue.textContent = e.target.value;
+            });
+        }
+
+        // Dataset playground
+        function initializeDatasetPlayground() {
+            const svg = document.getElementById('dataset-svg');
+            
+            svg.addEventListener('click', (e) => {
+                const rect = svg.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                addDataPoint(x, y, 'A');
+            });
+            
+            svg.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const rect = svg.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                addDataPoint(x, y, 'B');
+            });
+            
+            updateDatasetDisplay();
+        }
+
+        // Dataset management
+        function addDataPoint(x, y, classLabel) {
+            const point = {
+                x: x,
+                y: y,
+                class: classLabel,
+                id: dataset.length
+            };
+            
+            dataset.push(point);
+            updateDatasetDisplay();
+            updateDatasetStats();
+        }
+
+        function updateDatasetDisplay() {
+            const svg = document.getElementById('dataset-svg');
+            
+            // Clear existing points
+            svg.querySelectorAll('.data-point').forEach(point => point.remove());
+            
+            // Add points
+            dataset.forEach(point => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', point.x);
+                circle.setAttribute('cy', point.y);
+                circle.setAttribute('r', '6');
+                circle.classList.add('data-point');
+                circle.setAttribute('data-id', point.id);
+                
+                if (point.class === 'A') {
+                    circle.setAttribute('fill', '#3b82f6');
+                } else {
+                    circle.setAttribute('fill', '#ef4444');
+                }
+                
+                circle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeDataPoint(point.id);
+                });
+                
+                svg.appendChild(circle);
+            });
+        }
+
+        function removeDataPoint(id) {
+            dataset = dataset.filter(point => point.id !== id);
+            updateDatasetDisplay();
+            updateDatasetStats();
+        }
+
+        function updateDatasetStats() {
+            const totalPoints = dataset.length;
+            const classACount = dataset.filter(p => p.class === 'A').length;
+            const classBCount = dataset.filter(p => p.class === 'B').length;
+            
+            document.getElementById('total-points').textContent = totalPoints;
+            document.getElementById('class-a-count').textContent = classACount;
+            document.getElementById('class-b-count').textContent = classBCount;
+        }
+
+        function loadDataset(type) {
+            dataset = [];
+            const svg = document.getElementById('dataset-svg');
+            const width = 800;
+            const height = 400;
+            
+            switch (type) {
+                case 'xor':
+                    addDataPoint(100, 100, 'A');
+                    addDataPoint(300, 300, 'A');
+                    addDataPoint(100, 300, 'B');
+                    addDataPoint(300, 100, 'B');
+                    break;
+                    
+                case 'linear':
+                    for (let i = 0; i < 20; i++) {
+                        const x = Math.random() * width;
+                        const y = Math.random() * height;
+                        const classLabel = y > x * 0.5 + 50 ? 'B' : 'A';
+                        addDataPoint(x, y, classLabel);
+                    }
+                    break;
+                    
+                case 'circular':
+                    for (let i = 0; i < 30; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = Math.random() * 150 + 50;
+                        const x = width/2 + Math.cos(angle) * radius;
+                        const y = height/2 + Math.sin(angle) * radius;
+                        const classLabel = radius > 120 ? 'B' : 'A';
+                        addDataPoint(x, y, classLabel);
+                    }
+                    break;
+            }
+        }
+
+        function clearDataset() {
+            dataset = [];
+            updateDatasetDisplay();
+            updateDatasetStats();
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            document.getElementById('play-btn').addEventListener('click', startTraining);
+            document.getElementById('pause-btn').addEventListener('click', pauseTraining);
+            document.getElementById('reset-btn').addEventListener('click', resetNetwork);
+        }
+
+        // Training simulation
+        function startTraining() {
+            if (!currentNetwork || trainingInProgress) return;
+            
+            trainingInProgress = true;
+            document.getElementById('training-progress').style.display = 'block';
+            document.getElementById('loss-display').style.display = 'block';
+            
+            if (!lossChart) {
+                initializeLossChart();
+            }
+            
+            const epochs = parseInt(document.getElementById('epochs').value);
+            let currentEpoch = 0;
+            
+            const trainingInterval = setInterval(() => {
+                currentEpoch++;
+                
+                const progress = (currentEpoch / epochs) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('current-epoch').textContent = currentEpoch;
+                
+                const loss = Math.exp(-currentEpoch / epochs) * Math.random() * 2;
+                document.getElementById('current-loss').textContent = loss.toFixed(4);
+                
+                updateLossChart(currentEpoch, loss);
+                animateNetworkTraining();
+                
+                if (currentEpoch >= epochs) {
+                    clearInterval(trainingInterval);
+                    trainingInProgress = false;
+                    document.getElementById('play-btn').textContent = '🔄 Retrain';
+                }
+            }, 100);
+        }
+
+        function pauseTraining() {
+            trainingInProgress = false;
+        }
+
+        function resetNetwork() {
+            trainingInProgress = false;
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('current-epoch').textContent = '0';
+            document.getElementById('current-loss').textContent = '0.000';
+            document.getElementById('play-btn').textContent = '▶ Train';
+            
+            if (lossChart) {
+                lossChart.setOption({
+                    series: [{
+                        data: []
+                    }]
+                });
+            }
+        }
+
+        // Initialize loss chart
+        function initializeLossChart() {
+            const chartDom = document.getElementById('loss-chart');
+            lossChart = echarts.init(chartDom);
+            
+            const option = {
+                grid: {
+                    left: '10%',
+                    right: '10%',
+                    top: '10%',
+                    bottom: '20%'
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Epoch',
+                    nameTextStyle: { fontSize: 10 }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Loss',
+                    nameTextStyle: { fontSize: 10 }
+                },
+                series: [{
+                    type: 'line',
+                    data: [],
+                    smooth: true,
+                    lineStyle: { color: '#00d4ff', width: 2 },
+                    symbol: 'none'
+                }]
+            };
+            
+            lossChart.setOption(option);
+        }
+
+        // Update loss chart
+        function updateLossChart(epoch, loss) {
+            if (!lossChart) return;
+            
+            const option = lossChart.getOption();
+            const data = option.series[0].data;
+            data.push([epoch, loss]);
+            
+            lossChart.setOption({
+                series: [{
+                    data: data
+                }]
+            });
+        }
+
+        // Animate network during training
+        function animateNetworkTraining() {
+            const connections = document.querySelectorAll('.network-connection');
+            const nodes = document.querySelectorAll('.network-node');
+            
+            anime({
+                targets: connections,
+                stroke: ['#4a5568', '#00d4ff', '#4a5568'],
+                duration: 500,
+                easing: 'easeInOutQuad'
+            });
+            
+            anime({
+                targets: nodes,
+                fill: ['#00d4ff', '#4ade80', '#00d4ff'],
+                duration: 800,
+                easing: 'easeInOutQuad'
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            initTrainingChart();
+            initRadarChart();
+            initPerformanceMatrix();
+            initTimelineChart();
+        }
+
+        function initTrainingChart() {
+            const ctx = document.getElementById('training-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 50}, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Training Loss',
+                        data: Array.from({length: 50}, (_, i) => 2 * Math.exp(-i/10) + Math.random() * 0.1),
+                        borderColor: '#7c9cbf',
+                        backgroundColor: 'rgba(124, 156, 191, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Validation Loss',
+                        data: Array.from({length: 50}, (_, i) => 2.2 * Math.exp(-i/12) + Math.random() * 0.15),
+                        borderColor: '#5b8db8',
+                        backgroundColor: 'rgba(91, 141, 184, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function initRadarChart() {
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Accuracy', 'Speed', 'Memory', 'Interpretability', 'Scalability', 'Generalization'],
+                    datasets: [{
+                        label: 'CNN',
+                        data: [90, 70, 60, 40, 80, 85],
+                        borderColor: '#7c9cbf',
+                        backgroundColor: 'rgba(124, 156, 191, 0.2)'
+                    }, {
+                        label: 'Transformer',
+                        data: [95, 50, 40, 30, 95, 90],
+                        borderColor: '#5b8db8',
+                        backgroundColor: 'rgba(91, 141, 184, 0.2)'
+                    }, {
+                        label: 'LSTM',
+                        data: [85, 65, 70, 50, 75, 80],
+                        borderColor: '#6b93b5',
+                        backgroundColor: 'rgba(107, 147, 181, 0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        function initPerformanceMatrix() {
+            const ctx = document.getElementById('performance-matrix').getContext('2d');
+            const architectures = Object.keys(networkTypes);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: architectures.map(k => networkTypes[k].name),
+                    datasets: [{
+                        label: 'Accuracy (%)',
+                        data: [75, 85, 92, 80, 88, 95, 85],
+                        backgroundColor: '#7c9cbf'
+                    }, {
+                        label: 'Training Speed (relative)',
+                        data: [95, 80, 60, 75, 70, 45, 70],
+                        backgroundColor: '#5b8db8'
+                    }, {
+                        label: 'Memory Efficiency',
+                        data: [90, 75, 55, 70, 65, 35, 65],
+                        backgroundColor: '#a8c5e4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        function initTimelineChart() {
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            const timeline = Object.values(networkTypes)
+                .map(t => ({year: t.invented, name: t.name, color: t.color}))
+                .sort((a, b) => a.year - b.year);
+
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Architecture Evolution',
+                        data: timeline.map((t, i) => ({x: t.year, y: i + 1})),
+                        backgroundColor: timeline.map(t => t.color),
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return timeline[context.dataIndex].name + ' (' + timeline[context.dataIndex].year + ')';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Year' }
+                        },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Scroll animations
+        function initializeScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Export functions for global access
+        window.selectNetwork = selectNetwork;
+        window.loadDataset = loadDataset;
+        window.clearDataset = clearDataset;
+    </script>
+</body>
+</html>

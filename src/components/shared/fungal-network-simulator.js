@@ -25,49 +25,49 @@ class Genome {
 
   mutate(mutationRate = 0.1) {
     const newGenes = { ...this }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.branchProbability = Math.max(0.01, Math.min(0.3, 
+      newGenes.branchProbability = Math.max(0.01, Math.min(0.3,
         this.branchProbability + (Math.random() - 0.5) * 0.02))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.chemotaxisSensitivity = Math.max(0.05, Math.min(0.8, 
+      newGenes.chemotaxisSensitivity = Math.max(0.05, Math.min(0.8,
         this.chemotaxisSensitivity + (Math.random() - 0.5) * 0.05))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.growthSpeed = Math.max(0.5, Math.min(3, 
+      newGenes.growthSpeed = Math.max(0.5, Math.min(3,
         this.growthSpeed + (Math.random() - 0.5) * 0.2))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.energyEfficiency = Math.max(0.02, Math.min(0.3, 
+      newGenes.energyEfficiency = Math.max(0.02, Math.min(0.3,
         this.energyEfficiency + (Math.random() - 0.5) * 0.02))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.anastomosisDistance = Math.max(1, Math.min(6, 
+      newGenes.anastomosisDistance = Math.max(1, Math.min(6,
         this.anastomosisDistance + (Math.random() - 0.5) * 0.3))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.metabolismRate = Math.max(1, Math.min(4, 
+      newGenes.metabolismRate = Math.max(1, Math.min(4,
         this.metabolismRate + (Math.random() - 0.5) * 0.2))
     }
-    
+
     if (Math.random() < mutationRate) {
-      newGenes.branchAngleVariance = Math.max(0.1, Math.min(2, 
+      newGenes.branchAngleVariance = Math.max(0.1, Math.min(2,
         this.branchAngleVariance + (Math.random() - 0.5) * 0.1))
     }
-    
+
     return new Genome(newGenes)
   }
 
   crossover(other) {
     const child1Genes = {}
     const child2Genes = {}
-    
+
     Object.keys(this).forEach(key => {
       if (Math.random() < 0.5) {
         child1Genes[key] = this[key]
@@ -77,7 +77,7 @@ class Genome {
         child2Genes[key] = this[key]
       }
     })
-    
+
     return [new Genome(child1Genes), new Genome(child2Genes)]
   }
 }
@@ -91,55 +91,55 @@ class HyphalTip {
     this.energy = energy
     this.age = 0
     this.id = Math.random().toString(36).substr(2, 9)
-    this.trail = [{x, y}]
+    this.trail = [{ x, y }]
     this.genome = genome
   }
 
   move(environment, tips) {
     // Genome-influenced chemotaxis
     const gradient = this.calculateGradient(environment)
-    this.direction += gradient * this.genome.chemotaxisSensitivity + 
-                     (Math.random() - 0.5) * 0.15
-    
+    this.direction += gradient * this.genome.chemotaxisSensitivity +
+      (Math.random() - 0.5) * 0.15
+
     // Genome-influenced movement speed
     const speed = Math.min(this.energy / 50, this.genome.growthSpeed)
-    const newX = Math.max(0, Math.min(GRID_SIZE - 1, 
+    const newX = Math.max(0, Math.min(GRID_SIZE - 1,
       this.x + Math.cos(this.direction) * speed))
-    const newY = Math.max(0, Math.min(GRID_SIZE - 1, 
+    const newY = Math.max(0, Math.min(GRID_SIZE - 1,
       this.y + Math.sin(this.direction) * speed))
-    
+
     // Consume nutrients with genome-influenced efficiency
     const gridX = Math.floor(newX)
     const gridY = Math.floor(newY)
     const nutrients = environment[gridY][gridX]
-    
+
     if (nutrients > 0) {
       this.energy += nutrients * this.genome.energyEfficiency
       environment[gridY][gridX] = Math.max(0, nutrients - 5)
       this.x = newX
       this.y = newY
-      this.trail.push({x: newX, y: newY})
-      
+      this.trail.push({ x: newX, y: newY })
+
       if (this.trail.length > 25) {
         this.trail.shift()
       }
     }
-    
+
     this.age++
     this.energy -= this.genome.metabolismRate // Genome-influenced metabolism
-    
+
     return this.shouldBranch() ? this.branch() : null
   }
-  
+
   calculateGradient(environment) {
     const radius = 4
     let maxGradient = 0
     let bestDirection = this.direction
-    
+
     for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 6) {
       const checkX = Math.floor(this.x + Math.cos(angle) * radius)
       const checkY = Math.floor(this.y + Math.sin(angle) * radius)
-      
+
       if (checkX >= 0 && checkX < GRID_SIZE && checkY >= 0 && checkY < GRID_SIZE) {
         const nutrients = environment[checkY][checkX]
         if (nutrients > maxGradient) {
@@ -148,25 +148,25 @@ class HyphalTip {
         }
       }
     }
-    
+
     return bestDirection - this.direction
   }
-  
+
   shouldBranch() {
     const energyThreshold = 60
     return this.energy > energyThreshold && Math.random() < this.genome.branchProbability
   }
-  
+
   branch() {
-    const branchAngle = this.direction + 
+    const branchAngle = this.direction +
       (Math.random() - 0.5) * this.genome.branchAngleVariance
     return new HyphalTip(this.x, this.y, branchAngle, this.energy * 0.65, this.genome)
   }
-  
+
   isAlive() {
     return this.energy > 0
   }
-  
+
   canAnastomose(other) {
     const distance = Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2)
     return distance < this.genome.anastomosisDistance && this.id !== other.id
@@ -197,16 +197,16 @@ class FungalOrganism {
 
   simulate() {
     let totalResourcesCollected = 0
-    
+
     for (let step = 0; step < SIMULATION_STEPS; step++) {
       // Diffuse nutrients
       this.environment = this.diffuseNutrients(this.environment)
-      
+
       const newTips = []
       let totalEnergy = 0
       let networkLength = 0
       const resourcesBefore = this.getTotalResources()
-      
+
       // Update each tip
       this.tips.forEach(tip => {
         if (tip.isAlive()) {
@@ -214,13 +214,13 @@ class FungalOrganism {
           newTips.push(tip)
           totalEnergy += tip.energy
           networkLength += tip.trail.length
-          
+
           if (newBranch) {
             newTips.push(newBranch)
           }
         }
       })
-      
+
       // Handle anastomosis
       for (let i = 0; i < newTips.length; i++) {
         for (let j = i + 1; j < newTips.length; j++) {
@@ -232,23 +232,23 @@ class FungalOrganism {
           }
         }
       }
-      
+
       this.tips = newTips
-      
+
       const resourcesAfter = this.getTotalResources()
       const resourcesConsumed = resourcesBefore - resourcesAfter
       totalResourcesCollected += resourcesConsumed
-      
+
       // Update stats
       this.stats.totalEnergy = totalEnergy
       this.stats.networkLength = networkLength
       this.stats.resourcesCollected = totalResourcesCollected
       this.stats.maxTips = Math.max(this.stats.maxTips, this.tips.length)
-      
+
       if (this.tips.length > 0) {
         this.stats.survivalTime = step
       }
-      
+
       // Calculate coverage
       const coveredCells = new Set()
       this.tips.forEach(tip => {
@@ -257,11 +257,11 @@ class FungalOrganism {
         })
       })
       this.stats.coverage = coveredCells.size
-      
+
       // Early termination if network dies
       if (this.tips.length === 0) break
     }
-    
+
     this.calculateFitness()
   }
 
@@ -272,18 +272,18 @@ class FungalOrganism {
   diffuseNutrients(environment) {
     const newEnv = environment.map(row => [...row])
     const diffusionRate = 0.08
-    
+
     for (let y = 1; y < GRID_SIZE - 1; y++) {
       for (let x = 1; x < GRID_SIZE - 1; x++) {
         const avg = (
-          environment[y-1][x] + environment[y+1][x] + 
-          environment[y][x-1] + environment[y][x+1]
+          environment[y - 1][x] + environment[y + 1][x] +
+          environment[y][x - 1] + environment[y][x + 1]
         ) / 4
-        
+
         newEnv[y][x] += (avg - environment[y][x]) * diffusionRate
       }
     }
-    
+
     return newEnv
   }
 
@@ -293,7 +293,7 @@ class FungalOrganism {
     const networkEfficiency = this.stats.coverage / (GRID_SIZE * GRID_SIZE)
     const survivalScore = this.stats.survivalTime / SIMULATION_STEPS
     const connectivityScore = Math.min(this.stats.maxTips / 20, 1)
-    
+
     this.fitness = (
       resourceEfficiency * 0.4 +
       networkEfficiency * 0.3 +
@@ -306,31 +306,31 @@ class FungalOrganism {
 // Environment generation
 const createEnvironment = () => {
   const env = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0))
-  
+
   // Create diverse nutrient patches
   const patchTypes = [
     { count: 3, radius: 8, intensity: 1.2 }, // Large patches
     { count: 5, radius: 4, intensity: 0.8 }, // Medium patches
     { count: 8, radius: 2, intensity: 0.5 }  // Small patches
   ]
-  
+
   patchTypes.forEach(patchType => {
     for (let i = 0; i < patchType.count; i++) {
       const centerX = Math.floor(Math.random() * GRID_SIZE)
       const centerY = Math.floor(Math.random() * GRID_SIZE)
-      
+
       for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
           const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2)
           if (distance < patchType.radius) {
-            env[y][x] += INITIAL_NUTRIENTS * patchType.intensity * 
-                        (1 - distance / patchType.radius)
+            env[y][x] += INITIAL_NUTRIENTS * patchType.intensity *
+              (1 - distance / patchType.radius)
           }
         }
       }
     }
   })
-  
+
   return env
 }
 
@@ -360,48 +360,48 @@ class EvolutionManager {
 
     // Sort by fitness
     organisms.sort((a, b) => b.fitness - a.fitness)
-    
+
     // Track statistics
     const fitnesses = organisms.map(org => org.fitness)
     const bestFitness = Math.max(...fitnesses)
     const avgFitness = fitnesses.reduce((sum, f) => sum + f, 0) / fitnesses.length
-    
+
     this.bestFitnesses.push(bestFitness)
     this.avgFitnesses.push(avgFitness)
     this.bestGenome = organisms[0].genome
-    
+
     return organisms
   }
 
   evolveNextGeneration() {
     const organisms = this.evaluateGeneration()
     const newPopulation = []
-    
+
     // Elitism - keep top 20%
     const eliteCount = Math.floor(POPULATION_SIZE * 0.2)
     for (let i = 0; i < eliteCount; i++) {
       newPopulation.push(organisms[i].genome)
     }
-    
+
     // Generate offspring
     while (newPopulation.length < POPULATION_SIZE) {
       // Tournament selection
       const parent1 = this.tournamentSelect(organisms)
       const parent2 = this.tournamentSelect(organisms)
-      
+
       // Crossover
       const [child1, child2] = parent1.genome.crossover(parent2.genome)
-      
+
       // Mutation
       newPopulation.push(child1.mutate(0.15))
       if (newPopulation.length < POPULATION_SIZE) {
         newPopulation.push(child2.mutate(0.15))
       }
     }
-    
+
     this.population = newPopulation
     this.generation++
-    
+
     return organisms
   }
 
@@ -410,7 +410,7 @@ class EvolutionManager {
     for (let i = 0; i < tournamentSize; i++) {
       tournament.push(organisms[Math.floor(Math.random() * organisms.length)])
     }
-    return tournament.reduce((best, current) => 
+    return tournament.reduce((best, current) =>
       current.fitness > best.fitness ? current : best)
   }
 }
@@ -419,13 +419,13 @@ class EvolutionManager {
 const EvolutionaryFungalSimulator = () => {
   const canvasRef = useRef(null)
   const [evolutionManager] = useState(() => new EvolutionManager())
-  
+
   const [isEvolving, setIsEvolving] = useState(false)
   const [currentGeneration, setCurrentGeneration] = useState(0)
   const [showBestOrganism, setShowBestOrganism] = useState(false)
   const [populationStats, setPopulationStats] = useState(null)
   const [bestOrganism, setBestOrganism] = useState(null)
-  
+
   useEffect(() => {
     evolutionManager.initializePopulation()
     setCurrentGeneration(evolutionManager.generation)
@@ -440,7 +440,7 @@ const EvolutionaryFungalSimulator = () => {
       avgFitness: evolutionManager.avgFitnesses[evolutionManager.avgFitnesses.length - 1],
       bestGenome: evolutionManager.bestGenome
     })
-    
+
     // Create best organism for visualization
     const best = new FungalOrganism(evolutionManager.bestGenome, createEnvironment())
     best.simulate()
@@ -449,15 +449,15 @@ const EvolutionaryFungalSimulator = () => {
 
   const renderBestOrganism = useCallback(() => {
     if (!bestOrganism || !canvasRef.current) return
-    
+
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const scale = canvas.width / GRID_SIZE
-    
+
     // Clear canvas
     ctx.fillStyle = '#0a0a0a'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    
+
     // Render nutrients
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
@@ -469,7 +469,7 @@ const EvolutionaryFungalSimulator = () => {
         }
       }
     }
-    
+
     // Render network
     bestOrganism.tips.forEach((tip, index) => {
       if (tip.trail.length > 1) {
@@ -477,12 +477,12 @@ const EvolutionaryFungalSimulator = () => {
         ctx.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(tip.trail[0].x * scale, tip.trail[0].y * scale)
-        
+
         tip.trail.forEach(point => {
           ctx.lineTo(point.x * scale, point.y * scale)
         })
         ctx.stroke()
-        
+
         ctx.fillStyle = `hsl(${200 + (index * 30) % 160}, 80%, 70%)`
         ctx.beginPath()
         ctx.arc(tip.x * scale, tip.y * scale, 3, 0, 2 * Math.PI)
@@ -547,7 +547,7 @@ const EvolutionaryFungalSimulator = () => {
                 {showBestOrganism ? 'Hide Network' : 'Show Best'}
               </button>
             </div>
-            
+
             {showBestOrganism ? (
               <canvas
                 ref={canvasRef}
@@ -558,7 +558,7 @@ const EvolutionaryFungalSimulator = () => {
             ) : (
               <div className="w-full h-64 bg-gray-800 rounded flex items-center justify-center">
                 <div className="text-center">
-                  <div className="mx-auto mb-2 text-yellow-400 text-3xl">⚡</div>
+                  <div className="mx-auto mb-2 text-yellow-400 text-3xl">[+]</div>
                   <p className="text-gray-400">Evolution in progress...</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Click "Show Best" to visualize the fittest network
@@ -579,23 +579,23 @@ const EvolutionaryFungalSimulator = () => {
                 onClick={() => setIsEvolving(!isEvolving)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
               >
-                {isEvolving ? '⏸️' : '▶️'}
+                {isEvolving ? '||' : '>'}
                 {isEvolving ? 'Pause Evolution' : 'Start Evolution'}
               </button>
-              
+
               <button
                 onClick={runEvolutionStep}
                 disabled={isEvolving}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg transition-colors"
               >
-                ⚡ Single Generation
+                [+] Single Generation
               </button>
-              
+
               <button
                 onClick={resetEvolution}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
               >
-                🔄 Reset Evolution
+                [x] Reset Evolution
               </button>
             </div>
           </div>
@@ -603,7 +603,7 @@ const EvolutionaryFungalSimulator = () => {
           {/* Evolution Statistics */}
           <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              📊 Evolution Stats
+              [=] Evolution Stats
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

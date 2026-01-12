@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Mechanistic Interpretability - Neural Circuit Analysis</title>
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a2332;
+            --bg-card: rgba(26, 35, 50, 0.95);
+            --accent-indigo: #6366f1;
+            --accent-teal: #14b8a6;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-cyan: #06b6d4;
+            --text-primary: #f1f5f9;
+            --text-secondary: #000000;
+            --border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: var(--accent-indigo);
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-teal));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent-indigo);
+            color: var(--accent-indigo);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-indigo);
+            color: white;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .phase-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .flow-step {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .flow-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .flow-step.indigo::before {
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid var(--accent-indigo);
+            color: var(--accent-indigo);
+        }
+
+        .flow-step.teal::before {
+            background: rgba(20, 184, 166, 0.2);
+            border: 2px solid var(--accent-teal);
+            color: var(--accent-teal);
+        }
+
+        .flow-step.amber::before {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid var(--accent-amber);
+            color: var(--accent-amber);
+        }
+
+        .neural-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-indigo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .neural-node.active {
+            background: var(--accent-indigo);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-indigo);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .probability-bar {
+            height: 24px;
+            border-radius: 12px;
+            background: rgba(99, 102, 241, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-teal));
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .scenario-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--accent-teal);
+            background: rgba(20, 184, 166, 0.1);
+        }
+
+        .scenario-card.active {
+            border-color: var(--accent-teal);
+            background: rgba(20, 184, 166, 0.15);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.2);
+        }
+
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .math-formula {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-indigo);
+        }
+
+        .glow-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-indigo), var(--accent-teal), transparent);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="py-6 border-b border-gray-800">
+        <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                <h1 class="text-xl font-bold">
+                    MechInterp <span class="text-gray-500 font-normal">| Bayesian Framework</span>
+                </h1>
+            </div>
+            <nav class="hidden md:flex gap-8 text-sm text-gray-400">
+                <a href="#uncertainty" class="hover:text-indigo-400 transition-colors">Uncertainty</a>
+                <a href="#methodology" class="hover:text-indigo-400 transition-colors">Methodology</a>
+                <a href="#validation" class="hover:text-indigo-400 transition-colors">Validation</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 space-y-16">
+        <!-- Hero Section -->
+        <section class="text-center space-y-6 max-w-3xl mx-auto">
+            <div class="phase-badge mx-auto" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+                Research Framework
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold leading-tight">
+                Quantifying Uncertainty in<br>
+                <span class="gradient-text">Circuit Identification</span>
+            </h2>
+            <p class="text-xl text-gray-400 leading-relaxed">
+                Moving beyond point estimates. Treating circuit discovery as <strong class="text-white">Bayesian
+                    inference</strong> over functional hypotheses, delivering robust posterior distributions and
+                rigorous validation frameworks.
+            </p>
+            <div class="flex justify-center gap-4 pt-4">
+                <a href="#uncertainty" class="btn btn-primary">[+] Explore Framework</a>
+                <a href="#validation" class="btn btn-outline">[>] Validation Methods</a>
+            </div>
+        </section>
+
+        <div class="glow-line"></div>
+
+        <!-- Phase 1: Uncertainty Quantification -->
+        <section id="uncertainty" class="grid lg:grid-cols-2 gap-8">
+            <div class="glass-card p-8 space-y-6">
+                <div class="phase-badge" style="background: rgba(99, 102, 241, 0.2); color: var(--accent-indigo);">
+                    Phase 1: The Core Problem
+                </div>
+                <h3 class="text-2xl font-bold">From Point Estimates to Posteriors</h3>
+
+                <div class="space-y-4 text-gray-400">
+                    <p>
+                        <strong class="text-white">The Challenge:</strong> Current interpretability methods often label
+                        a component (e.g., "Induction Head") with absolute certainty, ignoring polysemanticity and
+                        noise.
+                    </p>
+                    <p>
+                        <strong class="text-white">The Approach:</strong> We propose treating circuit discovery as <em
+                            class="text-indigo-400">Bayesian inference</em>. Instead of asking "Is this an X?", we
+                        compute the probability distribution over all potential functional hypotheses.
+                    </p>
+                </div>
+
+                <div class="math-formula">
+                    <div class="text-gray-500 text-xs mb-2">Bayes' Theorem for Circuit Hypothesis</div>
+                    <code class="text-indigo-300">P(Hypothesis | Data) ∝ P(Data | Hypothesis) × P(Hypothesis)</code>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-bold text-sm text-gray-300">Interactive Comparison</h4>
+                    <div class="flex gap-3">
+                        <button onclick="updateUncertaintyChart('point')" class="btn btn-outline flex-1 text-sm">[=]
+                            Point Estimate</button>
+                        <button onclick="updateUncertaintyChart('bayesian')" class="btn btn-primary flex-1 text-sm">[~]
+                            Bayesian</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8">
+                <h4 id="chart1-title" class="text-lg font-bold mb-4">Hypothesis Confidence Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="uncertaintyChart"></canvas>
+                </div>
+                <p id="chart1-desc" class="text-sm text-gray-500 mt-4 text-center italic">
+                    Viewing probability distribution over functional roles.
+                </p>
+            </div>
+        </section>
+
+        <!-- Interactive Probability Bars -->
+        <section class="glass-card p-8">
+            <h3 class="text-xl font-bold mb-6">Posterior Probability Distribution</h3>
+            <div id="probabilityBars" class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <span class="w-32 text-sm text-gray-400">Induction Head</span>
+                    <div class="probability-bar flex-1">
+                        <div class="probability-fill" style="width: 55%;">55%</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="w-32 text-sm text-gray-400">Previous Token</span>
+                    <div class="probability-bar flex-1">
+                        <div class="probability-fill"
+                            style="width: 25%; background: linear-gradient(90deg, #6366f1, #818cf8);">25%</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="w-32 text-sm text-gray-400">Duplicate Token</span>
+                    <div class="probability-bar flex-1">
+                        <div class="probability-fill"
+                            style="width: 15%; background: linear-gradient(90deg, #818cf8, #a5b4fc);">15%</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="w-32 text-sm text-gray-400">Noise</span>
+                    <div class="probability-bar flex-1">
+                        <div class="probability-fill" style="width: 5%; background: #94a3b8;">5%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glow-line"></div>
+
+        <!-- Methodology Flow -->
+        <section id="methodology" class="space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h3 class="text-2xl font-bold mb-4">The Inference Framework</h3>
+                <p class="text-gray-400">
+                    How we operationalize Bayesian inference for mechanistic interpretability. This workflow shifts the
+                    focus from finding a single explanation to mapping the landscape of possibilities.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 flow-step indigo" data-step="1">
+                    <h4 class="text-lg font-bold mb-3 text-indigo-400">Define Hypotheses</h4>
+                    <p class="text-sm text-gray-400">
+                        Formalize a set of functional candidates (e.g., Induction, Previous Token, Translation, Noise).
+                        These form the prior space.
+                    </p>
+                    <div class="mt-4 code-block text-xs">
+                        hypotheses = ['induction', 'prev_token', 'duplicate', 'noise']
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 flow-step teal" data-step="2">
+                    <h4 class="text-lg font-bold mb-3 text-teal-400">Observe Activations</h4>
+                    <p class="text-sm text-gray-400">
+                        Collect activation data across diverse inputs. Treat these as likelihood evidence to update our
+                        beliefs.
+                    </p>
+                    <div class="mt-4 code-block text-xs">
+                        activations = model.run(inputs)<br>
+                        likelihoods = compute_likelihood(activations)
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 flow-step amber" data-step="3">
+                    <h4 class="text-lg font-bold mb-3 text-amber-400">Compute Posterior</h4>
+                    <p class="text-sm text-gray-400">
+                        Generate a distribution: P(Hypothesis | Data). Result: "60% Induction, 30% Copy, 10% Noise".
+                    </p>
+                    <div class="mt-4 code-block text-xs">
+                        posterior = normalize(likelihoods * prior)<br>
+                        # {'induction': 0.60, 'copy': 0.30, ...}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glow-line"></div>
+
+        <!-- Phase 2: Validation -->
+        <section id="validation" class="glass-card p-8"
+            style="background: linear-gradient(135deg, rgba(15, 20, 25, 0.98), rgba(26, 35, 50, 0.95));">
+            <div class="grid lg:grid-cols-5 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="phase-badge" style="background: rgba(20, 184, 166, 0.2); color: var(--accent-teal);">
+                        Phase 2: Validation
+                    </div>
+                    <h3 class="text-2xl font-bold">Posterior Predictive Checks</h3>
+
+                    <p class="text-gray-400">
+                        <strong class="text-white">Question:</strong> How do we distinguish a real mechanism from a
+                        statistical fluke?
+                    </p>
+                    <p class="text-gray-400">
+                        <strong class="text-white">The Deliverable:</strong> A validation framework analogous to
+                        hierarchical modeling checks. We simulate data from our inferred "circuit" and compare it to the
+                        real model's behavior.
+                    </p>
+
+                    <div class="space-y-3">
+                        <h4 class="text-sm font-bold text-gray-300">Select Validation Scenario</h4>
+
+                        <div id="scenarioNoise" onclick="updateValidationChart('noise')" class="scenario-card">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold text-rose-400">Scenario A: Coincidental Correlation</div>
+                                    <div class="text-xs text-gray-500 mt-1">High variance, poor predictive power</div>
+                                </div>
+                                <span class="text-gray-500">→</span>
+                            </div>
+                        </div>
+
+                        <div id="scenarioSignal" onclick="updateValidationChart('signal')" class="scenario-card active">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold text-teal-400">Scenario B: True Mechanism</div>
+                                    <div class="text-xs text-gray-500 mt-1">Tight clustering, strong predictive fit
+                                    </div>
+                                </div>
+                                <span class="text-gray-500">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold">Predictive Check: Actual vs. Simulated</h4>
+                        <span id="validation-status" class="phase-badge"
+                            style="background: rgba(20, 184, 166, 0.2); color: var(--accent-teal);">
+                            PASS: Strong Correlation
+                        </span>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="validationChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="code-block">
+                            <span class="text-gray-500 text-xs">X-AXIS</span><br>
+                            <span class="text-gray-300">Model Prediction (Hypothesis)</span>
+                        </div>
+                        <div class="code-block">
+                            <span class="text-gray-500 text-xs">Y-AXIS</span><br>
+                            <span class="text-gray-300">Actual Observation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deliverables Summary -->
+        <section class="grid md:grid-cols-2 gap-6">
+            <div class="glass-card p-6" style="border-color: rgba(20, 184, 166, 0.3);">
+                <h4 class="text-lg font-bold text-teal-400 mb-4">Phase 1 Deliverables</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li class="flex items-start gap-2">
+                        <span class="text-teal-400 mt-0.5">[+]</span>
+                        Formal definitions of functional hypotheses priors
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-teal-400 mt-0.5">[+]</span>
+                        Computational pipeline for posterior calculation
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-teal-400 mt-0.5">[+]</span>
+                        Shift from binary labeling to probability distributions
+                    </li>
+                </ul>
+            </div>
+
+            <div class="glass-card p-6" style="border-color: rgba(99, 102, 241, 0.3);">
+                <h4 class="text-lg font-bold text-indigo-400 mb-4">Phase 2 Deliverables</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-400 mt-0.5">[+]</span>
+                        Suite of posterior predictive checks
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-400 mt-0.5">[+]</span>
+                        Statistical tests for "Signal vs. Noise" distinction
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-indigo-400 mt-0.5">[+]</span>
+                        Validated hierarchical models for circuit types
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-gray-800 py-8 mt-16">
+        <div class="max-w-6xl mx-auto px-6 text-center text-sm text-gray-500">
+            <p>Bayesian Mechanistic Interpretability Framework | Neural Circuit Analysis</p>
+        </div>
+    </footer>
+
+    <script>
+        // ============ CHART DATA ============
+        const uncertaintyData = {
+            point: {
+                labels: ['Induction Head', 'Previous Token', 'Duplicate Token', 'Noise'],
+                data: [1.0, 0, 0, 0],
+                backgroundColor: ['#6366f1', '#374151', '#374151', '#374151'],
+                title: "Traditional Point Estimate",
+                desc: "Current methods force a single label, ignoring ambiguity and uncertainty."
+            },
+            bayesian: {
+                labels: ['Induction Head', 'Previous Token', 'Duplicate Token', 'Noise'],
+                data: [0.55, 0.25, 0.15, 0.05],
+                backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#94a3b8'],
+                title: "Bayesian Posterior Distribution",
+                desc: "Captures uncertainty: 55% Induction Head, but alternatives remain plausible."
+            }
+        };
+
+        // ============ UNCERTAINTY CHART ============
+        let chart1Instance = null;
+
+        function initUncertaintyChart() {
+            const ctx = document.getElementById('uncertaintyChart').getContext('2d');
+            const initial = uncertaintyData.bayesian;
+
+            chart1Instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: initial.labels,
+                    datasets: [{
+                        label: 'Probability',
+                        data: initial.data,
+                        backgroundColor: initial.backgroundColor,
+                        borderRadius: 8,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `Probability: ${(ctx.raw * 100).toFixed(0)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.1,
+                            title: { display: true, text: 'P(H|D)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    animation: { duration: 800, easing: 'easeOutQuart' }
+                }
+            });
+        }
+
+        window.updateUncertaintyChart = function (mode) {
+            const config = uncertaintyData[mode];
+
+            chart1Instance.data.datasets[0].data = config.data;
+            chart1Instance.data.datasets[0].backgroundColor = config.backgroundColor;
+            chart1Instance.update();
+
+            document.getElementById('chart1-title').textContent = config.title;
+            document.getElementById('chart1-desc').textContent = config.desc;
+
+            // Animate probability bars
+            if (mode === 'bayesian') {
+                animateProbabilityBars([55, 25, 15, 5]);
+            } else {
+                animateProbabilityBars([100, 0, 0, 0]);
+            }
+        };
+
+        function animateProbabilityBars(values) {
+            const bars = document.querySelectorAll('.probability-fill');
+            bars.forEach((bar, i) => {
+                bar.style.width = values[i] + '%';
+                bar.textContent = values[i] > 0 ? values[i] + '%' : '';
+            });
+        }
+
+        // ============ VALIDATION CHART ============
+        let chart2Instance = null;
+
+        function generateScatterData(type) {
+            const data = [];
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * 10;
+                let y;
+                if (type === 'signal') {
+                    y = x + (Math.random() - 0.5) * 1.5;
+                } else {
+                    y = Math.random() * 10;
+                }
+                data.push({ x, y });
+            }
+            return data;
+        }
+
+        function initValidationChart() {
+            const ctx = document.getElementById('validationChart').getContext('2d');
+            const initialData = generateScatterData('signal');
+
+            chart2Instance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Validation Points',
+                        data: initialData,
+                        backgroundColor: '#14b8a6',
+                        borderColor: '#14b8a6',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `(${ctx.parsed.x.toFixed(1)}, ${ctx.parsed.y.toFixed(1)})`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Predicted', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Observed', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    animation: { duration: 800 }
+                }
+            });
+        }
+
+        window.updateValidationChart = function (type) {
+            const newData = generateScatterData(type);
+            const statusEl = document.getElementById('validation-status');
+            const noiseCard = document.getElementById('scenarioNoise');
+            const signalCard = document.getElementById('scenarioSignal');
+
+            chart2Instance.data.datasets[0].data = newData;
+
+            if (type === 'signal') {
+                chart2Instance.data.datasets[0].backgroundColor = '#14b8a6';
+                statusEl.innerHTML = 'PASS: Strong Correlation';
+                statusEl.style.background = 'rgba(20, 184, 166, 0.2)';
+                statusEl.style.color = '#14b8a6';
+                signalCard.classList.add('active');
+                noiseCard.classList.remove('active');
+            } else {
+                chart2Instance.data.datasets[0].backgroundColor = '#f43f5e';
+                statusEl.innerHTML = 'FAIL: High Variance';
+                statusEl.style.background = 'rgba(244, 63, 94, 0.2)';
+                statusEl.style.color = '#f43f5e';
+                noiseCard.classList.add('active');
+                signalCard.classList.remove('active');
+            }
+
+            chart2Instance.update();
+        };
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            initUncertaintyChart();
+            initValidationChart();
+        });
+    </script>
+</body>
+
+</html>

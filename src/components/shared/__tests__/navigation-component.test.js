@@ -2,12 +2,17 @@ import React from "react"
 import { render, screen } from "@testing-library/react"
 import Navigation from "../navigation-component"
 
-// Mock framer-motion
-jest.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-  },
-}))
+// Mock framer-motion with proper prop filtering
+jest.mock("framer-motion", () => {
+  const React = require('react');
+  return {
+    motion: {
+      div: React.forwardRef(({ children, whileInView, initial, animate, transition, layoutId, viewport, ...props }, ref) =>
+        React.createElement('div', { ref, ...props }, children)
+      ),
+    },
+  };
+});
 
 // Mock gsap
 jest.mock("gsap", () => ({
