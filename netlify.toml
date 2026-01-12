@@ -6,7 +6,11 @@
 [dev]
   command = "gatsby develop"
   port = 8000
-  
+
+# Disable asset optimization to fix content encoding issues
+[build.processing]
+  skip_processing = true
+
 # Handle redirects
 [[redirects]]
   from = "/api/*"
@@ -14,30 +18,10 @@
   status = 200
   force = true
 
-# Enable compression
+# Basic headers without compression
 [[headers]]
   for = "/*"
-    [headers.values]
-    Content-Encoding = "br"
-    Cache-Control = "public, max-age=31536000"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.google-analytics.com"
-
-[[headers]]
-  for = "/*.js"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000"
-
-[[headers]]
-  for = "/*.css"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000"
-
-[[headers]]
-  for = "/*.woff2"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000"
-
-[[headers]]
-  for = "/static/*"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
