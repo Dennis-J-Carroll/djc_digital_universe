@@ -46,15 +46,28 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 5;
 
 exports.handler = async (event, context) => {
+  // CORS headers for all responses
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+
+  // Handle CORS preflight requests
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: '',
+    };
+  }
+
   // Only allow POST method
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       body: JSON.stringify({ message: 'Method not allowed' }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 
@@ -73,10 +86,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 429, // Too Many Requests
       body: JSON.stringify({ success: false, message: 'Too many requests. Please try again later.' }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 
@@ -92,10 +102,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 400,
       body: JSON.stringify({ message: 'Invalid request body' }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 
@@ -105,10 +112,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true, message: 'Form submitted successfully' }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 
@@ -125,10 +129,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 400,
       body: JSON.stringify({ success: false, errors }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 
@@ -164,24 +165,18 @@ exports.handler = async (event, context) => {
         success: true,
         message: 'Thanks for your message! I\'ll get back to you soon.',
       }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   } catch (error) {
     console.error('Email sending error:', error);
-    
+
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         message: 'There was an error sending your message. Please try again later.',
       }),
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     };
   }
 };
