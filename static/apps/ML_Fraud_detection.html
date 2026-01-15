@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced ML Engineering Mastery: Real-Time Fraud Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e2e8f0;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .code-block {
+            background-color: #1e1e1e;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: #374151;
+            color: #e2e8f0;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #4b5563;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-button.active + .accordion-content {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .section-card {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05);
+        }
+        .kpi-card {
+            background: #1f2937;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .roadmap-phase {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 2rem;
+            border-left: 2px solid #374151;
+        }
+        .roadmap-phase:last-child {
+            border-left: 2px solid transparent;
+            padding-bottom: 0;
+        }
+        .roadmap-dot {
+            position: absolute;
+            left: -0.6rem;
+            top: 0;
+            height: 1.25rem;
+            width: 1.25rem;
+            background-color: #4f46e5;
+            border-radius: 9999px;
+            border: 4px solid #111827;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="py-12 px-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+            <span class="gradient-text">Advanced ML Engineering Mastery</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400 max-w-4xl mx-auto">Real-Time Fraud Detection Systems (2024-2025)</p>
+        <p class="mt-6 text-slate-300 max-w-3xl mx-auto">
+            A comprehensive framework synthesizing bleeding-edge research with proven industry practices for ML engineers tackling complex real-time fraud detection challenges at sub-10ms latencies and massive scale.
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-5xl">
+
+        <!-- SCRAFT Methodology -->
+        <section id="scraft" class="section-card">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-400">The SCRAFT Methodology</h2>
+            <p class="mb-6 text-slate-400">A problem-solving methodology for fraud detection systems: Streaming, Causal, Robust, Adaptive, Federated, Traceable.</p>
+            <div class="space-y-4">
+                <!-- Accordion Item -->
+                <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Streaming-First Design</span>
+                        <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Begin with Kappa architecture assumptions. Companies like Twitter, Uber, and Disney report <strong class="text-green-400">10x infrastructure cost savings</strong> when adopting stream-first approaches over Lambda architectures.</p>
+                    </div>
+                </div>
+                <!-- Accordion Item -->
+                <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Causal Understanding</span>
+                         <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Implement causal inference frameworks to understand "why" fraud occurs. Recent research shows causal discovery in ATM fraud achieves <strong class="text-green-400">zero false alarm rates</strong> while detecting 32 of 36 attack patterns.</p>
+                    </div>
+                </div>
+                 <!-- Add other accordion items similarly -->
+                 <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Robust by Design</span>
+                         <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Build adversarial robustness using adversarial training and FraudGAN techniques. The latest Hybrid Machine Learning Framework (HMLF) demonstrates <strong class="text-green-400">95% adversarial robustness</strong>, reducing attack success rates from 35% to 5%.</p>
+                    </div>
+                </div>
+                 <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Adaptive Systems</span>
+                         <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Implement continuous learning with automated drift detection. Modern systems achieve <strong class="text-green-400">24-hour drift recovery</strong> while maintaining sub-150ms latency.</p>
+                    </div>
+                </div>
+                 <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Federated Collaboration</span>
+                         <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Design for privacy-preserving multi-institutional learning. The Swift-Google Cloud partnership demonstrates successful federated learning across <strong class="text-green-400">12 global financial institutions</strong>.</p>
+                    </div>
+                </div>
+                 <div>
+                    <button class="accordion-button w-full text-left flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-700 rounded-lg focus:outline-none transition-colors">
+                        <span class="font-semibold text-lg">Traceable Decisions</span>
+                         <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 text-slate-400">Embed explainability throughout the ML pipeline using SHAP, LIME, and causal pathway identification for regulatory compliance with GDPR and emerging EU AI Act requirements.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Streaming ML Architectures -->
+        <section id="streaming-architectures" class="section-card">
+            <h2 class="text-3xl font-bold mb-2 text-indigo-400">Revolutionary Streaming ML Architectures</h2>
+            <p class="mb-6 text-slate-400">Breakthroughs in real-time model architectures for fraud detection.</p>
+            
+            <h3 class="text-2xl font-semibold mb-3 text-pink-400">Graph Self-Attention Transformer Networks</h3>
+            <p class="mb-4 text-slate-400">GSAT networks achieve a <strong class="text-green-400">20% improvement in Average Precision</strong> and a <strong class="text-green-400">2.7% increase in AUC-ROC</strong> over state-of-the-art Graph Attention Networks.</p>
+            <div class="code-block">
+                <button class="copy-btn">Copy</button>
+                <pre><code class="language-python">
+class GraphSelfAttentionTransformer(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_heads, num_layers):
+        super().__init__()
+        self.graph_attention_layers = nn.ModuleList([
+            GraphAttentionLayer(input_dim if i == 0 else hidden_dim, 
+                              hidden_dim, num_heads)
+            for i in range(num_layers)
+        ])
+        self.transformer_encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(hidden_dim, num_heads), 
+            num_layers
+        )
+        
+    def forward(self, node_features, edge_index, batch):
+        # Graph-level attention for topological patterns
+        for gat_layer in self.graph_attention_layers:
+            node_features = gat_layer(node_features, edge_index)
+        
+        # Self-attention for temporal transaction sequences
+        transformed_features = self.transformer_encoder(node_features)
+        
+        # Direct fraud gang feature extraction
+        return global_mean_pool(transformed_features, batch)
+                </code></pre>
+            </div>
+
+            <h3 class="text-2xl font-semibold mt-8 mb-3 text-pink-400">Kappa Architecture Optimization</h3>
+            <p class="mb-4 text-slate-400">Major companies have migrated from Lambda to Kappa, achieving 10x cost reduction and sub-150ms latency.</p>
+            <div class="code-block">
+                <button class="copy-btn">Copy</button>
+                <pre><code class="language-yaml">
+# Kafka + Flink streaming pipeline
+# Data Sources → Apache Kafka → Stream Processor (Flink) → Feature Store (Redis) → ML Models → Decision API
+
+# Specific configuration for sub-10ms latency
+kafka:
+  acks: 1
+  batch.size: 16384
+  linger.ms: 5
+  compression.type: lz4
+  
+flink:
+  parallelism: 12
+  checkpointing.interval: 60000
+  watermark.idle.timeout: 30000
+                </code></pre>
+            </div>
+        </section>
+
+        <!-- Production Implementation Roadmap -->
+        <section id="roadmap" class="section-card">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-400">Production Implementation Roadmap</h2>
+            <div class="relative">
+                <!-- Phase 1 -->
+                <div class="roadmap-phase">
+                    <div class="roadmap-dot"></div>
+                    <h3 class="text-xl font-bold text-pink-400">Phase 1: Foundation Architecture (Months 1-3)</h3>
+                    <p class="text-slate-400 mt-2">Deploy core infrastructure (Kafka, Redis, Flink) and establish MLOps foundations (MLflow, CI/CD, monitoring).</p>
+                </div>
+                <!-- Phase 2 -->
+                <div class="roadmap-phase">
+                    <div class="roadmap-dot"></div>
+                    <h3 class="text-xl font-bold text-pink-400">Phase 2: Advanced ML Capabilities (Months 4-6)</h3>
+                    <p class="text-slate-400 mt-2">Deploy GSAT models, implement federated learning and adversarial training, and roll out advanced MLOps like continuous training and canary deployments.</p>
+                </div>
+                <!-- Phase 3 -->
+                <div class="roadmap-phase">
+                    <div class="roadmap-dot"></div>
+                    <h3 class="text-xl font-bold text-pink-400">Phase 3: Cutting-Edge Optimization (Months 7-9)</h3>
+                    <p class="text-slate-400 mt-2">Achieve sub-10ms latency, explore quantum-enhancements, implement explainable AI, and scale to enterprise-grade requirements.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Success Metrics -->
+        <section id="metrics" class="section-card">
+            <h2 class="text-3xl font-bold mb-6 text-indigo-400">Success Metrics and Benchmarks</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="kpi-card">
+                    <div class="text-3xl font-bold text-green-400">&lt;10ms</div>
+                    <div class="text-slate-400">API Response P99</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-3xl font-bold text-green-400">&gt;95%</div>
+                    <div class="text-slate-400">Precision</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-3xl font-bold text-green-400">&gt;90%</div>
+                    <div class="text-slate-400">Recall</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-3xl font-bold text-green-400">100k+</div>
+                    <div class="text-slate-400">Transactions/sec</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Other sections can be added here following the same pattern -->
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-500">
+        <p>&copy; 2024-2025 ML Engineering Mastery. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Accordion functionality
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+                    const icon = button.querySelector('svg');
+                    icon.classList.toggle('rotate-180');
+                });
+            });
+
+            // Copy-to-clipboard functionality
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const codeBlock = e.target.nextElementSibling;
+                    const code = codeBlock.querySelector('code').innerText;
+                    
+                    // Create a temporary textarea element to copy the text
+                    const textArea = document.createElement('textarea');
+                    textArea.value = code;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        e.target.textContent = 'Copied!';
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        e.target.textContent = 'Error';
+                    }
+                    document.body.removeChild(textArea);
+
+                    setTimeout(() => {
+                        e.target.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+

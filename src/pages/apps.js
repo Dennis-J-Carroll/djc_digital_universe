@@ -65,6 +65,27 @@ const AppsPage = ({ location }) => {
       description: 'Edge computing monitoring and security dashboard for IoT and distributed systems.',
       category: 'AI/ML'
     },
+    {
+      title: 'MLOps Engineer: Orchestrating ML',
+      path: '/apps/MLOps_Launch.html',
+      description: 'Interactive guide to MLOps engineering—learn about ML pipelines, model deployment, monitoring, and infrastructure management for production systems.',
+      category: 'AI/ML',
+      featured: true
+    },
+    {
+      title: 'ML Fraud Detection Mastery',
+      path: '/apps/ML_Fraud_detection.html',
+      description: 'Advanced framework for real-time fraud detection systems covering streaming architectures, Graph Self-Attention Transformers, and production implementation.',
+      category: 'Data Science',
+      featured: true
+    },
+    {
+      title: 'Prose Trainer',
+      path: '/apps/prose-trainer-app.html',
+      description: 'Genre-optimized writing practice with real-time analysis of readability, sensory balance, and kinetic density. Level up your prose with targeted feedback.',
+      category: 'Tools',
+      featured: true
+    },
 
     // Data Science & Mathematics
     {

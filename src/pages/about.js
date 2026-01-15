@@ -3,7 +3,6 @@ import { motion } from "framer-motion"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 import StatsCounter from "../components/shared/stats-counter"
-import SkillProgress from "../components/shared/skill-progress"
 
 // Minimalist SVG Icons (gray fill with black outline style)
 const CodeIcon = () => (
@@ -64,42 +63,7 @@ const AboutPage = ({ location }) => {
     { value: 100, suffix: "%", label: "Passion", icon: null }
   ]
 
-  // Skills data with categories
-  const skillCategories = [
-    {
-      name: "Data Science & AI",
-      icon: null,
-      skills: [
-        { name: "Python", level: 95, color: "linear-gradient(90deg, #3776ab, #ffd43b)" },
-        { name: "Machine Learning", level: 85 },
-        { name: "TensorFlow / PyTorch", level: 80 },
-        { name: "Data Visualization", level: 90 },
-        { name: "Pandas & NumPy", level: 92 }
-      ]
-    },
-    {
-      name: "Web Development",
-      icon: null,
-      skills: [
-        { name: "React & Gatsby", level: 88, color: "linear-gradient(90deg, #61dafb, #663399)" },
-        { name: "JavaScript / TypeScript", level: 90 },
-        { name: "HTML & CSS", level: 95 },
-        { name: "Node.js", level: 82 },
-        { name: "Tailwind CSS", level: 88 }
-      ]
-    },
-    {
-      name: "Tools & DevOps",
-      icon: null,
-      skills: [
-        { name: "Git & GitHub", level: 92 },
-        { name: "Docker", level: 75 },
-        { name: "Cloud Services", level: 78 },
-        { name: "CI/CD Pipelines", level: 80 },
-        { name: "Database Design", level: 85 }
-      ]
-    }
-  ]
+
 
   // Animation variants
   const containerVariants = {
@@ -260,18 +224,40 @@ const AboutPage = ({ location }) => {
           </motion.div>
         </motion.section>
 
-        {/* Skills Section */}
+        {/* Data Science & Deep Learning Section */}
         <motion.section
-          className="about-section skills-section"
+          className="about-section interests-section"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
         >
           <motion.h2 className="section-title" variants={itemVariants}>
-            Skills & Expertise
+            Data Science & Deep Learning
           </motion.h2>
-          <SkillProgress categories={skillCategories} />
+          <motion.div className="content-card" variants={itemVariants}>
+            <div className="interests-content">
+              <p>
+                My fascination with data science stems from its power to uncover hidden patterns
+                and transform raw information into actionable insights. I'm particularly drawn to
+                the intersection of statistical rigor and computational innovation—where Bayesian
+                inference meets modern machine learning architectures.
+              </p>
+              <p>
+                Deep learning captivates me because of its ability to learn representations directly
+                from data. From neural network theory to practical implementations with TensorFlow
+                and PyTorch, I enjoy exploring how these systems learn, adapt, and sometimes surprise us.
+                Whether it's building interactive visualizations to understand training dynamics or
+                implementing novel architectures, I find the blend of mathematics, intuition, and
+                engineering deeply rewarding.
+              </p>
+              <p>
+                Currently, I'm exploring areas like reinforcement learning, graph neural networks,
+                and the emerging field of mechanistic interpretability—understanding not just what
+                neural networks learn, but how and why they learn it.
+              </p>
+            </div>
+          </motion.div>
         </motion.section>
 
         {/* This Website Section */}
@@ -442,6 +428,22 @@ const AboutPage = ({ location }) => {
           .content-block p {
             color: var(--text-secondary, #b8b8b8);
             line-height: 1.8;
+          }
+
+          .interests-content {
+            max-width: 800px;
+            margin: 0 auto;
+          }
+
+          .interests-content p {
+            color: var(--text-secondary, #b8b8b8);
+            line-height: 1.9;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .interests-content p:last-child {
+            margin-bottom: 0;
           }
 
           .website-card {

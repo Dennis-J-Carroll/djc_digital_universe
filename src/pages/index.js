@@ -134,7 +134,7 @@ const IndexPage = ({ location }) => {
             {/* Hero Content */}
             <div className="flex flex-col min-h-[80vh] justify-center">
               <HeroText
-                title="Welcome to My Digital Universe"
+                title=""
                 description="Exploring Data Science, Project Development, Creative Writing, and More"
               />
 

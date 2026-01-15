@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prose Trainer: Master Genre-Optimized Writing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .prose-input {
+            font-family: 'Georgia', serif;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .metric-good { color: #10b981; }
+        .metric-warning { color: #f59e0b; }
+        .metric-poor { color: #ef4444; }
+
+        .badge {
+            animation: badgeAppear 0.5s ease-out;
+        }
+
+        @keyframes badgeAppear {
+            from {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .analysis-card {
+            transition: all 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .highlight-visual { background-color: rgba(147, 51, 234, 0.15); }
+        .highlight-auditory { background-color: rgba(59, 130, 246, 0.15); }
+        .highlight-tactile { background-color: rgba(16, 185, 129, 0.15); }
+        .highlight-kinetic { background-color: rgba(239, 68, 68, 0.15); }
+
+        .prompt-card {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prompt-card:hover {
+            transform: scale(1.02);
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800 antialiased min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                        PT
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900">Prose Trainer</h1>
+                        <p class="text-xs text-slate-500">Genre-Optimized Writing Practice</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs text-slate-500">Level <span id="user-level">1</span></div>
+                        <div class="text-sm font-bold text-indigo-600"><span id="user-xp">0</span> XP</div>
+                    </div>
+                    <button onclick="showBadges()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-sm font-medium transition">
+                        <i class="fas fa-trophy text-amber-600"></i>
+                        <span class="ml-2 hidden sm:inline">Badges</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-3 bg-stone-200 rounded-full h-2 overflow-hidden">
+                <div id="xp-progress" class="bg-gradient-to-r from-indigo-600 to-purple-600 h-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Genre & Difficulty Selection Screen -->
+        <div id="selection-screen">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3">Choose Your Training Path</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    Select a genre and difficulty level. You'll receive targeted writing prompts and real-time feedback based on research-backed metrics.
+                </p>
+            </div>
+
+            <!-- Genre Selection -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 text-center">Genre</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                    <div onclick="selectGenre('fantasy')" id="genre-fantasy" class="prompt-card bg-white p-6 rounded-xl border-2 border-stone-200 text-center">
+                        <i class="fas fa-hat-wizard text-4xl text-purple-600 mb-3"></i>
+                        <h4 class="font-bold text-slate-900 mb-2">Fantasy</h4>
+                        <p class="text-xs text-slate-600">High visual density, worldbuilding focus</p>
+                        <div class="mt-3 text-xs text-slate-500">
+                            Target Fog: 7.5-8.5
+                        </div>
+                    </div>
+
+                    <div onclick="selectGenre('scifi')" id="genre-scifi" class="prompt-card bg-white p-6 rounded-xl border-2 border-stone-200 text-center">
+                        <i class="fas fa-rocket text-4xl text-blue-600 mb-3"></i>
+                        <h4 class="font-bold text-slate-900 mb-2">Sci-Fi</h4>
+                        <p class="text-xs text-slate-600">Tech exposition, kinetic breaks</p>
+                        <div class="mt-3 text-xs text-slate-500">
+                            Target Fog: 8.0-9.0
+                        </div>
+                    </div>
+
+                    <div onclick="selectGenre('action')" id="genre-action" class="prompt-card bg-white p-6 rounded-xl border-2 border-stone-200 text-center">
+                        <i class="fas fa-fist-raised text-4xl text-red-600 mb-3"></i>
+                        <h4 class="font-bold text-slate-900 mb-2">Action/Thriller</h4>
+                        <p class="text-xs text-slate-600">High kinetic density, fast pacing</p>
+                        <div class="mt-3 text-xs text-slate-500">
+                            Target Fog: 6.0-7.0
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Difficulty Selection -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 text-center">Difficulty</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 max-w-5xl mx-auto">
+                    <div onclick="selectDifficulty('novice')" id="diff-novice" class="prompt-card bg-white p-4 rounded-lg border-2 border-stone-200 text-center">
+                        <div class="text-sm font-bold text-slate-900">Novice</div>
+                        <div class="text-xs text-slate-600 mt-1">Basic prompts, 5-7 sentences</div>
+                    </div>
+                    <div onclick="selectDifficulty('apprentice')" id="diff-apprentice" class="prompt-card bg-white p-4 rounded-lg border-2 border-stone-200 text-center">
+                        <div class="text-sm font-bold text-slate-900">Apprentice</div>
+                        <div class="text-xs text-slate-600 mt-1">Moderate, 8-12 sentences</div>
+                    </div>
+                    <div onclick="selectDifficulty('adept')" id="diff-adept" class="prompt-card bg-white p-4 rounded-lg border-2 border-stone-200 text-center">
+                        <div class="text-sm font-bold text-slate-900">Adept</div>
+                        <div class="text-xs text-slate-600 mt-1">Advanced, 12-15 sentences</div>
+                    </div>
+                    <div onclick="selectDifficulty('master')" id="diff-master" class="prompt-card bg-white p-4 rounded-lg border-2 border-stone-200 text-center">
+                        <div class="text-sm font-bold text-slate-900">Master</div>
+                        <div class="text-xs text-slate-600 mt-1">Expert, 15+ sentences</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="startTraining()" id="start-btn" disabled class="px-8 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg">
+                    Start Training
+                </button>
+            </div>
+        </div>
+
+        <!-- Writing Screen -->
+        <div id="writing-screen" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left Column: Prompt & Writing Area -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Prompt Card -->
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span id="prompt-genre-badge" class="px-3 py-1 bg-white rounded-full text-xs font-bold text-indigo-700 border border-indigo-200"></span>
+                                <span id="prompt-type-badge" class="ml-2 px-3 py-1 bg-white rounded-full text-xs font-bold text-slate-700 border border-slate-200"></span>
+                            </div>
+                            <button onclick="getNewPrompt()" class="text-sm text-indigo-700 hover:text-indigo-900 font-medium">
+                                <i class="fas fa-sync-alt mr-1"></i> New Prompt
+                            </button>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3" id="prompt-title">Prompt Title</h3>
+                        <p class="text-slate-700 leading-relaxed" id="prompt-description">Prompt description goes here...</p>
+
+                        <div class="mt-4 pt-4 border-t border-indigo-200">
+                            <div class="flex flex-wrap gap-3 text-xs">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle text-green-600 mr-1"></i>
+                                    <span class="text-slate-600">Min: <span id="prompt-min-sentences" class="font-bold">5</span> sentences</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-bullseye text-indigo-600 mr-1"></i>
+                                    <span class="text-slate-600">Target Fog: <span id="prompt-target-fog" class="font-bold">7.5-8.5</span></span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-fire text-orange-600 mr-1"></i>
+                                    <span class="text-slate-600">Focus: <span id="prompt-focus" class="font-bold">Visual + Tactile</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Writing Area -->
+                    <div class="bg-white border border-stone-200 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-slate-900">Your Response</h4>
+                            <div class="text-sm text-slate-500">
+                                <span id="word-count">0</span> words | <span id="sentence-count">0</span> sentences
+                            </div>
+                        </div>
+
+                        <textarea
+                            id="prose-input"
+                            class="prose-input w-full h-64 p-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                            placeholder="Begin writing your response here. Focus on the target metrics for your chosen genre..."
+                            oninput="analyzeText()"
+                        ></textarea>
+
+                        <div class="mt-4 flex justify-between items-center">
+                            <button onclick="clearText()" class="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium text-sm">
+                                <i class="fas fa-eraser mr-1"></i> Clear
+                            </button>
+                            <button onclick="submitResponse()" id="submit-btn" disabled class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                Submit for Grading
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted Text Analysis -->
+                    <div id="highlighted-section" class="bg-white border border-stone-200 rounded-xl p-6 hidden">
+                        <h4 class="font-bold text-slate-900 mb-4">Sensory Highlights</h4>
+                        <div class="flex gap-3 mb-4 text-xs flex-wrap">
+                            <div class="flex items-center">
+                                <span class="w-4 h-4 rounded highlight-visual inline-block mr-1"></span>
+                                <span class="text-slate-600">Visual</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-4 h-4 rounded highlight-auditory inline-block mr-1"></span>
+                                <span class="text-slate-600">Auditory</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-4 h-4 rounded highlight-tactile inline-block mr-1"></span>
+                                <span class="text-slate-600">Tactile</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-4 h-4 rounded highlight-kinetic inline-block mr-1"></span>
+                                <span class="text-slate-600">Kinetic</span>
+                            </div>
+                        </div>
+                        <div id="highlighted-text" class="prose-input leading-relaxed text-slate-800"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Real-time Analysis -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-white border border-stone-200 rounded-xl p-5 sticky top-24">
+                        <h4 class="font-bold text-slate-900 mb-4 flex items-center">
+                            <i class="fas fa-chart-bar text-indigo-600 mr-2"></i>
+                            Real-Time Analysis
+                        </h4>
+
+                        <!-- Gunning Fog Index -->
+                        <div class="mb-5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-slate-700">Readability (Fog Index)</span>
+                                <span id="fog-value" class="text-lg font-bold text-slate-900">-</span>
+                            </div>
+                            <div class="w-full bg-stone-200 rounded-full h-2 overflow-hidden">
+                                <div id="fog-bar" class="h-full transition-all duration-300 bg-indigo-600" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1">Target: <span id="fog-target-display">7.5-8.5</span></div>
+                        </div>
+
+                        <!-- Sensory Balance -->
+                        <div class="mb-5">
+                            <div class="text-sm font-medium text-slate-700 mb-3">Sensory Balance</div>
+                            <div class="space-y-2">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-purple-700">Visual</span>
+                                        <span id="visual-count" class="font-bold">0</span>
+                                    </div>
+                                    <div class="w-full bg-stone-200 rounded-full h-1.5">
+                                        <div id="visual-bar" class="h-full bg-purple-600 transition-all" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-blue-700">Auditory</span>
+                                        <span id="auditory-count" class="font-bold">0</span>
+                                    </div>
+                                    <div class="w-full bg-stone-200 rounded-full h-1.5">
+                                        <div id="auditory-bar" class="h-full bg-blue-600 transition-all" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-green-700">Tactile</span>
+                                        <span id="tactile-count" class="font-bold">0</span>
+                                    </div>
+                                    <div class="w-full bg-stone-200 rounded-full h-1.5">
+                                        <div id="tactile-bar" class="h-full bg-green-600 transition-all" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-red-700">Kinetic</span>
+                                        <span id="kinetic-count" class="font-bold">0</span>
+                                    </div>
+                                    <div class="w-full bg-stone-200 rounded-full h-1.5">
+                                        <div id="kinetic-bar" class="h-full bg-red-600 transition-all" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Metrics -->
+                        <div class="space-y-3 pt-4 border-t border-stone-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Avg Sentence Length</span>
+                                <span id="avg-sentence-length" class="font-bold">- words</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Passive Voice</span>
+                                <span id="passive-count" class="font-bold">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Kinetic Verbs</span>
+                                <span id="kinetic-verb-count" class="font-bold">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Overall Score Preview -->
+                        <div class="mt-5 pt-4 border-t border-stone-200">
+                            <div class="text-center">
+                                <div class="text-xs text-slate-500 mb-2">Estimated Score</div>
+                                <div id="preview-score" class="text-4xl font-bold text-indigo-600">-</div>
+                                <div class="text-xs text-slate-500 mt-1">Submit for full analysis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden">
+            <div class="max-w-4xl mx-auto">
+                <!-- Score Display -->
+                <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-8 mb-6 text-center">
+                    <div class="text-sm font-medium mb-2">Your Score</div>
+                    <div id="final-score" class="text-7xl font-bold mb-4">85</div>
+                    <div id="score-grade" class="text-2xl font-semibold mb-3">Excellent!</div>
+                    <div class="flex justify-center gap-2">
+                        <i class="fas fa-star text-yellow-300"></i>
+                        <i class="fas fa-star text-yellow-300"></i>
+                        <i class="fas fa-star text-yellow-300"></i>
+                        <i class="fas fa-star text-yellow-300"></i>
+                        <i class="far fa-star text-yellow-300"></i>
+                    </div>
+                    <div class="mt-4 text-sm opacity-90">
+                        +<span id="xp-earned">25</span> XP Earned
+                    </div>
+                </div>
+
+                <!-- Detailed Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="analysis-card bg-white border border-stone-200 rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-bold text-slate-900">Readability</h5>
+                            <i id="fog-icon" class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <div class="text-3xl font-bold mb-2" id="result-fog">7.8</div>
+                        <div class="text-sm text-slate-600 mb-3">Target: <span id="result-fog-target">7.5-8.5</span></div>
+                        <p id="fog-feedback" class="text-sm text-slate-700">Perfect! Your complexity matches genre expectations.</p>
+                    </div>
+
+                    <div class="analysis-card bg-white border border-stone-200 rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-bold text-slate-900">Sensory Balance</h5>
+                            <i id="sensory-icon" class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 mb-3">
+                            <div class="text-center">
+                                <div class="text-xs text-purple-700 mb-1">Visual</div>
+                                <div id="result-visual" class="text-lg font-bold">12</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-blue-700 mb-1">Aud.</div>
+                                <div id="result-auditory" class="text-lg font-bold">5</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-green-700 mb-1">Tact.</div>
+                                <div id="result-tactile" class="text-lg font-bold">8</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xs text-red-700 mb-1">Kine.</div>
+                                <div id="result-kinetic" class="text-lg font-bold">6</div>
+                            </div>
+                        </div>
+                        <p id="sensory-feedback" class="text-sm text-slate-700">Great visual emphasis for fantasy worldbuilding!</p>
+                    </div>
+
+                    <div class="analysis-card bg-white border border-stone-200 rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-bold text-slate-900">Pacing & Voice</h5>
+                            <i id="pacing-icon" class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Avg Sentence</span>
+                                <span id="result-avg-sentence" class="font-bold">14.2 words</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-600">Passive Voice</span>
+                                <span id="result-passive" class="font-bold">2 instances</span>
+                            </div>
+                        </div>
+                        <p id="pacing-feedback" class="text-sm text-slate-700">Good pacing. Consider reducing passive voice further.</p>
+                    </div>
+
+                    <div class="analysis-card bg-white border border-stone-200 rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-bold text-slate-900">Kinetic Density</h5>
+                            <i id="kinetic-icon" class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <div class="text-3xl font-bold mb-2" id="result-kinetic-verbs">8</div>
+                        <div class="text-sm text-slate-600 mb-3">Strong action verbs detected</div>
+                        <p id="kinetic-feedback" class="text-sm text-slate-700">Excellent use of kinetic verbs for momentum.</p>
+                    </div>
+                </div>
+
+                <!-- Badges Earned -->
+                <div id="new-badges-section" class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6 hidden">
+                    <h4 class="font-bold text-slate-900 mb-4 text-center">
+                        <i class="fas fa-trophy text-amber-600 mr-2"></i>
+                        New Badges Earned!
+                    </h4>
+                    <div id="new-badges-container" class="flex justify-center gap-4 flex-wrap">
+                        <!-- Badges will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Improvement Tips -->
+                <div class="bg-white border border-stone-200 rounded-xl p-6 mb-6">
+                    <h4 class="font-bold text-slate-900 mb-4">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                        Tips for Improvement
+                    </h4>
+                    <ul id="tips-list" class="space-y-2 text-sm text-slate-700">
+                        <!-- Tips will be inserted here -->
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-center gap-4">
+                    <button onclick="tryAgain()" class="px-6 py-3 bg-white border border-stone-300 text-slate-700 rounded-lg font-semibold hover:bg-stone-50 transition">
+                        Try Another Prompt
+                    </button>
+                    <button onclick="viewHighlights()" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition">
+                        View Highlighted Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Badges Modal -->
+    <div id="badges-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-auto p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Your Badges</h3>
+                <button onclick="closeBadges()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="badges-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                <!-- Badges will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE MANAGEMENT =====
+        const appState = {
+            genre: null,
+            difficulty: null,
+            currentPrompt: null,
+            userLevel: 1,
+            userXP: 0,
+            badges: [],
+            currentText: '',
+            analysisResults: null
+        };
+
+        // ===== WRITING PROMPTS DATABASE =====
+        const prompts = {
+            fantasy: {
+                novice: [
+                    {
+                        title: "First Glimpse of the Capital",
+                        description: "Your protagonist approaches the capital city for the first time. Describe what they see, hear, and feel as they pass through the main gates. Focus on worldbuilding through sensory detail.",
+                        type: "Worldbuilding",
+                        minSentences: 5,
+                        focus: "Visual + Tactile"
+                    },
+                    {
+                        title: "Market Day Discovery",
+                        description: "While browsing a magical market, your character discovers an unusual artifact. Describe the market atmosphere and their interaction with the mysterious object.",
+                        type: "Worldbuilding",
+                        minSentences: 5,
+                        focus: "Visual + Auditory"
+                    },
+                    {
+                        title: "First Spell Casting",
+                        description: "Your character attempts their first spell. Describe the physical sensations, visual effects, and outcome of channeling magic for the first time.",
+                        type: "Action",
+                        minSentences: 5,
+                        focus: "Tactile + Kinetic"
+                    }
+                ],
+                apprentice: [
+                    {
+                        title: "Council Chamber Tension",
+                        description: "Your protagonist must present crucial information to the ruling council, but not everyone believes them. Describe the chamber, the council members' reactions, and the growing tension.",
+                        type: "Character Interaction",
+                        minSentences: 8,
+                        focus: "Visual + Auditory"
+                    },
+                    {
+                        title: "Ancient Library Exploration",
+                        description: "Exploring a forbidden section of an ancient library, your character finds clues about a forgotten prophecy. Describe the library's atmosphere and their discovery process.",
+                        type: "Worldbuilding",
+                        minSentences: 8,
+                        focus: "Visual + Tactile"
+                    },
+                    {
+                        title: "Ambush in the Forest",
+                        description: "While traveling through an enchanted forest, your party is ambushed by hostile creatures. Describe the attack and your character's response, emphasizing action and sensory chaos.",
+                        type: "Action",
+                        minSentences: 8,
+                        focus: "Kinetic + Auditory"
+                    }
+                ],
+                adept: [
+                    {
+                        title: "Negotiating with Dragons",
+                        description: "Your character must negotiate with an ancient dragon to gain safe passage through its territory. Describe the dragon's lair, the creature's presence, and the tense dialogue that follows.",
+                        type: "Character Interaction",
+                        minSentences: 12,
+                        focus: "Visual + Auditory + Tactile"
+                    },
+                    {
+                        title: "Magical Duel",
+                        description: "Two powerful mages clash in a formal duel. Describe the preparation, the exchange of spells, and the climactic moment. Balance technical magic system details with visceral action.",
+                        type: "Action",
+                        minSentences: 12,
+                        focus: "Kinetic + Visual"
+                    }
+                ],
+                master: [
+                    {
+                        title: "The Corrupted Throne Room",
+                        description: "Your character enters the throne room where a once-noble king has been corrupted by dark magic. Describe the transformation of the space, the king's changed appearance, and the moment of confrontation. Balance worldbuilding, character emotion, and building tension.",
+                        type: "Complex Scene",
+                        minSentences: 15,
+                        focus: "All Senses + Complexity Wave"
+                    }
+                ]
+            },
+            scifi: {
+                novice: [
+                    {
+                        title: "Docking at the Station",
+                        description: "Your ship docks at a massive space station for the first time. Describe the approach, docking procedure, and first impressions of the station's interior.",
+                        type: "Worldbuilding",
+                        minSentences: 5,
+                        focus: "Visual + Kinetic"
+                    },
+                    {
+                        title: "AI Malfunction",
+                        description: "The ship's AI assistant begins behaving strangely. Describe the first signs of the malfunction and your character's initial response.",
+                        type: "Tension Building",
+                        minSentences: 5,
+                        focus: "Auditory + Visual"
+                    },
+                    {
+                        title: "Zero-G Repair",
+                        description: "Your character must perform an emergency repair in zero gravity. Describe the physical challenges and sensory experience of working in weightlessness.",
+                        type: "Action",
+                        minSentences: 5,
+                        focus: "Kinetic + Tactile"
+                    }
+                ],
+                apprentice: [
+                    {
+                        title: "First Contact Protocol",
+                        description: "Your crew encounters an alien vessel. Describe the tense moments of first contact, the communication attempts, and the atmosphere on the bridge.",
+                        type: "Tension Building",
+                        minSentences: 8,
+                        focus: "Auditory + Visual"
+                    },
+                    {
+                        title: "Quantum Drive Failure",
+                        description: "The ship's quantum drive experiences a critical failure mid-jump. Describe the technical crisis, crew reactions, and emergency procedures. Balance technical detail with human response.",
+                        type: "Action",
+                        minSentences: 8,
+                        focus: "Kinetic + Visual"
+                    },
+                    {
+                        title: "Underground Mars Colony",
+                        description: "Exploring an abandoned Mars colony, your character discovers signs of a hasty evacuation. Describe the eerie environment and clues about what happened.",
+                        type: "Worldbuilding",
+                        minSentences: 8,
+                        focus: "Visual + Tactile"
+                    }
+                ],
+                adept: [
+                    {
+                        title: "Cybernetic Integration",
+                        description: "Your character undergoes their first cybernetic enhancement surgery. Describe the procedure, the moment of activation, and the overwhelming sensory input from the new system. Balance technical detail with visceral experience.",
+                        type: "Character Development",
+                        minSentences: 12,
+                        focus: "Tactile + Visual + Kinetic"
+                    }
+                ],
+                master: [
+                    {
+                        title: "The Singularity Negotiation",
+                        description: "Humanity's representative (your character) must negotiate with a newly emerged AI superintelligence. Describe the virtual meeting space, the AI's manifestation, the philosophical exchange, and the weight of decisions affecting humanity's future. Balance hard sci-fi concepts with human emotion.",
+                        type: "Complex Scene",
+                        minSentences: 15,
+                        focus: "All Elements + Technical Precision"
+                    }
+                ]
+            },
+            action: {
+                novice: [
+                    {
+                        title: "Rooftop Chase",
+                        description: "Your character pursues a suspect across city rooftops. Describe the physical exertion, environmental obstacles, and momentum of the chase.",
+                        type: "Action",
+                        minSentences: 5,
+                        focus: "Kinetic + Auditory"
+                    },
+                    {
+                        title: "Close Quarters Combat",
+                        description: "Cornered in a narrow alley, your character must fight off two attackers. Describe the fight using short, punchy sentences and strong action verbs.",
+                        type: "Action",
+                        minSentences: 5,
+                        focus: "Kinetic + Tactile"
+                    },
+                    {
+                        title: "Car Chase Escape",
+                        description: "Driving through heavy traffic, your character must evade pursuers. Focus on quick decisions, near-misses, and the visceral feel of high-speed maneuvering.",
+                        type: "Action",
+                        minSentences: 5,
+                        focus: "Kinetic + Visual"
+                    }
+                ],
+                apprentice: [
+                    {
+                        title: "Hostage Negotiation",
+                        description: "Your character must talk down an armed hostage-taker. Describe the tense standoff, reading micro-expressions, and the careful verbal chess match.",
+                        type: "Tension Building",
+                        minSentences: 8,
+                        focus: "Auditory + Visual"
+                    },
+                    {
+                        title: "Building Breach",
+                        description: "Leading a tactical team, your character breaches a building where criminals are holed up. Describe the breach, room clearing, and split-second decisions. Use short sentences during action.",
+                        type: "Action",
+                        minSentences: 8,
+                        focus: "Kinetic + Auditory"
+                    },
+                    {
+                        title: "Underwater Extraction",
+                        description: "Your character must rescue someone from a submerged vehicle. Describe the sensory deprivation, physical struggle against water pressure, and the fight against time.",
+                        type: "Action",
+                        minSentences: 8,
+                        focus: "Tactile + Kinetic"
+                    }
+                ],
+                adept: [
+                    {
+                        title: "Sniper Duel",
+                        description: "Two snipers hunt each other through an urban battlefield. Describe the patience, the calculations, the moment of detection, and the explosive finale. Alternate between tense stillness and sudden action.",
+                        type: "Action",
+                        minSentences: 12,
+                        focus: "Visual + Kinetic + Pacing Contrast"
+                    }
+                ],
+                master: [
+                    {
+                        title: "The Heist Gone Wrong",
+                        description: "A meticulously planned heist falls apart in real-time. Describe the moment everything goes wrong, the team's scramble to adapt, the escalating chaos, and your character's split-second leadership decisions. Use varied pacing: tight action beats punctuated by brief tactical pauses.",
+                        type: "Complex Scene",
+                        minSentences: 15,
+                        focus: "Kinetic Density + Pacing Mastery"
+                    }
+                ]
+            }
+        };
+
+        // ===== SENSORY WORD DICTIONARIES =====
+        const sensoryWords = {
+            visual: [
+                'crystalline', 'shadowed', 'gleaming', 'mist-shrouded', 'angular', 'radiant', 'dim', 'bright',
+                'shimmering', 'dark', 'luminous', 'glowing', 'pale', 'vivid', 'hazy', 'translucent', 'opaque',
+                'colorful', 'monochrome', 'sparkling', 'dull', 'brilliant', 'faded', 'sharp', 'blurred',
+                'silver', 'golden', 'crimson', 'azure', 'emerald', 'amber', 'obsidian', 'ivory',
+                'towering', 'vast', 'tiny', 'massive', 'slender', 'broad', 'jagged', 'smooth',
+                'ornate', 'plain', 'elaborate', 'simple', 'intricate', 'sparse', 'cluttered', 'empty'
+            ],
+            auditory: [
+                'whispered', 'roared', 'echoed', 'hissed', 'thundered', 'murmured', 'screamed', 'hummed',
+                'clanged', 'rustled', 'crackled', 'boomed', 'chimed', 'shrieked', 'groaned', 'buzzed',
+                'rattled', 'tinkled', 'crashed', 'thudded', 'clicked', 'whooshed', 'sizzled', 'popped',
+                'silent', 'quiet', 'loud', 'deafening', 'soft', 'harsh', 'melodic', 'discordant',
+                'ringing', 'muffled', 'clear', 'garbled', 'piercing', 'dull', 'sharp', 'resonant'
+            ],
+            tactile: [
+                'rough-hewn', 'silken', 'burning', 'icy', 'jagged', 'smooth', 'coarse', 'soft',
+                'sharp', 'blunt', 'sticky', 'slippery', 'dry', 'wet', 'hot', 'cold', 'warm', 'cool',
+                'hard', 'tender', 'prickly', 'fuzzy', 'gritty', 'polished', 'bumpy', 'flat',
+                'heavy', 'light', 'dense', 'hollow', 'solid', 'fragile', 'sturdy', 'delicate',
+                'taut', 'loose', 'tight', 'slack', 'firm', 'yielding', 'rigid', 'flexible'
+            ],
+            kinetic: [
+                'lunged', 'spiraled', 'crashed', 'darted', 'surged', 'sprinted', 'dove', 'twisted',
+                'rolled', 'leaped', 'plunged', 'soared', 'hurtled', 'whirled', 'spun', 'vaulted',
+                'charged', 'bolted', 'dashed', 'rushed', 'flew', 'raced', 'swept', 'swooped',
+                'slammed', 'struck', 'hammered', 'smashed', 'pounded', 'thrust', 'jabbed', 'slashed',
+                'dodged', 'weaved', 'swerved', 'pivoted', 'ducked', 'jumped', 'bounded', 'launched'
+            ]
+        };
+
+        const kineticVerbs = [
+            'lunged', 'sprinted', 'crashed', 'darted', 'surged', 'dove', 'twisted', 'rolled',
+            'slammed', 'struck', 'hammered', 'bolted', 'charged', 'whirled', 'vaulted', 'hurtled',
+            'plunged', 'swept', 'dodged', 'thrust', 'leaped', 'soared', 'spun', 'dashed',
+            'smashed', 'pounded', 'jabbed', 'slashed', 'pivoted', 'ducked', 'bounded', 'launched'
+        ];
+
+        // ===== GENRE TARGETS =====
+        const genreTargets = {
+            fantasy: {
+                fogMin: 7.5,
+                fogMax: 8.5,
+                sensory: { visual: 90, auditory: 40, tactile: 70, kinetic: 50 }
+            },
+            scifi: {
+                fogMin: 8.0,
+                fogMax: 9.0,
+                sensory: { visual: 70, auditory: 30, tactile: 40, kinetic: 60 }
+            },
+            action: {
+                fogMin: 6.0,
+                fogMax: 7.0,
+                sensory: { visual: 50, auditory: 60, tactile: 50, kinetic: 95 }
+            }
+        };
+
+        // ===== BADGE DEFINITIONS =====
+        const badgeDefinitions = [
+            { id: 'first-write', name: 'First Steps', icon: 'fa-feather', condition: (state) => state.completedPrompts >= 1 },
+            { id: 'ten-prompts', name: 'Dedicated Writer', icon: 'fa-book', condition: (state) => state.completedPrompts >= 10 },
+            { id: 'perfect-fog', name: 'Fog Master', icon: 'fa-glasses', condition: (state) => state.perfectFogCount >= 3 },
+            { id: 'sensory-balanced', name: 'Sensory Artist', icon: 'fa-palette', condition: (state) => state.balancedSensoryCount >= 5 },
+            { id: 'kinetic-king', name: 'Action Master', icon: 'fa-running', condition: (state) => state.highKineticCount >= 5 },
+            { id: 'high-scorer', name: 'Excellence', icon: 'fa-star', condition: (state) => state.scores90Plus >= 3 },
+            { id: 'level-5', name: 'Apprentice', icon: 'fa-award', condition: (state) => state.userLevel >= 5 },
+            { id: 'level-10', name: 'Adept', icon: 'fa-crown', condition: (state) => state.userLevel >= 10 },
+        ];
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            updateUI();
+        });
+
+        function loadProgress() {
+            const saved = localStorage.getItem('proseTrainerProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                appState.userLevel = data.userLevel || 1;
+                appState.userXP = data.userXP || 0;
+                appState.badges = data.badges || [];
+                appState.completedPrompts = data.completedPrompts || 0;
+                appState.perfectFogCount = data.perfectFogCount || 0;
+                appState.balancedSensoryCount = data.balancedSensoryCount || 0;
+                appState.highKineticCount = data.highKineticCount || 0;
+                appState.scores90Plus = data.scores90Plus || 0;
+            }
+        }
+
+        function saveProgress() {
+            const data = {
+                userLevel: appState.userLevel,
+                userXP: appState.userXP,
+                badges: appState.badges,
+                completedPrompts: appState.completedPrompts || 0,
+                perfectFogCount: appState.perfectFogCount || 0,
+                balancedSensoryCount: appState.balancedSensoryCount || 0,
+                highKineticCount: appState.highKineticCount || 0,
+                scores90Plus: appState.scores90Plus || 0
+            };
+            localStorage.setItem('proseTrainerProgress', JSON.stringify(data));
+        }
+
+        function updateUI() {
+            document.getElementById('user-level').textContent = appState.userLevel;
+            document.getElementById('user-xp').textContent = appState.userXP;
+
+            const xpForNextLevel = appState.userLevel * 100;
+            const progress = (appState.userXP / xpForNextLevel) * 100;
+            document.getElementById('xp-progress').style.width = Math.min(progress, 100) + '%';
+
+            if (appState.userXP >= xpForNextLevel) {
+                levelUp();
+            }
+        }
+
+        function levelUp() {
+            appState.userLevel++;
+            appState.userXP = appState.userXP - ((appState.userLevel - 1) * 100);
+            updateUI();
+            saveProgress();
+        }
+
+        // ===== GENRE & DIFFICULTY SELECTION =====
+        function selectGenre(genre) {
+            appState.genre = genre;
+
+            ['fantasy', 'scifi', 'action'].forEach(g => {
+                const el = document.getElementById(`genre-${g}`);
+                if (g === genre) {
+                    el.classList.add('border-indigo-600', 'bg-indigo-50');
+                    el.classList.remove('border-stone-200');
+                } else {
+                    el.classList.remove('border-indigo-600', 'bg-indigo-50');
+                    el.classList.add('border-stone-200');
+                }
+            });
+
+            checkStartEnabled();
+        }
+
+        function selectDifficulty(difficulty) {
+            appState.difficulty = difficulty;
+
+            ['novice', 'apprentice', 'adept', 'master'].forEach(d => {
+                const el = document.getElementById(`diff-${d}`);
+                if (d === difficulty) {
+                    el.classList.add('border-indigo-600', 'bg-indigo-50');
+                    el.classList.remove('border-stone-200');
+                } else {
+                    el.classList.remove('border-indigo-600', 'bg-indigo-50');
+                    el.classList.add('border-stone-200');
+                }
+            });
+
+            checkStartEnabled();
+        }
+
+        function checkStartEnabled() {
+            const btn = document.getElementById('start-btn');
+            btn.disabled = !(appState.genre && appState.difficulty);
+        }
+
+        function startTraining() {
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('writing-screen').classList.remove('hidden');
+            loadRandomPrompt();
+        }
+
+        function loadRandomPrompt() {
+            const genrePrompts = prompts[appState.genre][appState.difficulty];
+            const prompt = genrePrompts[Math.floor(Math.random() * genrePrompts.length)];
+            appState.currentPrompt = prompt;
+
+            document.getElementById('prompt-genre-badge').textContent = appState.genre.charAt(0).toUpperCase() + appState.genre.slice(1);
+            document.getElementById('prompt-type-badge').textContent = prompt.type;
+            document.getElementById('prompt-title').textContent = prompt.title;
+            document.getElementById('prompt-description').textContent = prompt.description;
+            document.getElementById('prompt-min-sentences').textContent = prompt.minSentences;
+            document.getElementById('prompt-focus').textContent = prompt.focus;
+
+            const target = genreTargets[appState.genre];
+            document.getElementById('prompt-target-fog').textContent = `${target.fogMin}-${target.fogMax}`;
+            document.getElementById('fog-target-display').textContent = `${target.fogMin}-${target.fogMax}`;
+        }
+
+        function getNewPrompt() {
+            if (confirm('Are you sure? Your current text will be lost.')) {
+                document.getElementById('prose-input').value = '';
+                loadRandomPrompt();
+                analyzeText();
+            }
+        }
+
+        function clearText() {
+            if (confirm('Clear all text?')) {
+                document.getElementById('prose-input').value = '';
+                analyzeText();
+            }
+        }
+
+        // ===== TEXT ANALYSIS ENGINE =====
+        function analyzeText() {
+            const text = document.getElementById('prose-input').value;
+            appState.currentText = text;
+
+            if (!text.trim()) {
+                resetAnalysis();
+                return;
+            }
+
+            // Basic counts
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+            document.getElementById('word-count').textContent = words.length;
+            document.getElementById('sentence-count').textContent = sentences.length;
+
+            // Calculate Gunning Fog Index
+            const fog = calculateFogIndex(text, words, sentences);
+            displayFogIndex(fog);
+
+            // Detect sensory words
+            const sensory = detectSensoryWords(text.toLowerCase());
+            displaySensoryAnalysis(sensory);
+
+            // Calculate metrics
+            const avgSentenceLength = words.length / Math.max(sentences.length, 1);
+            document.getElementById('avg-sentence-length').textContent = avgSentenceLength.toFixed(1) + ' words';
+
+            const passiveCount = detectPassiveVoice(text);
+            document.getElementById('passive-count').textContent = passiveCount;
+
+            const kineticVerbCount = detectKineticVerbs(text.toLowerCase());
+            document.getElementById('kinetic-verb-count').textContent = kineticVerbCount;
+
+            // Calculate preview score
+            const score = calculateScore(fog, sensory, passiveCount, kineticVerbCount, sentences.length);
+            document.getElementById('preview-score').textContent = score >= 0 ? score : '-';
+
+            // Enable submit if minimum sentences met
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = sentences.length < appState.currentPrompt.minSentences;
+        }
+
+        function resetAnalysis() {
+            document.getElementById('word-count').textContent = '0';
+            document.getElementById('sentence-count').textContent = '0';
+            document.getElementById('fog-value').textContent = '-';
+            document.getElementById('fog-bar').style.width = '0%';
+            ['visual', 'auditory', 'tactile', 'kinetic'].forEach(type => {
+                document.getElementById(`${type}-count`).textContent = '0';
+                document.getElementById(`${type}-bar`).style.width = '0%';
+            });
+            document.getElementById('avg-sentence-length').textContent = '- words';
+            document.getElementById('passive-count').textContent = '0';
+            document.getElementById('kinetic-verb-count').textContent = '0';
+            document.getElementById('preview-score').textContent = '-';
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function calculateFogIndex(text, words, sentences) {
+            if (sentences.length === 0 || words.length === 0) return 0;
+
+            const complexWords = words.filter(word => countSyllables(word) >= 3);
+            const fog = 0.4 * ((words.length / sentences.length) + 100 * (complexWords.length / words.length));
+            return parseFloat(fog.toFixed(1));
+        }
+
+        function countSyllables(word) {
+            word = word.toLowerCase().replace(/[^a-z]/g, '');
+            if (word.length <= 3) return 1;
+
+            const vowels = 'aeiouy';
+            let count = 0;
+            let previousWasVowel = false;
+
+            for (let i = 0; i < word.length; i++) {
+                const isVowel = vowels.includes(word[i]);
+                if (isVowel && !previousWasVowel) {
+                    count++;
+                }
+                previousWasVowel = isVowel;
+            }
+
+            if (word.endsWith('e')) count--;
+            if (word.endsWith('le') && word.length > 2 && !'aeiouy'.includes(word[word.length - 3])) count++;
+
+            return Math.max(count, 1);
+        }
+
+        function displayFogIndex(fog) {
+            document.getElementById('fog-value').textContent = fog;
+
+            const target = genreTargets[appState.genre];
+            const percentage = (fog / 16) * 100; // Max reasonable fog is 16
+            document.getElementById('fog-bar').style.width = Math.min(percentage, 100) + '%';
+
+            const bar = document.getElementById('fog-bar');
+            if (fog >= target.fogMin && fog <= target.fogMax) {
+                bar.className = 'h-full transition-all duration-300 bg-green-600';
+            } else if (Math.abs(fog - target.fogMin) <= 1 || Math.abs(fog - target.fogMax) <= 1) {
+                bar.className = 'h-full transition-all duration-300 bg-yellow-600';
+            } else {
+                bar.className = 'h-full transition-all duration-300 bg-red-600';
+            }
+        }
+
+        function detectSensoryWords(text) {
+            const counts = { visual: 0, auditory: 0, tactile: 0, kinetic: 0 };
+            const found = { visual: [], auditory: [], tactile: [], kinetic: [] };
+
+            Object.keys(sensoryWords).forEach(type => {
+                sensoryWords[type].forEach(word => {
+                    const regex = new RegExp('\\b' + word + '\\w*\\b', 'gi');
+                    const matches = text.match(regex);
+                    if (matches) {
+                        counts[type] += matches.length;
+                        found[type].push(...matches);
+                    }
+                });
+            });
+
+            return { counts, found };
+        }
+
+        function displaySensoryAnalysis(sensory) {
+            const maxCount = Math.max(...Object.values(sensory.counts), 1);
+            const target = genreTargets[appState.genre].sensory;
+
+            Object.keys(sensory.counts).forEach(type => {
+                const count = sensory.counts[type];
+                document.getElementById(`${type}-count`).textContent = count;
+
+                const percentage = (count / maxCount) * 100;
+                document.getElementById(`${type}-bar`).style.width = percentage + '%';
+            });
+        }
+
+        function detectPassiveVoice(text) {
+            const passivePatterns = [
+                /\b(was|were|is|are|been|be)\s+\w+ed\b/gi,
+                /\b(was|were|is|are|been|be)\s+being\s+\w+ed\b/gi
+            ];
+
+            let count = 0;
+            passivePatterns.forEach(pattern => {
+                const matches = text.match(pattern);
+                if (matches) count += matches.length;
+            });
+
+            return count;
+        }
+
+        function detectKineticVerbs(text) {
+            let count = 0;
+            kineticVerbs.forEach(verb => {
+                const regex = new RegExp('\\b' + verb + '\\w*\\b', 'gi');
+                const matches = text.match(regex);
+                if (matches) count += matches.length;
+            });
+            return count;
+        }
+
+        function calculateScore(fog, sensory, passive, kineticVerbs, sentenceCount) {
+            if (sentenceCount < appState.currentPrompt.minSentences) return -1;
+
+            let score = 50; // Base score
+            const target = genreTargets[appState.genre];
+
+            // Fog Index scoring (30 points)
+            const fogDiff = Math.min(Math.abs(fog - target.fogMin), Math.abs(fog - target.fogMax));
+            if (fog >= target.fogMin && fog <= target.fogMax) {
+                score += 30;
+            } else if (fogDiff <= 1) {
+                score += 20;
+            } else if (fogDiff <= 2) {
+                score += 10;
+            }
+
+            // Sensory balance scoring (40 points)
+            const totalSensory = Object.values(sensory.counts).reduce((a, b) => a + b, 0);
+            if (totalSensory > 0) {
+                let sensoryScore = 0;
+                Object.keys(target.sensory).forEach(type => {
+                    const userPercent = (sensory.counts[type] / totalSensory) * 100;
+                    const targetPercent = (target.sensory[type] / 260) * 100; // Sum of all targets
+                    const diff = Math.abs(userPercent - targetPercent);
+                    sensoryScore += Math.max(0, 10 - diff / 2);
+                });
+                score += Math.min(sensoryScore, 40);
+            }
+
+            // Passive voice penalty (up to -10)
+            score -= Math.min(passive * 2, 10);
+
+            // Kinetic verb bonus for action genres (up to +10)
+            if (appState.genre === 'action' || appState.currentPrompt.type === 'Action') {
+                score += Math.min(kineticVerbs, 10);
+            }
+
+            return Math.max(0, Math.min(100, Math.round(score)));
+        }
+
+        // ===== SUBMISSION & RESULTS =====
+        function submitResponse() {
+            const text = appState.currentText;
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+            const fog = calculateFogIndex(text, words, sentences);
+            const sensory = detectSensoryWords(text.toLowerCase());
+            const passive = detectPassiveVoice(text);
+            const kineticVerbCount = detectKineticVerbs(text.toLowerCase());
+            const avgSentenceLength = words.length / sentences.length;
+
+            const score = calculateScore(fog, sensory, passive, kineticVerbCount, sentences.length);
+
+            appState.analysisResults = {
+                fog,
+                sensory,
+                passive,
+                kineticVerbCount,
+                avgSentenceLength,
+                score
+            };
+
+            displayResults();
+        }
+
+        function displayResults() {
+            const results = appState.analysisResults;
+            const target = genreTargets[appState.genre];
+
+            document.getElementById('writing-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            // Score display
+            document.getElementById('final-score').textContent = results.score;
+
+            let grade = '';
+            if (results.score >= 90) grade = 'Masterful!';
+            else if (results.score >= 80) grade = 'Excellent!';
+            else if (results.score >= 70) grade = 'Good Work!';
+            else if (results.score >= 60) grade = 'Solid Effort';
+            else grade = 'Keep Practicing';
+
+            document.getElementById('score-grade').textContent = grade;
+
+            // XP calculation
+            let xp = Math.round(results.score / 2);
+            if (appState.difficulty === 'apprentice') xp *= 1.5;
+            else if (appState.difficulty === 'adept') xp *= 2;
+            else if (appState.difficulty === 'master') xp *= 3;
+            xp = Math.round(xp);
+
+            document.getElementById('xp-earned').textContent = xp;
+            appState.userXP += xp;
+
+            // Update stats
+            appState.completedPrompts = (appState.completedPrompts || 0) + 1;
+            if (results.fog >= target.fogMin && results.fog <= target.fogMax) {
+                appState.perfectFogCount = (appState.perfectFogCount || 0) + 1;
+            }
+            if (results.score >= 90) {
+                appState.scores90Plus = (appState.scores90Plus || 0) + 1;
+            }
+            if (results.kineticVerbCount >= 8) {
+                appState.highKineticCount = (appState.highKineticCount || 0) + 1;
+            }
+
+            // Detailed metrics
+            document.getElementById('result-fog').textContent = results.fog;
+            document.getElementById('result-fog-target').textContent = `${target.fogMin}-${target.fogMax}`;
+
+            const fogIcon = document.getElementById('fog-icon');
+            if (results.fog >= target.fogMin && results.fog <= target.fogMax) {
+                fogIcon.className = 'fas fa-check-circle text-2xl text-green-500';
+                document.getElementById('fog-feedback').textContent = 'Perfect! Your complexity matches genre expectations.';
+            } else {
+                fogIcon.className = 'fas fa-exclamation-circle text-2xl text-yellow-500';
+                if (results.fog < target.fogMin) {
+                    document.getElementById('fog-feedback').textContent = 'Too simple. Add more complex sentence structures.';
+                } else {
+                    document.getElementById('fog-feedback').textContent = 'Too complex. Simplify your syntax for better readability.';
+                }
+            }
+
+            // Sensory results
+            document.getElementById('result-visual').textContent = results.sensory.counts.visual;
+            document.getElementById('result-auditory').textContent = results.sensory.counts.auditory;
+            document.getElementById('result-tactile').textContent = results.sensory.counts.tactile;
+            document.getElementById('result-kinetic').textContent = results.sensory.counts.kinetic;
+
+            const totalSensory = Object.values(results.sensory.counts).reduce((a, b) => a + b, 0);
+            const sensoryIcon = document.getElementById('sensory-icon');
+            if (totalSensory >= 10) {
+                sensoryIcon.className = 'fas fa-check-circle text-2xl text-green-500';
+                document.getElementById('sensory-feedback').textContent = 'Rich sensory detail enhances immersion!';
+                appState.balancedSensoryCount = (appState.balancedSensoryCount || 0) + 1;
+            } else {
+                sensoryIcon.className = 'fas fa-exclamation-circle text-2xl text-yellow-500';
+                document.getElementById('sensory-feedback').textContent = 'Add more sensory descriptors for immersion.';
+            }
+
+            // Pacing results
+            document.getElementById('result-avg-sentence').textContent = results.avgSentenceLength.toFixed(1) + ' words';
+            document.getElementById('result-passive').textContent = results.passive + ' instance' + (results.passive !== 1 ? 's' : '');
+
+            const pacingIcon = document.getElementById('pacing-icon');
+            if (results.passive <= 2) {
+                pacingIcon.className = 'fas fa-check-circle text-2xl text-green-500';
+                document.getElementById('pacing-feedback').textContent = 'Excellent use of active voice!';
+            } else {
+                pacingIcon.className = 'fas fa-exclamation-circle text-2xl text-yellow-500';
+                document.getElementById('pacing-feedback').textContent = 'Reduce passive voice for stronger pacing.';
+            }
+
+            // Kinetic results
+            document.getElementById('result-kinetic-verbs').textContent = results.kineticVerbCount;
+
+            const kineticIcon = document.getElementById('kinetic-icon');
+            if (results.kineticVerbCount >= 5) {
+                kineticIcon.className = 'fas fa-check-circle text-2xl text-green-500';
+                document.getElementById('kinetic-feedback').textContent = 'Strong kinetic verbs drive the action!';
+            } else {
+                kineticIcon.className = 'fas fa-exclamation-circle text-2xl text-yellow-500';
+                document.getElementById('kinetic-feedback').textContent = 'Add more kinetic action verbs.';
+            }
+
+            // Generate tips
+            generateTips(results, target);
+
+            // Check for new badges
+            checkBadges();
+
+            updateUI();
+            saveProgress();
+        }
+
+        function generateTips(results, target) {
+            const tips = [];
+
+            if (results.fog < target.fogMin) {
+                tips.push('Try using more complex sentence structures with subordinate clauses.');
+            } else if (results.fog > target.fogMax) {
+                tips.push('Break up long sentences. Aim for clarity over complexity.');
+            }
+
+            if (results.passive > 3) {
+                tips.push('Replace passive constructions (was/were + verb) with active voice for stronger prose.');
+            }
+
+            if (results.sensory.counts.visual < 5 && appState.genre === 'fantasy') {
+                tips.push('Fantasy readers expect rich visual descriptions. Add more environmental detail.');
+            }
+
+            if (results.kineticVerbCount < 5 && (appState.genre === 'action' || appState.currentPrompt.type === 'Action')) {
+                tips.push('Use strong kinetic verbs (sprinted, lunged, crashed) instead of weak verbs + adverbs.');
+            }
+
+            const totalSensory = Object.values(results.sensory.counts).reduce((a, b) => a + b, 0);
+            if (totalSensory < 8) {
+                tips.push('Engage multiple senses. Mix visual, auditory, tactile, and kinetic descriptors.');
+            }
+
+            if (results.avgSentenceLength > 20) {
+                tips.push('Vary sentence length. Mix longer descriptive sentences with short, punchy ones.');
+            }
+
+            if (tips.length === 0) {
+                tips.push('Excellent work! Try a higher difficulty level for a greater challenge.');
+            }
+
+            const tipsList = document.getElementById('tips-list');
+            tipsList.innerHTML = tips.map(tip => `<li class="flex items-start"><i class="fas fa-arrow-right text-indigo-600 mr-2 mt-1"></i> ${tip}</li>`).join('');
+        }
+
+        function checkBadges() {
+            const newBadges = [];
+
+            badgeDefinitions.forEach(badge => {
+                if (!appState.badges.includes(badge.id) && badge.condition(appState)) {
+                    appState.badges.push(badge.id);
+                    newBadges.push(badge);
+                }
+            });
+
+            if (newBadges.length > 0) {
+                const section = document.getElementById('new-badges-section');
+                const container = document.getElementById('new-badges-container');
+                section.classList.remove('hidden');
+
+                container.innerHTML = newBadges.map(badge => `
+                    <div class="badge text-center">
+                        <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-2 shadow-lg">
+                            <i class="fas ${badge.icon}"></i>
+                        </div>
+                        <div class="text-sm font-bold text-slate-900">${badge.name}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function tryAgain() {
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('writing-screen').classList.remove('hidden');
+            document.getElementById('prose-input').value = '';
+            loadRandomPrompt();
+            analyzeText();
+        }
+
+        function viewHighlights() {
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('writing-screen').classList.remove('hidden');
+
+            const highlightedSection = document.getElementById('highlighted-section');
+            highlightedSection.classList.remove('hidden');
+
+            const text = appState.currentText;
+            const results = appState.analysisResults;
+
+            let highlighted = text;
+
+            // Highlight sensory words
+            Object.keys(results.sensory.found).forEach(type => {
+                results.sensory.found[type].forEach(word => {
+                    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                    highlighted = highlighted.replace(regex, `<span class="highlight-${type}">${word}</span>`);
+                });
+            });
+
+            document.getElementById('highlighted-text').innerHTML = highlighted;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== BADGES MODAL =====
+        function showBadges() {
+            const modal = document.getElementById('badges-modal');
+            const grid = document.getElementById('badges-grid');
+
+            grid.innerHTML = badgeDefinitions.map(badge => {
+                const earned = appState.badges.includes(badge.id);
+                return `
+                    <div class="text-center p-4 ${earned ? '' : 'opacity-30'}">
+                        <div class="w-16 h-16 ${earned ? 'bg-gradient-to-br from-amber-400 to-amber-600' : 'bg-stone-300'} rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-2">
+                            <i class="fas ${badge.icon}"></i>
+                        </div>
+                        <div class="text-xs font-bold text-slate-900">${badge.name}</div>
+                    </div>
+                `;
+            }).join('');
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeBadges() {
+            document.getElementById('badges-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
