@@ -88,15 +88,17 @@ const HeroText = ({ title, description }) => {
         />
       </div>
 
-      {/* Title with gradient effect */}
-      <motion.h1
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 2 }}
-        className="hero-title enhanced-title"
-      >
-        <span className="title-line">{title || "Welcome to My Digital Universe"}</span>
-      </motion.h1>
+      {/* Title with gradient effect - only show if title provided */}
+      {title !== "" && (
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 2 }}
+          className="hero-title enhanced-title"
+        >
+          <span className="title-line">{title || "Welcome to My Digital Universe"}</span>
+        </motion.h1>
+      )}
 
       {/* Description text with fade-in effect */}
       <motion.p
