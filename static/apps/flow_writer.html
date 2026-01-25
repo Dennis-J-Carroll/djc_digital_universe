@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,8 +18,8 @@
             --border-color: #e9ecef;
             --accent-primary: #6495ed;
             --accent-secondary: #ffd700;
-            --shadow: rgba(0,0,0,0.08);
-            --shadow-heavy: rgba(0,0,0,0.15);
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-heavy: rgba(0, 0, 0, 0.15);
         }
 
         [data-theme="dark"] {
@@ -32,8 +33,8 @@
             --border-color: #404040;
             --accent-primary: #7ba7ff;
             --accent-secondary: #ffd700;
-            --shadow: rgba(0,0,0,0.3);
-            --shadow-heavy: rgba(0,0,0,0.5);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-heavy: rgba(0, 0, 0, 0.5);
         }
 
         [data-theme="beige"] {
@@ -47,8 +48,8 @@
             --border-color: #d4c9b8;
             --accent-primary: #8b7355;
             --accent-secondary: #c49b61;
-            --shadow: rgba(60,53,40,0.08);
-            --shadow-heavy: rgba(60,53,40,0.15);
+            --shadow: rgba(60, 53, 40, 0.08);
+            --shadow-heavy: rgba(60, 53, 40, 0.15);
         }
 
         * {
@@ -102,10 +103,24 @@
             transform: scale(1.1);
         }
 
-        .theme-btn.light { background: #ffffff; color: #333; }
-        .theme-btn.dark { background: #333333; color: #fff; }
-        .theme-btn.beige { background: #f0ede6; color: #3c3528; }
-        .theme-btn.active { box-shadow: 0 0 0 2px var(--accent-primary); }
+        .theme-btn.light {
+            background: #ffffff;
+            color: #333;
+        }
+
+        .theme-btn.dark {
+            background: #333333;
+            color: #fff;
+        }
+
+        .theme-btn.beige {
+            background: #f0ede6;
+            color: #3c3528;
+        }
+
+        .theme-btn.active {
+            box-shadow: 0 0 0 2px var(--accent-primary);
+        }
 
         /* File Tree Panel */
         .file-panel {
@@ -303,8 +318,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
 
         /* Image Preview */
@@ -578,7 +600,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 100;
             display: flex;
             align-items: center;
@@ -620,9 +642,96 @@
             border-left: 3px solid var(--accent-secondary);
         }
 
+        /* Focus Mode Styles */
+        body.focus-mode .file-panel,
+        body.focus-mode .format-panel,
+        body.focus-mode .theme-switcher,
+        body.focus-mode .status-bar,
+        body.focus-mode .panel-toggle {
+            opacity: 0.15;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        body.focus-mode .file-panel:hover,
+        body.focus-mode .format-panel:hover {
+            opacity: 0.6;
+            pointer-events: auto;
+        }
+
+        body.focus-mode .writing-header {
+            opacity: 0.4;
+        }
+
+        body.focus-mode .writing-area {
+            box-shadow: 0 0 80px var(--accent-primary), 0 4px 25px var(--shadow);
+        }
+
+        body.focus-mode .editor {
+            font-size: 1.3rem;
+            line-height: 2;
+        }
+
+        /* Typewriter Mode Styles */
+        body.typewriter-mode .editor {
+            padding-top: 40%;
+            padding-bottom: 40%;
+            scroll-behavior: smooth;
+        }
+
+        body.typewriter-mode .writing-container {
+            background: var(--bg-primary);
+        }
+
+        body.typewriter-mode .writing-area {
+            background: transparent;
+            box-shadow: none;
+            overflow-y: auto;
+        }
+
+        body.typewriter-mode .writing-area::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            background: linear-gradient(to bottom, var(--bg-primary), transparent);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        body.typewriter-mode .writing-area::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            background: linear-gradient(to top, var(--bg-primary), transparent);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Combined Focus + Typewriter */
+        body.focus-mode.typewriter-mode .writing-area::before {
+            background: linear-gradient(to bottom, var(--bg-primary) 30%, transparent);
+        }
+
+        body.focus-mode.typewriter-mode .writing-area::after {
+            background: linear-gradient(to top, var(--bg-primary) 30%, transparent);
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .fade-in {
@@ -630,6 +739,7 @@
         }
     </style>
 </head>
+
 <body data-theme="light">
     <!-- Theme Switcher -->
     <div class="theme-switcher">
@@ -646,14 +756,14 @@
                     <h3 class="panel-title">Story Universe</h3>
                     <span>📁</span>
                 </div>
-                
+
                 <!-- Branch Indicator -->
                 <div class="branch-indicator">
                     <span>🌿</span>
                     <span class="branch-name">main</span>
                     <button class="new-branch-btn" id="newBranchBtn">+ Branch</button>
                 </div>
-                
+
                 <ul class="file-tree">
                     <li class="tree-item">
                         <div class="tree-node active has-image">
@@ -711,7 +821,8 @@
 
                 <!-- Image Preview -->
                 <div class="image-preview">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzY0OTVlZCIgb3BhY2l0eT0iMC4xIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjQ5NWVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TGlicmFyeSBJbnNwaXJhdGlvbjwvdGV4dD48L3N2Zz4=" alt="Library inspiration">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzY0OTVlZCIgb3BhY2l0eT0iMC4xIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjQ5NWVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TGlicmFyeSBJbnNwaXJhdGlvbjwvdGV4dD48L3N2Zz4="
+                        alt="Library inspiration">
                     <div class="image-caption">Victorian library atmosphere reference</div>
                 </div>
 
@@ -725,7 +836,7 @@
                             <button class="tag auto-detected">discovery</button>
                         </div>
                     </div>
-                    
+
                     <div class="tag-section">
                         <h5>Manual Tags</h5>
                         <div class="tag-filter">
@@ -743,7 +854,7 @@
                     <small><strong>💡 Suggested:</strong> "flashback", "emotional_tension"</small>
                 </div>
             </div>
-            
+
             <!-- Connection Overlay -->
             <div class="connection-overlay" id="connectionOverlay"></div>
         </div>
@@ -753,21 +864,18 @@
             <div class="writing-header">
                 <h1 class="app-title">FlowWriter</h1>
             </div>
-            
+
             <div class="writing-container">
                 <div class="writing-area">
                     <div class="outline-hint" id="outlineHint">
-                        <strong>Current Scene:</strong> Protagonist discovers the hidden journal in the library's secret compartment, realizing it contains details about their own past.
+                        <strong>Current Scene:</strong> Protagonist discovers the hidden journal in the library's secret
+                        compartment, realizing it contains details about their own past.
                         <div class="outline-source">From: Chapter 1 Outline.md</div>
                     </div>
-                    
-                    <textarea 
-                        class="editor" 
-                        id="editor" 
-                        placeholder="Let your thoughts flow onto the page..."
-                        spellcheck="false"
-                    ></textarea>
-                    
+
+                    <textarea class="editor" id="editor" placeholder="Let your thoughts flow onto the page..."
+                        spellcheck="false"></textarea>
+
                     <div class="flow-suggestion" id="flowSuggestion">
                         💡 Consider exploring how the protagonist's hands tremble as they open the journal...
                     </div>
@@ -785,11 +893,14 @@
 
                 <div class="format-section">
                     <h4>Typography</h4>
-                    <div class="format-controls">
-                        <button class="format-btn">Serif</button>
-                        <button class="format-btn active">Georgia</button>
-                        <button class="format-btn">Times</button>
-                        <button class="format-btn">Garamond</button>
+                    <div class="format-controls" id="typographyControls">
+                        <button class="format-btn typography-btn"
+                            data-font="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Serif</button>
+                        <button class="format-btn typography-btn active" data-font="'Georgia', serif">Georgia</button>
+                        <button class="format-btn typography-btn"
+                            data-font="'Times New Roman', Times, serif">Times</button>
+                        <button class="format-btn typography-btn"
+                            data-font="'Garamond', 'EB Garamond', serif">Garamond</button>
                     </div>
                 </div>
 
@@ -826,7 +937,8 @@
         <div class="branch-modal-content">
             <h3>Create New Branch</h3>
             <p>Explore "what if" scenarios without affecting your main story.</p>
-            <input type="text" class="branch-input" id="branchInput" placeholder="Branch name (e.g., 'alternative_ending')">
+            <input type="text" class="branch-input" id="branchInput"
+                placeholder="Branch name (e.g., 'alternative_ending')">
             <div class="format-controls">
                 <button class="format-btn" id="createBranchBtn">Create Branch</button>
                 <button class="format-btn" id="cancelBranchBtn">Cancel</button>
@@ -861,7 +973,7 @@
         let formatPanelOpen = true;
         let currentBranch = 'main';
         let autoDetectedTags = new Set();
-        
+
         const editor = document.getElementById('editor');
         const outlineHint = document.getElementById('outlineHint');
         const flowSuggestion = document.getElementById('flowSuggestion');
@@ -869,7 +981,7 @@
         const flowStatus = document.getElementById('flowStatus');
         const lastSaved = document.getElementById('lastSaved');
         const branchStatus = document.getElementById('branchStatus');
-        
+
         // Enhanced flow suggestions
         const suggestions = [
             "💡 Consider exploring how the protagonist's hands tremble as they open the journal...",
@@ -902,10 +1014,10 @@
             const text = editor.value;
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
             wordCount.textContent = `${words} words`;
-            
+
             // Auto-detect tags based on content
             detectTags(text);
-            
+
             if (words > 0) {
                 lastSaved.textContent = 'Auto-saved just now';
             }
@@ -914,13 +1026,13 @@
         function detectTags(text) {
             const lowerText = text.toLowerCase();
             const newTags = new Set();
-            
+
             Object.entries(tagKeywords).forEach(([tag, keywords]) => {
                 if (keywords.some(keyword => lowerText.includes(keyword))) {
                     newTags.add(tag);
                 }
             });
-            
+
             // Update auto-detected tags if new ones found
             newTags.forEach(tag => {
                 if (!autoDetectedTags.has(tag)) {
@@ -937,7 +1049,7 @@
             newTag.textContent = tagName;
             newTag.addEventListener('click', () => toggleTag(newTag));
             autoSection.appendChild(newTag);
-            
+
             // Animate in
             newTag.style.opacity = '0';
             newTag.style.transform = 'scale(0.8)';
@@ -952,9 +1064,9 @@
             clearTimeout(inactivityTimer);
             lastTypingTime = Date.now();
             flowStatus.textContent = '✍️ In flow';
-            
+
             flowSuggestion.classList.remove('show');
-            
+
             inactivityTimer = setTimeout(() => {
                 showFlowSuggestion();
                 flowStatus.textContent = '💭 Pondering...';
@@ -964,13 +1076,13 @@
         function showFlowSuggestion() {
             const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
             flowSuggestion.textContent = randomSuggestion;
-            
+
             // Position suggestion contextually
             const rect = editor.getBoundingClientRect();
             const lines = editor.value.substr(0, editor.selectionStart).split('\n');
             const lineHeight = 30;
             const top = rect.top + (lines.length - 1) * lineHeight + 60;
-            
+
             flowSuggestion.style.top = `${Math.min(top, window.innerHeight - 150)}px`;
             flowSuggestion.style.left = `${rect.left + 40}px`;
             flowSuggestion.classList.add('show');
@@ -979,9 +1091,9 @@
         function toggleFilePanel() {
             const panel = document.getElementById('filePanel');
             const toggle = document.getElementById('leftToggle');
-            
+
             filePanelOpen = !filePanelOpen;
-            
+
             if (filePanelOpen) {
                 panel.classList.remove('collapsed');
                 toggle.classList.remove('collapsed');
@@ -996,9 +1108,9 @@
         function toggleFormatPanel() {
             const panel = document.getElementById('formatPanel');
             const toggle = document.getElementById('rightToggle');
-            
+
             formatPanelOpen = !formatPanelOpen;
-            
+
             if (formatPanelOpen) {
                 panel.classList.remove('collapsed');
                 toggle.classList.remove('collapsed');
@@ -1012,7 +1124,7 @@
 
         function toggleTag(tagElement) {
             tagElement.classList.toggle('active');
-            
+
             // Show connections when tag is active
             if (tagElement.classList.contains('active')) {
                 showTagConnections(tagElement.textContent);
@@ -1024,7 +1136,7 @@
         function showTagConnections(tagName) {
             // Remove existing connections
             hideTagConnections();
-            
+
             // Find all files with this tag (simulated)
             const connectedFiles = document.querySelectorAll('.tree-node');
             connectedFiles.forEach((file, index) => {
@@ -1058,10 +1170,10 @@
         function switchBranch(branchName) {
             currentBranch = branchName;
             branchStatus.textContent = branchName;
-            
+
             // Update branch indicator
             document.querySelector('.branch-name').textContent = branchName;
-            
+
             // Show branch switch notification
             showNotification(`Switched to branch: ${branchName}`);
         }
@@ -1082,7 +1194,7 @@
             `;
             notification.textContent = message;
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => notification.remove(), 300);
@@ -1091,13 +1203,13 @@
 
         function switchTheme(theme) {
             document.body.setAttribute('data-theme', theme);
-            
+
             // Update active theme button
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
-            
+
             // Save theme preference
             localStorage.setItem('flowwriter-theme', theme);
         }
@@ -1260,6 +1372,112 @@ ${htmlContent}
             showNotification('PDF print dialog opened');
         }
 
+        // Typography Functions
+        let currentFont = "'Georgia', serif";
+
+        function setTypography(fontFamily, buttonElement) {
+            currentFont = fontFamily;
+            editor.style.fontFamily = fontFamily;
+
+            // Update active button state
+            document.querySelectorAll('.typography-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            buttonElement.classList.add('active');
+
+            // Save preference
+            localStorage.setItem('flowwriter-typography', fontFamily);
+
+            showNotification(`Font changed to ${buttonElement.textContent}`);
+        }
+
+        // Focus Mode Functions
+        let focusModeActive = false;
+
+        function toggleFocusMode() {
+            focusModeActive = !focusModeActive;
+            const focusBtn = document.getElementById('focusBtn');
+
+            if (focusModeActive) {
+                document.body.classList.add('focus-mode');
+                focusBtn.classList.add('active');
+                focusBtn.innerHTML = '🎯 Focus ON';
+
+                // Auto-collapse panels in focus mode
+                if (filePanelOpen) toggleFilePanel();
+                if (formatPanelOpen) toggleFormatPanel();
+
+                showNotification('Focus mode activated - distractions minimized');
+            } else {
+                document.body.classList.remove('focus-mode');
+                focusBtn.classList.remove('active');
+                focusBtn.innerHTML = '🎯 Focus';
+
+                showNotification('Focus mode deactivated');
+            }
+
+            // Save preference
+            localStorage.setItem('flowwriter-focus-mode', focusModeActive);
+        }
+
+        // Typewriter Mode Functions
+        let typewriterModeActive = false;
+
+        function toggleTypewriterMode() {
+            typewriterModeActive = !typewriterModeActive;
+            const typewriterBtn = document.getElementById('typewriterBtn');
+
+            if (typewriterModeActive) {
+                document.body.classList.add('typewriter-mode');
+                typewriterBtn.classList.add('active');
+                typewriterBtn.innerHTML = '⌨️ Typewriter ON';
+
+                // Enable scroll tracking
+                editor.addEventListener('input', scrollToCurrentLine);
+                editor.addEventListener('keydown', handleTypewriterKeydown);
+
+                showNotification('Typewriter mode activated - current line stays centered');
+            } else {
+                document.body.classList.remove('typewriter-mode');
+                typewriterBtn.classList.remove('active');
+                typewriterBtn.innerHTML = '⌨️ Typewriter';
+
+                // Remove scroll tracking
+                editor.removeEventListener('input', scrollToCurrentLine);
+                editor.removeEventListener('keydown', handleTypewriterKeydown);
+
+                showNotification('Typewriter mode deactivated');
+            }
+
+            // Save preference
+            localStorage.setItem('flowwriter-typewriter-mode', typewriterModeActive);
+        }
+
+        function scrollToCurrentLine() {
+            if (!typewriterModeActive) return;
+
+            const cursorPosition = editor.selectionStart;
+            const textBeforeCursor = editor.value.substring(0, cursorPosition);
+            const lines = textBeforeCursor.split('\n');
+            const lineNumber = lines.length;
+
+            // Calculate approximate line height and scroll position
+            const lineHeight = parseFloat(getComputedStyle(editor).lineHeight) || 30;
+            const editorRect = editor.getBoundingClientRect();
+            const centerOffset = editorRect.height / 2;
+
+            // Scroll so current line is in center
+            const scrollTarget = (lineNumber * lineHeight) - centerOffset;
+            editor.scrollTop = Math.max(0, scrollTarget);
+        }
+
+        function handleTypewriterKeydown(e) {
+            if (e.key === 'Enter') {
+                // Delay scroll to after the new line is added
+                setTimeout(scrollToCurrentLine, 10);
+            }
+        }
+
         // Event Listeners
         editor.addEventListener('input', () => {
             updateWordCount();
@@ -1300,12 +1518,25 @@ ${htmlContent}
         document.getElementById('exportDoc').addEventListener('click', exportToDoc);
         document.getElementById('exportPdf').addEventListener('click', exportToPdf);
 
+        // Typography buttons
+        document.querySelectorAll('.typography-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTypography(btn.getAttribute('data-font'), btn);
+            });
+        });
+
+        // Focus Mode button
+        document.getElementById('focusBtn').addEventListener('click', toggleFocusMode);
+
+        // Typewriter Mode button
+        document.getElementById('typewriterBtn').addEventListener('click', toggleTypewriterMode);
+
         // Tree node clicks
         document.querySelectorAll('.tree-node').forEach(node => {
             node.addEventListener('click', () => {
                 document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
                 node.classList.add('active');
-                
+
                 // Simulate loading different file content
                 if (node.textContent.includes('Chapter 1')) {
                     outlineHint.innerHTML = `
@@ -1330,7 +1561,7 @@ ${htmlContent}
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
-                switch(e.key) {
+                switch (e.key) {
                     case 'b':
                         e.preventDefault();
                         createNewBranch();
@@ -1344,26 +1575,77 @@ ${htmlContent}
                         toggleFormatPanel();
                         break;
                 }
+                // Shift + Ctrl/Cmd shortcuts
+                if (e.shiftKey) {
+                    switch (e.key.toLowerCase()) {
+                        case 'f':
+                            e.preventDefault();
+                            toggleFocusMode();
+                            break;
+                        case 't':
+                            e.preventDefault();
+                            toggleTypewriterMode();
+                            break;
+                    }
+                }
             }
             if (e.key === 'Escape') {
                 hideBranchModal();
                 flowSuggestion.classList.remove('show');
+                // Exit focus mode with Escape
+                if (focusModeActive) {
+                    toggleFocusMode();
+                }
             }
         });
 
         // Initialize
         resetInactivityTimer();
         updateWordCount();
-        
+
         // Load saved theme
         const savedTheme = localStorage.getItem('flowwriter-theme') || 'light';
         switchTheme(savedTheme);
-        
+
+        // Load saved typography preference
+        const savedTypography = localStorage.getItem('flowwriter-typography');
+        if (savedTypography) {
+            const matchingBtn = document.querySelector(`.typography-btn[data-font="${savedTypography}"]`);
+            if (matchingBtn) {
+                setTypography(savedTypography, matchingBtn);
+            }
+        }
+
+        // Load saved focus mode preference
+        const savedFocusMode = localStorage.getItem('flowwriter-focus-mode');
+        if (savedFocusMode === 'true') {
+            // Delay to let page load first -- but don't toggle panels
+            setTimeout(() => {
+                focusModeActive = true;
+                document.body.classList.add('focus-mode');
+                document.getElementById('focusBtn').classList.add('active');
+                document.getElementById('focusBtn').innerHTML = '🎯 Focus ON';
+            }, 100);
+        }
+
+        // Load saved typewriter mode preference
+        const savedTypewriterMode = localStorage.getItem('flowwriter-typewriter-mode');
+        if (savedTypewriterMode === 'true') {
+            setTimeout(() => {
+                typewriterModeActive = true;
+                document.body.classList.add('typewriter-mode');
+                document.getElementById('typewriterBtn').classList.add('active');
+                document.getElementById('typewriterBtn').innerHTML = '⌨️ Typewriter ON';
+                editor.addEventListener('input', scrollToCurrentLine);
+                editor.addEventListener('keydown', handleTypewriterKeydown);
+            }, 100);
+        }
+
         // Sample content for demo
         setTimeout(() => {
             editor.value = "The old library stood silent, its dust-covered shelves holding secrets that had been forgotten for decades. Sarah stepped carefully across the creaking floorboards, her flashlight cutting through the darkness like a blade through velvet.\n\nSomething glinted in the far corner—a leather-bound journal that seemed impossibly out of place among the deteriorating books. As she reached for it, her heart began to race with anticipation and dread. This wasn't just any journal... the cover bore her grandmother's initials.\n\nHer hands trembled as she opened it to the first page, where elegant script revealed words that would change everything she thought she knew about her family's past.\n\n";
             updateWordCount();
-            
+
             // Show outline hint after a moment
             setTimeout(() => {
                 outlineHint.classList.add('show');
@@ -1382,4 +1664,5 @@ ${htmlContent}
         handleResize(); // Check on load
     </script>
 </body>
+
 </html>
