@@ -804,9 +804,9 @@
                 <div class="format-section">
                     <h4>Export</h4>
                     <div class="format-controls">
-                        <button class="format-btn">📄 TXT</button>
-                        <button class="format-btn">📑 DOC</button>
-                        <button class="format-btn">📘 PDF</button>
+                        <button class="format-btn" id="exportTxt">📄 TXT</button>
+                        <button class="format-btn" id="exportDoc">📑 DOC</button>
+                        <button class="format-btn" id="exportPdf">📘 PDF</button>
                     </div>
                 </div>
             </div>
@@ -1102,6 +1102,164 @@
             localStorage.setItem('flowwriter-theme', theme);
         }
 
+        // Export Functions
+        function getDocumentTitle() {
+            // Try to get title from active tree node or use default
+            const activeNode = document.querySelector('.tree-node.active');
+            if (activeNode) {
+                return activeNode.textContent.trim().replace(/[^a-zA-Z0-9\s-]/g, '');
+            }
+            return 'FlowWriter-Document';
+        }
+
+        function exportToTxt() {
+            const content = editor.value;
+            if (!content.trim()) {
+                showNotification('Nothing to export - start writing first!');
+                return;
+            }
+
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${getDocumentTitle()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showNotification('Exported as TXT file');
+        }
+
+        function exportToDoc() {
+            const content = editor.value;
+            if (!content.trim()) {
+                showNotification('Nothing to export - start writing first!');
+                return;
+            }
+
+            // Convert plain text to HTML with paragraphs
+            const htmlContent = content
+                .split('\n\n')
+                .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+
+            // Create a Word-compatible HTML document
+            const docContent = `
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+    <meta charset="utf-8">
+    <title>${getDocumentTitle()}</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 1in;
+        }
+        p {
+            margin-bottom: 1em;
+            text-indent: 0.5in;
+        }
+        p:first-child {
+            text-indent: 0;
+        }
+    </style>
+</head>
+<body>
+${htmlContent}
+</body>
+</html>`;
+
+            const blob = new Blob([docContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${getDocumentTitle()}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showNotification('Exported as DOC file');
+        }
+
+        function exportToPdf() {
+            const content = editor.value;
+            if (!content.trim()) {
+                showNotification('Nothing to export - start writing first!');
+                return;
+            }
+
+            // Create a print-friendly window
+            const printWindow = window.open('', '_blank');
+
+            // Convert plain text to HTML with paragraphs
+            const htmlContent = content
+                .split('\n\n')
+                .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+
+            const printContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>${getDocumentTitle()}</title>
+    <style>
+        @media print {
+            @page {
+                margin: 1in;
+                size: letter;
+            }
+        }
+        body {
+            font-family: 'Georgia', serif;
+            font-size: 12pt;
+            line-height: 1.8;
+            color: #333;
+            max-width: 6.5in;
+            margin: 0 auto;
+            padding: 1in;
+        }
+        p {
+            margin-bottom: 1em;
+            text-indent: 0.5in;
+        }
+        p:first-child {
+            text-indent: 0;
+        }
+        h1 {
+            font-size: 18pt;
+            margin-bottom: 2em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>${getDocumentTitle()}</h1>
+    ${htmlContent}
+    <script>
+        window.onload = function() {
+            window.print();
+            window.onafterprint = function() {
+                window.close();
+            };
+        };
+    <\/script>
+</body>
+</html>`;
+
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+
+            showNotification('PDF print dialog opened');
+        }
+
         // Event Listeners
         editor.addEventListener('input', () => {
             updateWordCount();
@@ -1136,6 +1294,11 @@
                 switchTheme(btn.getAttribute('data-theme'));
             });
         });
+
+        // Export buttons
+        document.getElementById('exportTxt').addEventListener('click', exportToTxt);
+        document.getElementById('exportDoc').addEventListener('click', exportToDoc);
+        document.getElementById('exportPdf').addEventListener('click', exportToPdf);
 
         // Tree node clicks
         document.querySelectorAll('.tree-node').forEach(node => {
