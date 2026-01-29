@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals (Copper, Zinc, Parchment) -->
     <!-- Application Structure Plan: The SPA uses a thematic, non-linear structure with a sticky top navigation bar ("The Shift", "The Imagination", "The Infrastructure"). This design encourages user-led exploration over the report's linear narrative. The structure is chosen for usability, allowing users to jump directly to the aspect of the story they find most compelling—be it the core technological change, the cultural impact, or the long-term consequences. Key interactions include a comparative chart, interactive diagrams, a tabbed interface for dual narratives, and a clickable timeline, all designed to make the dense information digestible and engaging. -->
     <!-- Visualization & Content Choices: 
@@ -21,44 +24,64 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FDFBF5; /* Parchment */
+            background-color: #FDFBF5;
+            /* Parchment */
             color: #4A4A4A;
         }
-        h1, h2, h3 {
+
+        h1,
+        h2,
+        h3 {
             font-family: 'Lora', serif;
         }
+
         .nav-link {
             transition: color 0.3s, border-color 0.3s;
             border-bottom: 2px solid transparent;
         }
-        .nav-link:hover, .nav-link.active {
-            color: #B87333; /* Copper */
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #B87333;
+            /* Copper */
             border-bottom-color: #B87333;
         }
-        .copper-accent { color: #B87333; }
-        .zinc-accent { color: #717D7E; }
+
+        .copper-accent {
+            color: #B87333;
+        }
+
+        .zinc-accent {
+            color: #717D7E;
+        }
+
         .btn-primary {
             background-color: #B87333;
             color: white;
             transition: background-color 0.3s;
         }
+
         .btn-primary:hover {
             background-color: #935d29;
         }
+
         .tab {
             cursor: pointer;
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
         }
+
         .tab.active {
             border-bottom-color: #B87333;
             color: #B87333;
             font-weight: 600;
         }
+
         .timeline-item {
             position: relative;
             padding-bottom: 2rem;
         }
+
         .timeline-dot {
             position: absolute;
             top: 4px;
@@ -66,13 +89,16 @@
             width: 0.8rem;
             height: 0.8rem;
             border-radius: 50%;
-            background-color: #717D7E; /* Zinc */
+            background-color: #717D7E;
+            /* Zinc */
             cursor: pointer;
             transition: transform 0.2s;
         }
+
         .timeline-dot:hover {
             transform: scale(1.5);
         }
+
         .timeline-line {
             position: absolute;
             top: 4px;
@@ -81,13 +107,16 @@
             width: 2px;
             background-color: #ccc;
         }
+
         .pile-component {
             transition: all 0.2s ease-in-out;
         }
+
         .pile-component:hover {
             transform: scale(1.05);
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
         }
+
         .chart-container {
             position: relative;
             width: 100%;
@@ -97,6 +126,7 @@
             height: 300px;
             max-height: 400px;
         }
+
         @media (min-width: 768px) {
             .chart-container {
                 height: 400px;
@@ -104,6 +134,7 @@
         }
     </style>
 </head>
+
 <body class="antialiased">
 
     <!-- Header & Navigation -->
@@ -123,42 +154,120 @@
 
         <!-- Hero Section -->
         <section class="text-center mb-20">
-            <h2 class="text-4xl md:text-5xl font-bold mb-4">How a Simple Stack of Metal Discs <br class="hidden md:block"> <span class="copper-accent">Domesticated Lightning</span></h2>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">How a Simple Stack of Metal Discs <br
+                    class="hidden md:block"> <span class="copper-accent">Domesticated Lightning</span></h2>
             <p class="max-w-3xl mx-auto text-lg text-gray-600">
-                In 1800, Alessandro Volta's pile of copper, zinc, and brine-soaked cardboard transformed electricity from an ephemeral, violent spectacle into a controllable, sustained current. Explore how this humble invention rewired our world.
+                In 1800, Alessandro Volta's pile of copper, zinc, and brine-soaked cardboard transformed electricity
+                from an ephemeral, violent spectacle into a controllable, sustained current. Explore how this humble
+                invention rewired our world.
             </p>
         </section>
 
         <!-- Section 1: The Shift -->
         <section id="shift" class="mb-24 scroll-mt-20">
-            <h3 class="text-3xl font-bold text-center mb-4 zinc-accent">The Shift: From Ephemeral Shock to Steady Flow</h3>
+            <h3 class="text-3xl font-bold text-center mb-4 zinc-accent">The Shift: From Ephemeral Shock to Steady Flow
+            </h3>
             <p class="text-center max-w-3xl mx-auto mb-12">
-                The Voltaic Pile's greatest innovation was its ability to produce a continuous, low-voltage current, a stark contrast to the violent, high-voltage, instantaneous discharge of the Leyden Jar. This section explores that fundamental perceptual and material shift. This new experience—a predictable, sustained tingle rather than a frightening jolt—was the first step in taming electricity.
+                The Voltaic Pile's greatest innovation was its ability to produce a continuous, low-voltage current, a
+                stark contrast to the violent, high-voltage, instantaneous discharge of the Leyden Jar. This section
+                explores that fundamental perceptual and material shift. This new experience—a predictable, sustained
+                tingle rather than a frightening jolt—was the first step in taming electricity.
             </p>
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div>
                     <h4 class="text-2xl font-bold mb-4">A Tale of Two Powers</h4>
-                    <p class="mb-6 text-gray-600">The chart visually contrasts the characteristics of the era's two primary electrical sources. The Leyden Jar provided a powerful but momentary shock, like "captured lightning." The Voltaic Pile offered a weaker but "perpetual impulse," a controllable flow that changed everything.</p>
+                    <p class="mb-6 text-gray-600">The chart visually contrasts the characteristics of the era's two
+                        primary electrical sources. The Leyden Jar provided a powerful but momentary shock, like
+                        "captured lightning." The Voltaic Pile offered a weaker but "perpetual impulse," a controllable
+                        flow that changed everything.</p>
                     <div class="chart-container">
                         <canvas id="comparisonChart"></canvas>
                     </div>
                 </div>
                 <div class="relative">
                     <h4 class="text-2xl font-bold mb-4">Anatomy of a Revolution</h4>
-                    <p class="mb-6 text-gray-600">The pile's power came from its mundane construction. Hover over the components of this "artificial electrical organ" to see how common materials created a continuous current, demystifying electricity and making it a tool of the workshop, not just the salon.</p>
-                    <div id="pileDiagram" class="relative flex flex-col items-center space-y-1 p-4 rounded-lg bg-gray-50">
+                    <p class="mb-6 text-gray-600">The pile's power came from its mundane construction. Hover over the
+                        components of this "artificial electrical organ" to see how common materials created a
+                        continuous current, demystifying electricity and making it a tool of the workshop, not just the
+                        salon.</p>
+                    <div id="pileDiagram"
+                        class="relative flex flex-col items-center space-y-1 p-4 rounded-lg bg-gray-50">
                         <!-- Pile Components will be inserted by JS -->
                     </div>
-                    <div id="pileTooltip" class="absolute hidden bg-gray-800 text-white text-sm rounded-lg px-3 py-1.5 z-10 pointer-events-none transition-opacity duration-300"></div>
+                    <div id="pileTooltip"
+                        class="absolute hidden bg-gray-800 text-white text-sm rounded-lg px-3 py-1.5 z-10 pointer-events-none transition-opacity duration-300">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Simulator -->
+            <div class="mt-16 bg-gray-50 rounded-xl p-8">
+                <h4 class="text-2xl font-bold mb-4 text-center">⚡ Interactive Pile Simulator</h4>
+                <p class="text-center text-gray-600 mb-8">Experiment with stacking voltaic cells to understand how
+                    Volta's invention produced usable electricity. Watch electrons flow as you add more cells!</p>
+
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <!-- Simulator Controls -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-semibold">Number of Cells:</label>
+                            <span id="cellCount" class="text-2xl font-bold copper-accent">4</span>
+                        </div>
+                        <input type="range" id="cellSlider" min="1" max="12" value="4"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-600">
+
+                        <div class="mt-6 space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm">
+                                <span class="text-gray-600">Total Voltage (EMF)</span>
+                                <span id="totalVoltage" class="text-xl font-bold copper-accent">3.04 V</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm">
+                                <span class="text-gray-600">Est. Short-Circuit Current</span>
+                                <span id="totalCurrent" class="text-xl font-bold zinc-accent">1.52 A</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm">
+                                <span class="text-gray-600">Internal Resistance</span>
+                                <span id="totalResistance" class="text-lg font-semibold">2.0 Ω</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p class="text-sm text-amber-800"><strong>💡 Historical Note:</strong> <span
+                                    id="historicalNote">Volta's original pile used ~32 cells to achieve approximately
+                                    24V—enough to produce visible sparks and shock sensations.</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Pile Representation -->
+                    <div class="relative">
+                        <div id="simulatorPile"
+                            class="flex flex-col items-center gap-0.5 p-4 bg-white rounded-lg shadow-inner min-h-[300px] justify-center overflow-hidden">
+                            <!-- Cells will be rendered by JS -->
+                        </div>
+
+                        <!-- Electron Flow Indicator -->
+                        <div id="electronFlow"
+                            class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full pl-4 hidden md:flex flex-col items-center">
+                            <div class="text-xs text-gray-500 mb-2">e⁻ flow</div>
+                            <div class="w-8 h-32 relative overflow-hidden rounded bg-gray-100">
+                                <div id="electronParticles" class="absolute inset-0"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">→ circuit</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Section 2: The Imagination -->
         <section id="imagination" class="mb-24 scroll-mt-20">
-            <h3 class="text-3xl font-bold text-center mb-4 copper-accent">The Imagination: Gothic Horror & Chemical Miracles</h3>
+            <h3 class="text-3xl font-bold text-center mb-4 copper-accent">The Imagination: Gothic Horror & Chemical
+                Miracles</h3>
             <p class="text-center max-w-3xl mx-auto mb-12">
-                The pile's continuous current immediately created a powerful and dualistic public image. It was used in grotesque spectacles that seemed to animate the dead, fueling gothic fears, while simultaneously becoming a miraculous tool in the laboratory for deconstructing matter. This section lets you explore these two competing narratives that captivated the 19th-century mind.
+                The pile's continuous current immediately created a powerful and dualistic public image. It was used in
+                grotesque spectacles that seemed to animate the dead, fueling gothic fears, while simultaneously
+                becoming a miraculous tool in the laboratory for deconstructing matter. This section lets you explore
+                these two competing narratives that captivated the 19th-century mind.
             </p>
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-center border-b mb-8 space-x-4 md:space-x-8">
@@ -174,13 +283,19 @@
         <!-- Section 3: The Infrastructure -->
         <section id="infrastructure" class="scroll-mt-20">
             <h3 class="text-3xl font-bold text-center mb-4 zinc-accent">The Infrastructure: From Current to Network</h3>
-             <p class="text-center max-w-3xl mx-auto mb-12">
-                The pile's sustained flow provided the conceptual tools to envision electricity as a networked, infrastructural force. New metaphors like "current" made it understandable, while its first killer application, the telegraph, proved it could conquer distance. This section traces the path from a standalone device to a global system.
+            <p class="text-center max-w-3xl mx-auto mb-12">
+                The pile's sustained flow provided the conceptual tools to envision electricity as a networked,
+                infrastructural force. New metaphors like "current" made it understandable, while its first killer
+                application, the telegraph, proved it could conquer distance. This section traces the path from a
+                standalone device to a global system.
             </p>
             <div class="grid md:grid-cols-5 gap-12">
                 <div class="md:col-span-3">
                     <h4 class="text-2xl font-bold mb-4">The Path to a Wired World</h4>
-                    <p class="mb-6 text-gray-600">The pile was the "Model T" of batteries—the prototype that sparked decades of innovation. Click on the nodes of the timeline to see how this simple device created the momentum for the electrical age, leading to improved batteries, the telegraph, and eventually, the modern power grid.</p>
+                    <p class="mb-6 text-gray-600">The pile was the "Model T" of batteries—the prototype that sparked
+                        decades of innovation. Click on the nodes of the timeline to see how this simple device created
+                        the momentum for the electrical age, leading to improved batteries, the telegraph, and
+                        eventually, the modern power grid.</p>
                     <div id="timeline" class="relative pl-4 border-l-2 border-gray-200">
                         <!-- Timeline items will be inserted by JS -->
                     </div>
@@ -197,208 +312,336 @@
     <footer class="bg-gray-800 text-white mt-20">
         <div class="container mx-auto px-6 py-8 text-center">
             <p>This interactive experience explores the profound impact of Alessandro Volta's 1800 invention.</p>
-            <p class="text-sm text-gray-400 mt-2">From a simple chemical reaction, the modern, electrified world was born.</p>
+            <p class="text-sm text-gray-400 mt-2">From a simple chemical reaction, the modern, electrified world was
+                born.</p>
         </div>
     </footer>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-    // --- Data Store ---
-    const appData = {
-        comparison: {
-            labels: ['Voltage (Relative)', 'Current (Relative)', 'Duration (Relative)'],
-            leydenJar: [100, 1, 1],
-            voltaicPile: [5, 30, 100]
-        },
-        pileComponents: [
-            { name: 'Copper Disc', color: 'bg-orange-400', description: 'A disc of copper, one of the two dissimilar metals whose electrochemical potential difference drives the reaction.' },
-            { name: 'Brine-soaked Cardboard', color: 'bg-yellow-200', description: 'A porous separator soaked in an electrolyte (like salt water) that allows ions to flow between the metal discs.' },
-            { name: 'Zinc Disc', color: 'bg-gray-400', description: 'A disc of zinc. The chemical reaction between the zinc, copper, and electrolyte generates the continuous flow of electrons.' }
-        ],
-        imaginationTabs: {
-            gothic: {
-                title: 'Giovanni Aldini and the Theater of Galvanism',
-                content: "Volta's nephew, Giovanni Aldini, used large Voltaic piles in sensational public experiments on the corpses of executed criminals. The powerful, sustained current caused limbs to convulse and faces to grimace, horrifying audiences and cementing a powerful gothic association in the public mind. Electricity became a necromantic tool, a 'spark of being' that could seemingly erase the line between life and death, deeply influencing works like Mary Shelley's *Frankenstein*."
-            },
-            chemical: {
-                title: 'Humphry Davy and the Birth of Electrochemistry',
-                content: "Simultaneously, chemist Humphry Davy used enormous piles at the Royal Institution as a revolutionary analytical tool. By passing a powerful current through substances thought to be fundamental elements, like potash, he decomposed them and isolated new metals like potassium and sodium for the first time. This recast electricity as an 'electric scalpel,' a force of rational analysis that could reveal the hidden building blocks of the world."
-            }
-        },
-        timelineEvents: [
-            { year: '1800', title: 'Volta Announces the Pile', content: 'Alessandro Volta describes his "artificial electrical organ" in a letter to the Royal Society. Its ability to produce a sustained current revolutionizes science.' },
-            { year: '1800', title: 'Electrolysis of Water', content: 'Almost immediately, William Nicholson and Anthony Carlisle use a Voltaic pile to decompose water into hydrogen and oxygen, founding the science of electrochemistry.'},
-            { year: '1804', title: 'First Practical Telegraph Design', content: 'Spanish physician Francisco Salvá y Campillo designs a telegraph system powered by a Voltaic Pile, the first to leverage its sustained current for communication.'},
-            { year: '1807', title: 'Davy Isolates New Elements', content: 'Using a massive 2,000-plate Voltaic pile, Humphry Davy isolates potassium and sodium, demonstrating the pile\'s immense power for chemical discovery.'},
-            { year: '1836', title: 'The Daniell Cell', content: 'John Frederic Daniell invents a new type of battery that provides a more stable, longer-lasting current than the original pile, a crucial improvement for the growing telegraph industry.'}
-        ]
-    };
-
-    // --- Section 1: The Shift ---
-
-    // Comparison Chart
-    const ctx = document.getElementById('comparisonChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: appData.comparison.labels,
-            datasets: [
-                {
-                    label: 'Leyden Jar (Static)',
-                    data: appData.comparison.leydenJar,
-                    backgroundColor: '#717D7E', // Zinc
-                    borderColor: '#5e696a',
-                    borderWidth: 1
+            // --- Data Store ---
+            const appData = {
+                comparison: {
+                    labels: ['Voltage (Relative)', 'Current (Relative)', 'Duration (Relative)', 'Controllability', 'Reproducibility'],
+                    leydenJar: [100, 1, 1, 10, 25],
+                    voltaicPile: [5, 30, 100, 95, 90]
                 },
-                {
-                    label: 'Voltaic Pile (Current)',
-                    data: appData.comparison.voltaicPile,
-                    backgroundColor: '#B87333', // Copper
-                    borderColor: '#935d29',
-                    borderWidth: 1
+                pileComponents: [
+                    { name: 'Copper Disc (+)', color: 'bg-orange-400', description: 'Copper (Cu) acts as the cathode. With a higher reduction potential (+0.34V), it accepts electrons from the external circuit. Each disc is typically 1-2 inches in diameter and creates ~0.76V per cell when paired with zinc.', voltage: '+0.34V', role: 'Cathode' },
+                    { name: 'Brine Cardboard', color: 'bg-yellow-200', description: 'Cardboard or cloth soaked in sulfuric acid, brine (NaCl), or zinc sulfate solution. The electrolyte enables ionic conduction between electrodes while preventing direct metal contact. Volta originally used saltwater at ~3-5% concentration.', voltage: 'Electrolyte', role: 'Ion Conductor' },
+                    { name: 'Zinc Disc (-)', color: 'bg-gray-400', description: 'Zinc (Zn) acts as the anode, oxidizing and releasing electrons (Zn → Zn²⁺ + 2e⁻). Its lower reduction potential (-0.76V) drives the electrochemical reaction. The zinc gradually dissolves during operation.', voltage: '-0.76V', role: 'Anode' }
+                ],
+                imaginationTabs: {
+                    gothic: {
+                        title: 'Giovanni Aldini and the Theater of Galvanism',
+                        content: `<p class="mb-4">Volta's nephew, Giovanni Aldini, used large Voltaic piles in sensational public experiments on the corpses of executed criminals. The powerful, sustained current caused limbs to convulse and faces to grimace, horrifying audiences and cementing a powerful gothic association in the public mind.</p>
+                <p class="mb-4"><strong>The Newgate Experiment (1803):</strong> In London, Aldini applied electrodes to the body of executed murderer George Forster. Witnesses reported the jaw quivered, one eye opened, and the legs kicked violently. One observer reportedly died of fright.</p>
+                <p class="mb-4"><strong>Cultural Impact:</strong> These experiments directly inspired Mary Shelley's <em>Frankenstein</em> (1818). The novel's subtitle, "The Modern Prometheus," reflects the dangerous hubris of wielding electricity as a life-giving force.</p>
+                <p><strong>Scientific Legacy:</strong> Despite the macabre spectacle, Aldini's work contributed to understanding neuromuscular electrical responses and laid groundwork for modern defibrillation and electrotherapy.</p>`
+                    },
+                    chemical: {
+                        title: 'Humphry Davy and the Birth of Electrochemistry',
+                        content: `<p class="mb-4">At the Royal Institution in London, chemist Humphry Davy constructed enormous batteries—some with over 2,000 pairs of plates—to probe the fundamental nature of matter.</p>
+                <p class="mb-4"><strong>Revolutionary Discoveries (1807-1808):</strong> Davy isolated six new elements: potassium, sodium, calcium, magnesium, barium, and strontium. When he first isolated potassium from molite potash, he reportedly danced around the laboratory in ecstasy.</p>
+                <p class="mb-4"><strong>The Arc Lamp (1809):</strong> Using a 2,000-cell battery, Davy created the first electric arc lamp—a brilliant artificial light source that would eventually illuminate streets and factories worldwide.</p>
+                <p><strong>Faraday's Mentor:</strong> Davy's greatest discovery may have been Michael Faraday, whom he hired as an assistant. Faraday would later formulate the laws of electrolysis and discover electromagnetic induction.</p>`
+                    }
+                },
+                timelineEvents: [
+                    { year: '1780', title: "Galvani's Frog Experiments", content: "Luigi Galvani discovers that touching a frog's leg with two different metals causes it to twitch, proposing 'animal electricity.' This sparks the controversy that leads Volta to create the pile." },
+                    { year: '1800', title: 'Volta Announces the Pile', content: 'On March 20th, Alessandro Volta writes to Sir Joseph Banks at the Royal Society, describing his "artificial electrical organ." The original pile had ~32 pairs of discs, producing roughly 24 volts.' },
+                    { year: '1800', title: 'Electrolysis of Water', content: 'Within weeks, William Nicholson and Anthony Carlisle decompose water into hydrogen and oxygen using a pile, founding electrochemistry. This proves water is a compound, not an element.' },
+                    { year: '1801', title: "Napoleon Honors Volta", content: "Napoleon Bonaparte witnesses Volta's demonstrations in Paris and awards him the Legion of Honor and a gold medal. The 'volt' unit is later named in Volta's honor." },
+                    { year: '1803', title: "Aldini's Galvanism Shows", content: "Giovanni Aldini performs public experiments on executed criminals, causing corpses to convulse with electrical stimulation, inspiring gothic horror literature." },
+                    { year: '1807', title: 'Davy Isolates New Elements', content: "Using a massive 2,000-plate battery, Humphry Davy isolates potassium and sodium—the first elements discovered through electricity. He would isolate four more elements by 1808." },
+                    { year: '1820', title: "Ørsted Discovers Electromagnetism", content: "Hans Christian Ørsted notices a compass needle deflects near a current-carrying wire, linking electricity and magnetism for the first time." },
+                    { year: '1831', title: "Faraday's Induction", content: "Michael Faraday discovers electromagnetic induction—that a changing magnetic field produces electricity. This principle underlies all modern generators and transformers." },
+                    { year: '1836', title: 'The Daniell Cell', content: "John Frederic Daniell invents a battery with copper sulfate and zinc sulfate solutions, providing stable 1.1V output for hours—essential for telegraph operation." },
+                    { year: '1844', title: 'First Telegraph Line', content: "Samuel Morse sends 'What hath God wrought' from Washington to Baltimore, demonstrating the telegraph's potential to collapse distance and time." }
+                ],
+                physicsData: {
+                    cellVoltage: 0.76,
+                    internalResistance: 0.5,
+                    maxCells: 12
                 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value + '%'
+            };
+
+            // --- Section 1: The Shift ---
+
+            // Comparison Chart
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: appData.comparison.labels,
+                    datasets: [
+                        {
+                            label: 'Leyden Jar (Static)',
+                            data: appData.comparison.leydenJar,
+                            backgroundColor: '#717D7E', // Zinc
+                            borderColor: '#5e696a',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Voltaic Pile (Current)',
+                            data: appData.comparison.voltaicPile,
+                            backgroundColor: '#B87333', // Copper
+                            borderColor: '#935d29',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return value + '%'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Electrical Source Characteristics (c. 1800)'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     }
                 }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Electrical Source Characteristics (c. 1800)'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y + '%';
-                            }
-                            return label;
-                        }
-                    }
+            });
+
+            // Pile Diagram
+            const pileDiagram = document.getElementById('pileDiagram');
+            const pileTooltip = document.getElementById('pileTooltip');
+            let components = [];
+            for (let i = 0; i < 3; i++) {
+                components.push(...appData.pileComponents);
+            }
+
+            components.forEach((comp, index) => {
+                const el = document.createElement('div');
+                el.className = `pile-component w-32 h-6 rounded-md flex items-center justify-center text-xs font-semibold shadow-md ${comp.color}`;
+                el.textContent = comp.name;
+                el.dataset.description = comp.description;
+                pileDiagram.appendChild(el);
+
+                el.addEventListener('mouseenter', (e) => {
+                    pileTooltip.textContent = e.target.dataset.description;
+                    pileTooltip.style.display = 'block';
+                    const rect = e.target.getBoundingClientRect();
+                    const containerRect = pileDiagram.getBoundingClientRect();
+                    pileTooltip.style.left = `${rect.right - containerRect.left + 10}px`;
+                    pileTooltip.style.top = `${rect.top - containerRect.top + rect.height / 2 - pileTooltip.offsetHeight / 2}px`;
+                    pileTooltip.style.opacity = '1';
+                });
+
+                el.addEventListener('mouseleave', () => {
+                    pileTooltip.style.opacity = '0';
+                    setTimeout(() => { pileTooltip.style.display = 'none'; }, 300);
+                });
+            });
+
+            // --- Interactive Pile Simulator ---
+            const cellSlider = document.getElementById('cellSlider');
+            const cellCountDisplay = document.getElementById('cellCount');
+            const totalVoltageDisplay = document.getElementById('totalVoltage');
+            const totalCurrentDisplay = document.getElementById('totalCurrent');
+            const totalResistanceDisplay = document.getElementById('totalResistance');
+            const historicalNote = document.getElementById('historicalNote');
+            const simulatorPile = document.getElementById('simulatorPile');
+            const electronParticles = document.getElementById('electronParticles');
+
+            const historicalNotes = {
+                1: "A single cell produces only ~0.76V—barely perceptible as a slight tingle on the tongue.",
+                2: "Two cells approach 1.5V, similar to a modern AA battery.",
+                3: "Three cells (~2.3V) was enough for early electrochemical experiments.",
+                4: "Volta's smallest practical piles used about 4-6 cells for demonstrations.",
+                6: "Six cells (~4.5V) could decompose water into hydrogen and oxygen.",
+                8: "Eight cells provided enough power for visible electrochemical reactions.",
+                10: "Ten cells (~7.6V) could produce noticeable muscle contractions.",
+                12: "Twelve cells (~9V) approaches modern 9V battery territory. Volta used 32+ cells for dramatic demonstrations!"
+            };
+
+            function updateSimulator(numCells) {
+                const voltage = numCells * appData.physicsData.cellVoltage;
+                const resistance = numCells * appData.physicsData.internalResistance;
+                const current = voltage / resistance;
+
+                cellCountDisplay.textContent = numCells;
+                totalVoltageDisplay.textContent = voltage.toFixed(2) + ' V';
+                totalCurrentDisplay.textContent = current.toFixed(2) + ' A';
+                totalResistanceDisplay.textContent = resistance.toFixed(1) + ' Ω';
+
+                // Update historical note
+                const noteKey = Object.keys(historicalNotes).reverse().find(k => numCells >= parseInt(k));
+                historicalNote.textContent = historicalNotes[noteKey] || historicalNotes[1];
+
+                // Render visual pile
+                renderSimulatorPile(numCells);
+
+                // Update electron animation speed
+                updateElectronFlow(current);
+            }
+
+            function renderSimulatorPile(numCells) {
+                simulatorPile.innerHTML = '';
+
+                // Terminal indicator
+                const topTerminal = document.createElement('div');
+                topTerminal.className = 'w-16 h-3 bg-orange-600 rounded-t-lg mb-1 text-center text-xs text-white font-bold';
+                topTerminal.textContent = '+';
+                simulatorPile.appendChild(topTerminal);
+
+                for (let i = 0; i < numCells; i++) {
+                    // Copper
+                    const copper = document.createElement('div');
+                    copper.className = 'w-24 h-4 bg-orange-400 rounded-sm shadow-sm transition-all duration-200';
+                    copper.style.animationDelay = `${i * 0.05}s`;
+                    simulatorPile.appendChild(copper);
+
+                    // Electrolyte
+                    const electrolyte = document.createElement('div');
+                    electrolyte.className = 'w-24 h-2 bg-yellow-200 shadow-sm';
+                    simulatorPile.appendChild(electrolyte);
+
+                    // Zinc
+                    const zinc = document.createElement('div');
+                    zinc.className = 'w-24 h-4 bg-gray-400 rounded-sm shadow-sm mb-1';
+                    simulatorPile.appendChild(zinc);
+                }
+
+                // Bottom terminal
+                const bottomTerminal = document.createElement('div');
+                bottomTerminal.className = 'w-16 h-3 bg-gray-600 rounded-b-lg mt-1 text-center text-xs text-white font-bold';
+                bottomTerminal.textContent = '−';
+                simulatorPile.appendChild(bottomTerminal);
+            }
+
+            function updateElectronFlow(current) {
+                electronParticles.innerHTML = '';
+                const numParticles = Math.min(Math.floor(current * 4), 8);
+                const speed = Math.max(3 - current * 0.5, 0.5);
+
+                for (let i = 0; i < numParticles; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'absolute w-2 h-2 bg-blue-400 rounded-full opacity-75';
+                    particle.style.left = `${Math.random() * 20 + 4}px`;
+                    particle.style.animation = `electronMove ${speed}s linear infinite`;
+                    particle.style.animationDelay = `${i * (speed / numParticles)}s`;
+                    electronParticles.appendChild(particle);
                 }
             }
-        }
-    });
-    
-    // Pile Diagram
-    const pileDiagram = document.getElementById('pileDiagram');
-    const pileTooltip = document.getElementById('pileTooltip');
-    let components = [];
-    for(let i=0; i<3; i++) {
-        components.push(...appData.pileComponents);
-    }
 
-    components.forEach((comp, index) => {
-        const el = document.createElement('div');
-        el.className = `pile-component w-32 h-6 rounded-md flex items-center justify-center text-xs font-semibold shadow-md ${comp.color}`;
-        el.textContent = comp.name;
-        el.dataset.description = comp.description;
-        pileDiagram.appendChild(el);
+            // Add electron animation keyframes dynamically
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes electronMove {
+                    0% { top: -8px; opacity: 0; }
+                    10% { opacity: 0.8; }
+                    90% { opacity: 0.8; }
+                    100% { top: 100%; opacity: 0; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
 
-        el.addEventListener('mouseenter', (e) => {
-            pileTooltip.textContent = e.target.dataset.description;
-            pileTooltip.style.display = 'block';
-            const rect = e.target.getBoundingClientRect();
-            const containerRect = pileDiagram.getBoundingClientRect();
-            pileTooltip.style.left = `${rect.right - containerRect.left + 10}px`;
-            pileTooltip.style.top = `${rect.top - containerRect.top + rect.height / 2 - pileTooltip.offsetHeight / 2}px`;
-            pileTooltip.style.opacity = '1';
-        });
+            cellSlider.addEventListener('input', (e) => {
+                updateSimulator(parseInt(e.target.value));
+            });
 
-        el.addEventListener('mouseleave', () => {
-             pileTooltip.style.opacity = '0';
-             setTimeout(() => { pileTooltip.style.display = 'none'; }, 300);
-        });
-    });
+            // Initialize simulator
+            updateSimulator(4);
 
 
-    // --- Section 2: The Imagination ---
-    const tabs = document.querySelectorAll('.tab');
-    const tabContent = document.getElementById('tabContent');
+            // --- Section 2: The Imagination ---
+            const tabs = document.querySelectorAll('.tab');
+            const tabContent = document.getElementById('tabContent');
 
-    function updateTabContent(tabId) {
-        const data = appData.imaginationTabs[tabId];
-        tabContent.innerHTML = `
+            function updateTabContent(tabId) {
+                const data = appData.imaginationTabs[tabId];
+                tabContent.innerHTML = `
             <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
-                <h4 class="text-2xl font-bold mb-3">${data.title}</h4>
-                <p class="text-gray-600 leading-relaxed">${data.content}</p>
+                <h4 class="text-2xl font-bold mb-4">${data.title}</h4>
+                <div class="text-gray-600 leading-relaxed">${data.content}</div>
             </div>
         `;
-    }
+            }
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            updateTabContent(tab.dataset.tab);
-        });
-    });
-    updateTabContent('gothic'); // Initial load
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    updateTabContent(tab.dataset.tab);
+                });
+            });
+            updateTabContent('gothic'); // Initial load
 
 
-    // --- Section 3: The Infrastructure ---
-    const timeline = document.getElementById('timeline');
-    const timelineDetails = document.getElementById('timeline-details');
+            // --- Section 3: The Infrastructure ---
+            const timeline = document.getElementById('timeline');
+            const timelineDetails = document.getElementById('timeline-details');
 
-    appData.timelineEvents.forEach(event => {
-        const item = document.createElement('div');
-        item.className = 'timeline-item ml-4';
-        
-        const dot = document.createElement('div');
-        dot.className = 'timeline-dot';
-        dot.dataset.year = event.year;
+            appData.timelineEvents.forEach(event => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item ml-4';
 
-        dot.addEventListener('click', () => {
-            timelineDetails.innerHTML = `
+                const dot = document.createElement('div');
+                dot.className = 'timeline-dot';
+                dot.dataset.year = event.year;
+
+                dot.addEventListener('click', () => {
+                    timelineDetails.innerHTML = `
                 <h5 class="font-bold text-lg mb-2">${event.year}: ${event.title}</h5>
                 <p class="text-gray-600">${event.content}</p>
             `;
-            document.querySelectorAll('.timeline-dot').forEach(d => d.style.backgroundColor = '#717D7E');
-            dot.style.backgroundColor = '#B87333';
-        });
+                    document.querySelectorAll('.timeline-dot').forEach(d => d.style.backgroundColor = '#717D7E');
+                    dot.style.backgroundColor = '#B87333';
+                });
 
-        const content = document.createElement('div');
-        content.innerHTML = `<h5 class="font-semibold">${event.year} - ${event.title}</h5>`;
-        
-        item.appendChild(dot);
-        item.appendChild(content);
-        timeline.appendChild(item);
-    });
+                const content = document.createElement('div');
+                content.innerHTML = `<h5 class="font-semibold">${event.year} - ${event.title}</h5>`;
 
-    timelineDetails.innerHTML = `
+                item.appendChild(dot);
+                item.appendChild(content);
+                timeline.appendChild(item);
+            });
+
+            timelineDetails.innerHTML = `
         <h5 class="font-bold text-lg mb-2">${appData.timelineEvents[0].year}: ${appData.timelineEvents[0].title}</h5>
         <p class="text-gray-600">${appData.timelineEvents[0].content}</p>
     `;
-    document.querySelector('.timeline-dot').style.backgroundColor = '#B87333';
+            document.querySelector('.timeline-dot').style.backgroundColor = '#B87333';
 
-    // Smooth scrolling for nav links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
+            // Smooth scrolling for nav links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
             });
-        });
-    });
 
-});
-</script>
+        });
+    </script>
 
 </body>
+
 </html>
