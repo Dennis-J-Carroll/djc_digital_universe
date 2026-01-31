@@ -195,6 +195,13 @@ const AppsPage = ({ location }) => {
       path: '/apps/ComTia.html',
       description: 'Comprehensive study materials and practice tests for CompTIA certifications.',
       category: 'Education'
+    },
+    {
+      title: 'Python Function a Day',
+      path: '/apps/python-function-a-day/',
+      description: 'Comprehensive Python learning platform featuring 100+ functions from standard library and third-party packages. Includes interactive code playground, progress tracking, and curated learning paths.',
+      category: 'Education',
+      featured: true
     }
   ];
 
