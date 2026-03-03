@@ -66,6 +66,13 @@ const AppsPage = ({ location }) => {
       category: 'AI/ML'
     },
     {
+      title: 'Mech Interp Viz',
+      path: '/apps/mechmap.html',
+      description: 'Interactive mechanistic interpretability visualization for transformer models. Explore attention heads and MLP blocks across layers, annotate components with importance levels and tags, and export your research findings.',
+      category: 'AI/ML',
+      featured: true
+    },
+    {
       title: 'MLOps Engineer: Orchestrating ML',
       path: '/apps/MLOps_Launch.html',
       description: 'Interactive guide to MLOps engineering—learn about ML pipelines, model deployment, monitoring, and infrastructure management for production systems.',

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mech Interp Viz — Mechanistic Interpretability Visualization</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg-950:#020617;--bg-900:#0f172a;--bg-800:#1e293b;--bg-700:#334155;--bg-600:#475569;
+    --text-100:#f1f5f9;--text-200:#e2e8f0;--text-300:#cbd5e1;--text-400:#94a3b8;--text-500:#64748b;
+    --primary:#3b82f6;--primary-ring:rgba(59,130,246,0.5);
+    --red-500:#ef4444;--red-900-30:rgba(127,29,29,0.3);--red-500-20:rgba(239,68,68,0.2);
+    --amber-500:#f59e0b;--amber-900-30:rgba(120,53,15,0.3);--amber-500-20:rgba(245,158,11,0.2);
+    --green-500:#22c55e;--green-900-30:rgba(20,83,45,0.3);--green-500-20:rgba(34,197,94,0.2);
+    --violet-700:#6d28d9;--violet-900-50:rgba(76,29,149,0.5);--violet-500:#8b5cf6;
+    --emerald-700:#047857;--emerald-900-30:rgba(6,78,59,0.3);--emerald-400:#34d399;
+    --blue-700:#1d4ed8;--blue-900-30:rgba(30,58,138,0.3);--blue-400:#60a5fa;
+  }
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-950);color:var(--text-100);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  /* Header */
+  header{border-bottom:1px solid var(--bg-800);background:rgba(15,23,42,0.5);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .header-left{display:flex;align-items:center;gap:0.75rem}
+  .header-left svg{width:24px;height:24px;color:var(--primary)}
+  .header-left h1{font-size:1.125rem;font-weight:700}
+  .header-left .subtitle{font-size:0.75rem;color:var(--text-500)}
+  .header-right{display:flex;align-items:center;gap:0.5rem}
+  .icon-btn{background:transparent;border:1px solid var(--bg-700);color:var(--text-300);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+  .icon-btn:hover{background:var(--bg-800);border-color:var(--bg-600)}
+
+  /* Main layout */
+  main{flex:1;display:flex;overflow:hidden}
+  aside.left{width:250px;border-right:1px solid var(--bg-800);background:rgba(15,23,42,0.3);overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:1rem}
+  .viz-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:1rem 0}
+  aside.right{width:320px;background:var(--bg-900);border-left:1px solid var(--bg-800);display:flex;flex-direction:column;transition:width 0.3s}
+  aside.right.closed{width:0;overflow:hidden;border:0}
+
+  /* Cards */
+  .card{background:rgba(30,41,59,0.5);border-radius:8px;padding:1rem}
+  .card h3{font-size:0.875rem;font-weight:500;color:var(--text-300);margin-bottom:0.75rem}
+  .card-section-title{font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-500);margin-bottom:0.5rem}
+
+  /* Legend items */
+  .legend-item{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem}
+  .legend-circle{width:24px;height:24px;border-radius:50%;border:2px solid}
+  .legend-rect{width:40px;height:24px;border-radius:6px;border:2px solid}
+  .legend-label{font-size:0.875rem;color:var(--text-400)}
+
+  /* Visualization */
+  .model-header{display:flex;align-items:center;gap:0.75rem;padding:1rem 0}
+  .model-header .line{height:1px;width:48px;background:linear-gradient(90deg,transparent,var(--bg-600))}
+  .model-header .line.right{background:linear-gradient(90deg,var(--bg-600),transparent)}
+  .model-header h2{font-size:1.25rem;font-weight:700;color:var(--text-200)}
+  .embed-box{padding:0.5rem 1rem;border-radius:8px;font-size:0.875rem;font-weight:500}
+  .embed-input{border:1px solid var(--emerald-700);background:var(--emerald-900-30);color:var(--emerald-400)}
+  .embed-output{border:1px solid var(--blue-700);background:var(--blue-900-30);color:var(--blue-400)}
+  .flow-connector{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
+  .flow-connector .vline{width:2px;height:12px;background:linear-gradient(to bottom,var(--bg-600),var(--bg-700))}
+  .flow-connector svg{width:12px;height:12px;color:var(--bg-600)}
+
+  /* Transformer Layer */
+  .layer-container{display:flex;flex-direction:column;align-items:center;gap:0.5rem;width:100%}
+  .layer-label{font-size:0.75rem;color:var(--text-500);align-self:flex-start;padding-left:calc(50% - 180px)}
+  .layer-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:1rem;border-radius:8px;background:rgba(30,41,59,0.5);border:1px solid var(--bg-700);transition:border-color 0.3s;width:100%;max-width:360px}
+  .layer-box:hover{border-color:var(--bg-600)}
+  .section-label{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-500)}
+  .heads-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:220px}
+  .flow-divider{display:flex;align-items:center;gap:0.5rem;color:var(--bg-600)}
+  .flow-divider .hline{height:1px;width:32px;background:linear-gradient(90deg,transparent,var(--bg-600))}
+  .flow-divider .hline.right{background:linear-gradient(90deg,var(--bg-600),transparent)}
+
+  /* Attention Head */
+  .attn-head{position:relative;width:28px;height:28px;border-radius:50%;border:2px solid var(--bg-600);background:var(--bg-700);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:8px;color:var(--text-300)}
+  .attn-head:hover{transform:scale(1.15);box-shadow:0 0 12px rgba(0,0,0,0.4)}
+  .attn-head.selected{box-shadow:0 0 0 3px var(--primary-ring);transform:scale(1.15)}
+  .attn-head.imp-high{background:var(--red-500-20);border-color:var(--red-500)}
+  .attn-head.imp-medium{background:var(--amber-500-20);border-color:var(--amber-500)}
+  .attn-head.imp-low{background:var(--green-500-20);border-color:var(--green-500)}
+  .attn-head.imp-unknown-annotated{background:rgba(100,116,139,0.2);border-color:var(--text-500)}
+  .attn-head .note-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:white}
+
+  /* MLP Block */
+  .mlp-block{position:relative;width:64px;height:40px;border-radius:6px;border:2px solid var(--violet-700);background:var(--violet-900-50);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:0.75rem;color:var(--text-300)}
+  .mlp-block:hover{transform:scale(1.05);box-shadow:0 0 12px rgba(0,0,0,0.4)}
+  .mlp-block.selected{box-shadow:0 0 0 3px var(--primary-ring);transform:scale(1.05)}
+  .mlp-block.imp-high{background:var(--red-500-20);border-color:var(--red-500)}
+  .mlp-block.imp-medium{background:var(--amber-500-20);border-color:var(--amber-500)}
+  .mlp-block.imp-low{background:var(--green-500-20);border-color:var(--green-500)}
+  .mlp-block.imp-unknown-annotated{background:rgba(100,116,139,0.2);border-color:var(--text-500)}
+  .mlp-block .note-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:white}
+
+  /* Stats */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+  .stat-box{background:rgba(51,65,85,0.5);border-radius:6px;padding:0.5rem}
+  .stat-box .label{font-size:0.75rem;color:var(--text-500)}
+  .stat-box .value{font-weight:500}
+  .progress-bg{height:8px;background:var(--bg-700);border-radius:999px;overflow:hidden;margin:0.5rem 0 0.25rem}
+  .progress-fill{height:100%;background:var(--primary);border-radius:999px;transition:width 0.3s}
+  .importance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;font-size:0.75rem}
+  .imp-box{border-radius:4px;padding:6px 4px}
+  .imp-box .count{font-weight:500}
+  .imp-box .ilabel{color:var(--text-500);font-size:0.625rem}
+
+  /* Right Panel */
+  .panel-header{display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid var(--bg-800)}
+  .panel-header h2{font-size:1.125rem;font-weight:600}
+  .panel-content{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:1rem}
+  .panel-footer{padding:1rem;border-top:1px solid var(--bg-800)}
+  .info-box{background:var(--bg-800);border-radius:8px;padding:0.75rem}
+  .info-box p{font-size:0.875rem;margin-bottom:0.25rem}
+  .info-box .lbl{color:var(--text-500)}
+
+  /* Form elements */
+  .form-label{font-size:0.875rem;font-weight:500;color:var(--text-300);display:block;margin-bottom:0.5rem}
+  select,textarea,input[type=text],input[type=number]{width:100%;background:var(--bg-800);border:1px solid var(--bg-700);color:var(--text-100);border-radius:6px;padding:0.5rem;font-family:inherit;font-size:0.875rem;outline:none;transition:border-color 0.2s}
+  select:focus,textarea:focus,input:focus{border-color:var(--primary)}
+  textarea{min-height:120px;resize:vertical}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;padding:0.5rem 1rem;border-radius:6px;font-size:0.875rem;font-weight:500;cursor:pointer;transition:all 0.2s;border:none}
+  .btn-primary{background:var(--primary);color:white}
+  .btn-primary:hover{opacity:0.9}
+  .btn-outline{background:transparent;border:1px solid var(--bg-700);color:var(--text-300)}
+  .btn-outline:hover{background:var(--bg-800)}
+  .btn-danger{background:#dc2626;color:white}
+  .btn-danger:hover{opacity:0.9}
+  .btn-sm{padding:0.375rem 0.625rem;font-size:0.75rem}
+  .btn-icon{width:32px;height:32px;padding:0}
+
+  /* Tags / Badges */
+  .tag{display:inline-flex;align-items:center;gap:4px;background:var(--bg-700);color:var(--text-300);padding:0.25rem 0.5rem;border-radius:12px;font-size:0.75rem;cursor:pointer;transition:background 0.2s}
+  .tag:hover{background:var(--bg-600)}
+  .tags-wrap{display:flex;flex-wrap:wrap;gap:4px}
+  .tag-input-row{display:flex;gap:0.5rem}
+  .tag-input-row input{flex:1}
+  .warning-box{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:#fbbf24;background:rgba(245,158,11,0.1);border-radius:6px;padding:0.5rem}
+  .timestamp{font-size:0.75rem;color:var(--text-500);padding-top:0.5rem}
+
+  /* Config/Help Modals */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:var(--bg-900);border:1px solid var(--bg-700);border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:1.5rem}
+  .modal h3{font-size:1.125rem;font-weight:600;margin-bottom:0.5rem}
+  .modal .desc{font-size:0.875rem;color:var(--text-400);margin-bottom:1.5rem}
+  .modal-section{margin-bottom:1rem}
+  .modal-section h4{font-size:0.875rem;font-weight:500;margin-bottom:0.25rem}
+  .modal-section p{font-size:0.875rem;color:var(--text-400);line-height:1.6}
+
+  /* Config specific */
+  .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem}
+  .preset-btn{padding:0.5rem;border-radius:6px;background:transparent;border:1px solid var(--bg-700);color:var(--text-300);cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+  .preset-btn:hover{border-color:var(--primary)}
+  .preset-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+  .slider-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+  .slider-row .value{font-size:0.875rem;background:var(--bg-800);padding:2px 8px;border-radius:4px}
+  input[type=range]{width:100%;accent-color:var(--primary);margin-bottom:0.25rem}
+  .summary-box{background:rgba(30,41,59,0.5);border-radius:8px;padding:1rem;margin-top:1rem}
+  .summary-box h4{font-size:0.875rem;font-weight:500;margin-bottom:0.5rem}
+  .summary-box p{font-size:0.875rem;color:var(--text-400);margin-bottom:0.25rem}
+
+  /* Footer */
+  footer{border-top:1px solid var(--bg-800);background:rgba(15,23,42,0.3);padding:0.5rem 1.5rem;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-500)}
+
+  /* Tooltip (simple) */
+  [data-tooltip]{position:relative}
+  [data-tooltip]:hover::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--bg-800);color:var(--text-200);padding:4px 8px;border-radius:4px;font-size:0.75rem;z-index:60;pointer-events:none;border:1px solid var(--bg-700)}
+
+  @media(max-width:1024px){aside.left{display:none}}
+  @media(max-width:768px){aside.right{position:fixed;right:0;top:0;height:100%;z-index:80}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-left">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2V6a4 4 0 0 1 4-4z"/><path d="M8 14v4a4 4 0 0 0 8 0v-4"/><circle cx="9" cy="8" r="1"/><circle cx="15" cy="8" r="1"/></svg>
+    <h1>Mech Interp Viz</h1>
+    <span class="subtitle" style="display:none" id="subtitleDesktop">Mechanistic Interpretability Visualization</span>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="openModal('helpModal')" data-tooltip="Help">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 0 1 5.12 2.13c0 1.6-2.12 2.37-2.12 3.87"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+    </button>
+    <button class="icon-btn" onclick="openModal('configModal')" data-tooltip="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Main -->
+<main>
+  <!-- Left sidebar -->
+  <aside class="left" id="leftSidebar">
+    <!-- Legend -->
+    <div class="card" id="legendCard"></div>
+    <!-- Stats -->
+    <div class="card" id="statsCard"></div>
+  </aside>
+
+  <!-- Visualization -->
+  <div class="viz-area" id="vizArea"></div>
+
+  <!-- Right panel -->
+  <aside class="right" id="rightPanel">
+    <div class="panel-header">
+      <h2>Annotations</h2>
+      <button class="icon-btn btn-sm" onclick="togglePanel()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="panel-content" id="panelContent"></div>
+    <div class="panel-footer">
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="exportAnnotations()">⬇ Export</button>
+        <label style="flex:1"><input type="file" accept=".json" onchange="importAnnotations(event)" style="display:none"><span class="btn btn-outline btn-sm" style="width:100%;display:flex;align-items:center;justify-content:center">⬆ Import</span></label>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text-500);text-align:center">Annotations saved to browser localStorage</p>
+    </div>
+  </aside>
+</main>
+
+<!-- Footer -->
+<footer>
+  <span>Mech Interp Viz — Tool for Mechanistic Interpretability Research</span>
+  <span id="footerMode">Local mode</span>
+</footer>
+
+<!-- Help Modal -->
+<div class="modal-overlay" id="helpModal" onclick="if(event.target===this)closeModal('helpModal')">
+  <div class="modal">
+    <h3>How to Use</h3>
+    <p class="desc">A guide to using the Mechanistic Interpretability Visualization Tool</p>
+    <div class="modal-section"><h4>🔍 Exploring the Architecture</h4><p>The visualization shows transformer layers stacked vertically. Each layer contains attention heads (circles) and an MLP block. Click any component to select it.</p></div>
+    <div class="modal-section"><h4>📝 Adding Annotations</h4><p>Select a component and use the right panel to add notes, tags, and importance ratings. Annotations are saved to your browser's localStorage automatically.</p></div>
+    <div class="modal-section"><h4>🎨 Color Coding</h4><p>Red = High importance, Amber = Medium, Green = Low, Gray = Unknown. Components with notes show a white dot indicator.</p></div>
+    <div class="modal-section"><h4>⚙️ Configuration</h4><p>Click the gear icon to change model architecture. Choose from presets (GPT-2 Small/Medium/Large/XL) or configure custom layer and head counts.</p></div>
+    <div class="modal-section"><h4>📤 Export/Import</h4><p>Export annotations as JSON for backup or sharing. Import previously exported annotations to restore your work.</p></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal('helpModal')">Got it</button>
+  </div>
+</div>
+
+<!-- Config Modal -->
+<div class="modal-overlay" id="configModal" onclick="if(event.target===this)closeModal('configModal')">
+  <div class="modal" id="configModalContent"></div>
+</div>
+
+<script>
+// ─── State ───
+const PREDEFINED_TAGS = ['Induction Head','Copy Head','Name Mover','Backup Name Mover','Negative Name Mover','S2 Inhibition','Duplicate Token','Previous Token','Positional','Content-Aware','Pattern Matcher','Signal Boosting','Output Suppression','Factual Recall','Context Mixing','Special Character','Math Operation','Syntactic','Semantic','Unknown Function'];
+const MODEL_PRESETS = [
+  {name:'GPT-2 Small',layers:12,heads:12},{name:'GPT-2 Medium',layers:24,heads:16},
+  {name:'GPT-2 Large',layers:36,heads:20},{name:'GPT-2 XL',layers:48,heads:25},
+  {name:'GPT-3 Small',layers:12,heads:12},{name:'GPT-3 Medium',layers:24,heads:16},
+  {name:'Custom',layers:12,heads:12}
+];
+const STORAGE_KEY = 'mechmap-viz-storage';
+
+let state = {
+  config: {modelName:'GPT-2 Small',numLayers:12,numHeadsPerLayer:12},
+  selectedComponent: null,
+  annotations: {},
+  isPanelOpen: true
+};
+
+function loadState(){
+  try{const s=localStorage.getItem(STORAGE_KEY);if(s){const d=JSON.parse(s);if(d.config)state.config=d.config;if(d.annotations)state.annotations=d.annotations;}}catch(e){}
+}
+function saveState(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({config:state.config,annotations:state.annotations}));}catch(e){}
+}
+function getKey(comp){
+  if(!comp)return null;
+  return comp.type==='mlp'?`mlp-layer-${comp.layerIndex}`:`head-layer-${comp.layerIndex}-head-${comp.headIndex}`;
+}
+
+// ─── Render ───
+function render(){
+  renderLegend();renderStats();renderVisualization();renderPanel();renderConfig();
+  document.getElementById('footerMode').textContent='Local mode';
+  document.getElementById('subtitleDesktop').style.display=window.innerWidth>640?'inline':'none';
+  const rp=document.getElementById('rightPanel');
+  if(state.isPanelOpen){rp.classList.remove('closed');}else{rp.classList.add('closed');}
+  saveState();
+}
+
+function renderLegend(){
+  const c=document.getElementById('legendCard');
+  c.innerHTML=`<h3>Legend</h3>
+    <div style="margin-bottom:0.75rem"><p class="card-section-title">Components</p>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--bg-700);border-color:var(--bg-600)"></div><span class="legend-label">Attention Head</span></div>
+      <div class="legend-item"><div class="legend-rect" style="background:var(--violet-900-50);border-color:var(--violet-700)"></div><span class="legend-label">MLP Block</span></div>
+    </div>
+    <div style="margin-bottom:0.75rem"><p class="card-section-title">Importance</p>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--red-500-20);border-color:var(--red-500)"></div><span class="legend-label">High</span></div>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--amber-500-20);border-color:var(--amber-500)"></div><span class="legend-label">Medium</span></div>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--green-500-20);border-color:var(--green-500)"></div><span class="legend-label">Low</span></div>
+      <div class="legend-item"><div class="legend-circle" style="background:rgba(100,116,139,0.2);border-color:var(--text-500)"></div><span class="legend-label">Unknown</span></div>
+    </div>
+    <div><p class="card-section-title">Indicators</p>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--bg-700);border-color:var(--bg-600);position:relative"><span style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:white"></span></div><span class="legend-label">Has notes</span></div>
+      <div class="legend-item"><div class="legend-circle" style="background:var(--bg-700);border-color:var(--bg-600);box-shadow:0 0 0 3px var(--primary-ring)"></div><span class="legend-label">Selected</span></div>
+    </div>`;
+}
+
+function renderStats(){
+  const c=document.getElementById('statsCard');
+  const anns=Object.values(state.annotations);
+  const total=state.config.numLayers*(state.config.numHeadsPerLayer+1);
+  const coverage=total>0?((anns.length/total)*100).toFixed(1):'0.0';
+  const heads=anns.filter(a=>a.componentType==='attention_head').length;
+  const mlps=anns.filter(a=>a.componentType==='mlp').length;
+  const imp={high:anns.filter(a=>a.importance==='high').length,medium:anns.filter(a=>a.importance==='medium').length,low:anns.filter(a=>a.importance==='low').length,unknown:anns.filter(a=>a.importance==='unknown').length};
+  const tagMap={};anns.forEach(a=>(a.tags||[]).forEach(t=>{tagMap[t]=(tagMap[t]||0)+1}));
+  const topTags=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  let tagsHTML=topTags.length?`<div><p class="card-section-title">Top Tags</p>${topTags.map(([t,n])=>`<div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:2px"><span style="color:var(--text-400)">${t}</span><span class="mono" style="color:var(--text-500)">${n}</span></div>`).join('')}</div>`:'';
+  c.innerHTML=`<h3>Statistics</h3>
+    <div style="margin-bottom:0.75rem"><div style="display:flex;justify-content:space-between;font-size:0.875rem"><span style="color:var(--text-400)">Coverage</span><span class="mono">${coverage}%</span></div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${coverage}%"></div></div>
+      <p style="font-size:0.75rem;color:var(--text-500)">${anns.length} of ${total} components annotated</p>
+    </div>
+    <div class="stat-grid" style="margin-bottom:0.75rem">
+      <div class="stat-box"><p class="label">Heads</p><p class="value mono">${heads}/${state.config.numLayers*state.config.numHeadsPerLayer}</p></div>
+      <div class="stat-box"><p class="label">MLPs</p><p class="value mono">${mlps}/${state.config.numLayers}</p></div>
+    </div>
+    <div style="margin-bottom:0.75rem"><p class="card-section-title">Importance</p>
+      <div class="importance-grid">
+        <div class="imp-box" style="background:var(--red-900-30)"><p class="count mono">${imp.high}</p><p class="ilabel">High</p></div>
+        <div class="imp-box" style="background:var(--amber-900-30)"><p class="count mono">${imp.medium}</p><p class="ilabel">Med</p></div>
+        <div class="imp-box" style="background:var(--green-900-30)"><p class="count mono">${imp.low}</p><p class="ilabel">Low</p></div>
+        <div class="imp-box" style="background:rgba(51,65,85,0.5)"><p class="count mono">${imp.unknown}</p><p class="ilabel">Unk</p></div>
+      </div>
+    </div>${tagsHTML}`;
+}
+
+function renderVisualization(){
+  const v=document.getElementById('vizArea');
+  const {numLayers,numHeadsPerLayer,modelName}=state.config;
+  let html=`<div class="model-header"><div class="line"></div><h2>${esc(modelName)}</h2><div class="line right"></div></div>`;
+  html+=`<div class="embed-box embed-input">Input Embeddings</div>`;
+  html+=`<div class="flow-connector"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(180deg)"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg><div class="vline"></div></div>`;
+  for(let l=0;l<numLayers;l++){
+    html+=`<div class="layer-container"><span class="layer-label mono">Layer ${l}</span><div class="layer-box">`;
+    html+=`<span class="section-label">Attention Heads</span><div class="heads-grid">`;
+    for(let h=0;h<numHeadsPerLayer;h++){
+      const key=`head-layer-${l}-head-${h}`;
+      const ann=state.annotations[key];
+      const sel=state.selectedComponent&&state.selectedComponent.type==='attention_head'&&state.selectedComponent.layerIndex===l&&state.selectedComponent.headIndex===h;
+      let cls='attn-head';
+      if(ann)cls+=` imp-${ann.importance==='unknown'?'unknown-annotated':ann.importance}`;
+      if(sel)cls+=' selected';
+      const dot=ann&&ann.notes?'<span class="note-dot"></span>':'';
+      html+=`<button class="${cls}" onclick="selectComponent('attention_head',${l},${h})" data-tooltip="L${l} H${h}">${dot}<span class="mono">${h}</span></button>`;
+    }
+    html+=`</div>`;
+    html+=`<div class="flow-divider"><div class="hline"></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate(180deg)"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg><div class="hline right"></div></div>`;
+    const mkey=`mlp-layer-${l}`;const mann=state.annotations[mkey];
+    const msel=state.selectedComponent&&state.selectedComponent.type==='mlp'&&state.selectedComponent.layerIndex===l;
+    let mcls='mlp-block';
+    if(mann)mcls+=` imp-${mann.importance==='unknown'?'unknown-annotated':mann.importance}`;
+    if(msel)mcls+=' selected';
+    const mdot=mann&&mann.notes?'<span class="note-dot"></span>':'';
+    html+=`<span class="section-label">Feed Forward</span><button class="${mcls}" onclick="selectComponent('mlp',${l})" data-tooltip="L${l} MLP">${mdot}<span class="mono">MLP</span></button>`;
+    html+=`</div>`;
+    if(l<numLayers-1){
+      html+=`<div class="flow-connector"><div class="vline" style="height:16px"></div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`<div class="flow-connector"><div class="vline"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;transform:rotate(180deg)"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>`;
+  html+=`<div class="embed-box embed-output" style="margin-bottom:1rem">Output (Logits)</div>`;
+  v.innerHTML=html;
+}
+
+function renderPanel(){
+  const pc=document.getElementById('panelContent');
+  if(!state.selectedComponent){
+    pc.innerHTML='<div style="text-align:center;padding:2rem 0;color:var(--text-500)"><p>Click on a component to view or add annotations</p></div>';
+    return;
+  }
+  const sc=state.selectedComponent;
+  const key=getKey(sc);const ann=state.annotations[key];
+  const typeName=sc.type==='attention_head'?'Attention Head':'MLP Block';
+  let headLine=sc.headIndex!==undefined?`<p><span class="lbl">Head:</span> <span style="font-weight:500">${sc.headIndex}</span></p>`:'';
+  const notes=ann?ann.notes:'';
+  const tags=ann?ann.tags:[];
+  const importance=ann?ann.importance:'unknown';
+  const tagOptions=PREDEFINED_TAGS.filter(t=>!tags.includes(t)).map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+
+  pc.innerHTML=`
+    <div class="warning-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Changes saved locally only.</div>
+    <div><h3 class="form-label" style="margin-bottom:0.5rem">Selected Component</h3><div class="info-box"><p><span class="lbl">Type:</span> <span style="font-weight:500">${typeName}</span></p><p><span class="lbl">Layer:</span> <span style="font-weight:500">${sc.layerIndex}</span></p>${headLine}</div></div>
+    <div><label class="form-label">Importance Level</label><select id="impSelect" onchange="updateField()"><option value="high" ${importance==='high'?'selected':''}>🔴 High</option><option value="medium" ${importance==='medium'?'selected':''}>🟡 Medium</option><option value="low" ${importance==='low'?'selected':''}>🟢 Low</option><option value="unknown" ${importance==='unknown'?'selected':''}>⚪ Unknown</option></select></div>
+    <div><label class="form-label">Tags</label><div class="tags-wrap" id="tagsWrap">${tags.map(t=>`<span class="tag" onclick="removeTag('${esc(t)}')">${esc(t)} ✕</span>`).join('')}</div><select id="tagSelect" onchange="addPredefinedTag(this.value);this.value='';" style="margin-top:0.5rem"><option value="">Add predefined tag...</option>${tagOptions}</select><div class="tag-input-row" style="margin-top:0.5rem"><input type="text" id="customTagInput" placeholder="Custom tag..." onkeydown="if(event.key==='Enter')addCustomTag()"><button class="btn btn-outline btn-sm btn-icon" onclick="addCustomTag()">+</button></div></div>
+    <div><label class="form-label">Notes</label><textarea id="notesArea" placeholder="Document your findings...">${esc(notes)}</textarea></div>
+    <div style="display:flex;gap:0.5rem"><button class="btn btn-primary" style="flex:1" onclick="saveAnnotation()">Save Annotation</button>${ann?'<button class="btn btn-danger btn-icon" onclick="deleteAnnotation()" style="width:36px;height:36px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>':''}</div>
+    ${ann?`<div class="timestamp"><p>Created: ${new Date(ann.createdAt).toLocaleString()}</p><p>Updated: ${new Date(ann.updatedAt).toLocaleString()}</p></div>`:''}`;
+}
+
+function renderConfig(){
+  const m=document.getElementById('configModalContent');
+  const {modelName,numLayers,numHeadsPerLayer}=state.config;
+  m.innerHTML=`<h3>Model Configuration</h3><p class="desc">Configure the transformer architecture parameters.</p>
+    <div class="modal-section"><label class="form-label">Model Name</label><input type="text" id="cfgName" value="${esc(modelName)}" oninput="state.config.modelName=this.value"></div>
+    <div class="modal-section"><label class="form-label">Presets</label><div class="preset-grid">${MODEL_PRESETS.map(p=>`<button class="preset-btn ${modelName===p.name?'active':''}" onclick="applyPreset('${p.name}')">${p.name}</button>`).join('')}</div></div>
+    <div class="modal-section"><div class="slider-row"><label class="form-label" style="margin:0">Number of Layers</label><span class="value mono">${numLayers}</span></div><input type="range" min="1" max="48" value="${numLayers}" oninput="state.config.numLayers=+this.value;render()"><p style="font-size:0.75rem;color:var(--text-500)">GPT-2 Small (12), Medium (24), Large (36)</p></div>
+    <div class="modal-section"><div class="slider-row"><label class="form-label" style="margin:0">Attention Heads per Layer</label><span class="value mono">${numHeadsPerLayer}</span></div><input type="range" min="1" max="32" value="${numHeadsPerLayer}" oninput="state.config.numHeadsPerLayer=+this.value;render()"><p style="font-size:0.75rem;color:var(--text-500)">Typically 12-20 heads per layer</p></div>
+    <div class="summary-box"><h4>Model Summary</h4><p><span style="color:var(--text-400)">Total Attention Heads:</span> ${numLayers*numHeadsPerLayer}</p><p><span style="color:var(--text-400)">Total MLP Blocks:</span> ${numLayers}</p><p><span style="color:var(--text-400)">Total Components:</span> ${numLayers*(numHeadsPerLayer+1)}</p></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal('configModal')">Done</button>`;
+}
+
+// ─── Actions ───
+function selectComponent(type,layerIndex,headIndex){
+  state.selectedComponent={type,layerIndex,headIndex:headIndex!==undefined?headIndex:undefined};
+  state.isPanelOpen=true;render();
+}
+function togglePanel(){state.isPanelOpen=!state.isPanelOpen;render();}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function applyPreset(name){
+  const p=MODEL_PRESETS.find(x=>x.name===name);
+  if(p){state.config={modelName:p.name,numLayers:p.layers,numHeadsPerLayer:p.heads};render();}
+}
+function saveAnnotation(){
+  const key=getKey(state.selectedComponent);if(!key)return;
+  const sc=state.selectedComponent;
+  const existing=state.annotations[key];
+  const notes=document.getElementById('notesArea').value;
+  const importance=document.getElementById('impSelect').value;
+  const tags=getCurrentTags();
+  state.annotations[key]={id:key,componentType:sc.type,layerIndex:sc.layerIndex,headIndex:sc.headIndex,notes,tags,importance,createdAt:existing?existing.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  render();
+}
+function deleteAnnotation(){
+  const key=getKey(state.selectedComponent);if(!key)return;
+  delete state.annotations[key];render();
+}
+function getCurrentTags(){
+  const els=document.querySelectorAll('#tagsWrap .tag');
+  return Array.from(els).map(e=>e.textContent.replace(' ✕','').trim());
+}
+function addPredefinedTag(tag){
+  if(!tag)return;const tags=getCurrentTags();if(!tags.includes(tag)){tags.push(tag);updateTagsDisplay(tags);}
+}
+function addCustomTag(){
+  const inp=document.getElementById('customTagInput');const tag=inp.value.trim();
+  if(!tag)return;const tags=getCurrentTags();if(!tags.includes(tag)){tags.push(tag);updateTagsDisplay(tags);}inp.value='';
+}
+function removeTag(tag){const tags=getCurrentTags().filter(t=>t!==tag);updateTagsDisplay(tags);}
+function updateTagsDisplay(tags){
+  const w=document.getElementById('tagsWrap');
+  w.innerHTML=tags.map(t=>`<span class="tag" onclick="removeTag('${esc(t)}')">${esc(t)} ✕</span>`).join('');
+  const sel=document.getElementById('tagSelect');
+  const opts=PREDEFINED_TAGS.filter(t=>!tags.includes(t));
+  sel.innerHTML='<option value="">Add predefined tag...</option>'+opts.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+}
+function exportAnnotations(){
+  const data=JSON.stringify({config:state.config,annotations:state.annotations},null,2);
+  const blob=new Blob([data],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='mechmap-annotations.json';a.click();URL.revokeObjectURL(url);
+}
+function importAnnotations(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();reader.onload=e=>{
+    try{const d=JSON.parse(e.target.result);if(d.annotations)state.annotations=d.annotations;if(d.config)state.config=d.config;render();}catch(err){alert('Failed to parse JSON file');}
+  };reader.readAsText(file);event.target.value='';
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ─── Init ───
+loadState();render();
+window.addEventListener('resize',()=>{document.getElementById('subtitleDesktop').style.display=window.innerWidth>640?'inline':'none';});
+</script>
+</body>
+</html>
