@@ -52,6 +52,51 @@
             --shadow-heavy: rgba(60, 53, 40, 0.15);
         }
 
+        [data-theme="nightblue"] {
+            --bg-primary: #0d1b2a;
+            --bg-secondary: #1b2838;
+            --bg-panel: #1b3a4b;
+            --bg-card: #1f2d3d;
+            --text-primary: #c8d6e5;
+            --text-secondary: #8da9c4;
+            --text-muted: #5c7a99;
+            --border-color: #2a4a6b;
+            --accent-primary: #48bfe3;
+            --accent-secondary: #72efdd;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --shadow-heavy: rgba(0, 0, 0, 0.6);
+        }
+
+        [data-theme="warmcream"] {
+            --bg-primary: #fdf6ec;
+            --bg-secondary: #f9eed8;
+            --bg-panel: #f5e6c8;
+            --bg-card: #fffbf5;
+            --text-primary: #4a3728;
+            --text-secondary: #6b5344;
+            --text-muted: #8c7b6b;
+            --border-color: #e0cdb5;
+            --accent-primary: #c17817;
+            --accent-secondary: #e8a838;
+            --shadow: rgba(74, 55, 40, 0.1);
+            --shadow-heavy: rgba(74, 55, 40, 0.18);
+        }
+
+        [data-theme="highcontrast"] {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-panel: #111111;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --text-muted: #b0b0b0;
+            --border-color: #444444;
+            --accent-primary: #00ff88;
+            --accent-secondary: #ffdd00;
+            --shadow: rgba(0, 255, 136, 0.1);
+            --shadow-heavy: rgba(0, 255, 136, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -737,15 +782,301 @@
         .fade-in {
             animation: fadeIn 0.5s ease-out;
         }
+
+        /* Slider Controls */
+        .slider-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .slider-control label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .slider-control input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+        }
+
+        .slider-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .slider-control input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Color Picker */
+        .color-picker-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.4rem 0;
+        }
+
+        .color-picker-row label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex: 1;
+        }
+
+        .color-picker-row input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        /* Resize Handles */
+        .resize-handle {
+            width: 5px;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            z-index: 15;
+            position: relative;
+        }
+
+        .resize-handle:hover,
+        .resize-handle.active {
+            background: var(--accent-primary);
+        }
+
+        .resize-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 3px;
+            height: 30px;
+            border-radius: 2px;
+            background: var(--text-muted);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .resize-handle:hover::after {
+            opacity: 0.5;
+        }
+
+        /* Scene Goal */
+        .scene-goal {
+            margin-top: 0.5rem;
+        }
+
+        .scene-goal textarea {
+            width: 100%;
+            min-height: 50px;
+            padding: 0.5rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .scene-goal textarea:focus {
+            border-color: var(--accent-primary);
+            outline: none;
+        }
+
+        .scene-goal-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        /* Shortcuts Modal */
+        .shortcuts-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .shortcuts-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .shortcuts-modal-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px var(--shadow-heavy);
+        }
+
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .shortcut-key {
+            background: var(--bg-panel);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Tag Management */
+        .tag-manage-section {
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tag-manage-row {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag-manage-row input {
+            flex: 1;
+            padding: 0.4rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+        }
+
+        .tag-manage-btn {
+            padding: 0.4rem 0.6rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--accent-primary);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .tag.removable .tag-remove {
+            margin-left: 0.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .tag.removable .tag-remove:hover {
+            opacity: 1;
+        }
+
+        /* Export Settings */
+        .export-settings {
+            margin-top: 0.5rem;
+        }
+
+        .export-settings select,
+        .export-settings input {
+            width: 100%;
+            padding: 0.4rem;
+            margin: 0.3rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+        }
+
+        /* Project Selector */
+        .project-selector {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .project-selector select {
+            flex: 1;
+            padding: 0.4rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .project-selector button {
+            padding: 0.4rem 0.6rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--accent-primary);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Writing Width */
+        .writing-area {
+            max-width: var(--writing-max-width, none);
+            margin: 0 auto;
+        }
     </style>
 </head>
 
 <body data-theme="light">
     <!-- Theme Switcher -->
     <div class="theme-switcher">
-        <button class="theme-btn light active" data-theme="light">☀️</button>
-        <button class="theme-btn dark" data-theme="dark">🌙</button>
-        <button class="theme-btn beige" data-theme="beige">🍂</button>
+        <button class="theme-btn light active" data-theme="light" title="Light">☀️</button>
+        <button class="theme-btn dark" data-theme="dark" title="Dark">🌙</button>
+        <button class="theme-btn beige" data-theme="beige" title="Autumn">🍂</button>
+        <button class="theme-btn" data-theme="nightblue" title="Night Blue"
+            style="background:#0d1b2a;color:#48bfe3;">🌊</button>
+        <button class="theme-btn" data-theme="warmcream" title="Warm Cream"
+            style="background:#fdf6ec;color:#c17817;">☕</button>
+        <button class="theme-btn" data-theme="highcontrast" title="High Contrast"
+            style="background:#000;color:#00ff88;">⚡</button>
+        <span style="width:1px;background:var(--border-color);margin:0 2px;"></span>
+        <input type="color" id="customAccentColor" title="Custom Accent" value="#6495ed"
+            style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px;">
+        <input type="color" id="customBgColor" title="Custom Background" value="#fefefe"
+            style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px;">
     </div>
 
     <div class="app-container">
@@ -755,6 +1086,16 @@
                 <div class="panel-header">
                     <h3 class="panel-title">Story Universe</h3>
                     <span>📁</span>
+                </div>
+
+                <!-- Project Selector -->
+                <div class="project-selector">
+                    <span>📦</span>
+                    <select id="projectSelect">
+                        <option value="default">Default Project</option>
+                    </select>
+                    <button id="newProjectBtn" title="New Project">+</button>
+                    <button id="deleteProjectBtn" title="Delete Project" style="background:#e74c3c;">🗑</button>
                 </div>
 
                 <!-- Branch Indicator -->
@@ -853,11 +1194,26 @@
                 <div class="auto-tag-suggestion">
                     <small><strong>💡 Suggested:</strong> "flashback", "emotional_tension"</small>
                 </div>
+
+                <!-- Tag Management -->
+                <div class="tag-manage-section">
+                    <h5 style="font-size:0.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">
+                        Manage Custom Tags</h5>
+                    <div class="tag-manage-row">
+                        <input type="text" id="customTagName" placeholder="Tag name">
+                        <input type="text" id="customTagKeywords" placeholder="Keywords (comma sep)">
+                        <button class="tag-manage-btn" id="addCustomTagBtn">+</button>
+                    </div>
+                    <div id="customTagsList" style="margin-top:0.5rem;"></div>
+                </div>
             </div>
 
             <!-- Connection Overlay -->
             <div class="connection-overlay" id="connectionOverlay"></div>
         </div>
+
+        <!-- Left Resize Handle -->
+        <div class="resize-handle" id="leftResizeHandle"></div>
 
         <!-- Main Writing Area -->
         <div class="main-area" id="mainArea">
@@ -873,6 +1229,12 @@
                         <div class="outline-source">From: Chapter 1 Outline.md</div>
                     </div>
 
+                    <!-- Scene Goal -->
+                    <div class="scene-goal">
+                        <div class="scene-goal-label">🎯 Scene Goal / Notes</div>
+                        <textarea id="sceneGoalInput" placeholder="What should this scene accomplish?"></textarea>
+                    </div>
+
                     <textarea class="editor" id="editor" placeholder="Let your thoughts flow onto the page..."
                         spellcheck="false"></textarea>
 
@@ -882,6 +1244,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Right Resize Handle -->
+        <div class="resize-handle" id="rightResizeHandle"></div>
 
         <!-- Format Panel -->
         <div class="format-panel" id="formatPanel">
@@ -901,6 +1266,45 @@
                             data-font="'Times New Roman', Times, serif">Times</button>
                         <button class="format-btn typography-btn"
                             data-font="'Garamond', 'EB Garamond', serif">Garamond</button>
+                        <button class="format-btn typography-btn"
+                            data-font="Inter, 'Segoe UI', sans-serif">Inter</button>
+                        <button class="format-btn typography-btn"
+                            data-font="Arial, Helvetica, sans-serif">Arial</button>
+                        <button class="format-btn typography-btn" data-font="'Roboto', sans-serif">Roboto</button>
+                    </div>
+                    <div class="slider-control">
+                        <label>Font Size <span id="fontSizeVal">16px</span></label>
+                        <input type="range" id="fontSizeSlider" min="14" max="24" value="16" step="1">
+                    </div>
+                </div>
+
+                <div class="format-section">
+                    <h4>Line Spacing</h4>
+                    <div class="format-controls">
+                        <button class="format-btn line-spacing-btn" data-spacing="1.4">Compact</button>
+                        <button class="format-btn line-spacing-btn active" data-spacing="1.8">Normal</button>
+                        <button class="format-btn line-spacing-btn" data-spacing="2.4">Spacious</button>
+                    </div>
+                </div>
+
+                <div class="format-section">
+                    <h4>Writing Width</h4>
+                    <div class="format-controls">
+                        <button class="format-btn width-btn" data-width="600px">Narrow</button>
+                        <button class="format-btn width-btn" data-width="800px">Medium</button>
+                        <button class="format-btn width-btn" data-width="1000px">Wide</button>
+                        <button class="format-btn width-btn active" data-width="none">Full</button>
+                    </div>
+                </div>
+
+                <div class="format-section">
+                    <h4>Flow Suggestions</h4>
+                    <div class="format-controls">
+                        <button class="format-btn active" id="suggestionsToggle">💡 On</button>
+                    </div>
+                    <div class="slider-control">
+                        <label>Delay <span id="suggestDelayVal">35s</span></label>
+                        <input type="range" id="suggestDelaySlider" min="10" max="120" value="35" step="5">
                     </div>
                 </div>
 
@@ -918,6 +1322,29 @@
                         <button class="format-btn" id="exportTxt">📄 TXT</button>
                         <button class="format-btn" id="exportDoc">📑 DOC</button>
                         <button class="format-btn" id="exportPdf">📘 PDF</button>
+                    </div>
+                    <div class="export-settings">
+                        <label style="font-size:0.8rem;color:var(--text-muted);">Export Font</label>
+                        <select id="exportFont">
+                            <option value="Georgia, serif">Georgia</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                        </select>
+                        <label style="font-size:0.8rem;color:var(--text-muted);">Export Font Size</label>
+                        <select id="exportFontSize">
+                            <option value="10pt">10pt</option>
+                            <option value="11pt">11pt</option>
+                            <option value="12pt" selected>12pt</option>
+                            <option value="14pt">14pt</option>
+                        </select>
+                        <label style="font-size:0.8rem;color:var(--text-muted);">Margins</label>
+                        <select id="exportMargins">
+                            <option value="0.5in">Narrow (0.5in)</option>
+                            <option value="1in" selected>Normal (1in)</option>
+                            <option value="1.25in">Wide (1.25in)</option>
+                            <option value="1.5in">Extra Wide (1.5in)</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -946,6 +1373,23 @@
         </div>
     </div>
 
+    <!-- Shortcuts Modal -->
+    <div class="shortcuts-modal" id="shortcutsModal">
+        <div class="shortcuts-modal-content">
+            <h3 style="margin-bottom:1rem;">⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcut-row"><span>New Branch</span><span class="shortcut-key">Ctrl + B</span></div>
+            <div class="shortcut-row"><span>Toggle File Panel</span><span class="shortcut-key">Ctrl + \</span></div>
+            <div class="shortcut-row"><span>Toggle Format Panel</span><span class="shortcut-key">Ctrl + /</span></div>
+            <div class="shortcut-row"><span>Focus Mode</span><span class="shortcut-key">Ctrl + Shift + F</span></div>
+            <div class="shortcut-row"><span>Typewriter Mode</span><span class="shortcut-key">Ctrl + Shift + T</span>
+            </div>
+            <div class="shortcut-row"><span>Show Shortcuts</span><span class="shortcut-key">?</span></div>
+            <div class="shortcut-row"><span>Dismiss / Exit</span><span class="shortcut-key">Escape</span></div>
+            <div style="margin-top:1.5rem;text-align:right;"><button class="format-btn"
+                    id="closeShortcutsBtn">Close</button></div>
+        </div>
+    </div>
+
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-item">
@@ -963,6 +1407,11 @@
             <span>💾</span>
             <span id="lastSaved">Auto-saved just now</span>
         </div>
+        <div class="status-item">
+            <button id="shortcutsBtn"
+                style="background:var(--bg-panel);border:1px solid var(--border-color);border-radius:4px;padding:0.2rem 0.5rem;cursor:pointer;color:var(--text-muted);font-size:0.85rem;"
+                title="Keyboard Shortcuts">⌨️ ?</button>
+        </div>
     </div>
 
     <script>
@@ -973,6 +1422,9 @@
         let formatPanelOpen = true;
         let currentBranch = 'main';
         let autoDetectedTags = new Set();
+        let suggestionsEnabled = true;
+        let suggestDelay = 35000;
+        let currentProject = 'default';
 
         const editor = document.getElementById('editor');
         const outlineHint = document.getElementById('outlineHint');
@@ -998,8 +1450,8 @@
             "✨ Add a sensory detail that makes this scene unforgettable..."
         ];
 
-        // Auto-detection keywords for smart tagging
-        const tagKeywords = {
+        // Default auto-detection keywords for smart tagging
+        const defaultTagKeywords = {
             'protagonist': ['main character', 'hero', 'she', 'he', 'they', 'sarah'],
             'mystery': ['secret', 'hidden', 'unknown', 'mysterious', 'enigma'],
             'discovery': ['found', 'discovered', 'revealed', 'uncovered', 'noticed'],
@@ -1010,30 +1462,27 @@
             'library': ['library', 'books', 'shelves', 'volumes', 'archive']
         };
 
+        // Merge default + custom tags
+        function getTagKeywords() {
+            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
+            return { ...defaultTagKeywords, ...custom };
+        }
+
         function updateWordCount() {
             const text = editor.value;
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
             wordCount.textContent = `${words} words`;
-
-            // Auto-detect tags based on content
             detectTags(text);
-
-            if (words > 0) {
-                lastSaved.textContent = 'Auto-saved just now';
-            }
+            if (words > 0) { lastSaved.textContent = 'Auto-saved just now'; }
         }
 
         function detectTags(text) {
             const lowerText = text.toLowerCase();
             const newTags = new Set();
-
+            const tagKeywords = getTagKeywords();
             Object.entries(tagKeywords).forEach(([tag, keywords]) => {
-                if (keywords.some(keyword => lowerText.includes(keyword))) {
-                    newTags.add(tag);
-                }
+                if (keywords.some(keyword => lowerText.includes(keyword))) { newTags.add(tag); }
             });
-
-            // Update auto-detected tags if new ones found
             newTags.forEach(tag => {
                 if (!autoDetectedTags.has(tag)) {
                     autoDetectedTags.add(tag);
@@ -1049,8 +1498,6 @@
             newTag.textContent = tagName;
             newTag.addEventListener('click', () => toggleTag(newTag));
             autoSection.appendChild(newTag);
-
-            // Animate in
             newTag.style.opacity = '0';
             newTag.style.transform = 'scale(0.8)';
             setTimeout(() => {
@@ -1064,13 +1511,12 @@
             clearTimeout(inactivityTimer);
             lastTypingTime = Date.now();
             flowStatus.textContent = '✍️ In flow';
-
             flowSuggestion.classList.remove('show');
-
+            if (!suggestionsEnabled) return;
             inactivityTimer = setTimeout(() => {
                 showFlowSuggestion();
                 flowStatus.textContent = '💭 Pondering...';
-            }, 35000);
+            }, suggestDelay);
         }
 
         function showFlowSuggestion() {
@@ -1246,129 +1692,42 @@
 
         function exportToDoc() {
             const content = editor.value;
-            if (!content.trim()) {
-                showNotification('Nothing to export - start writing first!');
-                return;
-            }
-
-            // Convert plain text to HTML with paragraphs
-            const htmlContent = content
-                .split('\n\n')
-                .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-                .join('');
-
-            // Create a Word-compatible HTML document
-            const docContent = `
-<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:w="urn:schemas-microsoft-com:office:word"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta charset="utf-8">
-    <title>${getDocumentTitle()}</title>
-    <style>
-        body {
-            font-family: 'Georgia', serif;
-            font-size: 12pt;
-            line-height: 1.6;
-            margin: 1in;
-        }
-        p {
-            margin-bottom: 1em;
-            text-indent: 0.5in;
-        }
-        p:first-child {
-            text-indent: 0;
-        }
-    </style>
-</head>
-<body>
-${htmlContent}
-</body>
-</html>`;
-
+            if (!content.trim()) { showNotification('Nothing to export - start writing first!'); return; }
+            const expFont = document.getElementById('exportFont').value;
+            const expSize = document.getElementById('exportFontSize').value;
+            const expMargin = document.getElementById('exportMargins').value;
+            const htmlContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
+            const docContent = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${getDocumentTitle()}</title>
+<style>body{font-family:${expFont};font-size:${expSize};line-height:1.6;margin:${expMargin};}p{margin-bottom:1em;text-indent:0.5in;}p:first-child{text-indent:0;}</style>
+</head><body>${htmlContent}</body></html>`;
             const blob = new Blob([docContent], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
-            link.download = `${getDocumentTitle()}.doc`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            link.href = url; link.download = `${getDocumentTitle()}.doc`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
             URL.revokeObjectURL(url);
-
             showNotification('Exported as DOC file');
         }
 
         function exportToPdf() {
             const content = editor.value;
-            if (!content.trim()) {
-                showNotification('Nothing to export - start writing first!');
-                return;
-            }
-
-            // Create a print-friendly window
+            if (!content.trim()) { showNotification('Nothing to export - start writing first!'); return; }
+            const expFont = document.getElementById('exportFont').value;
+            const expSize = document.getElementById('exportFontSize').value;
+            const expMargin = document.getElementById('exportMargins').value;
             const printWindow = window.open('', '_blank');
-
-            // Convert plain text to HTML with paragraphs
-            const htmlContent = content
-                .split('\n\n')
-                .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-                .join('');
-
-            const printContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>${getDocumentTitle()}</title>
-    <style>
-        @media print {
-            @page {
-                margin: 1in;
-                size: letter;
-            }
-        }
-        body {
-            font-family: 'Georgia', serif;
-            font-size: 12pt;
-            line-height: 1.8;
-            color: #333;
-            max-width: 6.5in;
-            margin: 0 auto;
-            padding: 1in;
-        }
-        p {
-            margin-bottom: 1em;
-            text-indent: 0.5in;
-        }
-        p:first-child {
-            text-indent: 0;
-        }
-        h1 {
-            font-size: 18pt;
-            margin-bottom: 2em;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <h1>${getDocumentTitle()}</h1>
-    ${htmlContent}
-    <script>
-        window.onload = function() {
-            window.print();
-            window.onafterprint = function() {
-                window.close();
-            };
-        };
-    <\/script>
-</body>
-</html>`;
-
+            const htmlContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
+            const printContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${getDocumentTitle()}</title>
+<style>@media print{@page{margin:${expMargin};size:letter;}}
+body{font-family:${expFont};font-size:${expSize};line-height:1.8;color:#333;max-width:6.5in;margin:0 auto;padding:${expMargin};}
+p{margin-bottom:1em;text-indent:0.5in;}p:first-child{text-indent:0;}h1{font-size:18pt;margin-bottom:2em;text-align:center;}</style>
+</head><body><h1>${getDocumentTitle()}</h1>${htmlContent}
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};<\/script>
+</body></html>`;
             printWindow.document.write(printContent);
             printWindow.document.close();
-
             showNotification('PDF print dialog opened');
         }
 
@@ -1478,18 +1837,10 @@ ${htmlContent}
             }
         }
 
-        // Event Listeners
-        editor.addEventListener('input', () => {
-            updateWordCount();
-            resetInactivityTimer();
-        });
-
+        // ========== EVENT LISTENERS ==========
+        editor.addEventListener('input', () => { updateWordCount(); resetInactivityTimer(); });
         editor.addEventListener('keydown', resetInactivityTimer);
-
-        flowSuggestion.addEventListener('click', () => {
-            flowSuggestion.classList.remove('show');
-            resetInactivityTimer();
-        });
+        flowSuggestion.addEventListener('click', () => { flowSuggestion.classList.remove('show'); resetInactivityTimer(); });
 
         // Panel toggles
         document.getElementById('leftToggle').addEventListener('click', toggleFilePanel);
@@ -1500,17 +1851,22 @@ ${htmlContent}
         document.getElementById('cancelBranchBtn').addEventListener('click', hideBranchModal);
         document.getElementById('createBranchBtn').addEventListener('click', () => {
             const branchName = document.getElementById('branchInput').value.trim();
-            if (branchName) {
-                switchBranch(branchName);
-                hideBranchModal();
-            }
+            if (branchName) { switchBranch(branchName); hideBranchModal(); }
         });
 
         // Theme switching
         document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                switchTheme(btn.getAttribute('data-theme'));
-            });
+            btn.addEventListener('click', () => switchTheme(btn.getAttribute('data-theme')));
+        });
+
+        // Custom color pickers
+        document.getElementById('customAccentColor').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--accent-primary', e.target.value);
+            localStorage.setItem('flowwriter-custom-accent', e.target.value);
+        });
+        document.getElementById('customBgColor').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--bg-primary', e.target.value);
+            localStorage.setItem('flowwriter-custom-bg', e.target.value);
         });
 
         // Export buttons
@@ -1520,86 +1876,284 @@ ${htmlContent}
 
         // Typography buttons
         document.querySelectorAll('.typography-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTypography(btn.getAttribute('data-font'), btn));
+        });
+
+        // Font size slider
+        document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+            const size = e.target.value + 'px';
+            editor.style.fontSize = size;
+            document.getElementById('fontSizeVal').textContent = size;
+            saveSetting('flowwriter-font-size', e.target.value);
+        });
+
+        // Line spacing buttons
+        document.querySelectorAll('.line-spacing-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                setTypography(btn.getAttribute('data-font'), btn);
+                document.querySelectorAll('.line-spacing-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                editor.style.lineHeight = btn.dataset.spacing;
+                saveSetting('flowwriter-line-spacing', btn.dataset.spacing);
             });
+        });
+
+        // Writing width buttons
+        document.querySelectorAll('.width-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.width-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelector('.writing-area').style.maxWidth = btn.dataset.width;
+                saveSetting('flowwriter-writing-width', btn.dataset.width);
+            });
+        });
+
+        // Suggestions toggle
+        document.getElementById('suggestionsToggle').addEventListener('click', () => {
+            suggestionsEnabled = !suggestionsEnabled;
+            const btn = document.getElementById('suggestionsToggle');
+            btn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
+            btn.classList.toggle('active', suggestionsEnabled);
+            if (!suggestionsEnabled) { clearTimeout(inactivityTimer); flowSuggestion.classList.remove('show'); }
+            saveSetting('flowwriter-suggestions', suggestionsEnabled);
+        });
+
+        // Suggestions delay slider
+        document.getElementById('suggestDelaySlider').addEventListener('input', (e) => {
+            suggestDelay = parseInt(e.target.value) * 1000;
+            document.getElementById('suggestDelayVal').textContent = e.target.value + 's';
+            saveSetting('flowwriter-suggest-delay', e.target.value);
         });
 
         // Focus Mode button
         document.getElementById('focusBtn').addEventListener('click', toggleFocusMode);
-
         // Typewriter Mode button
         document.getElementById('typewriterBtn').addEventListener('click', toggleTypewriterMode);
+
+        // Shortcuts modal
+        document.getElementById('shortcutsBtn').addEventListener('click', () => {
+            document.getElementById('shortcutsModal').classList.add('show');
+        });
+        document.getElementById('closeShortcutsBtn').addEventListener('click', () => {
+            document.getElementById('shortcutsModal').classList.remove('show');
+        });
 
         // Tree node clicks
         document.querySelectorAll('.tree-node').forEach(node => {
             node.addEventListener('click', () => {
                 document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
                 node.classList.add('active');
-
-                // Simulate loading different file content
-                if (node.textContent.includes('Chapter 1')) {
-                    outlineHint.innerHTML = `
-                        <strong>Current Scene:</strong> Opening scene - protagonist arrives at the library for research, notices something unusual.
-                        <div class="outline-source">From: Chapter 1 Outline.md</div>
-                    `;
-                } else if (node.textContent.includes('Character Notes')) {
-                    outlineHint.innerHTML = `
-                        <strong>Character Focus:</strong> Sarah Chen, 28, historian with photographic memory. Estranged from family.
-                        <div class="outline-source">From: Character Notes.md</div>
-                    `;
+                const nodeText = node.textContent.trim();
+                if (nodeText.includes('Chapter 1')) {
+                    outlineHint.innerHTML = `<strong>Current Scene:</strong> Opening scene - protagonist arrives at the library for research, notices something unusual.<div class="outline-source">From: Chapter 1 Outline.md</div>`;
+                } else if (nodeText.includes('Character Notes')) {
+                    outlineHint.innerHTML = `<strong>Character Focus:</strong> Sarah Chen, 28, historian with photographic memory. Estranged from family.<div class="outline-source">From: Character Notes.md</div>`;
                 }
                 outlineHint.classList.add('show');
+                // Load scene goal for this node
+                loadSceneGoal(nodeText);
             });
         });
+
+        // Scene goal auto-save
+        document.getElementById('sceneGoalInput').addEventListener('input', (e) => {
+            const activeNode = document.querySelector('.tree-node.active');
+            if (activeNode) {
+                const key = 'flowwriter-goal-' + activeNode.textContent.trim().replace(/\s+/g, '_');
+                localStorage.setItem(key, e.target.value);
+            }
+        });
+
+        function loadSceneGoal(nodeText) {
+            const key = 'flowwriter-goal-' + nodeText.replace(/\s+/g, '_');
+            document.getElementById('sceneGoalInput').value = localStorage.getItem(key) || '';
+        }
 
         // Tag filtering
         document.querySelectorAll('.tag').forEach(tag => {
             tag.addEventListener('click', () => toggleTag(tag));
         });
 
+        // Custom tag management
+        document.getElementById('addCustomTagBtn').addEventListener('click', () => {
+            const name = document.getElementById('customTagName').value.trim();
+            const kw = document.getElementById('customTagKeywords').value.trim();
+            if (!name || !kw) return;
+            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
+            custom[name] = kw.split(',').map(k => k.trim().toLowerCase());
+            localStorage.setItem('flowwriter-custom-tags', JSON.stringify(custom));
+            document.getElementById('customTagName').value = '';
+            document.getElementById('customTagKeywords').value = '';
+            renderCustomTags();
+            showNotification(`Custom tag "${name}" added`);
+        });
+
+        function renderCustomTags() {
+            const container = document.getElementById('customTagsList');
+            container.innerHTML = '';
+            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
+            Object.keys(custom).forEach(name => {
+                const tag = document.createElement('span');
+                tag.className = 'tag removable';
+                tag.innerHTML = `${name} <span class="tag-remove" data-tag="${name}">&times;</span>`;
+                tag.querySelector('.tag-remove').addEventListener('click', () => {
+                    const c = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
+                    delete c[name];
+                    localStorage.setItem('flowwriter-custom-tags', JSON.stringify(c));
+                    renderCustomTags();
+                    showNotification(`Removed custom tag "${name}"`);
+                });
+                container.appendChild(tag);
+            });
+        }
+
+        // Resize handles
+        function setupResize(handleId, panelId, side) {
+            const handle = document.getElementById(handleId);
+            const panel = document.getElementById(panelId);
+            let startX, startWidth;
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                startX = e.clientX;
+                startWidth = panel.offsetWidth;
+                handle.classList.add('active');
+                const onMove = (ev) => {
+                    const diff = side === 'left' ? ev.clientX - startX : startX - ev.clientX;
+                    panel.style.width = Math.max(200, Math.min(600, startWidth + diff)) + 'px';
+                    panel.querySelector(':scope > div').style.minWidth = panel.style.width;
+                };
+                const onUp = () => {
+                    handle.classList.remove('active');
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                };
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+        }
+        setupResize('leftResizeHandle', 'filePanel', 'left');
+        setupResize('rightResizeHandle', 'formatPanel', 'right');
+
+        // Project management
+        function getProjectKey(key) { return `flowwriter-proj-${currentProject}-${key}`; }
+        function saveSetting(key, value) {
+            localStorage.setItem(key, value);
+            // Also save per-project
+            localStorage.setItem(getProjectKey(key), value);
+        }
+
+        function loadProjectSettings() {
+            const prefix = `flowwriter-proj-${currentProject}-`;
+            const fontSize = localStorage.getItem(prefix + 'flowwriter-font-size');
+            if (fontSize) {
+                document.getElementById('fontSizeSlider').value = fontSize;
+                document.getElementById('fontSizeVal').textContent = fontSize + 'px';
+                editor.style.fontSize = fontSize + 'px';
+            }
+            const lineSpacing = localStorage.getItem(prefix + 'flowwriter-line-spacing');
+            if (lineSpacing) {
+                editor.style.lineHeight = lineSpacing;
+                document.querySelectorAll('.line-spacing-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.spacing === lineSpacing);
+                });
+            }
+            const writingWidth = localStorage.getItem(prefix + 'flowwriter-writing-width');
+            if (writingWidth) {
+                document.querySelector('.writing-area').style.maxWidth = writingWidth;
+                document.querySelectorAll('.width-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.width === writingWidth);
+                });
+            }
+            const suggestOn = localStorage.getItem(prefix + 'flowwriter-suggestions');
+            if (suggestOn !== null) {
+                suggestionsEnabled = suggestOn === 'true';
+                const btn = document.getElementById('suggestionsToggle');
+                btn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
+                btn.classList.toggle('active', suggestionsEnabled);
+            }
+            const delay = localStorage.getItem(prefix + 'flowwriter-suggest-delay');
+            if (delay) {
+                suggestDelay = parseInt(delay) * 1000;
+                document.getElementById('suggestDelaySlider').value = delay;
+                document.getElementById('suggestDelayVal').textContent = delay + 's';
+            }
+        }
+
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
+            const sel = document.getElementById('projectSelect');
+            sel.innerHTML = '';
+            projects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p; opt.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+                sel.appendChild(opt);
+            });
+            sel.value = currentProject;
+        }
+
+        document.getElementById('projectSelect').addEventListener('change', (e) => {
+            currentProject = e.target.value;
+            localStorage.setItem('flowwriter-current-project', currentProject);
+            loadProjectSettings();
+            showNotification(`Switched to project: ${currentProject}`);
+        });
+
+        document.getElementById('newProjectBtn').addEventListener('click', () => {
+            const name = prompt('New project name:');
+            if (!name) return;
+            const slug = name.toLowerCase().replace(/\s+/g, '_');
+            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
+            if (!projects.includes(slug)) { projects.push(slug); localStorage.setItem('flowwriter-projects', JSON.stringify(projects)); }
+            currentProject = slug;
+            localStorage.setItem('flowwriter-current-project', currentProject);
+            loadProjects();
+            document.getElementById('projectSelect').value = slug;
+            showNotification(`Created project: ${name}`);
+        });
+
+        document.getElementById('deleteProjectBtn').addEventListener('click', () => {
+            if (currentProject === 'default') { showNotification('Cannot delete default project'); return; }
+            if (!confirm(`Delete project "${currentProject}"?`)) return;
+            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
+            const idx = projects.indexOf(currentProject);
+            if (idx > -1) projects.splice(idx, 1);
+            localStorage.setItem('flowwriter-projects', JSON.stringify(projects));
+            currentProject = 'default';
+            localStorage.setItem('flowwriter-current-project', 'default');
+            loadProjects();
+            loadProjectSettings();
+            showNotification('Project deleted');
+        });
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts when typing in inputs
+            const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT';
             if (e.ctrlKey || e.metaKey) {
                 switch (e.key) {
-                    case 'b':
-                        e.preventDefault();
-                        createNewBranch();
-                        break;
-                    case '\\':
-                        e.preventDefault();
-                        toggleFilePanel();
-                        break;
-                    case '/':
-                        e.preventDefault();
-                        toggleFormatPanel();
-                        break;
+                    case 'b': e.preventDefault(); createNewBranch(); break;
+                    case '\\': e.preventDefault(); toggleFilePanel(); break;
+                    case '/': e.preventDefault(); toggleFormatPanel(); break;
                 }
-                // Shift + Ctrl/Cmd shortcuts
                 if (e.shiftKey) {
                     switch (e.key.toLowerCase()) {
-                        case 'f':
-                            e.preventDefault();
-                            toggleFocusMode();
-                            break;
-                        case 't':
-                            e.preventDefault();
-                            toggleTypewriterMode();
-                            break;
+                        case 'f': e.preventDefault(); toggleFocusMode(); break;
+                        case 't': e.preventDefault(); toggleTypewriterMode(); break;
                     }
                 }
             }
             if (e.key === 'Escape') {
                 hideBranchModal();
+                document.getElementById('shortcutsModal').classList.remove('show');
                 flowSuggestion.classList.remove('show');
-                // Exit focus mode with Escape
-                if (focusModeActive) {
-                    toggleFocusMode();
-                }
+                if (focusModeActive) toggleFocusMode();
+            }
+            // ? key for shortcuts (only when not in text input/editor)
+            if (e.key === '?' && !isInput && e.target !== editor) {
+                document.getElementById('shortcutsModal').classList.add('show');
             }
         });
 
-        // Initialize
+        // ========== INITIALIZATION ==========
         resetInactivityTimer();
         updateWordCount();
 
@@ -1607,19 +2161,69 @@ ${htmlContent}
         const savedTheme = localStorage.getItem('flowwriter-theme') || 'light';
         switchTheme(savedTheme);
 
+        // Load saved custom accent/bg colors
+        const savedAccent = localStorage.getItem('flowwriter-custom-accent');
+        if (savedAccent) {
+            document.documentElement.style.setProperty('--accent-primary', savedAccent);
+            document.getElementById('customAccentColor').value = savedAccent;
+        }
+        const savedBg = localStorage.getItem('flowwriter-custom-bg');
+        if (savedBg) {
+            document.documentElement.style.setProperty('--bg-primary', savedBg);
+            document.getElementById('customBgColor').value = savedBg;
+        }
+
         // Load saved typography preference
         const savedTypography = localStorage.getItem('flowwriter-typography');
         if (savedTypography) {
             const matchingBtn = document.querySelector(`.typography-btn[data-font="${savedTypography}"]`);
-            if (matchingBtn) {
-                setTypography(savedTypography, matchingBtn);
-            }
+            if (matchingBtn) setTypography(savedTypography, matchingBtn);
+        }
+
+        // Load font size
+        const savedFontSize = localStorage.getItem('flowwriter-font-size');
+        if (savedFontSize) {
+            document.getElementById('fontSizeSlider').value = savedFontSize;
+            document.getElementById('fontSizeVal').textContent = savedFontSize + 'px';
+            editor.style.fontSize = savedFontSize + 'px';
+        }
+
+        // Load line spacing
+        const savedSpacing = localStorage.getItem('flowwriter-line-spacing');
+        if (savedSpacing) {
+            editor.style.lineHeight = savedSpacing;
+            document.querySelectorAll('.line-spacing-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.spacing === savedSpacing);
+            });
+        }
+
+        // Load writing width
+        const savedWidth = localStorage.getItem('flowwriter-writing-width');
+        if (savedWidth) {
+            document.querySelector('.writing-area').style.maxWidth = savedWidth;
+            document.querySelectorAll('.width-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.width === savedWidth);
+            });
+        }
+
+        // Load suggestions preference
+        const savedSuggestions = localStorage.getItem('flowwriter-suggestions');
+        if (savedSuggestions !== null) {
+            suggestionsEnabled = savedSuggestions === 'true';
+            const sBtn = document.getElementById('suggestionsToggle');
+            sBtn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
+            sBtn.classList.toggle('active', suggestionsEnabled);
+        }
+        const savedDelay = localStorage.getItem('flowwriter-suggest-delay');
+        if (savedDelay) {
+            suggestDelay = parseInt(savedDelay) * 1000;
+            document.getElementById('suggestDelaySlider').value = savedDelay;
+            document.getElementById('suggestDelayVal').textContent = savedDelay + 's';
         }
 
         // Load saved focus mode preference
         const savedFocusMode = localStorage.getItem('flowwriter-focus-mode');
         if (savedFocusMode === 'true') {
-            // Delay to let page load first -- but don't toggle panels
             setTimeout(() => {
                 focusModeActive = true;
                 document.body.classList.add('focus-mode');
@@ -1641,15 +2245,21 @@ ${htmlContent}
             }, 100);
         }
 
+        // Load projects
+        currentProject = localStorage.getItem('flowwriter-current-project') || 'default';
+        loadProjects();
+        loadProjectSettings();
+        renderCustomTags();
+
+        // Load scene goal for initial active node
+        const initActiveNode = document.querySelector('.tree-node.active');
+        if (initActiveNode) loadSceneGoal(initActiveNode.textContent.trim());
+
         // Sample content for demo
         setTimeout(() => {
             editor.value = "The old library stood silent, its dust-covered shelves holding secrets that had been forgotten for decades. Sarah stepped carefully across the creaking floorboards, her flashlight cutting through the darkness like a blade through velvet.\n\nSomething glinted in the far corner—a leather-bound journal that seemed impossibly out of place among the deteriorating books. As she reached for it, her heart began to race with anticipation and dread. This wasn't just any journal... the cover bore her grandmother's initials.\n\nHer hands trembled as she opened it to the first page, where elegant script revealed words that would change everything she thought she knew about her family's past.\n\n";
             updateWordCount();
-
-            // Show outline hint after a moment
-            setTimeout(() => {
-                outlineHint.classList.add('show');
-            }, 2000);
+            setTimeout(() => { outlineHint.classList.add('show'); }, 2000);
         }, 1000);
 
         // Auto-hide panels on small screens
@@ -1659,9 +2269,8 @@ ${htmlContent}
                 if (formatPanelOpen) toggleFormatPanel();
             }
         }
-
         window.addEventListener('resize', handleResize);
-        handleResize(); // Check on load
+        handleResize();
     </script>
 </body>
 
