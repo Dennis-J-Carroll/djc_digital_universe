@@ -72,13 +72,7 @@ const AppsPage = ({ location }) => {
       category: 'AI/ML',
       featured: true
     },
-    {
-      title: 'MLOps Engineer: Orchestrating ML',
-      path: '/apps/MLOps_Launch.html',
-      description: 'Interactive guide to MLOps engineering—learn about ML pipelines, model deployment, monitoring, and infrastructure management for production systems.',
-      category: 'AI/ML',
-      featured: true
-    },
+
     {
       title: 'ML Fraud Detection Mastery',
       path: '/apps/ML_Fraud_detection.html',
