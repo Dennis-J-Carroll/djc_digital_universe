@@ -180,12 +180,6 @@ const AppsPage = ({ location }) => {
       category: 'Education'
     },
     {
-      title: 'Python Godking Training',
-      path: '/apps/python-godking-training.html',
-      description: 'Advanced Python programming training with challenging exercises and concepts.',
-      category: 'Education'
-    },
-    {
       title: 'CLI University',
       path: '/apps/CLI_uni.html',
       description: 'Interactive command-line interface learning environment for mastering CLI tools.',
