@@ -187,6 +187,32 @@
             position: relative;
             height: 250px;
         }
+
+        .toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.15); border-radius: 26px; transition: 0.3s; }
+        .toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: var(--accent-cyan); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .model-label { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .model-a-label { background: rgba(0,212,255,0.2); color: var(--accent-cyan); }
+        .model-b-label { background: rgba(249,115,22,0.2); color: var(--accent-orange); }
+
+        .confusion-matrix { display: grid; grid-template-columns: auto 1fr 1fr; grid-template-rows: auto 1fr 1fr; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+        .cm-cell { display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; font-weight: 600; min-height: 48px; }
+        .cm-header { color: var(--text-secondary); font-size: 0.7rem; text-transform: uppercase; }
+        .cm-tp { background: rgba(16,185,129,0.25); color: #34d399; }
+        .cm-tn { background: rgba(0,212,255,0.2); color: #67e8f9; }
+        .cm-fp { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .cm-fn { background: rgba(249,115,22,0.2); color: #fdba74; }
+
+        .btn-export { background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; font-size: 0.85rem; }
+        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.3); }
+        .btn-export:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -221,10 +247,22 @@
                     </div>
                 </div>
 
-                <!-- Model Architecture -->
+                <!-- Comparison Mode Toggle -->
+                <div class="glass-card p-4 flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-sm">Comparison Mode</span>
+                        <p class="text-xs text-gray-400 mt-0.5">Train two architectures side-by-side</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="comparisonToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Model A Architecture -->
                 <div class="glass-card p-6 glow-purple">
                     <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                        <span class="text-2xl">[=]</span> Architecture
+                        <span class="text-2xl">[=]</span> Architecture <span id="modelALabel" class="model-label model-a-label hidden">Model A</span>
                     </h2>
                     <div class="space-y-4">
                         <div>
@@ -245,6 +283,36 @@
                                 <option value="relu">ReLU</option>
                                 <option value="sigmoid">Sigmoid</option>
                                 <option value="tanh" selected>Tanh</option>
+                                <option value="leakyReLU">Leaky ReLU</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model B Architecture (comparison mode) -->
+                <div id="modelBCard" class="glass-card p-6 hidden" style="border-color: rgba(249,115,22,0.3); box-shadow: 0 0 20px rgba(249,115,22,0.15);">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">[=]</span> Architecture <span class="model-label model-b-label">Model B</span>
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Hidden Layers</label>
+                            <select id="hiddenLayersB" class="w-full">
+                                <option value="1">1 Layer</option>
+                                <option value="2">2 Layers</option>
+                                <option value="3" selected>3 Layers</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Neurons per Layer: <span id="neuronsValueB" class="text-orange-400">16</span></label>
+                            <input type="range" id="neuronsPerLayerB" min="2" max="32" value="16" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Activation Function</label>
+                            <select id="activationB" class="w-full">
+                                <option value="relu" selected>ReLU</option>
+                                <option value="sigmoid">Sigmoid</option>
+                                <option value="tanh">Tanh</option>
                                 <option value="leakyReLU">Leaky ReLU</option>
                             </select>
                         </div>
@@ -281,12 +349,15 @@
                 </div>
 
                 <!-- Control Buttons -->
-                <div class="flex gap-4">
+                <div class="flex gap-3 flex-wrap">
                     <button id="trainBtn" class="btn-primary flex-1 flex items-center justify-center gap-2">
                         <span>[>]</span> Train Model
                     </button>
                     <button id="stopBtn" class="btn-secondary" disabled>
                         [||] Stop
+                    </button>
+                    <button id="exportBtn" class="btn-export" disabled title="Export trained model weights">
+                        ⬇ Export Weights
                     </button>
                 </div>
             </div>
@@ -333,7 +404,40 @@
                 <!-- Decision Boundary Visualization -->
                 <div class="glass-card p-6">
                     <h2 class="text-xl font-bold mb-4">Decision Boundary</h2>
-                    <canvas id="decisionCanvas" width="300" height="300" class="w-full border border-gray-700 rounded-lg"></canvas>
+                    <div id="singleCanvasWrap">
+                        <canvas id="decisionCanvas" width="300" height="300" class="w-full border border-gray-700 rounded-lg"></canvas>
+                    </div>
+                    <div id="comparisonCanvasWrap" class="hidden comparison-grid">
+                        <div>
+                            <div class="text-center mb-2"><span class="model-label model-a-label">Model A</span></div>
+                            <canvas id="decisionCanvasA" width="250" height="250" class="w-full border border-gray-700 rounded-lg"></canvas>
+                        </div>
+                        <div>
+                            <div class="text-center mb-2"><span class="model-label model-b-label">Model B</span></div>
+                            <canvas id="decisionCanvasB" width="250" height="250" class="w-full border border-gray-700 rounded-lg"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix -->
+                <div id="confusionMatrixCard" class="glass-card p-6 hidden">
+                    <h2 class="text-xl font-bold mb-4">Confusion Matrix</h2>
+                    <div id="singleCMWrap">
+                        <div id="confusionMatrix" class="confusion-matrix"></div>
+                        <div id="cmStats" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
+                    </div>
+                    <div id="comparisonCMWrap" class="hidden comparison-grid">
+                        <div>
+                            <div class="text-center mb-2"><span class="model-label model-a-label">Model A</span></div>
+                            <div id="confusionMatrixA" class="confusion-matrix"></div>
+                            <div id="cmStatsA" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
+                        </div>
+                        <div>
+                            <div class="text-center mb-2"><span class="model-label model-b-label">Model B</span></div>
+                            <div id="confusionMatrixB" class="confusion-matrix"></div>
+                            <div id="cmStatsB" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -394,12 +498,16 @@
     <script>
         // ============ GLOBALS ============
         let model = null;
+        let modelB = null;
         let trainingData = null;
         let isTraining = false;
         let stopTraining = false;
         let lossHistory = [];
         let accuracyHistory = [];
+        let lossHistoryB = [];
+        let accuracyHistoryB = [];
         let lossChart, accuracyChart;
+        let comparisonMode = false;
         
         // ============ DATASET GENERATION ============
         function generateXORData(n = 200) {
@@ -485,57 +593,45 @@
         }
         
         // ============ MODEL BUILDING ============
-        function buildModel() {
-            if (model) model.dispose();
-            
-            const hiddenLayers = parseInt(document.getElementById('hiddenLayers').value);
-            const neurons = parseInt(document.getElementById('neuronsPerLayer').value);
-            const activation = document.getElementById('activation').value;
-            
-            model = tf.sequential();
-            
-            // First hidden layer
-            model.add(tf.layers.dense({
-                inputShape: [2],
-                units: neurons,
-                activation: activation
-            }));
-            
-            // Additional hidden layers
-            for (let i = 1; i < hiddenLayers; i++) {
-                model.add(tf.layers.dense({
-                    units: neurons,
-                    activation: activation
-                }));
+        function _buildModel(nLayers, nNeurons, actFn) {
+            const m = tf.sequential();
+            m.add(tf.layers.dense({ inputShape: [2], units: nNeurons, activation: actFn }));
+            for (let i = 1; i < nLayers; i++) {
+                m.add(tf.layers.dense({ units: nNeurons, activation: actFn }));
             }
-            
-            // Output layer
-            model.add(tf.layers.dense({
-                units: 1,
-                activation: 'sigmoid'
-            }));
-            
-            // Compile
-            const optimizer = document.getElementById('optimizer').value;
+            m.add(tf.layers.dense({ units: 1, activation: 'sigmoid' }));
+            const optName = document.getElementById('optimizer').value;
             const lr = Math.pow(10, parseFloat(document.getElementById('learningRate').value));
-            
             let opt;
-            switch(optimizer) {
+            switch(optName) {
                 case 'sgd': opt = tf.train.sgd(lr); break;
                 case 'adam': opt = tf.train.adam(lr); break;
                 case 'rmsprop': opt = tf.train.rmsprop(lr); break;
             }
-            
-            model.compile({
-                optimizer: opt,
-                loss: 'binaryCrossentropy',
-                metrics: ['accuracy']
-            });
-            
+            m.compile({ optimizer: opt, loss: 'binaryCrossentropy', metrics: ['accuracy'] });
+            return m;
+        }
+
+        function buildModel() {
+            if (model) model.dispose();
+            const h = parseInt(document.getElementById('hiddenLayers').value);
+            const n = parseInt(document.getElementById('neuronsPerLayer').value);
+            const a = document.getElementById('activation').value;
+            model = _buildModel(h, n, a);
             updateModelSummary();
             updateNetworkVisualization();
-            log(`Model built: ${hiddenLayers} hidden layers x ${neurons} neurons`);
+            log(`Model A built: ${h} hidden layers x ${n} neurons (${a})`);
             return model;
+        }
+
+        function buildModelB() {
+            if (modelB) modelB.dispose();
+            const h = parseInt(document.getElementById('hiddenLayersB').value);
+            const n = parseInt(document.getElementById('neuronsPerLayerB').value);
+            const a = document.getElementById('activationB').value;
+            modelB = _buildModel(h, n, a);
+            log(`Model B built: ${h} hidden layers x ${n} neurons (${a})`);
+            return modelB;
         }
         
         function updateModelSummary() {
@@ -560,93 +656,195 @@
         }
         
         // ============ TRAINING ============
+        async function _trainSingle(mdl, histLoss, histAcc, label, epochs, batchSize, startTime) {
+            await mdl.fit(trainingData.xs, trainingData.ys, {
+                epochs, batchSize, shuffle: true,
+                callbacks: {
+                    onEpochEnd: async (epoch, logs) => {
+                        if (stopTraining) { mdl.stopTraining = true; return; }
+                        histLoss.push(logs.loss);
+                        histAcc.push(logs.acc);
+                        document.getElementById('currentEpoch').textContent = epoch + 1;
+                        document.getElementById('currentLoss').textContent = logs.loss.toFixed(4);
+                        document.getElementById('currentAccuracy').textContent = (logs.acc * 100).toFixed(1) + '%';
+                        const p = ((epoch + 1) / epochs) * 100;
+                        document.getElementById('progressBar').style.width = `${p}%`;
+                        document.getElementById('progressText').textContent = `${label} — Epoch ${epoch + 1}/${epochs}`;
+                        updateCharts();
+                        if ((epoch + 1) % 10 === 0) drawDecisionBoundary();
+                        await tf.nextFrame();
+                    }
+                }
+            });
+        }
+
         async function trainModel() {
             if (isTraining) return;
-            
             isTraining = true;
             stopTraining = false;
-            lossHistory = [];
-            accuracyHistory = [];
-            
+            lossHistory = []; accuracyHistory = [];
+            lossHistoryB = []; accuracyHistoryB = [];
+
             document.getElementById('trainBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
-            document.getElementById('trainingStatus').textContent = 'Training';
+            document.getElementById('exportBtn').disabled = true;
             document.getElementById('trainingStatus').className = 'stat-badge bg-green-600 text-white flex items-center gap-2';
             document.getElementById('trainingStatus').innerHTML = '<div class="training-indicator"></div> Training';
-            
+
             buildModel();
+            if (comparisonMode) buildModelB();
             loadDataset();
-            
+
             const epochs = parseInt(document.getElementById('epochs').value);
             const batchSize = parseInt(document.getElementById('batchSize').value);
-            
             const startTime = performance.now();
-            
-            log(`Training started: ${epochs} epochs, batch size ${batchSize}`);
-            
+
+            log(`Training started: ${epochs} epochs, batch size ${batchSize}${comparisonMode ? ' [Comparison Mode]' : ''}`);
+
             try {
-                await model.fit(trainingData.xs, trainingData.ys, {
-                    epochs: epochs,
-                    batchSize: batchSize,
-                    shuffle: true,
-                    callbacks: {
-                        onEpochEnd: async (epoch, logs) => {
-                            if (stopTraining) {
-                                model.stopTraining = true;
-                                return;
-                            }
-                            
-                            lossHistory.push(logs.loss);
-                            accuracyHistory.push(logs.acc);
-                            
-                            document.getElementById('currentEpoch').textContent = epoch + 1;
-                            document.getElementById('currentLoss').textContent = logs.loss.toFixed(4);
-                            document.getElementById('currentAccuracy').textContent = (logs.acc * 100).toFixed(1) + '%';
-                            
-                            const progress = ((epoch + 1) / epochs) * 100;
-                            document.getElementById('progressBar').style.width = `${progress}%`;
-                            document.getElementById('progressText').textContent = `Epoch ${epoch + 1}/${epochs}`;
-                            
-                            updateCharts();
-                            
-                            if ((epoch + 1) % 10 === 0) {
-                                drawDecisionBoundary();
-                            }
-                            
-                            await tf.nextFrame();
-                        }
-                    }
-                });
-                
+                // Train Model A
+                log('▸ Training Model A...');
+                await _trainSingle(model, lossHistory, accuracyHistory, 'Model A', epochs, batchSize, startTime);
+
+                // Train Model B (comparison mode)
+                if (comparisonMode && modelB && !stopTraining) {
+                    log('▸ Training Model B...');
+                    await _trainSingle(modelB, lossHistoryB, accuracyHistoryB, 'Model B', epochs, batchSize, startTime);
+                }
+
                 const trainingTimeMs = performance.now() - startTime;
                 document.getElementById('trainingTime').textContent = `${(trainingTimeMs / 1000).toFixed(2)}s`;
-                
+
                 // Measure inference time
                 const inferenceStart = performance.now();
-                for (let i = 0; i < 100; i++) {
-                    const pred = model.predict(tf.tensor2d([[0, 0]]));
-                    pred.dispose();
-                }
-                const inferenceTime = (performance.now() - inferenceStart) / 100;
-                document.getElementById('inferenceTime').textContent = `${inferenceTime.toFixed(2)}ms`;
-                
+                for (let i = 0; i < 100; i++) { const pred = model.predict(tf.tensor2d([[0, 0]])); pred.dispose(); }
+                document.getElementById('inferenceTime').textContent = `${((performance.now() - inferenceStart) / 100).toFixed(2)}ms`;
+
                 drawDecisionBoundary();
-                log(`Training complete! Final accuracy: ${(accuracyHistory[accuracyHistory.length - 1] * 100).toFixed(1)}%`);
-                
-            } catch (e) {
-                log(`Training error: ${e.message}`);
-            }
-            
+                updateCharts();
+                const ds = document.getElementById('datasetSelect').value;
+                if (ds !== 'regression') computeConfusionMatrix();
+                document.getElementById('exportBtn').disabled = false;
+
+                log(`✓ Training complete! Model A accuracy: ${(accuracyHistory[accuracyHistory.length - 1] * 100).toFixed(1)}%`);
+                if (comparisonMode && accuracyHistoryB.length) {
+                    log(`✓ Model B accuracy: ${(accuracyHistoryB[accuracyHistoryB.length - 1] * 100).toFixed(1)}%`);
+                }
+            } catch (e) { log(`Training error: ${e.message}`); }
+
             isTraining = false;
             document.getElementById('trainBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
             document.getElementById('trainingStatus').textContent = 'Complete';
             document.getElementById('trainingStatus').className = 'stat-badge bg-purple-600 text-white';
         }
-        
-        function stopTrainingFn() {
-            stopTraining = true;
-            log('Training stopped by user');
+
+        function stopTrainingFn() { stopTraining = true; log('Training stopped by user'); }
+
+        // ============ MODEL EXPORT ============
+        function exportModelWeights() {
+            if (!model) { log('No trained model to export'); return; }
+            const weightData = {};
+            model.layers.forEach((layer, i) => {
+                const ws = layer.getWeights();
+                weightData[`layer_${i}`] = {
+                    name: layer.name,
+                    weights: ws.map(w => ({ shape: w.shape, values: Array.from(w.dataSync()) }))
+                };
+            });
+            const meta = {
+                exportedAt: new Date().toISOString(),
+                dataset: document.getElementById('datasetSelect').value,
+                hiddenLayers: document.getElementById('hiddenLayers').value,
+                neuronsPerLayer: document.getElementById('neuronsPerLayer').value,
+                activation: document.getElementById('activation').value,
+                optimizer: document.getElementById('optimizer').value,
+                finalLoss: lossHistory[lossHistory.length - 1],
+                finalAccuracy: accuracyHistory[accuracyHistory.length - 1]
+            };
+            const blob = new Blob([JSON.stringify({ meta, weights: weightData }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `edge-ai-model-${meta.dataset}-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            log('Model weights exported as JSON');
+
+            if (comparisonMode && modelB) {
+                const wdB = {};
+                modelB.layers.forEach((layer, i) => {
+                    const ws = layer.getWeights();
+                    wdB[`layer_${i}`] = { name: layer.name, weights: ws.map(w => ({ shape: w.shape, values: Array.from(w.dataSync()) })) };
+                });
+                const metaB = { ...meta, hiddenLayers: document.getElementById('hiddenLayersB').value, neuronsPerLayer: document.getElementById('neuronsPerLayerB').value, activation: document.getElementById('activationB').value, finalLoss: lossHistoryB[lossHistoryB.length - 1], finalAccuracy: accuracyHistoryB[accuracyHistoryB.length - 1] };
+                const blobB = new Blob([JSON.stringify({ meta: metaB, weights: wdB }, null, 2)], { type: 'application/json' });
+                const aB = document.createElement('a');
+                aB.href = URL.createObjectURL(blobB);
+                aB.download = `edge-ai-modelB-${meta.dataset}-${Date.now()}.json`;
+                aB.click();
+                URL.revokeObjectURL(aB.href);
+                log('Model B weights exported as JSON');
+            }
+        }
+
+        // ============ CONFUSION MATRIX ============
+        function _computeCM(mdl) {
+            if (!mdl || !trainingData) return null;
+            const preds = mdl.predict(trainingData.xs).dataSync();
+            const labels = trainingData.ys.dataSync();
+            let tp = 0, fp = 0, tn = 0, fn = 0;
+            for (let i = 0; i < labels.length; i++) {
+                const pred = preds[i] >= 0.5 ? 1 : 0;
+                const actual = labels[i] >= 0.5 ? 1 : 0;
+                if (pred === 1 && actual === 1) tp++;
+                else if (pred === 1 && actual === 0) fp++;
+                else if (pred === 0 && actual === 0) tn++;
+                else fn++;
+            }
+            return { tp, fp, tn, fn };
+        }
+
+        function _renderCM(cm, elId, statsElId) {
+            const el = document.getElementById(elId);
+            const statsEl = document.getElementById(statsElId);
+            if (!cm) { el.innerHTML = ''; statsEl.innerHTML = ''; return; }
+            const total = cm.tp + cm.fp + cm.tn + cm.fn;
+            const accuracy = ((cm.tp + cm.tn) / total * 100).toFixed(1);
+            const precision = cm.tp + cm.fp > 0 ? (cm.tp / (cm.tp + cm.fp) * 100).toFixed(1) : '0.0';
+            const recall = cm.tp + cm.fn > 0 ? (cm.tp / (cm.tp + cm.fn) * 100).toFixed(1) : '0.0';
+            const f1 = parseFloat(precision) + parseFloat(recall) > 0 ? (2 * parseFloat(precision) * parseFloat(recall) / (parseFloat(precision) + parseFloat(recall))).toFixed(1) : '0.0';
+
+            el.innerHTML = `
+                <div class="cm-cell cm-header"></div>
+                <div class="cm-cell cm-header">Pred 0</div>
+                <div class="cm-cell cm-header">Pred 1</div>
+                <div class="cm-cell cm-header">Actual 0</div>
+                <div class="cm-cell cm-tn">${cm.tn}</div>
+                <div class="cm-cell cm-fp">${cm.fp}</div>
+                <div class="cm-cell cm-header">Actual 1</div>
+                <div class="cm-cell cm-fn">${cm.fn}</div>
+                <div class="cm-cell cm-tp">${cm.tp}</div>
+            `;
+            statsEl.innerHTML = `
+                <div><span class="text-gray-400">Accuracy:</span> <span class="text-green-400">${accuracy}%</span></div>
+                <div><span class="text-gray-400">Precision:</span> <span class="text-cyan-400">${precision}%</span></div>
+                <div><span class="text-gray-400">Recall:</span> <span class="text-purple-400">${recall}%</span></div>
+                <div><span class="text-gray-400">F1 Score:</span> <span class="text-orange-400">${f1}%</span></div>
+            `;
+        }
+
+        function computeConfusionMatrix() {
+            document.getElementById('confusionMatrixCard').classList.remove('hidden');
+            if (comparisonMode) {
+                document.getElementById('singleCMWrap').classList.add('hidden');
+                document.getElementById('comparisonCMWrap').classList.remove('hidden');
+                _renderCM(_computeCM(model), 'confusionMatrixA', 'cmStatsA');
+                _renderCM(_computeCM(modelB), 'confusionMatrixB', 'cmStatsB');
+            } else {
+                document.getElementById('singleCMWrap').classList.remove('hidden');
+                document.getElementById('comparisonCMWrap').classList.add('hidden');
+                _renderCM(_computeCM(model), 'confusionMatrix', 'cmStats');
+            }
         }
         
         // ============ VISUALIZATION ============
@@ -705,60 +903,46 @@
             }
         }
         
-        function drawDecisionBoundary() {
-            const canvas = document.getElementById('decisionCanvas');
+        function _drawDB(canvasId, mdl) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            
+            const width = canvas.width, height = canvas.height;
             ctx.clearRect(0, 0, width, height);
-            
-            // Draw background gradient based on model predictions
-            if (model) {
-                const resolution = 30;
-                const stepX = 2 / resolution;
-                const stepY = 2 / resolution;
-                
-                for (let i = 0; i < resolution; i++) {
-                    for (let j = 0; j < resolution; j++) {
-                        const x = -1 + i * stepX;
-                        const y = -1 + j * stepY;
-                        
-                        const pred = model.predict(tf.tensor2d([[x, y]]));
-                        const val = pred.dataSync()[0];
-                        pred.dispose();
-                        
-                        const r = Math.floor(val * 168 + (1 - val) * 0);
-                        const g = Math.floor(val * 85 + (1 - val) * 212);
-                        const b = Math.floor(val * 247 + (1 - val) * 255);
-                        
+            if (mdl) {
+                const res = 30, step = 2 / res;
+                for (let i = 0; i < res; i++) {
+                    for (let j = 0; j < res; j++) {
+                        const x = -1 + i * step, y = -1 + j * step;
+                        const pred = mdl.predict(tf.tensor2d([[x, y]]));
+                        const val = pred.dataSync()[0]; pred.dispose();
+                        const r = Math.floor(val * 168), g = Math.floor(val * 85 + (1 - val) * 212), b = Math.floor(val * 247 + (1 - val) * 255);
                         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
-                        ctx.fillRect(
-                            (x + 1) * width / 2,
-                            (1 - y) * height / 2,
-                            width / resolution + 1,
-                            height / resolution + 1
-                        );
+                        ctx.fillRect((x + 1) * width / 2, (1 - y) * height / 2, width / res + 1, height / res + 1);
                     }
                 }
             }
-            
-            // Draw data points
             if (trainingData && trainingData.raw) {
                 const { xs, ys } = trainingData.raw;
                 for (let i = 0; i < xs.length; i++) {
-                    const x = (xs[i][0] + 1) * width / 2;
-                    const y = (1 - xs[i][1]) * height / 2;
-                    const label = ys[i][0];
-                    
-                    ctx.beginPath();
-                    ctx.arc(x, y, 4, 0, 2 * Math.PI);
-                    ctx.fillStyle = label > 0.5 ? '#a855f7' : '#00d4ff';
-                    ctx.fill();
-                    ctx.strokeStyle = 'white';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+                    const x = (xs[i][0] + 1) * width / 2, y = (1 - xs[i][1]) * height / 2;
+                    ctx.beginPath(); ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                    ctx.fillStyle = ys[i][0] > 0.5 ? '#a855f7' : '#00d4ff';
+                    ctx.fill(); ctx.strokeStyle = 'white'; ctx.lineWidth = 1; ctx.stroke();
                 }
+            }
+        }
+
+        function drawDecisionBoundary() {
+            if (comparisonMode) {
+                document.getElementById('singleCanvasWrap').classList.add('hidden');
+                document.getElementById('comparisonCanvasWrap').classList.remove('hidden');
+                _drawDB('decisionCanvasA', model);
+                _drawDB('decisionCanvasB', modelB);
+            } else {
+                document.getElementById('singleCanvasWrap').classList.remove('hidden');
+                document.getElementById('comparisonCanvasWrap').classList.add('hidden');
+                _drawDB('decisionCanvas', model);
             }
         }
         
@@ -768,63 +952,56 @@
                 maintainAspectRatio: false,
                 animation: { duration: 0 },
                 scales: {
-                    x: {
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#9ca3af' },
-                        title: { display: true, text: 'Epoch', color: '#9ca3af' }
-                    },
-                    y: {
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#9ca3af' },
-                        beginAtZero: true
-                    }
+                    x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, title: { display: true, text: 'Epoch', color: '#9ca3af' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, beginAtZero: true }
                 },
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             };
-            
+
             lossChart = new Chart(document.getElementById('lossChart'), {
                 type: 'line',
                 data: {
                     labels: [],
-                    datasets: [{
-                        data: [],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    datasets: [
+                        { label: 'Model A', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Model B', data: [], borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
+                    ]
                 },
-                options: { ...chartOptions }
+                options: { ...chartOptions, plugins: { legend: { display: false } } }
             });
-            
+
             accuracyChart = new Chart(document.getElementById('accuracyChart'), {
                 type: 'line',
                 data: {
                     labels: [],
-                    datasets: [{
-                        data: [],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    datasets: [
+                        { label: 'Model A', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Model B', data: [], borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
+                    ]
                 },
-                options: { ...chartOptions, scales: { ...chartOptions.scales, y: { ...chartOptions.scales.y, max: 1 } } }
+                options: { ...chartOptions, plugins: { legend: { display: false } }, scales: { ...chartOptions.scales, y: { ...chartOptions.scales.y, max: 1 } } }
             });
         }
-        
+
         function updateCharts() {
-            lossChart.data.labels = lossHistory.map((_, i) => i + 1);
+            const maxLen = Math.max(lossHistory.length, lossHistoryB.length);
+            const labels = Array.from({ length: maxLen }, (_, i) => i + 1);
+
+            lossChart.data.labels = labels;
             lossChart.data.datasets[0].data = lossHistory;
+            lossChart.data.datasets[1].data = lossHistoryB;
+            lossChart.data.datasets[1].hidden = !comparisonMode;
+            lossChart.options.plugins.legend.display = comparisonMode;
             lossChart.update('none');
-            
-            accuracyChart.data.labels = accuracyHistory.map((_, i) => i + 1);
+
+            accuracyChart.data.labels = labels;
             accuracyChart.data.datasets[0].data = accuracyHistory;
+            accuracyChart.data.datasets[1].data = accuracyHistoryB;
+            accuracyChart.data.datasets[1].hidden = !comparisonMode;
+            accuracyChart.options.plugins.legend.display = comparisonMode;
             accuracyChart.update('none');
         }
-        
+
         // ============ UTILITY ============
         function log(message) {
             const logEl = document.getElementById('trainingLog');
@@ -832,49 +1009,51 @@
             logEl.innerHTML += `<div>[${time}] ${message}</div>`;
             logEl.scrollTop = logEl.scrollHeight;
         }
-        
+
+        // ============ COMPARISON MODE TOGGLE ============
+        function toggleComparisonMode(enabled) {
+            comparisonMode = enabled;
+            document.getElementById('modelBCard').classList.toggle('hidden', !enabled);
+            document.getElementById('modelALabel').classList.toggle('hidden', !enabled);
+            if (!enabled) {
+                document.getElementById('singleCanvasWrap').classList.remove('hidden');
+                document.getElementById('comparisonCanvasWrap').classList.add('hidden');
+            }
+            log(enabled ? 'Comparison mode enabled' : 'Comparison mode disabled');
+        }
+
         // ============ EVENT LISTENERS ============
         document.getElementById('trainBtn').addEventListener('click', trainModel);
         document.getElementById('stopBtn').addEventListener('click', stopTrainingFn);
+        document.getElementById('exportBtn').addEventListener('click', exportModelWeights);
         document.getElementById('datasetSelect').addEventListener('change', loadDataset);
-        
+        document.getElementById('comparisonToggle').addEventListener('change', function () { toggleComparisonMode(this.checked); });
+
         ['hiddenLayers', 'neuronsPerLayer', 'activation'].forEach(id => {
             document.getElementById(id).addEventListener('change', () => {
                 updateNetworkVisualization();
                 document.getElementById('neuronsValue').textContent = document.getElementById('neuronsPerLayer').value;
             });
         });
-        
-        document.getElementById('neuronsPerLayer').addEventListener('input', function() {
-            document.getElementById('neuronsValue').textContent = this.value;
-        });
-        
-        document.getElementById('learningRate').addEventListener('input', function() {
-            document.getElementById('lrValue').textContent = Math.pow(10, parseFloat(this.value)).toFixed(4);
-        });
-        
-        document.getElementById('epochs').addEventListener('input', function() {
-            document.getElementById('epochsValue').textContent = this.value;
-        });
-        
-        document.getElementById('batchSize').addEventListener('input', function() {
-            document.getElementById('batchValue').textContent = this.value;
-        });
-        
+
+        document.getElementById('neuronsPerLayer').addEventListener('input', function () { document.getElementById('neuronsValue').textContent = this.value; });
+        document.getElementById('neuronsPerLayerB').addEventListener('input', function () { document.getElementById('neuronsValueB').textContent = this.value; });
+        document.getElementById('learningRate').addEventListener('input', function () { document.getElementById('lrValue').textContent = Math.pow(10, parseFloat(this.value)).toFixed(4); });
+        document.getElementById('epochs').addEventListener('input', function () { document.getElementById('epochsValue').textContent = this.value; });
+        document.getElementById('batchSize').addEventListener('input', function () { document.getElementById('batchValue').textContent = this.value; });
+
         // ============ INITIALIZATION ============
-        window.onload = async function() {
+        window.onload = async function () {
             await tf.ready();
             document.getElementById('tfBackend').textContent = tf.getBackend();
             log(`TensorFlow.js ${tf.version.tfjs} loaded`);
-            
+
             initCharts();
             loadDataset();
             updateNetworkVisualization();
-            
-            // Initial network visualization
             setTimeout(updateNetworkVisualization, 100);
         };
-        
+
         window.addEventListener('resize', updateNetworkVisualization);
     </script>
 </body>
