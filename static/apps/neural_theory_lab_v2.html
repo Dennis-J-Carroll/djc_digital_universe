@@ -12,6 +12,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     
     <style>
         :root {
@@ -936,10 +940,10 @@
                 name: 'Perceptron',
                 description: 'The fundamental building block of neural networks, a linear classifier that learns to separate data using a single decision boundary.',
                 equations: [
-                    'y = σ(w·x + b)',
-                    'σ(z) = 1/(1 + e^(-z))',
-                    'w ← w + α(y_true - y_pred)x',
-                    'b ← b + α(y_true - y_pred)'
+                    'y = \\sigma(\\mathbf{w} \\cdot \\mathbf{x} + b)',
+                    '\\sigma(z) = \\frac{1}{1 + e^{-z}}',
+                    '\\mathbf{w} \\leftarrow \\mathbf{w} + \\alpha(y_{\\text{true}} - y_{\\text{pred}})\\mathbf{x}',
+                    'b \\leftarrow b + \\alpha(y_{\\text{true}} - y_{\\text{pred}})'
                 ],
                 nodes: [2, 1],
                 connections: [[0, 2], [1, 2]],
@@ -956,10 +960,10 @@
                 name: 'Multi-Layer Perceptron',
                 description: 'A feedforward neural network with multiple hidden layers, capable of learning complex non-linear mappings through backpropagation.',
                 equations: [
-                    'h₁ = σ(W₁x + b₁)',
-                    'h₂ = σ(W₂h₁ + b₂)',
-                    'ŷ = W₃h₂ + b₃',
-                    'L = -Σy log(ŷ)'
+                    '\\mathbf{h}_1 = \\sigma(W_1 \\mathbf{x} + \\mathbf{b}_1)',
+                    '\\mathbf{h}_2 = \\sigma(W_2 \\mathbf{h}_1 + \\mathbf{b}_2)',
+                    '\\hat{y} = W_3 \\mathbf{h}_2 + \\mathbf{b}_3',
+                    '\\mathcal{L} = -\\sum_i y_i \\log(\\hat{y}_i)'
                 ],
                 nodes: [3, 4, 4, 2],
                 connections: 'fully-connected',
@@ -976,10 +980,10 @@
                 name: 'Convolutional Neural Network',
                 description: 'Specialized for processing grid-like data such as images, using convolutional layers to detect local features and spatial hierarchies.',
                 equations: [
-                    '(I * K)(i,j) = ΣΣ I(m,n)K(i-m,j-n)',
-                    'P(i,j) = max(R(i×s:(i+1)×s, j×s:(j+1)×s))',
-                    'F = flatten(P)',
-                    'ŷ = σ(W·F + b)'
+                    '(I * K)(i,j) = \\sum_m \\sum_n I(m,n) \\cdot K(i-m, j-n)',
+                    'P(i,j) = \\max\\bigl(R_{i \\cdot s:(i+1)\\cdot s,\\; j \\cdot s:(j+1)\\cdot s}\\bigr)',
+                    '\\mathbf{F} = \\text{flatten}(P)',
+                    '\\hat{y} = \\sigma(W \\cdot \\mathbf{F} + \\mathbf{b})'
                 ],
                 nodes: [1, 3, 3, 2],
                 connections: 'convolutional',
@@ -997,10 +1001,10 @@
                 name: 'Recurrent Neural Network',
                 description: 'Networks with memory that can process sequential data by maintaining hidden states across time steps.',
                 equations: [
-                    'h_t = tanh(W_h·h_{t-1} + W_x·x_t + b)',
-                    'ŷ_t = σ(V·h_t + c)',
-                    '∂L/∂W = Σ_t ∂L_t/∂W',
-                    '∂h_t/∂h_k = ∏_{i=k+1}^t ∂h_i/∂h_{i-1}'
+                    '\\mathbf{h}_t = \\tanh(W_h \\mathbf{h}_{t-1} + W_x \\mathbf{x}_t + \\mathbf{b})',
+                    '\\hat{y}_t = \\sigma(V \\mathbf{h}_t + \\mathbf{c})',
+                    '\\frac{\\partial \\mathcal{L}}{\\partial W} = \\sum_t \\frac{\\partial \\mathcal{L}_t}{\\partial W}',
+                    '\\frac{\\partial \\mathbf{h}_t}{\\partial \\mathbf{h}_k} = \\prod_{i=k+1}^{t} \\frac{\\partial \\mathbf{h}_i}{\\partial \\mathbf{h}_{i-1}}'
                 ],
                 nodes: [2, 3, 2],
                 connections: 'recurrent',
@@ -1017,10 +1021,10 @@
                 name: 'Long Short-Term Memory',
                 description: 'Advanced RNN with gating mechanisms to handle long-term dependencies more effectively.',
                 equations: [
-                    'f_t = σ(W_f·[h_{t-1}, x_t] + b_f)',
-                    'i_t = σ(W_i·[h_{t-1}, x_t] + b_i)',
-                    'C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t',
-                    'o_t = σ(W_o·[h_{t-1}, x_t] + b_o)'
+                    '\\mathbf{f}_t = \\sigma\\bigl(W_f [\\mathbf{h}_{t-1}, \\mathbf{x}_t] + \\mathbf{b}_f\\bigr)',
+                    '\\mathbf{i}_t = \\sigma\\bigl(W_i [\\mathbf{h}_{t-1}, \\mathbf{x}_t] + \\mathbf{b}_i\\bigr)',
+                    '\\mathbf{C}_t = \\mathbf{f}_t \\odot \\mathbf{C}_{t-1} + \\mathbf{i}_t \\odot \\tilde{\\mathbf{C}}_t',
+                    '\\mathbf{o}_t = \\sigma\\bigl(W_o [\\mathbf{h}_{t-1}, \\mathbf{x}_t] + \\mathbf{b}_o\\bigr)'
                 ],
                 nodes: [2, 4, 2],
                 connections: 'lstm-gates',
@@ -1037,10 +1041,10 @@
                 name: 'Transformer',
                 description: 'Attention-based architecture that processes sequences in parallel, revolutionizing natural language processing.',
                 equations: [
-                    'Attention(Q,K,V) = softmax(QK^T/√d_k)V',
-                    'MultiHead(Q,K,V) = Concat(head_1,...,head_h)W^O',
-                    'FFN(x) = max(0, xW_1 + b_1)W_2 + b_2',
-                    'LayerNorm(x + Sublayer(x))'
+                    '\\text{Attention}(Q,K,V) = \\text{softmax}\\!\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V',
+                    '\\text{MultiHead}(Q,K,V) = \\text{Concat}(\\text{head}_1, \\ldots, \\text{head}_h)W^O',
+                    '\\text{FFN}(x) = \\max(0,\\, xW_1 + b_1)W_2 + b_2',
+                    '\\text{LayerNorm}(x + \\text{Sublayer}(x))'
                 ],
                 nodes: [4, 4, 4],
                 connections: 'attention',
@@ -1058,10 +1062,10 @@
                 name: 'Generative Adversarial Network',
                 description: 'Two networks competing: generator vs discriminator, learning to generate realistic data.',
                 equations: [
-                    'min_G max_D V(D,G) = E_x[log D(x)] + E_z[log(1-D(G(z)))]',
-                    'G(z) = tanh(W_g·z + b_g)',
-                    'D(x) = σ(W_d·x + b_d)',
-                    'L_G = -E_z[log D(G(z))]'
+                    '\\min_G \\max_D V(D,G) = \\mathbb{E}_{x}[\\log D(x)] + \\mathbb{E}_{z}[\\log(1 - D(G(z)))]',
+                    'G(z) = \\tanh(W_g \\cdot z + b_g)',
+                    'D(x) = \\sigma(W_d \\cdot x + b_d)',
+                    '\\mathcal{L}_G = -\\mathbb{E}_{z}[\\log D(G(z))]'
                 ],
                 nodes: [2, 4, 2],
                 connections: 'adversarial',
@@ -1250,7 +1254,7 @@
             });
         }
 
-        // Visualize network
+        // Visualize network — draws proper edges for ALL architecture types
         function visualizeNetwork(networkType) {
             const container = document.getElementById('network-container');
             container.innerHTML = '';
@@ -1260,64 +1264,252 @@
             svg.setAttribute('height', '400');
             svg.setAttribute('viewBox', '0 0 800 400');
             svg.classList.add('w-full', 'h-96');
+
+            // Arrowhead marker definition
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'viz-arrowhead');
+            marker.setAttribute('markerWidth', '8');
+            marker.setAttribute('markerHeight', '6');
+            marker.setAttribute('refX', '8');
+            marker.setAttribute('refY', '3');
+            marker.setAttribute('orient', 'auto');
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '0 0, 8 3, 0 6');
+            poly.setAttribute('fill', '#94a3b8');
+            marker.appendChild(poly);
+            defs.appendChild(marker);
+            svg.appendChild(defs);
             
             const network = networkTypes[networkType];
             const layerCount = network.nodes.length;
             const layerWidth = 800 / (layerCount + 1);
             
-            // Create nodes
-            const nodeElements = [];
-            let nodeIndex = 0;
+            // Build node positions by layer
+            const layerNodes = [];
+            let globalIdx = 0;
             
             network.nodes.forEach((nodeCount, layerIndex) => {
                 const x = layerWidth * (layerIndex + 1);
                 const layerHeight = 400 / (nodeCount + 1);
+                const nodes = [];
                 
                 for (let i = 0; i < nodeCount; i++) {
                     const y = layerHeight * (i + 1);
-                    
-                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('cx', x);
-                    circle.setAttribute('cy', y);
-                    circle.setAttribute('r', '20');
-                    circle.classList.add('network-node');
-                    circle.setAttribute('data-node', nodeIndex);
-                    
-                    svg.appendChild(circle);
-                    nodeElements.push({ x, y, element: circle });
-                    nodeIndex++;
+                    nodes.push({ x, y, globalIdx: globalIdx++ });
                 }
+                layerNodes.push(nodes);
             });
-            
-            // Create connections
-            if (network.connections === 'fully-connected') {
-                let currentNodeIndex = 0;
-                for (let layerIndex = 0; layerIndex < network.nodes.length - 1; layerIndex++) {
-                    const currentLayerSize = network.nodes[layerIndex];
-                    const nextLayerSize = network.nodes[layerIndex + 1];
-                    
-                    for (let i = 0; i < currentLayerSize; i++) {
-                        for (let j = 0; j < nextLayerSize; j++) {
-                            const fromNode = nodeElements[currentNodeIndex + i];
-                            const toNode = nodeElements[currentNodeIndex + currentLayerSize + j];
-                            
-                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                            line.setAttribute('x1', fromNode.x);
-                            line.setAttribute('y1', fromNode.y);
-                            line.setAttribute('x2', toNode.x);
-                            line.setAttribute('y2', toNode.y);
-                            line.classList.add('network-connection');
-                            
+
+            // ── Draw connections FIRST (below nodes) ──
+            const connType = network.connections;
+
+            if (connType === 'fully-connected') {
+                // MLP: every node connects to every node in the next layer
+                for (let li = 0; li < layerNodes.length - 1; li++) {
+                    layerNodes[li].forEach(from => {
+                        layerNodes[li + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+
+            } else if (Array.isArray(connType)) {
+                // Perceptron: explicit connection list [[fromIdx, toIdx], ...]
+                const allNodes = layerNodes.flat();
+                connType.forEach(([fi, ti]) => {
+                    if (allNodes[fi] && allNodes[ti]) {
+                        svg.appendChild(makeLine(allNodes[fi].x, allNodes[fi].y, allNodes[ti].x, allNodes[ti].y, 'network-connection'));
+                    }
+                });
+
+            } else if (connType === 'convolutional') {
+                // CNN: local receptive-field connections (sparse)
+                for (let li = 0; li < layerNodes.length - 1; li++) {
+                    const from = layerNodes[li];
+                    const to = layerNodes[li + 1];
+                    from.forEach((fNode, fi) => {
+                        // Each input node connects to nearby nodes in the next layer
+                        const startJ = Math.max(0, Math.floor(fi * to.length / from.length) - 1);
+                        const endJ = Math.min(to.length, Math.ceil((fi + 1) * to.length / from.length) + 1);
+                        for (let j = startJ; j < endJ; j++) {
+                            const line = makeLine(fNode.x, fNode.y, to[j].x, to[j].y, 'network-connection');
+                            line.setAttribute('stroke', '#06b6d4');
+                            line.setAttribute('stroke-opacity', '0.5');
+                            svg.appendChild(line);
+                        }
+                    });
+                }
+
+            } else if (connType === 'recurrent') {
+                // RNN: feedforward + recurrent self-loops on hidden layer
+                for (let li = 0; li < layerNodes.length - 1; li++) {
+                    layerNodes[li].forEach(from => {
+                        layerNodes[li + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+                // Recurrent arcs on hidden layers (layers 1 to N-2)
+                for (let li = 1; li < layerNodes.length - 1; li++) {
+                    layerNodes[li].forEach(node => {
+                        const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        const r = 28;
+                        arc.setAttribute('d', `M ${node.x - 10} ${node.y - 20} C ${node.x - r - 20} ${node.y - r - 30}, ${node.x + r + 20} ${node.y - r - 30}, ${node.x + 10} ${node.y - 20}`);
+                        arc.setAttribute('fill', 'none');
+                        arc.setAttribute('stroke', '#f59e0b');
+                        arc.setAttribute('stroke-width', '2');
+                        arc.setAttribute('stroke-dasharray', '5,3');
+                        arc.setAttribute('marker-end', 'url(#viz-arrowhead)');
+                        arc.classList.add('network-connection');
+                        svg.appendChild(arc);
+                    });
+                }
+
+            } else if (connType === 'lstm-gates') {
+                // LSTM: feedforward + recurrent arcs + gate labels on hidden layer
+                for (let li = 0; li < layerNodes.length - 1; li++) {
+                    layerNodes[li].forEach(from => {
+                        layerNodes[li + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+                // Recurrent arcs + gate labels on hidden layer
+                const gateLabels = ['f', 'i', 'C', 'o'];
+                const gateColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'];
+                const hiddenLayer = layerNodes.length > 2 ? 1 : 0;
+                layerNodes[hiddenLayer].forEach((node, ni) => {
+                    // Recurrent arc
+                    const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const r = 26;
+                    arc.setAttribute('d', `M ${node.x - 10} ${node.y - 20} C ${node.x - r - 16} ${node.y - r - 26}, ${node.x + r + 16} ${node.y - r - 26}, ${node.x + 10} ${node.y - 20}`);
+                    arc.setAttribute('fill', 'none');
+                    arc.setAttribute('stroke', gateColors[ni % 4]);
+                    arc.setAttribute('stroke-width', '2.5');
+                    arc.setAttribute('stroke-dasharray', '4,3');
+                    arc.setAttribute('marker-end', 'url(#viz-arrowhead)');
+                    arc.classList.add('network-connection');
+                    svg.appendChild(arc);
+
+                    // Gate label
+                    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    label.setAttribute('x', node.x);
+                    label.setAttribute('y', node.y - r - 32);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('fill', gateColors[ni % 4]);
+                    label.setAttribute('font-size', '11');
+                    label.setAttribute('font-weight', '700');
+                    label.textContent = gateLabels[ni % 4];
+                    svg.appendChild(label);
+                });
+
+            } else if (connType === 'attention') {
+                // Transformer: feedforward + all-to-all attention within hidden layers
+                for (let li = 0; li < layerNodes.length - 1; li++) {
+                    layerNodes[li].forEach(from => {
+                        layerNodes[li + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+                // Self-attention arcs within each hidden layer (layers 1..N-2)
+                for (let li = 1; li < layerNodes.length - 1; li++) {
+                    const nodes = layerNodes[li];
+                    for (let i = 0; i < nodes.length; i++) {
+                        for (let j = i + 1; j < nodes.length; j++) {
+                            const line = makeLine(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y, 'network-connection');
+                            line.setAttribute('stroke', '#ec4899');
+                            line.setAttribute('stroke-width', '1.5');
+                            line.setAttribute('stroke-opacity', '0.45');
+                            line.setAttribute('stroke-dasharray', '3,3');
                             svg.appendChild(line);
                         }
                     }
-                    currentNodeIndex += currentLayerSize;
+                }
+
+            } else if (connType === 'adversarial') {
+                // GAN: Generator (input→hidden) + Discriminator (hidden→output) with distinct colors
+                if (layerNodes.length >= 3) {
+                    // Generator connections (layers 0→1)
+                    layerNodes[0].forEach(from => {
+                        layerNodes[1].forEach(to => {
+                            const line = makeLine(from.x, from.y, to.x, to.y, 'network-connection');
+                            line.setAttribute('stroke', '#3b82f6');
+                            line.setAttribute('stroke-opacity', '0.6');
+                            svg.appendChild(line);
+                        });
+                    });
+                    // Discriminator connections (layers 1→2)
+                    layerNodes[1].forEach(from => {
+                        layerNodes[2].forEach(to => {
+                            const line = makeLine(from.x, from.y, to.x, to.y, 'network-connection');
+                            line.setAttribute('stroke', '#ef4444');
+                            line.setAttribute('stroke-opacity', '0.6');
+                            svg.appendChild(line);
+                        });
+                    });
+                    // Adversarial feedback arc (output back to hidden, dashed)
+                    const midHidden = layerNodes[1][Math.floor(layerNodes[1].length / 2)];
+                    layerNodes[2].forEach(outNode => {
+                        const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        arc.setAttribute('d', `M ${outNode.x} ${outNode.y + 22} C ${outNode.x + 60} ${outNode.y + 100}, ${midHidden.x - 60} ${midHidden.y + 100}, ${midHidden.x} ${midHidden.y + 22}`);
+                        arc.setAttribute('fill', 'none');
+                        arc.setAttribute('stroke', '#f59e0b');
+                        arc.setAttribute('stroke-width', '2');
+                        arc.setAttribute('stroke-dasharray', '6,4');
+                        arc.setAttribute('marker-end', 'url(#viz-arrowhead)');
+                        arc.classList.add('network-connection');
+                        svg.appendChild(arc);
+                    });
+
+                    // Labels
+                    const gLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    gLabel.setAttribute('x', (layerNodes[0][0].x + layerNodes[1][0].x) / 2);
+                    gLabel.setAttribute('y', 30);
+                    gLabel.setAttribute('text-anchor', 'middle');
+                    gLabel.setAttribute('fill', '#3b82f6');
+                    gLabel.setAttribute('font-size', '12');
+                    gLabel.setAttribute('font-weight', '700');
+                    gLabel.textContent = 'Generator';
+                    svg.appendChild(gLabel);
+
+                    const dLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    dLabel.setAttribute('x', (layerNodes[1][0].x + layerNodes[2][0].x) / 2);
+                    dLabel.setAttribute('y', 30);
+                    dLabel.setAttribute('text-anchor', 'middle');
+                    dLabel.setAttribute('fill', '#ef4444');
+                    dLabel.setAttribute('font-size', '12');
+                    dLabel.setAttribute('font-weight', '700');
+                    dLabel.textContent = 'Discriminator';
+                    svg.appendChild(dLabel);
                 }
             }
+
+            // ── Draw nodes ON TOP ──
+            layerNodes.forEach(layer => {
+                layer.forEach(node => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', node.x);
+                    circle.setAttribute('cy', node.y);
+                    circle.setAttribute('r', '20');
+                    circle.classList.add('network-node');
+                    circle.setAttribute('data-node', node.globalIdx);
+                    svg.appendChild(circle);
+                });
+            });
             
             container.appendChild(svg);
             
-            // Animate nodes appearing
+            // Animate connections first, then nodes
+            anime({
+                targets: '.network-connection',
+                strokeDashoffset: [anime.setDashoffset, 0],
+                opacity: [0, 0.7],
+                duration: 600,
+                delay: anime.stagger(20),
+                easing: 'easeOutQuart'
+            });
             anime({
                 targets: '.network-node',
                 scale: [0, 1],
@@ -1328,17 +1520,42 @@
             });
         }
 
-        // Update mathematical equations
+        function makeLine(x1, y1, x2, y2, className) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            if (className) line.classList.add(className);
+            return line;
+        }
+
+        // Update mathematical equations — rendered with KaTeX
         function updateEquations() {
             const equationContent = document.getElementById('equation-content');
             equationContent.innerHTML = '';
             
             if (!currentNetwork) return;
             
-            currentNetwork.equations.forEach((equation, index) => {
+            currentNetwork.equations.forEach((latex, index) => {
                 const equationDiv = document.createElement('div');
                 equationDiv.className = 'math-equation mb-4';
-                equationDiv.innerHTML = `<div>${equation}</div>`;
+
+                // Create a container for KaTeX output
+                const katexContainer = document.createElement('div');
+                katexContainer.style.padding = '8px 0';
+
+                try {
+                    katex.render(latex, katexContainer, {
+                        displayMode: true,
+                        throwOnError: false,
+                        output: 'html'
+                    });
+                } catch (e) {
+                    katexContainer.textContent = latex;
+                }
+
+                equationDiv.appendChild(katexContainer);
                 equationContent.appendChild(equationDiv);
                 
                 // Animate equation appearance
