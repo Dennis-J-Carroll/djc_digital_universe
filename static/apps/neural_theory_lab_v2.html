@@ -218,6 +218,271 @@
             0%, 50% { border-color: var(--accent-cyan); }
             51%, 100% { border-color: transparent; }
         }
+
+        /* ===== Network Builder Styles ===== */
+        .builder-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 16px;
+            background: rgba(245, 248, 250, 0.95);
+            border-radius: 12px;
+            border: 1px solid var(--misty-border);
+        }
+
+        .palette-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            cursor: grab;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--misty-heading);
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .palette-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .palette-item:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .palette-item .layer-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .builder-workspace {
+            min-height: 400px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(240, 247, 255, 0.95) 100%);
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 16px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            gap: 0;
+            transition: all 0.3s ease;
+        }
+
+        .builder-workspace.drag-over {
+            border-color: var(--accent-green);
+            background: rgba(74, 222, 128, 0.05);
+            box-shadow: inset 0 0 30px rgba(74, 222, 128, 0.1);
+        }
+
+        .builder-workspace .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #a0aec0;
+            pointer-events: none;
+        }
+
+        .builder-workspace .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            opacity: 0.4;
+        }
+
+        .builder-layer {
+            width: 100%;
+            max-width: 500px;
+            padding: 14px 18px;
+            background: white;
+            border: 2px solid rgba(0, 212, 255, 0.25);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: grab;
+            transition: all 0.25s ease;
+            position: relative;
+            animation: layerSlideIn 0.4s ease-out;
+        }
+
+        @keyframes layerSlideIn {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .builder-layer:hover {
+            box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+        }
+
+        .builder-layer .layer-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .builder-layer .layer-info {
+            flex: 1;
+        }
+
+        .builder-layer .layer-info .layer-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--misty-heading);
+        }
+
+        .builder-layer .layer-info .layer-config {
+            font-size: 0.75rem;
+            color: var(--misty-text);
+        }
+
+        .builder-layer .layer-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .builder-layer .layer-controls input,
+        .builder-layer .layer-controls select {
+            padding: 4px 8px;
+            border: 1px solid var(--misty-border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            width: 70px;
+        }
+
+        .builder-layer .remove-layer {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .builder-layer .remove-layer:hover {
+            background: rgba(229, 62, 62, 0.1);
+        }
+
+        .builder-connector {
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-green));
+            flex-shrink: 0;
+        }
+
+        .builder-preview-svg {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            border: 1px solid var(--misty-border);
+        }
+
+        /* ===== Training Animation Styles ===== */
+        .training-anim-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        @keyframes signalPulse {
+            0% { r: 4; opacity: 1; }
+            50% { r: 8; opacity: 0.6; }
+            100% { r: 4; opacity: 1; }
+        }
+
+        @keyframes forwardPass {
+            0% { stroke-dashoffset: 200; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes backwardPass {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 200; }
+        }
+
+        .signal-dot {
+            animation: signalPulse 0.8s ease-in-out infinite;
+        }
+
+        .training-overlay {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #4ade80;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        /* ===== Paper Reference Styles ===== */
+        .paper-references {
+            margin-top: 16px;
+        }
+
+        .paper-link {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(0, 212, 255, 0.06));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--misty-heading);
+            transition: all 0.25s ease;
+            margin-bottom: 8px;
+        }
+
+        .paper-link:hover {
+            transform: translateX(4px);
+            border-color: var(--accent-amber);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+        }
+
+        .paper-link .paper-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .paper-link .paper-info .paper-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent-medium);
+        }
+
+        .paper-link .paper-info .paper-meta {
+            font-size: 0.75rem;
+            color: var(--misty-text);
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -231,6 +496,7 @@
                 <div class="hidden md:flex space-x-6">
                     <a href="#architectures" class="text-sm hover:text-gray-900 transition">Architectures</a>
                     <a href="#interactive" class="text-sm hover:text-gray-900 transition">Interactive Lab</a>
+                    <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
                     <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
                     <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
                 </div>
@@ -324,6 +590,26 @@
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Mathematical Foundation</h3>
                         <div id="equation-content" class="font-mono text-lg">
                             <!-- Equations will be populated by JavaScript -->
+                        </div>
+                        <!-- Paper References -->
+                        <div id="paper-references" class="paper-references" style="display: none;">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <span>📄</span> Seminal Papers
+                            </h4>
+                            <div id="paper-list">
+                                <!-- Papers will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Animation Container -->
+                    <div id="training-animation" class="misty-card p-6 mt-6" style="display: none;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-900">Training Visualization</h3>
+                            <div id="training-anim-status" class="training-overlay" style="display:none;">Epoch 0</div>
+                        </div>
+                        <div id="training-anim-canvas" class="training-anim-container bg-gray-50 rounded-lg" style="min-height: 250px;">
+                            <!-- Training animation SVG will be rendered here -->
                         </div>
                     </div>
 
@@ -459,6 +745,130 @@
         </div>
     </section>
 
+    <!-- Build Your Own Network Section -->
+    <section id="builder" class="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white/60 to-blue-50/60">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Build Your Own Network</h3>
+            <p class="text-center text-gray-500 mb-8">Drag layers from the palette to assemble a custom neural network architecture</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Palette + Workspace (Left 2/3) -->
+                <div class="lg:col-span-2">
+                    <!-- Layer Palette -->
+                    <div class="misty-card p-6 mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Layer Palette</h4>
+                        <div class="builder-palette" id="builder-palette">
+                            <div class="palette-item" draggable="true" data-layer-type="input">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">📥</div>
+                                <span>Input</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="dense">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🔗</div>
+                                <span>Dense</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="conv2d">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">🔲</div>
+                                <span>Conv2D</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="maxpool">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">⬇️</div>
+                                <span>MaxPool</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="lstm">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🔁</div>
+                                <span>LSTM</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="attention">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">👁️</div>
+                                <span>Attention</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="dropout">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #6b7280, #4b5563);">💧</div>
+                                <span>Dropout</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="batchnorm">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #10b981, #059669);">📊</div>
+                                <span>BatchNorm</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="flatten">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);">📐</div>
+                                <span>Flatten</span>
+                            </div>
+                            <div class="palette-item" draggable="true" data-layer-type="output">
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">📤</div>
+                                <span>Output</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Build Workspace -->
+                    <div class="misty-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800">Network Architecture</h4>
+                            <div class="flex gap-2">
+                                <button id="builder-clear-btn" onclick="clearBuilder()" class="bg-gray-400 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-gray-500 transition">
+                                    🗑️ Clear
+                                </button>
+                                <button id="builder-train-btn" onclick="trainBuilderNetwork()" class="bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition" disabled>
+                                    ▶ Train Network
+                                </button>
+                            </div>
+                        </div>
+                        <div id="builder-workspace" class="builder-workspace">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+                                <p class="text-lg font-medium">Drag layers here to build your network</p>
+                                <p class="text-sm mt-1">Start with an Input layer, add hidden layers, end with Output</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Builder Preview + Info (Right 1/3) -->
+                <div class="lg:col-span-1">
+                    <div class="misty-card p-6 sticky top-24">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Network Preview</h4>
+                        <svg id="builder-preview-svg" class="builder-preview-svg w-full" height="300" viewBox="0 0 300 300">
+                            <text x="150" y="150" text-anchor="middle" fill="#a0aec0" font-size="14">Add layers to see preview</text>
+                        </svg>
+
+                        <!-- Builder Stats -->
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <h4 class="font-semibold text-gray-800 mb-3">Architecture Summary</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Layers:</span>
+                                    <span id="builder-layer-count" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Parameters (est.):</span>
+                                    <span id="builder-param-count" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span id="builder-status" class="font-medium text-amber-600">No layers</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Builder Training Progress -->
+                        <div id="builder-training-display" class="mt-6 pt-4 border-t border-gray-200" style="display:none;">
+                            <h4 class="font-semibold text-gray-800 mb-3">Training Progress</h4>
+                            <div class="bg-gray-200 rounded-full h-2 mb-2">
+                                <div id="builder-progress-bar" class="bg-gradient-to-r from-cyan-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500">
+                                <span>Epoch <span id="builder-epoch">0</span>/50</span>
+                                <span>Loss: <span id="builder-loss">-</span></span>
+                            </div>
+                            <div id="builder-loss-chart" class="h-24 mt-3 bg-gray-50 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Performance Comparison -->
     <section id="comparison" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/30">
         <div class="max-w-7xl mx-auto">
@@ -535,7 +945,12 @@
                 connections: [[0, 2], [1, 2]],
                 complexity: 'O(n)',
                 invented: 1957,
-                color: '#7c9cbf'
+                color: '#7c9cbf',
+                papers: [
+                    { title: 'The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain', authors: 'F. Rosenblatt', year: 1958, url: 'https://doi.org/10.1037/h0042519' },
+                    { title: 'Perceptrons: An Introduction to Computational Geometry', authors: 'M. Minsky & S. Papert', year: 1969, url: 'https://en.wikipedia.org/wiki/Perceptrons_(book)' }
+                ],
+                trainingAnim: 'decision-boundary'
             },
             mlp: {
                 name: 'Multi-Layer Perceptron',
@@ -550,7 +965,12 @@
                 connections: 'fully-connected',
                 complexity: 'O(n²)',
                 invented: 1986,
-                color: '#5b8db8'
+                color: '#5b8db8',
+                papers: [
+                    { title: 'Learning representations by back-propagating errors', authors: 'D. Rumelhart, G. Hinton & R. Williams', year: 1986, url: 'https://doi.org/10.1038/323533a0' },
+                    { title: 'Approximation by Superpositions of a Sigmoidal Function', authors: 'G. Cybenko', year: 1989, url: 'https://doi.org/10.1007/BF02551274' }
+                ],
+                trainingAnim: 'forward-backward'
             },
             cnn: {
                 name: 'Convolutional Neural Network',
@@ -565,7 +985,13 @@
                 connections: 'convolutional',
                 complexity: 'O(n log n)',
                 invented: 1989,
-                color: '#4a7ba7'
+                color: '#4a7ba7',
+                papers: [
+                    { title: 'Gradient-Based Learning Applied to Document Recognition', authors: 'Y. LeCun, L. Bottou, Y. Bengio & P. Haffner', year: 1998, url: 'https://doi.org/10.1109/5.726791' },
+                    { title: 'ImageNet Classification with Deep Convolutional Neural Networks', authors: 'A. Krizhevsky, I. Sutskever & G. Hinton', year: 2012, url: 'https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html' },
+                    { title: 'Very Deep Convolutional Networks for Large-Scale Image Recognition', authors: 'K. Simonyan & A. Zisserman', year: 2015, url: 'https://arxiv.org/abs/1409.1556' }
+                ],
+                trainingAnim: 'conv-filter'
             },
             rnn: {
                 name: 'Recurrent Neural Network',
@@ -580,7 +1006,12 @@
                 connections: 'recurrent',
                 complexity: 'O(n)',
                 invented: 1986,
-                color: '#8faac4'
+                color: '#8faac4',
+                papers: [
+                    { title: 'Finding Structure in Time', authors: 'J. Elman', year: 1990, url: 'https://doi.org/10.1016/0364-0213(90)90002-E' },
+                    { title: 'Learning long-term dependencies with gradient descent is difficult', authors: 'Y. Bengio, P. Simard & P. Frasconi', year: 1994, url: 'https://doi.org/10.1109/72.279181' }
+                ],
+                trainingAnim: 'sequential-signal'
             },
             lstm: {
                 name: 'Long Short-Term Memory',
@@ -595,7 +1026,12 @@
                 connections: 'lstm-gates',
                 complexity: 'O(n)',
                 invented: 1997,
-                color: '#6b93b5'
+                color: '#6b93b5',
+                papers: [
+                    { title: 'Long Short-Term Memory', authors: 'S. Hochreiter & J. Schmidhuber', year: 1997, url: 'https://doi.org/10.1162/neco.1997.9.8.1735' },
+                    { title: 'LSTM: A Search Space Odyssey', authors: 'K. Greff, R. Srivastava, J. Koutník, B. Steunebrink & J. Schmidhuber', year: 2017, url: 'https://doi.org/10.1109/TNNLS.2016.2582924' }
+                ],
+                trainingAnim: 'gate-flow'
             },
             transformer: {
                 name: 'Transformer',
@@ -610,7 +1046,13 @@
                 connections: 'attention',
                 complexity: 'O(n²)',
                 invented: 2017,
-                color: '#5d87ad'
+                color: '#5d87ad',
+                papers: [
+                    { title: 'Attention Is All You Need', authors: 'A. Vaswani et al.', year: 2017, url: 'https://arxiv.org/abs/1706.03762' },
+                    { title: 'BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding', authors: 'J. Devlin, M.-W. Chang, K. Lee & K. Toutanova', year: 2019, url: 'https://arxiv.org/abs/1810.04805' },
+                    { title: 'Language Models are Few-Shot Learners (GPT-3)', authors: 'T. Brown et al.', year: 2020, url: 'https://arxiv.org/abs/2005.14165' }
+                ],
+                trainingAnim: 'attention-heatmap'
             },
             gan: {
                 name: 'Generative Adversarial Network',
@@ -625,7 +1067,13 @@
                 connections: 'adversarial',
                 complexity: 'O(n²)',
                 invented: 2014,
-                color: '#a8c5e4'
+                color: '#a8c5e4',
+                papers: [
+                    { title: 'Generative Adversarial Nets', authors: 'I. Goodfellow et al.', year: 2014, url: 'https://arxiv.org/abs/1406.2661' },
+                    { title: 'Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks', authors: 'A. Radford, L. Metz & S. Chintala', year: 2016, url: 'https://arxiv.org/abs/1511.06434' },
+                    { title: 'A Style-Based Generator Architecture for Generative Adversarial Networks (StyleGAN)', authors: 'T. Karras, S. Laine & T. Aila', year: 2019, url: 'https://arxiv.org/abs/1812.04948' }
+                ],
+                trainingAnim: 'adversarial-dance'
             }
         };
 
@@ -646,6 +1094,7 @@
             setupEventListeners();
             initializeCharts();
             initializeScrollAnimations();
+            initializeBuilder();
         });
 
         // Typewriter effect for hero section
@@ -753,6 +1202,8 @@
         }
 
         // Network selection
+        let currentNetworkKey = null;
+
         function selectNetwork(networkType) {
             // Update active card
             document.querySelectorAll('.neural-card').forEach(card => {
@@ -761,6 +1212,7 @@
             event.target.closest('.neural-card').classList.add('active');
             
             currentNetwork = networkTypes[networkType];
+            currentNetworkKey = networkType;
             
             // Update UI
             document.getElementById('current-network-title').textContent = currentNetwork.name;
@@ -776,9 +1228,14 @@
                 document.getElementById('dataset-playground').style.display = 'none';
             }
             
-            // Show mathematical equations
+            // Show mathematical equations + papers
             document.getElementById('math-equations').style.display = 'block';
             updateEquations();
+            updatePaperReferences();
+
+            // Show training animation container
+            document.getElementById('training-animation').style.display = 'block';
+            initTrainingAnimSVG(networkType);
             
             // Visualize the network
             visualizeNetwork(networkType);
@@ -1064,8 +1521,16 @@
             
             const epochs = parseInt(document.getElementById('epochs').value);
             let currentEpoch = 0;
+
+            // Show training animation status
+            const animStatus = document.getElementById('training-anim-status');
+            if (animStatus) animStatus.style.display = 'block';
             
             const trainingInterval = setInterval(() => {
+                if (!trainingInProgress) {
+                    clearInterval(trainingInterval);
+                    return;
+                }
                 currentEpoch++;
                 
                 const progress = (currentEpoch / epochs) * 100;
@@ -1077,11 +1542,13 @@
                 
                 updateLossChart(currentEpoch, loss);
                 animateNetworkTraining();
+                runTrainingAnimation(currentNetworkKey, currentEpoch, epochs, loss);
                 
                 if (currentEpoch >= epochs) {
                     clearInterval(trainingInterval);
                     trainingInProgress = false;
                     document.getElementById('play-btn').textContent = '🔄 Retrain';
+                    if (animStatus) animStatus.textContent = 'Training Complete ✅';
                 }
             }, 100);
         }
@@ -1338,10 +1805,813 @@
             });
         }
 
+        // ===== PAPER REFERENCES =====
+        function updatePaperReferences() {
+            const paperContainer = document.getElementById('paper-references');
+            const paperList = document.getElementById('paper-list');
+            if (!currentNetwork || !currentNetwork.papers) {
+                paperContainer.style.display = 'none';
+                return;
+            }
+            paperContainer.style.display = 'block';
+            paperList.innerHTML = '';
+            currentNetwork.papers.forEach((paper, idx) => {
+                const link = document.createElement('a');
+                link.href = paper.url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'paper-link';
+                link.innerHTML = `
+                    <span class="paper-icon">📑</span>
+                    <div class="paper-info">
+                        <div class="paper-title">${paper.title}</div>
+                        <div class="paper-meta">${paper.authors} · ${paper.year}</div>
+                    </div>
+                `;
+                paperList.appendChild(link);
+                anime({
+                    targets: link,
+                    translateX: [-30, 0],
+                    opacity: [0, 1],
+                    duration: 400,
+                    delay: idx * 120,
+                    easing: 'easeOutQuart'
+                });
+            });
+        }
+
+        // ===== TRAINING ANIMATIONS =====
+        function initTrainingAnimSVG(networkType) {
+            const canvas = document.getElementById('training-anim-canvas');
+            if (!canvas) return;
+            const w = 700, h = 250;
+            let svgContent = '';
+            switch(networkType) {
+                case 'perceptron':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <!-- Data points -->
+                        <circle cx="150" cy="60" r="8" fill="#3b82f6" opacity="0.7"/>
+                        <circle cx="250" cy="180" r="8" fill="#3b82f6" opacity="0.7"/>
+                        <circle cx="180" cy="200" r="8" fill="#ef4444" opacity="0.7"/>
+                        <circle cx="350" cy="50" r="8" fill="#ef4444" opacity="0.7"/>
+                        <circle cx="120" cy="150" r="8" fill="#3b82f6" opacity="0.7"/>
+                        <circle cx="400" cy="100" r="8" fill="#ef4444" opacity="0.7"/>
+                        <circle cx="300" cy="140" r="8" fill="#ef4444" opacity="0.7"/>
+                        <circle cx="200" cy="90" r="8" fill="#3b82f6" opacity="0.7"/>
+                        <!-- Decision boundary line -->
+                        <line id="decision-line" x1="80" y1="220" x2="450" y2="30" stroke="#00d4ff" stroke-width="3" stroke-dasharray="8,4" opacity="0.8"/>
+                        <text x="520" y="30" fill="#4a5568" font-size="12" font-weight="600">Decision</text>
+                        <text x="520" y="46" fill="#4a5568" font-size="12" font-weight="600">Boundary</text>
+                        <text x="520" y="80" fill="#3b82f6" font-size="11">● Class A</text>
+                        <text x="520" y="100" fill="#ef4444" font-size="11">● Class B</text>
+                    </svg>`;
+                    break;
+                case 'mlp':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">Forward Pass →</text>
+                        <text x="530" y="24" fill="#ef4444" font-size="11" font-weight="600">← Backprop</text>
+                        ${buildMLPAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'cnn':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">Convolution Filter Scanning</text>
+                        ${buildCNNAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'rnn':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">Sequential Signal Propagation</text>
+                        ${buildRNNAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'lstm':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">LSTM Gate Operations</text>
+                        ${buildLSTMAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'transformer':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">Self-Attention Heat Map</text>
+                        ${buildTransformerAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'gan':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="24" fill="#4a5568" font-size="11" font-weight="600">Generator vs Discriminator</text>
+                        ${buildGANAnimSVG()}
+                    </svg>`;
+                    break;
+                default:
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="${w/2}" y="${h/2}" text-anchor="middle" fill="#a0aec0" font-size="14">Select a network and train to see animation</text>
+                    </svg>`;
+            }
+            canvas.innerHTML = svgContent;
+        }
+
+        function buildMLPAnimSVG() {
+            let svg = '';
+            const layers = [3, 5, 5, 2];
+            const layerX = [100, 250, 400, 560];
+            const nodePositions = [];
+            layers.forEach((count, li) => {
+                const positions = [];
+                for (let i = 0; i < count; i++) {
+                    const y = 50 + (i * (180 / (count - 1 || 1)));
+                    positions.push({x: layerX[li], y: y});
+                }
+                nodePositions.push(positions);
+            });
+            // Connections
+            for (let li = 0; li < nodePositions.length - 1; li++) {
+                nodePositions[li].forEach(from => {
+                    nodePositions[li+1].forEach(to => {
+                        svg += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="#d4dce4" stroke-width="1" class="mlp-conn"/>`;
+                    });
+                });
+            }
+            // Nodes
+            nodePositions.forEach((layer, li) => {
+                layer.forEach((pos, ni) => {
+                    const colors = ['#3b82f6', '#8b5cf6', '#8b5cf6', '#ef4444'];
+                    svg += `<circle cx="${pos.x}" cy="${pos.y}" r="12" fill="${colors[li]}" opacity="0.8" class="mlp-node" data-layer="${li}" data-node="${ni}"/>`;
+                });
+            });
+            // Signal dots (hidden initially)
+            for (let i = 0; i < 5; i++) {
+                svg += `<circle id="mlp-signal-${i}" cx="100" cy="125" r="5" fill="#4ade80" opacity="0" class="signal-dot"/>`;
+            }
+            return svg;
+        }
+
+        function buildCNNAnimSVG() {
+            let svg = '';
+            // Input grid (8x8)
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const brightness = Math.random() * 0.6 + 0.2;
+                    svg += `<rect x="${40 + c*22}" y="${40 + r*22}" width="20" height="20" fill="rgba(59,130,246,${brightness})" stroke="#e2e8f0" stroke-width="0.5" rx="2"/>`;
+                }
+            }
+            // Filter window (will be animated)
+            svg += `<rect id="conv-filter" x="40" y="40" width="66" height="66" fill="none" stroke="#00d4ff" stroke-width="3" rx="4" opacity="0.9"/>`;
+            // Arrow
+            svg += `<line x1="250" y1="125" x2="310" y2="125" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+            svg += `<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#4a5568"/></marker></defs>`;
+            // Feature maps
+            for (let m = 0; m < 3; m++) {
+                for (let r = 0; r < 6; r++) {
+                    for (let c = 0; c < 6; c++) {
+                        const brightness = Math.random() * 0.7 + 0.1;
+                        svg += `<rect x="${330 + c*16 + m*110}" y="${50 + r*16}" width="14" height="14" fill="rgba(74,222,128,${brightness})" stroke="#e2e8f0" stroke-width="0.3" rx="1" class="feature-cell" data-map="${m}"/>`;
+                    }
+                }
+                svg += `<text x="${330 + 48 + m*110}" y="240" text-anchor="middle" fill="#4a5568" font-size="10">Map ${m+1}</text>`;
+            }
+            return svg;
+        }
+
+        function buildRNNAnimSVG() {
+            let svg = '';
+            const steps = 5;
+            const stepLabels = ['t-2', 't-1', 't', 't+1', 't+2'];
+            for (let i = 0; i < steps; i++) {
+                const cx = 100 + i * 120;
+                // Input
+                svg += `<rect x="${cx-18}" y="170" width="36" height="28" rx="6" fill="#3b82f6" opacity="0.7"/>`;
+                svg += `<text x="${cx}" y="188" text-anchor="middle" fill="white" font-size="10">x_${stepLabels[i]}</text>`;
+                // Hidden state
+                svg += `<circle cx="${cx}" cy="105" r="24" fill="#8b5cf6" opacity="0.8" class="rnn-hidden" data-step="${i}"/>`;
+                svg += `<text x="${cx}" y="110" text-anchor="middle" fill="white" font-size="10" font-weight="600">h_${stepLabels[i]}</text>`;
+                // Input -> hidden arrow
+                svg += `<line x1="${cx}" y1="168" x2="${cx}" y2="131" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrowhead)"/>`;
+                // Recurrent connection
+                if (i < steps - 1) {
+                    svg += `<line x1="${cx+26}" y1="105" x2="${cx+94}" y2="105" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowhead)" class="rnn-recurrent" data-step="${i}"/>`;
+                }
+                // Output
+                svg += `<line x1="${cx}" y1="79" x2="${cx}" y2="52" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrowhead)"/>`;
+                svg += `<rect x="${cx-14}" y="32" width="28" height="20" rx="4" fill="#ef4444" opacity="0.6"/>`;
+                svg += `<text x="${cx}" y="46" text-anchor="middle" fill="white" font-size="9">y_${stepLabels[i]}</text>`;
+            }
+            // Signal dot
+            svg += `<circle id="rnn-signal" cx="100" cy="105" r="6" fill="#4ade80" opacity="0"/>`;
+            return svg;
+        }
+
+        function buildLSTMAnimSVG() {
+            let svg = '';
+            const gateLabels = ['Forget\nGate', 'Input\nGate', 'Cell\nState', 'Output\nGate'];
+            const gateColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'];
+            const gateIcons = ['×', '+', 'C', '⊙'];
+            // Cell state highway
+            svg += `<line x1="60" y1="60" x2="640" y2="60" stroke="#10b981" stroke-width="4" opacity="0.3"/>`;
+            svg += `<text x="350" y="48" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">Cell State Highway (C_t)</text>`;
+            for (let i = 0; i < 4; i++) {
+                const cx = 120 + i * 140;
+                // Gate box
+                svg += `<rect x="${cx-40}" y="80" width="80" height="70" rx="10" fill="${gateColors[i]}" opacity="0.15" stroke="${gateColors[i]}" stroke-width="2" class="lstm-gate" data-gate="${i}"/>`;
+                svg += `<circle cx="${cx}" cy="110" r="18" fill="${gateColors[i]}" opacity="0.8" class="lstm-gate-node" data-gate="${i}"/>`;
+                svg += `<text x="${cx}" y="115" text-anchor="middle" fill="white" font-size="14" font-weight="700">${gateIcons[i]}</text>`;
+                svg += `<text x="${cx}" y="165" text-anchor="middle" fill="${gateColors[i]}" font-size="10" font-weight="600">${gateLabels[i].split('\n')[0]}</text>`;
+                svg += `<text x="${cx}" y="178" text-anchor="middle" fill="${gateColors[i]}" font-size="10" font-weight="600">${gateLabels[i].split('\n')[1] || ''}</text>`;
+                // Connection to cell state
+                svg += `<line x1="${cx}" y1="80" x2="${cx}" y2="62" stroke="${gateColors[i]}" stroke-width="2" stroke-dasharray="4,2" opacity="0.5"/>`;
+            }
+            // Input
+            svg += `<rect x="260" y="200" width="80" height="30" rx="6" fill="#3b82f6" opacity="0.6"/>`;
+            svg += `<text x="300" y="220" text-anchor="middle" fill="white" font-size="11" font-weight="600">x_t, h_{t-1}</text>`;
+            // Arrow from input to gates
+            svg += `<line x1="300" y1="200" x2="300" y2="152" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arrowhead)"/>`;
+            return svg;
+        }
+
+        function buildTransformerAnimSVG() {
+            let svg = '';
+            const tokens = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
+            const n = tokens.length;
+            const startX = 100, startY = 60, cellSize = 28;
+            // Token labels (columns)
+            tokens.forEach((t, i) => {
+                svg += `<text x="${startX + i * cellSize + cellSize/2}" y="${startY - 6}" text-anchor="middle" fill="#4a5568" font-size="10" font-weight="600">${t}</text>`;
+                svg += `<text x="${startX - 6}" y="${startY + i * cellSize + cellSize/2 + 4}" text-anchor="end" fill="#4a5568" font-size="10" font-weight="600">${t}</text>`;
+            });
+            // Attention matrix cells
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    const weight = Math.random();
+                    svg += `<rect x="${startX + c * cellSize}" y="${startY + r * cellSize}" width="${cellSize-2}" height="${cellSize-2}" fill="rgba(0,212,255,${weight * 0.8})" rx="3" class="attn-cell" data-r="${r}" data-c="${c}" data-weight="${weight.toFixed(2)}"/>`;
+                }
+            }
+            // Legend
+            svg += `<text x="400" y="75" fill="#4a5568" font-size="11" font-weight="600">Attention Weights</text>`;
+            svg += `<rect x="400" y="85" width="120" height="12" rx="3" fill="url(#attn-gradient)"/>`;
+            svg += `<defs><linearGradient id="attn-gradient"><stop offset="0%" stop-color="rgba(0,212,255,0.05)"/><stop offset="100%" stop-color="rgba(0,212,255,0.9)"/></linearGradient></defs>`;
+            svg += `<text x="400" y="112" fill="#a0aec0" font-size="9">Low</text>`;
+            svg += `<text x="500" y="112" fill="#00d4ff" font-size="9">High</text>`;
+            // Q K V labels
+            svg += `<text x="450" y="145" fill="#8b5cf6" font-size="12" font-weight="700">Q · K^T / √d_k</text>`;
+            svg += `<text x="450" y="165" fill="#4a5568" font-size="10">→ softmax → × V</text>`;
+            return svg;
+        }
+
+        function buildGANAnimSVG() {
+            let svg = '';
+            // Generator
+            svg += `<rect x="40" y="50" width="160" height="150" rx="12" fill="#3b82f6" opacity="0.1" stroke="#3b82f6" stroke-width="2"/>`;
+            svg += `<text x="120" y="80" text-anchor="middle" fill="#3b82f6" font-size="14" font-weight="700">Generator</text>`;
+            svg += `<text x="120" y="100" text-anchor="middle" fill="#3b82f6" font-size="10">G(z)</text>`;
+            // Noise input
+            svg += `<rect x="70" y="115" width="100" height="30" rx="6" fill="#3b82f6" opacity="0.3"/>`;
+            svg += `<text x="120" y="134" text-anchor="middle" fill="#3b82f6" font-size="10">noise z ~ N(0,1)</text>`;
+            // Generated sample
+            svg += `<circle id="gan-gen-sample" cx="120" cy="170" r="10" fill="#4ade80" opacity="0.7"/>`;
+            svg += `<text x="120" y="195" text-anchor="middle" fill="#4a5568" font-size="9">Generated</text>`;
+            // Arrow
+            svg += `<line x1="210" y1="125" x2="290" y2="125" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+            svg += `<text x="250" y="118" text-anchor="middle" fill="#4a5568" font-size="9">fake?</text>`;
+            // Discriminator
+            svg += `<rect x="300" y="50" width="160" height="150" rx="12" fill="#ef4444" opacity="0.1" stroke="#ef4444" stroke-width="2"/>`;
+            svg += `<text x="380" y="80" text-anchor="middle" fill="#ef4444" font-size="14" font-weight="700">Discriminator</text>`;
+            svg += `<text x="380" y="100" text-anchor="middle" fill="#ef4444" font-size="10">D(x)</text>`;
+            // Real data
+            svg += `<circle cx="380" cy="135" r="10" fill="#fbbf24" opacity="0.7"/>`;
+            svg += `<text x="380" y="160" text-anchor="middle" fill="#4a5568" font-size="9">Real</text>`;
+            // Output
+            svg += `<rect x="340" y="170" width="80" height="25" rx="6" fill="#ef4444" opacity="0.3"/>`;
+            svg += `<text id="gan-verdict" x="380" y="187" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600">Real/Fake?</text>`;
+            // Scores
+            svg += `<text x="530" y="90" fill="#4a5568" font-size="12" font-weight="600">Scores</text>`;
+            svg += `<text id="gan-g-score" x="530" y="115" fill="#3b82f6" font-size="11">G loss: -</text>`;
+            svg += `<text id="gan-d-score" x="530" y="135" fill="#ef4444" font-size="11">D loss: -</text>`;
+            svg += `<text id="gan-quality" x="530" y="165" fill="#10b981" font-size="11">Quality: -</text>`;
+            return svg;
+        }
+
+        function runTrainingAnimation(networkType, epoch, totalEpochs, loss) {
+            const progress = epoch / totalEpochs;
+            const statusEl = document.getElementById('training-anim-status');
+            if (statusEl) statusEl.textContent = `Epoch ${epoch}/${totalEpochs} · Loss: ${loss.toFixed(4)}`;
+
+            switch(networkType) {
+                case 'perceptron': {
+                    const line = document.getElementById('decision-line');
+                    if (line) {
+                        const angle = -60 + progress * 90 + Math.sin(epoch * 0.3) * 5 * (1 - progress);
+                        const cx = 265, cy = 125;
+                        const len = 220;
+                        const rad = angle * Math.PI / 180;
+                        line.setAttribute('x1', cx - Math.cos(rad) * len);
+                        line.setAttribute('y1', cy - Math.sin(rad) * len);
+                        line.setAttribute('x2', cx + Math.cos(rad) * len);
+                        line.setAttribute('y2', cy + Math.sin(rad) * len);
+                        line.setAttribute('stroke-opacity', 0.5 + progress * 0.5);
+                    }
+                    break;
+                }
+                case 'mlp': {
+                    const nodes = document.querySelectorAll('.mlp-node');
+                    const conns = document.querySelectorAll('.mlp-conn');
+                    const phase = epoch % 20;
+                    if (phase < 10) {
+                        // Forward pass
+                        const activeLayer = Math.floor(phase / 2.5);
+                        nodes.forEach(n => {
+                            const layer = parseInt(n.getAttribute('data-layer'));
+                            n.setAttribute('opacity', layer === activeLayer ? '1' : '0.5');
+                            if (layer === activeLayer) n.setAttribute('r', '15');
+                            else n.setAttribute('r', '12');
+                        });
+                        conns.forEach(c => c.setAttribute('stroke', progress > 0.5 ? '#00d4ff' : '#d4dce4'));
+                    } else {
+                        // Backward pass
+                        const activeLayer = 3 - Math.floor((phase - 10) / 2.5);
+                        nodes.forEach(n => {
+                            const layer = parseInt(n.getAttribute('data-layer'));
+                            n.setAttribute('opacity', layer === activeLayer ? '1' : '0.5');
+                            if (layer === activeLayer) { n.setAttribute('r', '15'); n.setAttribute('fill', '#ef4444'); }
+                            else { n.setAttribute('r', '12'); }
+                        });
+                    }
+                    // Reset after cycle
+                    if (phase === 19) {
+                        nodes.forEach(n => { n.setAttribute('opacity', '0.8'); n.setAttribute('r', '12'); });
+                        const colors = ['#3b82f6', '#8b5cf6', '#8b5cf6', '#ef4444'];
+                        nodes.forEach(n => n.setAttribute('fill', colors[parseInt(n.getAttribute('data-layer'))]));
+                    }
+                    break;
+                }
+                case 'cnn': {
+                    const filter = document.getElementById('conv-filter');
+                    if (filter) {
+                        const step = epoch % 36;
+                        const row = Math.floor(step / 6);
+                        const col = step % 6;
+                        filter.setAttribute('x', 40 + col * 22);
+                        filter.setAttribute('y', 40 + row * 22);
+                        // Highlight corresponding feature cells
+                        document.querySelectorAll('.feature-cell').forEach(cell => {
+                            cell.setAttribute('opacity', '0.5');
+                        });
+                        const activeMap = epoch % 3;
+                        document.querySelectorAll(`.feature-cell[data-map="${activeMap}"]`).forEach(cell => {
+                            cell.setAttribute('opacity', '1');
+                        });
+                    }
+                    break;
+                }
+                case 'rnn': {
+                    const step = epoch % 5;
+                    const signal = document.getElementById('rnn-signal');
+                    document.querySelectorAll('.rnn-hidden').forEach(n => {
+                        const s = parseInt(n.getAttribute('data-step'));
+                        n.setAttribute('opacity', s === step ? '1' : '0.5');
+                        if (s === step) n.setAttribute('r', '28');
+                        else n.setAttribute('r', '24');
+                    });
+                    document.querySelectorAll('.rnn-recurrent').forEach(c => {
+                        const s = parseInt(c.getAttribute('data-step'));
+                        c.setAttribute('stroke', s === step ? '#4ade80' : '#f59e0b');
+                        c.setAttribute('stroke-width', s === step ? '3' : '2');
+                    });
+                    if (signal) {
+                        const cx = 100 + step * 120;
+                        signal.setAttribute('cx', cx);
+                        signal.setAttribute('opacity', '1');
+                    }
+                    break;
+                }
+                case 'lstm': {
+                    const activeGate = epoch % 4;
+                    document.querySelectorAll('.lstm-gate').forEach(g => {
+                        const gi = parseInt(g.getAttribute('data-gate'));
+                        g.setAttribute('opacity', gi === activeGate ? '0.3' : '0.15');
+                    });
+                    document.querySelectorAll('.lstm-gate-node').forEach(n => {
+                        const gi = parseInt(n.getAttribute('data-gate'));
+                        n.setAttribute('r', gi === activeGate ? '22' : '18');
+                        n.setAttribute('opacity', gi === activeGate ? '1' : '0.6');
+                    });
+                    break;
+                }
+                case 'transformer': {
+                    document.querySelectorAll('.attn-cell').forEach(cell => {
+                        const r = parseInt(cell.getAttribute('data-r'));
+                        const c = parseInt(cell.getAttribute('data-c'));
+                        // Simulate attention converging over training
+                        let weight;
+                        if (progress < 0.3) {
+                            weight = Math.random();
+                        } else {
+                            // Attention focuses: nearby tokens and self get more weight
+                            const dist = Math.abs(r - c);
+                            weight = Math.exp(-dist * (progress * 2)) + Math.random() * 0.1 * (1 - progress);
+                        }
+                        cell.setAttribute('fill', `rgba(0,212,255,${weight * 0.85})`);
+                    });
+                    break;
+                }
+                case 'gan': {
+                    const genSample = document.getElementById('gan-gen-sample');
+                    const verdict = document.getElementById('gan-verdict');
+                    const gScore = document.getElementById('gan-g-score');
+                    const dScore = document.getElementById('gan-d-score');
+                    const quality = document.getElementById('gan-quality');
+                    if (genSample) {
+                        const greenness = progress;
+                        genSample.setAttribute('fill', `rgb(${Math.round(74 + (255-74) * (1-greenness))}, ${Math.round(222 * greenness + 100*(1-greenness))}, ${Math.round(128 * greenness + 50*(1-greenness))})`);
+                        genSample.setAttribute('r', 8 + progress * 6);
+                    }
+                    if (verdict) {
+                        const confusion = 1 - progress;
+                        verdict.textContent = progress < 0.3 ? 'FAKE ❌' : progress < 0.7 ? 'Unsure 🤔' : 'Real? 🤯';
+                    }
+                    if (gScore) gScore.textContent = `G loss: ${(loss * 0.8).toFixed(3)}`;
+                    if (dScore) dScore.textContent = `D loss: ${(loss * 1.2 * (1 + Math.sin(epoch*0.1)*0.3)).toFixed(3)}`;
+                    if (quality) quality.textContent = `Quality: ${(progress * 100).toFixed(0)}%`;
+                    break;
+                }
+            }
+        }
+
+        // ===== NETWORK BUILDER =====
+        let builderLayers = [];
+        let builderLossChart = null;
+        let builderTraining = false;
+
+        const layerDefinitions = {
+            input:     { name: 'Input Layer',   icon: '📥', color: '#3b82f6', units: 784, hasUnits: true, activation: false },
+            dense:     { name: 'Dense Layer',   icon: '🔗', color: '#8b5cf6', units: 128, hasUnits: true, activation: true },
+            conv2d:    { name: 'Conv2D Layer',  icon: '🔲', color: '#06b6d4', units: 32,  hasUnits: true, unitLabel: 'filters', activation: true },
+            maxpool:   { name: 'MaxPool2D',     icon: '⬇️', color: '#14b8a6', units: 0,   hasUnits: false, activation: false },
+            lstm:      { name: 'LSTM Layer',    icon: '🔁', color: '#f59e0b', units: 64,  hasUnits: true, activation: false },
+            attention: { name: 'Attention',     icon: '👁️', color: '#ec4899', units: 8,   hasUnits: true, unitLabel: 'heads', activation: false },
+            dropout:   { name: 'Dropout',       icon: '💧', color: '#6b7280', units: 0,   hasUnits: false, activation: false, rate: 0.2 },
+            batchnorm: { name: 'BatchNorm',     icon: '📊', color: '#10b981', units: 0,   hasUnits: false, activation: false },
+            flatten:   { name: 'Flatten',       icon: '📐', color: '#f97316', units: 0,   hasUnits: false, activation: false },
+            output:    { name: 'Output Layer',  icon: '📤', color: '#ef4444', units: 10,  hasUnits: true, activation: true }
+        };
+
+        function initializeBuilder() {
+            const palette = document.getElementById('builder-palette');
+            const workspace = document.getElementById('builder-workspace');
+
+            // Palette drag events
+            palette.querySelectorAll('.palette-item').forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.getAttribute('data-layer-type'));
+                    e.dataTransfer.effectAllowed = 'copy';
+                    item.style.opacity = '0.5';
+                });
+                item.addEventListener('dragend', (e) => {
+                    item.style.opacity = '1';
+                });
+            });
+
+            // Workspace drop events
+            workspace.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                workspace.classList.add('drag-over');
+            });
+            workspace.addEventListener('dragleave', () => {
+                workspace.classList.remove('drag-over');
+            });
+            workspace.addEventListener('drop', (e) => {
+                e.preventDefault();
+                workspace.classList.remove('drag-over');
+                const layerType = e.dataTransfer.getData('text/plain');
+                if (layerType && layerDefinitions[layerType]) {
+                    addBuilderLayer(layerType);
+                }
+            });
+        }
+
+        function addBuilderLayer(type) {
+            const def = layerDefinitions[type];
+            const id = 'bl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+            const layer = {
+                id,
+                type,
+                units: def.units,
+                activation: def.activation ? 'relu' : null,
+                rate: def.rate || null
+            };
+            builderLayers.push(layer);
+            renderBuilderWorkspace();
+            updateBuilderPreview();
+            updateBuilderStats();
+        }
+
+        function removeBuilderLayer(id) {
+            builderLayers = builderLayers.filter(l => l.id !== id);
+            renderBuilderWorkspace();
+            updateBuilderPreview();
+            updateBuilderStats();
+        }
+
+        function renderBuilderWorkspace() {
+            const workspace = document.getElementById('builder-workspace');
+            workspace.innerHTML = '';
+
+            if (builderLayers.length === 0) {
+                workspace.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+                        <p class="text-lg font-medium">Drag layers here to build your network</p>
+                        <p class="text-sm mt-1">Start with an Input layer, add hidden layers, end with Output</p>
+                    </div>`;
+                return;
+            }
+
+            builderLayers.forEach((layer, idx) => {
+                const def = layerDefinitions[layer.type];
+                // Connector between layers
+                if (idx > 0) {
+                    const connector = document.createElement('div');
+                    connector.className = 'builder-connector';
+                    workspace.appendChild(connector);
+                }
+
+                const el = document.createElement('div');
+                el.className = 'builder-layer';
+                el.draggable = true;
+                el.setAttribute('data-builder-id', layer.id);
+
+                let controlsHTML = '';
+                if (def.hasUnits) {
+                    controlsHTML += `<input type="number" value="${layer.units}" min="1" max="4096" title="${def.unitLabel || 'units'}" onchange="updateBuilderLayerUnits('${layer.id}', this.value)"/>`;
+                }
+                if (def.activation) {
+                    controlsHTML += `<select onchange="updateBuilderLayerActivation('${layer.id}', this.value)">
+                        <option value="relu" ${layer.activation === 'relu' ? 'selected' : ''}>ReLU</option>
+                        <option value="sigmoid" ${layer.activation === 'sigmoid' ? 'selected' : ''}>Sigmoid</option>
+                        <option value="tanh" ${layer.activation === 'tanh' ? 'selected' : ''}>Tanh</option>
+                        <option value="softmax" ${layer.activation === 'softmax' ? 'selected' : ''}>Softmax</option>
+                    </select>`;
+                }
+
+                el.innerHTML = `
+                    <div class="layer-icon" style="background: linear-gradient(135deg, ${def.color}, ${def.color}dd);">${def.icon}</div>
+                    <div class="layer-info">
+                        <div class="layer-name">${def.name}</div>
+                        <div class="layer-config">${def.hasUnits ? (def.unitLabel || 'units') + ': ' + layer.units : ''} ${layer.activation ? '· ' + layer.activation : ''} ${layer.rate != null ? '· rate: ' + layer.rate : ''}</div>
+                    </div>
+                    <div class="layer-controls">${controlsHTML}</div>
+                    <button class="remove-layer" onclick="removeBuilderLayer('${layer.id}')" title="Remove layer">✕</button>
+                `;
+
+                // Reorder drag events
+                el.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('builder-reorder', layer.id);
+                    el.style.opacity = '0.4';
+                });
+                el.addEventListener('dragend', () => { el.style.opacity = '1'; });
+                el.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (e.dataTransfer.types.includes('builder-reorder')) {
+                        el.style.borderColor = '#4ade80';
+                    }
+                });
+                el.addEventListener('dragleave', () => { el.style.borderColor = ''; });
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    el.style.borderColor = '';
+                    const dragId = e.dataTransfer.getData('builder-reorder');
+                    if (dragId && dragId !== layer.id) {
+                        reorderBuilderLayers(dragId, layer.id);
+                    }
+                });
+
+                workspace.appendChild(el);
+            });
+        }
+
+        function reorderBuilderLayers(dragId, dropTargetId) {
+            const dragIdx = builderLayers.findIndex(l => l.id === dragId);
+            const dropIdx = builderLayers.findIndex(l => l.id === dropTargetId);
+            if (dragIdx === -1 || dropIdx === -1) return;
+            const [moved] = builderLayers.splice(dragIdx, 1);
+            builderLayers.splice(dropIdx, 0, moved);
+            renderBuilderWorkspace();
+            updateBuilderPreview();
+        }
+
+        function updateBuilderLayerUnits(id, value) {
+            const layer = builderLayers.find(l => l.id === id);
+            if (layer) {
+                layer.units = parseInt(value) || 1;
+                updateBuilderPreview();
+                updateBuilderStats();
+            }
+        }
+
+        function updateBuilderLayerActivation(id, value) {
+            const layer = builderLayers.find(l => l.id === id);
+            if (layer) {
+                layer.activation = value;
+                renderBuilderWorkspace();
+            }
+        }
+
+        function updateBuilderPreview() {
+            const svg = document.getElementById('builder-preview-svg');
+            if (!svg) return;
+
+            if (builderLayers.length === 0) {
+                svg.innerHTML = '<text x="150" y="150" text-anchor="middle" fill="#a0aec0" font-size="14">Add layers to see preview</text>';
+                return;
+            }
+
+            let svgContent = '';
+            const w = 300, h = 300;
+            const padding = 30;
+            const layerCount = builderLayers.length;
+            const layerSpacing = (h - padding * 2) / (layerCount + 1);
+
+            const nodePositions = [];
+
+            builderLayers.forEach((layer, idx) => {
+                const def = layerDefinitions[layer.type];
+                const y = padding + (idx + 1) * layerSpacing;
+                const nodeCount = def.hasUnits ? Math.min(Math.max(Math.ceil(layer.units / 30), 1), 8) : 3;
+                const nodeSpacing = (w - padding * 2) / (nodeCount + 1);
+                const positions = [];
+
+                for (let n = 0; n < nodeCount; n++) {
+                    const x = padding + (n + 1) * nodeSpacing;
+                    positions.push({x, y});
+                }
+                nodePositions.push(positions);
+
+                // Draw nodes
+                positions.forEach(pos => {
+                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="${def.color}" opacity="0.8"/>`;
+                });
+
+                // Layer label
+                svgContent += `<text x="${w - 10}" y="${y + 4}" text-anchor="end" fill="#a0aec0" font-size="8">${def.name.split(' ')[0]}</text>`;
+            });
+
+            // Draw connections
+            for (let i = 0; i < nodePositions.length - 1; i++) {
+                nodePositions[i].forEach(from => {
+                    nodePositions[i + 1].forEach(to => {
+                        svgContent += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="#d4dce4" stroke-width="0.5" opacity="0.6"/>`;
+                    });
+                });
+            }
+
+            // Re-draw nodes on top of connections
+            builderLayers.forEach((layer, idx) => {
+                const def = layerDefinitions[layer.type];
+                nodePositions[idx].forEach(pos => {
+                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="${def.color}" opacity="0.85"/>`;
+                });
+            });
+
+            svg.innerHTML = svgContent;
+        }
+
+        function updateBuilderStats() {
+            document.getElementById('builder-layer-count').textContent = builderLayers.length;
+
+            // Estimate parameters
+            let totalParams = 0;
+            for (let i = 1; i < builderLayers.length; i++) {
+                const prev = builderLayers[i - 1];
+                const curr = builderLayers[i];
+                const prevDef = layerDefinitions[prev.type];
+                const currDef = layerDefinitions[curr.type];
+                if (prevDef.hasUnits && currDef.hasUnits) {
+                    totalParams += prev.units * curr.units + curr.units;
+                }
+            }
+            document.getElementById('builder-param-count').textContent = totalParams > 1000 ? (totalParams / 1000).toFixed(1) + 'K' : totalParams;
+
+            // Status
+            const statusEl = document.getElementById('builder-status');
+            const hasInput = builderLayers.some(l => l.type === 'input');
+            const hasOutput = builderLayers.some(l => l.type === 'output');
+            const trainBtn = document.getElementById('builder-train-btn');
+
+            if (builderLayers.length === 0) {
+                statusEl.textContent = 'No layers';
+                statusEl.className = 'font-medium text-amber-600';
+                trainBtn.disabled = true;
+            } else if (!hasInput) {
+                statusEl.textContent = 'Missing Input layer';
+                statusEl.className = 'font-medium text-red-500';
+                trainBtn.disabled = true;
+            } else if (!hasOutput) {
+                statusEl.textContent = 'Missing Output layer';
+                statusEl.className = 'font-medium text-red-500';
+                trainBtn.disabled = true;
+            } else if (builderLayers.length < 3) {
+                statusEl.textContent = 'Add hidden layers';
+                statusEl.className = 'font-medium text-amber-600';
+                trainBtn.disabled = false;
+            } else {
+                statusEl.textContent = 'Ready to train ✓';
+                statusEl.className = 'font-medium text-green-600';
+                trainBtn.disabled = false;
+            }
+        }
+
+        function clearBuilder() {
+            builderLayers = [];
+            builderTraining = false;
+            document.getElementById('builder-training-display').style.display = 'none';
+            renderBuilderWorkspace();
+            updateBuilderPreview();
+            updateBuilderStats();
+        }
+
+        function trainBuilderNetwork() {
+            if (builderTraining || builderLayers.length < 2) return;
+            builderTraining = true;
+
+            const display = document.getElementById('builder-training-display');
+            display.style.display = 'block';
+            const progressBar = document.getElementById('builder-progress-bar');
+            const epochEl = document.getElementById('builder-epoch');
+            const lossEl = document.getElementById('builder-loss');
+
+            // Init builder loss chart
+            const chartDom = document.getElementById('builder-loss-chart');
+            if (!builderLossChart) {
+                builderLossChart = echarts.init(chartDom);
+                builderLossChart.setOption({
+                    grid: { left: '12%', right: '5%', top: '10%', bottom: '20%' },
+                    xAxis: { type: 'value', name: 'Epoch', nameTextStyle: { fontSize: 9 }, axisLabel: { fontSize: 9 } },
+                    yAxis: { type: 'value', name: 'Loss', nameTextStyle: { fontSize: 9 }, axisLabel: { fontSize: 9 } },
+                    series: [{ type: 'line', data: [], smooth: true, lineStyle: { color: '#06b6d4', width: 2 }, areaStyle: { color: 'rgba(6,182,212,0.1)' }, symbol: 'none' }]
+                });
+            } else {
+                builderLossChart.setOption({ series: [{ data: [] }] });
+            }
+
+            const totalEpochs = 50;
+            let epoch = 0;
+            const lossData = [];
+            // Complexity-based loss curve
+            const complexity = builderLayers.length;
+
+            const interval = setInterval(() => {
+                if (!builderTraining) {
+                    clearInterval(interval);
+                    return;
+                }
+                epoch++;
+                const progress = epoch / totalEpochs;
+                progressBar.style.width = (progress * 100) + '%';
+                epochEl.textContent = epoch;
+
+                const baseLoss = 2.5 * Math.exp(-epoch / (totalEpochs * 0.4)) + Math.random() * 0.15 * (1 - progress);
+                lossEl.textContent = baseLoss.toFixed(4);
+                lossData.push([epoch, baseLoss]);
+                builderLossChart.setOption({ series: [{ data: lossData }] });
+
+                // Animate builder preview nodes
+                const previewNodes = document.querySelectorAll('#builder-preview-svg circle');
+                if (previewNodes.length) {
+                    anime({
+                        targets: previewNodes[Math.floor(Math.random() * previewNodes.length)],
+                        r: [8, 12, 8],
+                        opacity: [0.85, 1, 0.85],
+                        duration: 300,
+                        easing: 'easeInOutQuad'
+                    });
+                }
+
+                if (epoch >= totalEpochs) {
+                    clearInterval(interval);
+                    builderTraining = false;
+                    lossEl.textContent = baseLoss.toFixed(4) + ' ✅';
+                }
+            }, 120);
+        }
+
         // Export functions for global access
         window.selectNetwork = selectNetwork;
         window.loadDataset = loadDataset;
         window.clearDataset = clearDataset;
+        window.clearBuilder = clearBuilder;
+        window.trainBuilderNetwork = trainBuilderNetwork;
+        window.removeBuilderLayer = removeBuilderLayer;
+        window.updateBuilderLayerUnits = updateBuilderLayerUnits;
+        window.updateBuilderLayerActivation = updateBuilderLayerActivation;
     </script>
 </body>
 </html>
