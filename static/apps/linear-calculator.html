@@ -192,6 +192,39 @@
             cursor: pointer;
             box-shadow: 0 0 10px var(--accent-cyan);
         }
+
+        /* View Mode Toggle */
+        .view-toggle { display: flex; gap: 4px; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 3px; }
+        .view-toggle button { padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-secondary); background: transparent; transition: all 0.3s ease; }
+        .view-toggle button.active { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: white; }
+
+        /* 2D Canvas */
+        #visualization2d { width: 100%; height: 450px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #0a0e14, #141b24); display: none; }
+
+        /* Decomposition Panel */
+        .decomp-step { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; transition: all 0.5s ease; opacity: 0.4; transform: translateY(10px); }
+        .decomp-step.active { opacity: 1; transform: translateY(0); border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+        .decomp-step.completed { opacity: 0.8; transform: translateY(0); border-color: var(--accent-green); }
+        .decomp-step .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; }
+        .decomp-step .step-num.pending { background: rgba(255,255,255,0.1); color: var(--text-secondary); }
+        .decomp-step .step-num.active { background: var(--accent-cyan); color: var(--bg-primary); }
+        .decomp-step .step-num.done { background: var(--accent-green); color: var(--bg-primary); }
+        .decomp-matrix { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem; }
+        .decomp-progress { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin: 1rem 0; }
+        .decomp-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); border-radius: 2px; transition: width 0.5s ease; }
+
+        /* Quiz Mode */
+        .quiz-overlay { position: relative; }
+        .quiz-option { background: rgba(0,0,0,0.35); border: 2px solid var(--border-color); border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.3s ease; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: left; color: var(--text-primary); width: 100%; }
+        .quiz-option:hover { border-color: var(--accent-cyan); background: rgba(0,212,255,0.05); transform: translateX(4px); }
+        .quiz-option.correct { border-color: var(--accent-green) !important; background: rgba(16,185,129,0.15) !important; }
+        .quiz-option.incorrect { border-color: #ef4444 !important; background: rgba(239,68,68,0.1) !important; }
+        .quiz-option.disabled { pointer-events: none; opacity: 0.6; }
+        .quiz-score-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .quiz-score-fill { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); border-radius: 3px; transition: width 0.5s ease; }
+        .quiz-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-fade-in { animation: fadeInUp 0.4s ease forwards; }
     </style>
 </head>
 
@@ -316,13 +349,18 @@
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-card p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">3D Transformation Visualizer</h2>
-                        <div class="flex gap-2">
-                            <button id="resetViewBtn" class="btn btn-outline text-sm">[↺] Reset View</button>
+                        <h2 class="text-xl font-bold">Transformation Visualizer</h2>
+                        <div class="flex gap-2 items-center">
+                            <div class="view-toggle">
+                                <button id="view2dBtn" onclick="setViewMode('2d')">2D</button>
+                                <button id="view3dBtn" class="active" onclick="setViewMode('3d')">3D</button>
+                            </div>
+                            <button id="resetViewBtn" class="btn btn-outline text-sm">[↺] Reset</button>
                             <button id="toggleGridBtn" class="btn btn-outline text-sm">[#] Grid</button>
                         </div>
                     </div>
                     <div id="visualization3d"></div>
+                    <canvas id="visualization2d"></canvas>
 
                     <!-- Legend -->
                     <div class="mt-4 flex flex-wrap gap-3">
@@ -379,6 +417,59 @@
                         <button onclick="computeNormalize()" class="btn btn-outline">Normalize</button>
                     </div>
                     <div id="operationResult" class="mt-4 result-display hidden"></div>
+                </div>
+
+                <!-- Decomposition Animations -->
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span class="text-pink-400">[∑]</span> Decomposition
+                        </h2>
+                        <div class="flex gap-2">
+                            <select id="decompType" class="text-sm">
+                                <option value="svd">SVD (UΣVᵀ)</option>
+                                <option value="qr">QR Decomposition</option>
+                                <option value="lu">LU Decomposition</option>
+                            </select>
+                            <button id="decompPlayBtn" class="btn btn-primary text-sm" onclick="startDecomposition()">▶ Decompose</button>
+                        </div>
+                    </div>
+                    <div class="decomp-progress"><div id="decompProgressBar" class="decomp-progress-bar" style="width:0%"></div></div>
+                    <div id="decompSteps" class="space-y-3">
+                        <div class="text-center text-gray-500 py-4 text-sm">Select a decomposition type and click Decompose to see the step-by-step breakdown</div>
+                    </div>
+                    <div id="decompKatex" class="mt-4 text-center" style="min-height:40px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Mode -->
+        <div class="container mx-auto px-4 md:px-8 max-w-7xl mt-6 mb-12">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <span class="text-yellow-400">[?]</span> Quiz Mode
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-400">Score:</span>
+                            <span id="quizScoreText" class="font-mono text-cyan-400 font-bold">0/0</span>
+                        </div>
+                        <div class="quiz-score-bar" style="width:120px;"><div id="quizScoreFill" class="quiz-score-fill" style="width:0%"></div></div>
+                        <select id="quizDifficulty" class="text-sm">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        <button id="newQuizBtn" class="btn btn-primary text-sm" onclick="generateQuiz()">New Question</button>
+                    </div>
+                </div>
+                <div id="quizArea">
+                    <div class="text-center text-gray-500 py-6">Click "New Question" to start a quiz on linear algebra concepts</div>
+                </div>
+                <div id="quizExplanation" class="mt-4 hidden" style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem;">
+                    <h4 class="text-sm font-bold text-cyan-400 mb-2">Explanation</h4>
+                    <div id="quizExplanationText" class="text-sm text-gray-300"></div>
                 </div>
             </div>
         </div>
@@ -849,6 +940,307 @@
         ['showBasis', 'showTransformed', 'showEigenvectors', 'showUnitCube'].forEach(id => {
             document.getElementById(id).addEventListener('change', updateVisualization);
         });
+
+        // ============ 2D VIEW MODE ============
+        let viewMode = '3d';
+        let ctx2d = null;
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('view2dBtn').classList.toggle('active', mode === '2d');
+            document.getElementById('view3dBtn').classList.toggle('active', mode === '3d');
+            document.getElementById('visualization3d').style.display = mode === '3d' ? 'block' : 'none';
+            const canvas2d = document.getElementById('visualization2d');
+            canvas2d.style.display = mode === '2d' ? 'block' : 'none';
+            if (mode === '2d') {
+                canvas2d.width = canvas2d.parentElement.clientWidth - 48;
+                canvas2d.height = 450;
+                ctx2d = canvas2d.getContext('2d');
+                draw2D();
+            }
+        }
+
+        function draw2D() {
+            if (!ctx2d) return;
+            const w = ctx2d.canvas.width, h = ctx2d.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            const scale = Math.min(w, h) / 8;
+            ctx2d.clearRect(0, 0, w, h);
+            // Background
+            ctx2d.fillStyle = '#0a0e14';
+            ctx2d.fillRect(0, 0, w, h);
+            // Grid
+            ctx2d.strokeStyle = 'rgba(0,212,255,0.08)';
+            ctx2d.lineWidth = 1;
+            for (let i = -4; i <= 4; i++) {
+                ctx2d.beginPath(); ctx2d.moveTo(cx + i * scale, 0); ctx2d.lineTo(cx + i * scale, h); ctx2d.stroke();
+                ctx2d.beginPath(); ctx2d.moveTo(0, cy + i * scale); ctx2d.lineTo(w, cy + i * scale); ctx2d.stroke();
+            }
+            // Axes
+            ctx2d.strokeStyle = 'rgba(255,255,255,0.2)'; ctx2d.lineWidth = 1.5;
+            ctx2d.beginPath(); ctx2d.moveTo(0, cy); ctx2d.lineTo(w, cy); ctx2d.stroke();
+            ctx2d.beginPath(); ctx2d.moveTo(cx, 0); ctx2d.lineTo(cx, h); ctx2d.stroke();
+            // Axis labels
+            ctx2d.fillStyle = 'rgba(255,255,255,0.4)'; ctx2d.font = '12px JetBrains Mono';
+            ctx2d.fillText('x', w - 16, cy - 8); ctx2d.fillText('y', cx + 8, 16);
+            for (let i = -3; i <= 3; i++) { if (i === 0) continue; ctx2d.fillText(i, cx + i * scale - 4, cy + 16); ctx2d.fillText(i, cx + 8, cy - i * scale + 4); }
+
+            const m = [[currentMatrix[0][0], currentMatrix[0][1]], [currentMatrix[1][0], currentMatrix[1][1]]];
+            // Unit square (original)
+            if (document.getElementById('showUnitCube').checked) {
+                ctx2d.strokeStyle = 'rgba(255,255,255,0.15)'; ctx2d.lineWidth = 1; ctx2d.setLineDash([4, 4]);
+                const sq = [[0,0],[1,0],[1,1],[0,1]];
+                ctx2d.beginPath();
+                sq.forEach((p, i) => { const px = cx + p[0]*scale, py = cy - p[1]*scale; i===0? ctx2d.moveTo(px,py): ctx2d.lineTo(px,py); });
+                ctx2d.closePath(); ctx2d.stroke(); ctx2d.setLineDash([]);
+                // Transformed square
+                ctx2d.strokeStyle = 'rgba(0,212,255,0.5)'; ctx2d.lineWidth = 2;
+                ctx2d.fillStyle = 'rgba(0,212,255,0.06)';
+                ctx2d.beginPath();
+                sq.forEach((p, i) => { const tv = [m[0][0]*p[0]+m[0][1]*p[1], m[1][0]*p[0]+m[1][1]*p[1]]; const px = cx+tv[0]*scale, py = cy-tv[1]*scale; i===0? ctx2d.moveTo(px,py): ctx2d.lineTo(px,py); });
+                ctx2d.closePath(); ctx2d.fill(); ctx2d.stroke();
+            }
+            // Basis vectors
+            const drawArrow2D = (vx, vy, color, lw) => {
+                const ex = cx + vx*scale, ey = cy - vy*scale;
+                ctx2d.strokeStyle = color; ctx2d.lineWidth = lw; ctx2d.fillStyle = color;
+                ctx2d.beginPath(); ctx2d.moveTo(cx, cy); ctx2d.lineTo(ex, ey); ctx2d.stroke();
+                const ang = Math.atan2(-vy, vx); const hs = 10;
+                ctx2d.beginPath(); ctx2d.moveTo(ex, ey);
+                ctx2d.lineTo(ex - hs*Math.cos(ang-0.4), ey + hs*Math.sin(ang-0.4));
+                ctx2d.lineTo(ex - hs*Math.cos(ang+0.4), ey + hs*Math.sin(ang+0.4));
+                ctx2d.closePath(); ctx2d.fill();
+            };
+            if (document.getElementById('showBasis').checked) { drawArrow2D(1,0,'#ff4136',2.5); drawArrow2D(0,1,'#2ecc40',2.5); }
+            if (document.getElementById('showTransformed').checked) {
+                drawArrow2D(m[0][0], m[1][0], '#ff851b', 3); drawArrow2D(m[0][1], m[1][1], '#ffdc00', 3);
+            }
+            if (document.getElementById('showEigenvectors').checked) {
+                const eigen = calculateEigen2x2(m);
+                if (eigen.eigenvectors) { eigen.eigenvectors.forEach(v => drawArrow2D(v[0]*2, v[1]*2, '#b10dc9', 2)); }
+            }
+            // Labels
+            ctx2d.font = '11px JetBrains Mono';
+            if (document.getElementById('showBasis').checked) { ctx2d.fillStyle='#ff4136'; ctx2d.fillText('e₁',cx+scale+6,cy+4); ctx2d.fillStyle='#2ecc40'; ctx2d.fillText('e₂',cx+6,cy-scale-6); }
+            if (document.getElementById('showTransformed').checked) { ctx2d.fillStyle='#ff851b'; ctx2d.fillText('Te₁',cx+m[0][0]*scale+6,cy-m[1][0]*scale); ctx2d.fillStyle='#ffdc00'; ctx2d.fillText('Te₂',cx+m[0][1]*scale+6,cy-m[1][1]*scale); }
+            // Det info
+            const det2 = m[0][0]*m[1][1] - m[0][1]*m[1][0];
+            ctx2d.fillStyle = 'rgba(255,255,255,0.6)'; ctx2d.font = '13px Space Grotesk';
+            ctx2d.fillText(`det = ${det2.toFixed(3)}`, 12, 24);
+            ctx2d.fillText(`Area factor = |${Math.abs(det2).toFixed(3)}|`, 12, 44);
+        }
+
+        const origUpdateVis = updateVisualization;
+        updateVisualization = function() { origUpdateVis(); if (viewMode === '2d') draw2D(); };
+
+        // ============ DECOMPOSITION ANIMATIONS ============
+        let decompAnimTimer = null;
+
+        function fmtM(m) { return m.map(r => '[' + r.map(n=>n.toFixed(3).padStart(7)).join(', ') + ']').join('\n'); }
+
+        function computeSVD2x2(m) {
+            // Simplified SVD for display: M = U Σ Vᵀ
+            const [[a,b],[c,d]] = m;
+            const AtA = [[a*a+c*c, a*b+c*d],[a*b+c*d, b*b+d*d]];
+            const eigen = calculateEigen2x2(AtA);
+            if (!eigen.eigenvalues || eigen.complex) return null;
+            const s1 = Math.sqrt(Math.max(0, eigen.eigenvalues[0]));
+            const s2 = Math.sqrt(Math.max(0, eigen.eigenvalues[1]));
+            const V = eigen.eigenvectors;
+            const Vt = [[V[0][0],V[1][0]],[V[0][1],V[1][1]]];
+            let U;
+            if (s1 > 1e-10 && s2 > 1e-10) {
+                const u1 = [(a*V[0][0]+b*V[0][1])/s1, (c*V[0][0]+d*V[0][1])/s1];
+                const u2 = [(a*V[1][0]+b*V[1][1])/s2, (c*V[1][0]+d*V[1][1])/s2];
+                U = [u1, u2];
+            } else { U = [[1,0],[0,1]]; }
+            return { U: [[U[0][0],U[1][0]],[U[0][1],U[1][1]]], S: [[s1,0],[0,s2]], Vt };
+        }
+
+        function computeQR(m) {
+            const [[a,b,cc],[d,e,f],[g,h,ii]] = m;
+            // Gram-Schmidt
+            const u1 = [a,d,g]; const n1 = Math.sqrt(u1[0]**2+u1[1]**2+u1[2]**2)||1;
+            const e1 = u1.map(x=>x/n1);
+            const proj1 = e1[0]*b+e1[1]*e+e1[2]*h;
+            const u2t = [b-proj1*e1[0], e-proj1*e1[1], h-proj1*e1[2]]; const n2 = Math.sqrt(u2t[0]**2+u2t[1]**2+u2t[2]**2)||1;
+            const e2 = u2t.map(x=>x/n2);
+            const proj2a = e1[0]*cc+e1[1]*f+e1[2]*ii;
+            const proj2b = e2[0]*cc+e2[1]*f+e2[2]*ii;
+            const u3t = [cc-proj2a*e1[0]-proj2b*e2[0], f-proj2a*e1[1]-proj2b*e2[1], ii-proj2a*e1[2]-proj2b*e2[2]];
+            const n3 = Math.sqrt(u3t[0]**2+u3t[1]**2+u3t[2]**2)||1;
+            const e3 = u3t.map(x=>x/n3);
+            const Q = [[e1[0],e2[0],e3[0]],[e1[1],e2[1],e3[1]],[e1[2],e2[2],e3[2]]];
+            const R = [
+                [n1, proj1, proj2a],
+                [0, n2, proj2b],
+                [0, 0, n3]
+            ];
+            return { Q, R };
+        }
+
+        function computeLU(m) {
+            const L = [[1,0,0],[0,1,0],[0,0,1]];
+            const U = m.map(r=>[...r]);
+            if (Math.abs(U[0][0]) > 1e-10) {
+                L[1][0] = U[1][0]/U[0][0]; L[2][0] = U[2][0]/U[0][0];
+                for(let j=0;j<3;j++){U[1][j]-=L[1][0]*U[0][j]; U[2][j]-=L[2][0]*U[0][j];}
+            }
+            if (Math.abs(U[1][1]) > 1e-10) {
+                L[2][1] = U[2][1]/U[1][1];
+                for(let j=0;j<3;j++) U[2][j]-=L[2][1]*U[1][j];
+            }
+            return { L, U };
+        }
+
+        function startDecomposition() {
+            if (decompAnimTimer) { clearTimeout(decompAnimTimer); decompAnimTimer = null; }
+            const type = document.getElementById('decompType').value;
+            const stepsEl = document.getElementById('decompSteps');
+            const progressEl = document.getElementById('decompProgressBar');
+            const katexEl = document.getElementById('decompKatex');
+            let steps = [];
+
+            if (type === 'svd') {
+                const m2 = [[currentMatrix[0][0],currentMatrix[0][1]],[currentMatrix[1][0],currentMatrix[1][1]]];
+                const svd = computeSVD2x2(m2);
+                if (!svd) { stepsEl.innerHTML = '<div class="text-red-400 text-sm py-4 text-center">SVD requires real eigenvalues (non-rotational matrix for 2x2)</div>'; return; }
+                steps = [
+                    { title: 'Compute AᵀA', desc: 'Multiply transpose by original', matrix: `AᵀA product computed`, katex: 'A^\\top A' },
+                    { title: 'Find eigenvalues of AᵀA', desc: 'Singular values are √eigenvalues', matrix: `σ₁ = ${svd.S[0][0].toFixed(4)}, σ₂ = ${svd.S[1][1].toFixed(4)}`, katex: '\\sigma_i = \\sqrt{\\lambda_i(A^\\top A)}' },
+                    { title: 'Compute V (right singular vectors)', desc: 'Eigenvectors of AᵀA', matrix: fmtM(svd.Vt), katex: 'V = [v_1 \\; v_2]' },
+                    { title: 'Compute Σ (singular value matrix)', desc: 'Diagonal matrix of σ values', matrix: fmtM(svd.S), katex: '\\Sigma = \\text{diag}(\\sigma_1, \\sigma_2)' },
+                    { title: 'Compute U (left singular vectors)', desc: 'U = AV Σ⁻¹', matrix: fmtM(svd.U), katex: 'u_i = \\frac{1}{\\sigma_i} A v_i' },
+                    { title: 'Result: A = UΣVᵀ', desc: 'Full SVD decomposition', matrix: 'Decomposition complete ✓', katex: 'A = U \\Sigma V^\\top' },
+                ];
+            } else if (type === 'qr') {
+                const qr = computeQR(currentMatrix);
+                steps = [
+                    { title: 'Extract column a₁', desc: 'First column of A', matrix: `a₁ = [${currentMatrix[0][0].toFixed(3)}, ${currentMatrix[1][0].toFixed(3)}, ${currentMatrix[2][0].toFixed(3)}]`, katex: 'a_1 = A_{:,1}' },
+                    { title: 'Normalize → q₁', desc: 'First orthonormal vector', matrix: `q₁ = [${qr.Q[0][0].toFixed(3)}, ${qr.Q[1][0].toFixed(3)}, ${qr.Q[2][0].toFixed(3)}]`, katex: 'q_1 = \\frac{a_1}{\\|a_1\\|}' },
+                    { title: 'Orthogonalize a₂', desc: 'Remove q₁ component from a₂', matrix: `q₂ computed via Gram-Schmidt`, katex: 'u_2 = a_2 - (q_1^\\top a_2)q_1' },
+                    { title: 'Normalize → q₂', desc: 'Second orthonormal vector', matrix: `q₂ = [${qr.Q[0][1].toFixed(3)}, ${qr.Q[1][1].toFixed(3)}, ${qr.Q[2][1].toFixed(3)}]`, katex: 'q_2 = \\frac{u_2}{\\|u_2\\|}' },
+                    { title: 'Build Q (orthogonal)', desc: 'Q has orthonormal columns', matrix: fmtM(qr.Q), katex: 'Q = [q_1 \\; q_2 \\; q_3]' },
+                    { title: 'Compute R = QᵀA', desc: 'Upper triangular matrix', matrix: fmtM(qr.R), katex: 'R = Q^\\top A' },
+                    { title: 'Result: A = QR', desc: 'Full QR decomposition', matrix: 'Decomposition complete ✓', katex: 'A = QR' },
+                ];
+            } else {
+                const lu = computeLU(currentMatrix);
+                steps = [
+                    { title: 'Initialize L = I, U = A', desc: 'Start with identity L and copy of A', matrix: 'L = I₃, U = A', katex: 'L = I, \\; U = A' },
+                    { title: 'Eliminate column 1', desc: 'Zero out below pivot (1,1)', matrix: `L₂₁ = ${lu.L[1][0].toFixed(4)}, L₃₁ = ${lu.L[2][0].toFixed(4)}`, katex: 'l_{i1} = \\frac{u_{i1}}{u_{11}}' },
+                    { title: 'Update U rows 2,3', desc: 'Subtract scaled row 1', matrix: `U after step 1`, katex: 'u_{ij} \\leftarrow u_{ij} - l_{i1} u_{1j}' },
+                    { title: 'Eliminate column 2', desc: 'Zero out below pivot (2,2)', matrix: `L₃₂ = ${lu.L[2][1].toFixed(4)}`, katex: 'l_{32} = \\frac{u_{32}}{u_{22}}' },
+                    { title: 'Final L (lower triangular)', desc: 'Multipliers stored in L', matrix: fmtM(lu.L), katex: 'L = \\text{lower triangular}' },
+                    { title: 'Final U (upper triangular)', desc: 'Row echelon form', matrix: fmtM(lu.U), katex: 'U = \\text{upper triangular}' },
+                    { title: 'Result: A = LU', desc: 'Full LU decomposition', matrix: 'Decomposition complete ✓', katex: 'A = LU' },
+                ];
+            }
+
+            // Render steps with animation
+            stepsEl.innerHTML = steps.map((s, i) => `
+                <div class="decomp-step" id="dstep${i}">
+                    <div class="flex items-start">
+                        <span class="step-num pending" id="dnum${i}">${i+1}</span>
+                        <div class="flex-1">
+                            <div class="font-bold text-sm">${s.title}</div>
+                            <div class="text-xs text-gray-500">${s.desc}</div>
+                            <div class="decomp-matrix hidden" id="dmat${i}">${s.matrix}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            let step = 0;
+            const animateStep = () => {
+                if (step >= steps.length) return;
+                const pct = ((step + 1) / steps.length * 100);
+                progressEl.style.width = pct + '%';
+                // Mark previous as completed
+                if (step > 0) {
+                    document.getElementById(`dstep${step-1}`).classList.remove('active');
+                    document.getElementById(`dstep${step-1}`).classList.add('completed');
+                    document.getElementById(`dnum${step-1}`).className = 'step-num done';
+                }
+                const el = document.getElementById(`dstep${step}`);
+                const numEl = document.getElementById(`dnum${step}`);
+                const matEl = document.getElementById(`dmat${step}`);
+                el.classList.add('active'); numEl.className = 'step-num active'; matEl.classList.remove('hidden');
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // KaTeX
+                try { katex.render(steps[step].katex, katexEl, { displayMode: true, throwOnError: false }); } catch(e) {}
+                step++;
+                if (step < steps.length) decompAnimTimer = setTimeout(animateStep, 1200);
+            };
+            animateStep();
+        }
+
+        // ============ QUIZ MODE ============
+        let quizScore = 0, quizTotal = 0;
+
+        function generateQuiz() {
+            const diff = document.getElementById('quizDifficulty').value;
+            document.getElementById('quizExplanation').classList.add('hidden');
+            const questions = getQuestions(diff);
+            const q = questions[Math.floor(Math.random() * questions.length)];
+            const area = document.getElementById('quizArea');
+            const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+
+            area.innerHTML = `
+                <div class="anim-fade-in">
+                    <div class="mb-1"><span class="quiz-badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;">${diff.toUpperCase()}</span></div>
+                    <p class="text-lg font-bold mb-1">${q.question}</p>
+                    <div id="quizKatexQ" class="mb-4"></div>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        ${shuffled.map((opt, i) => `<button class="quiz-option" onclick="checkAnswer(this, ${opt === q.answer}, '${q.explanation.replace(/'/g,"\\'")}')"><span class="text-cyan-400 mr-2">${String.fromCharCode(65+i)}.</span>${opt}</button>`).join('')}
+                    </div>
+                </div>
+            `;
+            if (q.katex) { try { katex.render(q.katex, document.getElementById('quizKatexQ'), { displayMode: true, throwOnError: false }); } catch(e) {} }
+        }
+
+        function checkAnswer(btn, correct, explanation) {
+            document.querySelectorAll('.quiz-option').forEach(b => b.classList.add('disabled'));
+            quizTotal++;
+            if (correct) { btn.classList.add('correct'); quizScore++; }
+            else {
+                btn.classList.add('incorrect');
+                document.querySelectorAll('.quiz-option').forEach(b => { if (!b.classList.contains('incorrect')) { /* find correct */ } });
+            }
+            document.getElementById('quizScoreText').textContent = `${quizScore}/${quizTotal}`;
+            document.getElementById('quizScoreFill').style.width = (quizTotal > 0 ? (quizScore/quizTotal*100) : 0) + '%';
+            const expEl = document.getElementById('quizExplanation');
+            expEl.classList.remove('hidden');
+            document.getElementById('quizExplanationText').textContent = explanation;
+        }
+
+        function getQuestions(diff) {
+            const easy = [
+                { question: 'What is the determinant of the 2×2 identity matrix?', options: ['1', '0', '2', 'undefined'], answer: '1', explanation: 'The identity matrix has det(I) = 1 since it maps every vector to itself with no scaling.', katex: 'I = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}' },
+                { question: 'What does a matrix with determinant 0 indicate?', options: ['Singular (not invertible)', 'Orthogonal', 'Symmetric', 'Diagonal'], answer: 'Singular (not invertible)', explanation: 'A zero determinant means the matrix collapses space into a lower dimension, making it non-invertible.' },
+                { question: 'Which matrix operation swaps rows and columns?', options: ['Transpose', 'Inverse', 'Determinant', 'Trace'], answer: 'Transpose', explanation: 'The transpose Aᵀ swaps the (i,j) entry with (j,i), effectively reflecting across the main diagonal.' },
+                { question: 'What is the trace of a 3×3 identity matrix?', options: ['3', '1', '0', '9'], answer: '3', explanation: 'The trace is the sum of diagonal elements: 1+1+1 = 3 for the 3×3 identity.' },
+                { question: 'A rotation matrix preserves which property?', options: ['Vector lengths', 'Matrix rank', 'Eigenvalues', 'Determinant sign'], answer: 'Vector lengths', explanation: 'Rotation is an isometry — it preserves distances and angles, so all vector lengths remain the same.' },
+                { question: 'What is det(2I) for a 2×2 identity?', options: ['4', '2', '1', '8'], answer: '4', explanation: 'det(cI) = cⁿ for n×n. So det(2I₂) = 2² = 4.', katex: '\\det(2I_2) = 2^2 = 4' },
+            ];
+            const medium = [
+                { question: 'If A has eigenvalues λ₁=3, λ₂=2, what is det(A)?', options: ['6', '5', '1', '9'], answer: '6', explanation: 'The determinant equals the product of eigenvalues: det(A) = λ₁·λ₂ = 3×2 = 6.', katex: '\\det(A) = \\prod \\lambda_i = 3 \\times 2 = 6' },
+                { question: 'In SVD (A = UΣVᵀ), what property does U have?', options: ['Orthogonal columns', 'Upper triangular', 'Diagonal', 'Lower triangular'], answer: 'Orthogonal columns', explanation: 'U is an orthogonal (unitary) matrix whose columns are the left singular vectors of A.' },
+                { question: 'What does QR decomposition produce?', options: ['Orthogonal Q, upper triangular R', 'Lower L, upper U', 'Diagonal and rotation', 'Symmetric and skew-symmetric'], answer: 'Orthogonal Q, upper triangular R', explanation: 'QR decomposes A into Q (orthogonal) and R (upper triangular) via the Gram-Schmidt process.' },
+                { question: 'If det(A) = -1, the transformation includes:', options: ['A reflection', 'A projection', 'Only rotation', 'Only scaling'], answer: 'A reflection', explanation: 'A negative determinant means orientation is reversed (handedness flipped), which involves a reflection.' },
+                { question: 'The rank of a 3×3 matrix with one zero row is at most:', options: ['2', '3', '1', '0'], answer: '2', explanation: 'A zero row means at most 2 linearly independent rows, so rank ≤ 2.' },
+                { question: 'For orthogonal matrix Q, what is QᵀQ?', options: ['I (identity)', 'Q²', 'Q⁻¹', '0'], answer: 'I (identity)', explanation: 'By definition, an orthogonal matrix satisfies QᵀQ = QQᵀ = I, meaning Qᵀ = Q⁻¹.', katex: 'Q^\\top Q = I' },
+            ];
+            const hard = [
+                { question: 'For A ∈ ℝ²ˣ², if tr(A)=5, det(A)=6, the eigenvalues are:', options: ['2 and 3', '1 and 6', '1 and 5', '4 and 1'], answer: '2 and 3', explanation: 'Eigenvalues satisfy: λ₁+λ₂ = tr(A) = 5 and λ₁·λ₂ = det(A) = 6. Solving: λ²-5λ+6=0 → (λ-2)(λ-3)=0.', katex: '\\lambda^2 - 5\\lambda + 6 = 0' },
+                { question: 'The singular values of A relate to eigenvalues of:', options: ['AᵀA', 'A+Aᵀ', 'A²', 'A⁻¹'], answer: 'AᵀA', explanation: 'Singular values σᵢ = √λᵢ(AᵀA). The eigenvalues of AᵀA are the squares of A\'s singular values.' },
+                { question: 'A matrix A is positive definite if and only if:', options: ['All eigenvalues > 0', 'det(A) > 0', 'tr(A) > 0', 'A is symmetric'], answer: 'All eigenvalues > 0', explanation: 'Positive definiteness requires xᵀAx > 0 for all x≠0, which is equivalent to all eigenvalues being strictly positive (assuming symmetry).' },
+                { question: 'In LU decomposition without pivoting, what can cause failure?', options: ['Zero pivot element', 'Non-square matrix', 'Large determinant', 'Orthogonal matrix'], answer: 'Zero pivot element', explanation: 'LU without pivoting fails when a diagonal element becomes zero during elimination, requiring row swaps (partial pivoting).' },
+                { question: 'The Frobenius norm ||A||_F equals:', options: ['√(Σσᵢ²)', 'max(σᵢ)', 'Σ|aᵢⱼ|', 'det(A)'], answer: '√(Σσᵢ²)', explanation: 'The Frobenius norm equals the square root of the sum of squared singular values, or equivalently √tr(AᵀA).', katex: '\\|A\\|_F = \\sqrt{\\sum \\sigma_i^2} = \\sqrt{\\text{tr}(A^\\top A)}' },
+                { question: 'If A = QΛQᵀ (eigendecomposition), then A³ =', options: ['QΛ³Qᵀ', '3A', 'Q³Λ³Q³ᵀ', 'Λ³'], answer: 'QΛ³Qᵀ', explanation: 'Since QᵀQ=I, A³ = (QΛQᵀ)(QΛQᵀ)(QΛQᵀ) = QΛ³Qᵀ. The Q matrices telescope and only Λ gets cubed.', katex: 'A^n = Q\\Lambda^n Q^\\top' },
+            ];
+            return diff === 'easy' ? easy : diff === 'medium' ? medium : hard;
+        }
 
         // ============ INITIALIZATION ============
         window.onload = function () {
