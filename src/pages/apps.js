@@ -103,16 +103,11 @@ const AppsPage = ({ location }) => {
       category: 'Data Science'
     },
     {
-      title: 'The Science of Convergence',
-      path: '/apps/The Science of Convergence.html',
-      description: 'Interactive exploration of convergence patterns in mathematical and scientific contexts.',
-      category: 'Data Science'
-    },
-    {
-      title: 'Numerical Attractor Descent Curves',
-      path: '/apps/Understanding Numerical Attractor Descent Curves.html',
-      description: 'Visualize and understand attractor descent curves in dynamical systems.',
-      category: 'Data Science'
+      title: 'Dynamical Systems Explorer',
+      path: '/apps/dynamical-systems-explorer.html',
+      description: 'Unified interactive exploration of universal scaling laws, numerical attractor descent curves, convergence dynamics, and the mathematics of complex systems.',
+      category: 'Data Science',
+      featured: true
     },
     {
       title: 'Matrix Visualization Lab',

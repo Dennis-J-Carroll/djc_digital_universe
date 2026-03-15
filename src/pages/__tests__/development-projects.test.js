@@ -53,9 +53,8 @@ describe("DevelopmentProjects", () => {
 
   it("displays Data Science projects", () => {
     render(<DevelopmentProjects location={mockLocation} />)
-    expect(screen.getByText("Numerical Attractor Descent Curves")).toBeInTheDocument()
+    expect(screen.getByText("Dynamical Systems Explorer")).toBeInTheDocument()
     expect(screen.getByText("SNFT 5-Digit Experimental Framework")).toBeInTheDocument()
-    expect(screen.getByText("The Science of Convergence")).toBeInTheDocument()
   })
 
   it("displays Web Applications", () => {

@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamical Systems Explorer — Convergence, Scaling Laws & Attractor Dynamics</title>
+    <meta name="description" content="An interactive exploration of universal scaling laws, numerical attractor descent curves, and the mathematics of convergence in dynamical systems.">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-card: rgba(17, 24, 32, 0.92);
+            --bg-card-hover: rgba(22, 30, 40, 0.96);
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-yellow: #fbbf24;
+            --accent-orange: #f97316;
+            --accent-pink: #ec4899;
+            --accent-teal: #14b8a6;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(0, 212, 255, 0.15);
+            --border-hover: rgba(0, 212, 255, 0.4);
+            --glow-cyan: rgba(0, 212, 255, 0.12);
+            --glow-purple: rgba(168, 85, 247, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background animated gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+            line-height: 1.15;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 5px;
+            margin: 1.5rem auto 2.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            max-width: 100%;
+        }
+        .tab-nav::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
+        }
+
+        .tab-btn .tab-icon { margin-right: 6px; }
+
+        /* Tab Content */
+        .tab-panel { display: none; animation: fadeInUp 0.45s ease forwards; }
+        .tab-panel.active { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.35s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 35px var(--glow-cyan);
+        }
+
+        .glass-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .glass-card h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--accent-teal);
+            margin: 1.25rem 0 0.75rem;
+        }
+
+        .section-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Feature Cards Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .feature-card .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .feature-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1.25rem 0;
+        }
+
+        .process-step {
+            flex: 1 1 200px;
+            max-width: 250px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .process-step:hover {
+            border-color: var(--accent-teal);
+            background: rgba(20, 184, 166, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .process-step.expanded { border-color: var(--accent-cyan); }
+
+        .process-step .step-icon { font-size: 2.2rem; margin-bottom: 0.5rem; display: block; }
+        .process-step h4 { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .process-step .step-detail {
+            display: none;
+            margin-top: 0.75rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .process-step.expanded .step-detail { display: block; }
+
+        .process-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 1.6rem;
+            color: var(--accent-cyan);
+            padding: 0 0.4rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .process-arrow { transform: rotate(90deg); padding: 0.3rem 0; }
+            .process-flow { flex-direction: column; align-items: center; }
+            .process-step { max-width: 100%; }
+        }
+
+        /* KaTeX display */
+        .formula-block {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .katex { font-size: 1.05em !important; }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin: 1rem auto;
+            height: 320px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container { height: 360px; max-width: 700px; }
+        }
+
+        /* KPI Badges */
+        .kpi-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0.25rem;
+        }
+
+        /* Interactive List */
+        .interactive-item {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .interactive-item:hover { background: rgba(0,212,255,0.04); border-color: var(--border-color); }
+        .interactive-item.expanded { background: rgba(0,212,255,0.06); border-color: var(--accent-cyan); }
+
+        .interactive-item strong { color: var(--accent-teal); }
+
+        .item-detail {
+            display: none;
+            margin-top: 0.6rem;
+            padding: 0.75rem 1rem;
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .interactive-item.expanded .item-detail { display: block; }
+
+        /* Mechanism Cards */
+        .mechanism-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 14px;
+            padding: 1.5rem;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .mechanism-card:hover { transform: translateX(4px); }
+
+        .mechanism-card h3 { margin-top: 0; }
+
+        .mechanism-card .analogy {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.04);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            margin-top: 0.75rem;
+            font-style: italic;
+        }
+
+        /* Insight list */
+        .insight-list { list-style: none; padding: 0; }
+        .insight-list li {
+            position: relative;
+            padding: 0.5rem 0 0.5rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+        .insight-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Question grid */
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .question-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover { border-color: var(--accent-purple); }
+        .question-card::before {
+            content: '?';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Compression visual */
+        .compression-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 2rem;
+            font-size: 3.5rem;
+            flex-wrap: wrap;
+        }
+
+        .compression-visual .arrow-icon {
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            animation: arrowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { opacity: 0.4; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(6px); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
+
+        /* Content text */
+        .content-text {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .content-text strong { color: var(--text-primary); }
+
+        /* Two column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Dynamical Systems Explorer</h1>
+            <p>An interactive journey through universal scaling laws, attractor dynamics, and the mathematics of convergence in complex systems.</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav" role="tablist" aria-label="Explorer sections">
+            <button class="tab-btn active" onclick="switchTab('overview')" role="tab" aria-selected="true">
+                <span class="tab-icon">◉</span>Overview
+            </button>
+            <button class="tab-btn" onclick="switchTab('nadcs')" role="tab" aria-selected="false">
+                <span class="tab-icon">↘</span>NADCs
+            </button>
+            <button class="tab-btn" onclick="switchTab('scaling')" role="tab" aria-selected="false">
+                <span class="tab-icon">∝</span>Scaling Laws
+            </button>
+            <button class="tab-btn" onclick="switchTab('mechanisms')" role="tab" aria-selected="false">
+                <span class="tab-icon">⚛</span>Mechanisms
+            </button>
+            <button class="tab-btn" onclick="switchTab('compression')" role="tab" aria-selected="false">
+                <span class="tab-icon">⊞</span>Compression
+            </button>
+            <button class="tab-btn" onclick="switchTab('outlook')" role="tab" aria-selected="false">
+                <span class="tab-icon">◈</span>Outlook
+            </button>
+        </nav>
+
+        <!-- ==================== TAB: OVERVIEW ==================== -->
+        <div id="tab-overview" class="tab-panel active" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));">◉</span>
+                    The Science of Convergence
+                </h2>
+                <p class="content-text">
+                    Dynamical systems — from planetary orbits to neural networks — model phenomena that evolve over time. These systems often converge towards stable states known as <strong>attractors</strong>. The journey towards an attractor is governed by profound mathematical principles that transcend the specifics of any one system.
+                </p>
+                <p class="content-text">
+                    This explorer unpacks the concept of <strong>universality</strong>: the remarkable discovery that vastly different systems can exhibit identical quantitative convergence behaviors. Understanding these patterns reveals deep structure in how computation and nature navigate complexity.
+                </p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card" onclick="switchTab('nadcs')">
+                    <span class="card-icon">↘</span>
+                    <h4>Attractor Descent Curves</h4>
+                    <p>The computational paths traced by numerical algorithms as they converge from initial conditions towards attractors.</p>
+                </div>
+                <div class="feature-card" onclick="switchTab('scaling')">
+                    <span class="card-icon">∝</span>
+                    <h4>Scaling Laws & Universality</h4>
+                    <p>Mathematical relationships showing that macroscopic convergence properties are independent of microscopic system details.</p>
+                </div>
+                <div class="feature-card" onclick="switchTab('mechanisms')">
+                    <span class="card-icon">⚛</span>
+                    <h4>Theoretical Mechanisms</h4>
+                    <p>Renormalization Group theory, Bifurcation theory, and the frameworks that explain why universality emerges.</p>
+                </div>
+                <div class="feature-card" onclick="switchTab('compression')">
+                    <span class="card-icon">⊞</span>
+                    <h4>Data Compression Link</h4>
+                    <p>Universality implies structure, and structure implies compressibility — connecting dynamics to information theory.</p>
+                </div>
+            </div>
+
+            <div class="glass-card" style="text-align: center;">
+                <h2 style="justify-content: center;">
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));">δ</span>
+                    Key Constants
+                </h2>
+                <p class="content-text" style="margin-bottom: 1.5rem;">
+                    These universal constants appear across entirely different dynamical systems — a hallmark of universality.
+                </p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+                    <div class="kpi-badge" style="background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); color: var(--accent-orange);">
+                        <span>δ ≈ 4.669</span>
+                    </div>
+                    <div class="kpi-badge" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent-purple);">
+                        <span>α ≈ 2.503</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem;">
+                    Feigenbaum's constants — governing period-doubling cascades in routes to chaos.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: NADCs ==================== -->
+        <div id="tab-nadcs" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-teal), var(--accent-green));">↘</span>
+                    Numerical Attractor Descent Curves
+                </h2>
+                <p class="content-text">
+                    A <strong>Numerical Attractor Descent Curve (NADC)</strong> represents the specific path, or sequence of states, that a computational algorithm traces as it progresses from an initial condition towards an attractor. These curves are fundamental to understanding how computational models capture long-term system behavior.
+                </p>
+                <p class="content-text">
+                    In the study of dynamical systems — systems that evolve over time — entities often converge towards stable states known as 'attractors'. Numerical simulations are essential for exploring these complex behaviors, and NADCs provide the window into how this convergence unfolds.
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">How are NADCs Generated?</h3>
+                <p class="content-text">NADCs arise from various numerical techniques. Click each method to learn more:</p>
+                <div class="process-flow">
+                    <div class="process-step" onclick="toggleStep(this)">
+                        <span class="step-icon">🔄</span>
+                        <h4>Iterative Maps</h4>
+                        <div class="step-detail">
+                            For systems defined by discrete maps (e.g., logistic map), the NADC is the sequence of values generated by repeatedly applying the map function from a starting point. This is foundational in chaos theory.
+                        </div>
+                    </div>
+                    <div class="process-arrow">→</div>
+                    <div class="process-step" onclick="toggleStep(this)">
+                        <span class="step-icon">📈</span>
+                        <h4>ODE Solvers</h4>
+                        <div class="step-detail">
+                            For continuous systems (Ordinary Differential Equations), methods like Euler or Runge-Kutta compute a sequence of points approximating the true solution. This sequence forms the NADC.
+                        </div>
+                    </div>
+                    <div class="process-arrow">→</div>
+                    <div class="process-step" onclick="toggleStep(this)">
+                        <span class="step-icon">🌐</span>
+                        <h4>PDE Discretizations</h4>
+                        <div class="step-detail">
+                            For systems described by Partial Differential Equations (e.g., fluid flow), numerical methods discretize space and time. The evolution of this discretized state vector creates a high-dimensional NADC.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Significance of Studying NADCs</h3>
+                <p class="content-text">Studying NADCs provides crucial insights into system dynamics. Click each point for details:</p>
+
+                <div class="interactive-item" onclick="toggleItem(this)">
+                    <strong>Visualizing Convergence</strong> — NADCs show how trajectories navigate phase space towards an attractor.
+                    <div class="item-detail">
+                        They offer a direct visual representation of the path taken towards an attractor, revealing the geometry of the flow and the structure of the attractor itself. This direct visualization is invaluable for building intuition about system behavior.
+                    </div>
+                </div>
+                <div class="interactive-item" onclick="toggleItem(this)">
+                    <strong>Basin of Attraction Analysis</strong> — Mapping NADCs from various starting points helps define attractor regions.
+                    <div class="item-detail">
+                        By starting simulations from various initial conditions, one can numerically determine which starting points lead to which attractors, outlining these critical basin boundaries that separate qualitatively different long-term behaviors.
+                    </div>
+                </div>
+                <div class="interactive-item" onclick="toggleItem(this)">
+                    <strong>Convergence Rate Estimation</strong> — The speed and manner of approach quantify stability.
+                    <div class="item-detail">
+                        This provides quantitative data on the attractor's stability and the numerical method's efficiency. Slow convergence can indicate proximity to bifurcations or weak stability, while fast convergence suggests a strongly stable attractor.
+                    </div>
+                </div>
+                <div class="interactive-item" onclick="toggleItem(this)">
+                    <strong>Understanding Transients</strong> — NADCs capture initial complex behaviors before settling.
+                    <div class="item-detail">
+                        The initial part of an NADC reflects transient dynamics, which can be lengthy and intricate, especially near bifurcations or in chaotic systems, before the system asymptotically approaches the attractor. These transients often contain rich phenomena.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: SCALING LAWS ==================== -->
+        <div id="tab-scaling" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">∝</span>
+                    Universality & Scaling Laws
+                </h2>
+                <p class="content-text">
+                    <strong>Universality</strong> is a profound principle stating that vastly different systems can show identical quantitative behaviors, especially near critical points or during certain transitions. These behaviors are described by <strong>scaling laws</strong> — mathematical relationships indicating that macroscopic properties are independent of microscopic details, depending instead on broader characteristics like dimensionality or symmetries.
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Manifestation of Scaling Laws in NADCs</h3>
+                <p class="content-text">
+                    The convergence process detailed by NADCs is not random or system-specific. Quantitative measures of convergence exhibit predictable, universal patterns:
+                </p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4 style="color: var(--accent-teal);">Distance Scaling</h4>
+                        <p>How the distance from the current state to the attractor decreases with iteration number.</p>
+                        <div class="formula-block" id="katex-distance"></div>
+                    </div>
+                    <div class="feature-card">
+                        <h4 style="color: var(--accent-orange);">Parameter Scaling</h4>
+                        <p>Feigenbaum-type geometric convergence of bifurcation parameters, characterized by universal constants.</p>
+                        <div class="kpi-badge" style="background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: var(--accent-orange); margin-top: 0.5rem;">
+                            δ ≈ 4.669
+                        </div>
+                    </div>
+                    <div class="feature-card" style="grid-column: 1 / -1;">
+                        <h4 style="color: var(--accent-purple);">Halting Time Scaling</h4>
+                        <p>For numerical algorithms, the time taken to reach a solution within a given tolerance can show universal statistical properties. When scaled by their mean and standard deviation, the probability distribution of halting times converges to a universal, non-Gaussian shape for large problem dimensions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Mathematical Forms of Scaling Laws</h3>
+                <div class="two-col">
+                    <div>
+                        <p class="content-text" style="margin-bottom: 1.5rem;">
+                            Scaling laws are expressed through distinct mathematical forms that capture how different quantities relate to each other as scales change.
+                        </p>
+
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: var(--accent-teal); font-size: 0.95rem; margin-bottom: 0.3rem;">Power Laws</h4>
+                            <div class="formula-block" id="katex-power"></div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted);">Where ζ is the scaling exponent. Common in critical phenomena and distance decay.</p>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: var(--accent-orange); font-size: 0.95rem; margin-bottom: 0.3rem;">Geometric Scaling (Feigenbaum)</h4>
+                            <div class="formula-block" id="katex-feigenbaum"></div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted);">Describes discrete rescaling in bifurcation cascades.</p>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: var(--accent-green); font-size: 0.95rem; margin-bottom: 0.3rem;">Logarithmic Scaling</h4>
+                            <div class="formula-block" id="katex-log"></div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted);">Appears in some non-equilibrium systems or as corrections to power laws.</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent-purple); font-size: 0.95rem; margin-bottom: 0.3rem;">Universal Statistical Distributions</h4>
+                            <div class="formula-block" id="katex-stat"></div>
+                            <p style="font-size: 0.82rem; color: var(--text-muted);">The PDF of a scaled variable converges to a universal function for quantities like halting times.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--accent-cyan); text-align: center; margin-bottom: 0.75rem;">Conceptual Decay Comparison</h4>
+                        <div class="chart-container">
+                            <canvas id="decayChart"></canvas>
+                        </div>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
+                            Comparing how a quantity decreases following exponential decay vs. power-law decay. Power laws indicate scale-free behavior.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: MECHANISMS ==================== -->
+        <div id="tab-mechanisms" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));">⚛</span>
+                    Mechanisms Behind Universality
+                </h2>
+                <p class="content-text">
+                    The emergence of universal scaling laws is not coincidental; it stems from deep theoretical principles in mathematics and physics that explain why certain behaviors are robust and independent of specific system details.
+                </p>
+            </div>
+
+            <div class="two-col">
+                <div class="mechanism-card" style="border-left-color: var(--accent-orange);">
+                    <h3 style="color: var(--accent-orange); margin-top: 0;">Renormalization Group (RG) Theory</h3>
+                    <p class="content-text">
+                        Originating from statistical physics, RG involves a process of iteratively "zooming out" (coarse-graining) and rescaling a system. Systems that flow to the same <strong>"fixed point"</strong> under this transformation belong to the same universality class, exhibiting identical critical exponents.
+                    </p>
+                    <p class="content-text">
+                        This framework elegantly explains Feigenbaum universality in period-doubling routes to chaos. The iterative doubling operator has a fixed-point function, and the eigenvalues at that fixed point give the universal constants δ and α.
+                    </p>
+                    <div class="analogy">
+                        💡 Analogy: Repeatedly averaging groups of pixels in an image. If the large-scale structure remains similar after many such steps, the system exhibits scale invariance — a hallmark of RG fixed points.
+                    </div>
+                </div>
+
+                <div class="mechanism-card" style="border-left-color: var(--accent-teal);">
+                    <h3 style="color: var(--accent-teal); margin-top: 0;">Bifurcation Theory</h3>
+                    <p class="content-text">
+                        This branch of dynamical systems studies how qualitative behavior changes as a control parameter is varied. Near <strong>bifurcation points</strong> — where behavior changes dramatically (e.g., a stable state becomes unstable or splits) — the system's dynamics can often be simplified into <strong>"normal forms"</strong> that are universal for that class of bifurcation.
+                    </p>
+                    <p class="content-text">
+                        Scaling laws derived from these normal forms capture the essential features of transitions, explaining how convergence rates change near critical parameter values.
+                    </p>
+                    <div class="analogy">
+                        💡 Analogy: A river (stable flow) hitting a rock (parameter change) and splitting into two streams (bifurcation). The way it splits follows universal patterns regardless of the specific river or rock.
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Additional Frameworks</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4 style="color: var(--accent-yellow);">Statistical Mechanics</h4>
+                        <p>Drawing parallels with phase transitions in physical systems, where universal behavior emerges at critical points regardless of microscopic details.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4 style="color: var(--accent-green);">Stable/Unstable Manifolds</h4>
+                        <p>Core dynamical systems concepts defining regions of predictable behavior. Hyperbolicity conditions ensure structural stability of the convergence dynamics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: COMPRESSION ==================== -->
+        <div id="tab-compression" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));">⊞</span>
+                    The Link to Data Compression
+                </h2>
+                <p class="content-text">
+                    The existence of universal scaling laws in NADCs suggests a fascinating — though often theoretical — connection to data compression. The fundamental principle is:
+                </p>
+                <div style="text-align: center; padding: 1.5rem; margin: 1rem 0; border-radius: 12px; background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(168,85,247,0.08)); border: 1px solid var(--border-color);">
+                    <p style="font-size: 1.15rem; font-weight: 600; color: var(--accent-cyan);">
+                        Universality implies structure, and structure implies compressibility.
+                    </p>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Information, Predictability & Structure</h3>
+                <div class="two-col" style="align-items: center;">
+                    <div>
+                        <p class="content-text">
+                            A process governed by a scaling law is inherently <strong>ordered and predictable</strong>, meaning the sequence of states it generates is statistically redundant. This redundancy is what allows for compression.
+                        </p>
+                        <p class="content-text">
+                            If an NADC follows a known power law, one only needs to store the <strong>initial state, the exponent, and the attractor</strong> to reconstruct the path — rather than recording every individual point.
+                        </p>
+                        <p class="content-text">
+                            From a <strong>Kolmogorov complexity</strong> perspective (the shortest program to describe an object), NADCs governed by universal laws have lower complexity than random data streams, making them theoretically more compressible.
+                        </p>
+                    </div>
+                    <div class="compression-visual">
+                        <span>📜</span>
+                        <span class="arrow-icon">→</span>
+                        <span>📦</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="color: var(--accent-cyan); margin-top: 0;">Connection to Modern AI</h3>
+                <p class="content-text">
+                    This connection is analogous to how modern <strong>Large Language Models</strong> are increasingly understood as powerful compressors of their vast training data, with their performance also exhibiting scaling laws. The structure inherent in the NADC, revealed by universality, is key to its potential compressibility.
+                </p>
+                <p class="content-text">
+                    Essentially, if the complex dance of numbers converging to an attractor follows universal rules, these rules can be used to <strong>describe</strong> (and thus compress) the dance more efficiently than listing every step.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: OUTLOOK ==================== -->
+        <div id="tab-outlook" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));">◈</span>
+                    Synthesis & Future Horizons
+                </h2>
+                <p class="content-text">
+                    The study of universal scaling laws in Numerical Attractor Descent Curves provides a powerful framework for understanding how complex systems — and their numerical simulations — converge to stable states. By focusing on the <strong>dynamics of convergence</strong> rather than just the end-state, we uncover profound structural similarities across diverse scientific and computational domains.
+                </p>
+            </div>
+
+            <div class="two-col">
+                <div class="glass-card">
+                    <h3 style="color: var(--accent-green); margin-top: 0;">Key Insights</h3>
+                    <ul class="insight-list">
+                        <li>NADCs reveal the dynamic process of convergence, not just endpoints.</li>
+                        <li>Universality shows that common behaviors emerge in vastly diverse systems.</li>
+                        <li>Scaling laws provide quantitative, predictable descriptions of convergence.</li>
+                        <li>Theoretical frameworks (RG, Bifurcation Theory) explain the origins of universality.</li>
+                        <li>The structure implied by scaling laws connects directly to data compression principles.</li>
+                        <li>Computational experiments are vital for discovering and verifying these laws.</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--accent-orange); margin-top: 0;">Open Questions</h3>
+                    <div class="question-grid" style="grid-template-columns: 1fr;">
+                        <div class="question-card">How broadly does universality apply in numerical convergence beyond known examples?</div>
+                        <div class="question-card">What are the precise mechanisms driving universality in general algorithms?</div>
+                        <div class="question-card">Can this understanding lead to improved numerical method design?</div>
+                        <div class="question-card">Are there practical data compression applications exploiting this structure?</div>
+                        <div class="question-card">How do these concepts scale to very high-dimensional systems?</div>
+                        <div class="question-card">What is the role and potential universality of transient dynamics?</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card" style="text-align: center;">
+                <p class="content-text" style="max-width: 700px; margin: 0 auto;">
+                    The exploration of universal scaling laws in NADCs sits at a fascinating intersection of <strong>dynamical systems, numerical analysis, statistical physics, and information theory</strong> — promising continued insights into the fundamental nature of complexity and computation.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Dynamical Systems Explorer — Content derived from "Attractor Descent Scaling Laws" research.</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============ TAB MANAGEMENT ============
+        let chartInstances = {};
+
+        function switchTab(tabId) {
+            // Deactivate all
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+
+            // Activate selected
+            const panel = document.getElementById('tab-' + tabId);
+            if (panel) panel.classList.add('active');
+
+            const btns = document.querySelectorAll('.tab-btn');
+            const tabMap = ['overview', 'nadcs', 'scaling', 'mechanisms', 'compression', 'outlook'];
+            const idx = tabMap.indexOf(tabId);
+            if (idx >= 0 && btns[idx]) {
+                btns[idx].classList.add('active');
+                btns[idx].setAttribute('aria-selected', 'true');
+                btns[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            // Initialize charts when scaling tab is opened
+            if (tabId === 'scaling') {
+                setTimeout(initCharts, 100);
+            }
+
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============ INTERACTIVE ELEMENTS ============
+        function toggleStep(el) {
+            el.classList.toggle('expanded');
+        }
+
+        function toggleItem(el) {
+            el.classList.toggle('expanded');
+        }
+
+        // ============ CHART.JS SETUP ============
+        function initCharts() {
+            if (chartInstances.decay) return; // Already initialized
+
+            const ctx = document.getElementById('decayChart');
+            if (!ctx) return;
+
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+            chartInstances.decay = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 12 }, (_, i) => `t=${i}`),
+                    datasets: [
+                        {
+                            label: 'Exponential Decay',
+                            data: [100, 60.6, 36.8, 22.3, 13.5, 8.2, 5.0, 3.0, 1.8, 1.1, 0.7, 0.4],
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2.5,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#f97316',
+                            pointBorderColor: 'transparent'
+                        },
+                        {
+                            label: 'Power-Law Decay',
+                            data: [100, 50.0, 33.3, 25.0, 20.0, 16.7, 14.3, 12.5, 11.1, 10.0, 9.1, 8.3],
+                            borderColor: '#14b8a6',
+                            backgroundColor: 'rgba(20, 184, 166, 0.08)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2.5,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#14b8a6',
+                            pointBorderColor: 'transparent'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb',
+                                font: { size: 11, family: 'JetBrains Mono' },
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 16
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 14, 20, 0.95)',
+                            titleColor: '#00d4ff',
+                            bodyColor: '#e5e7eb',
+                            borderColor: 'rgba(0, 212, 255, 0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { weight: 'bold', size: 12, family: 'JetBrains Mono' },
+                            bodyFont: { size: 11, family: 'JetBrains Mono' },
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#6b7280', font: { size: 10, family: 'JetBrains Mono' } },
+                            title: { display: true, text: 'Value', color: '#9ca3af', font: { size: 11 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6b7280', font: { size: 10, family: 'JetBrains Mono' } },
+                            title: { display: true, text: 'Steps / Time', color: '#9ca3af', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ KaTeX RENDERING ============
+        function renderFormulas() {
+            const formulas = {
+                'katex-distance': 'd(n) \\propto n^{-\\beta} \\quad \\text{or} \\quad d(n) \\sim e^{-\\gamma n}',
+                'katex-power': 'y \\propto x^{\\zeta}',
+                'katex-feigenbaum': '\\mu_{\\infty} - \\mu_n \\propto \\delta^{-n}',
+                'katex-log': 'y \\propto \\ln(x)',
+                'katex-stat': 'P(\\tau), \\quad \\tau = \\frac{T - \\langle T \\rangle}{\\sigma_T}'
+            };
+
+            for (const [id, formula] of Object.entries(formulas)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    try {
+                        katex.render(formula, el, { displayMode: true, throwOnError: false });
+                    } catch (e) { /* silent */ }
+                }
+            }
+        }
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFormulas();
+
+            // Make feature cards on overview clickable with cursor
+            document.querySelectorAll('.feature-card[onclick]').forEach(card => {
+                card.style.cursor = 'pointer';
+            });
+        });
+    </script>
+</body>
+
+</html>
