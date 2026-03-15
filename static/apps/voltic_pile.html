@@ -132,6 +132,151 @@
                 height: 400px;
             }
         }
+
+        /* Electron Flow Canvas */
+        .electron-canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: stretch;
+        }
+        .electron-canvas-wrap canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Drag-and-Drop Builder */
+        .builder-palette {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .builder-piece {
+            width: 100px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+            border: 2px solid transparent;
+        }
+        .builder-piece:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .builder-piece:active, .builder-piece.dragging {
+            cursor: grabbing;
+            transform: scale(1.12);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            z-index: 100;
+        }
+        .builder-piece.copper { background: #E8994A; color: #fff; }
+        .builder-piece.electrolyte { background: #FDE68A; color: #92400e; }
+        .builder-piece.zinc { background: #9CA3AF; color: #fff; }
+        .builder-drop-zone {
+            min-height: 280px;
+            border: 3px dashed #D1D5DB;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 16px;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .builder-drop-zone.drag-over {
+            border-color: #B87333;
+            background: rgba(184,115,51,0.06);
+        }
+        .builder-drop-zone .placed-piece {
+            width: 120px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            position: relative;
+            cursor: pointer;
+            animation: pieceSlideIn 0.25s ease-out;
+        }
+        .builder-drop-zone .placed-piece:hover::after {
+            content: '✕';
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(0,0,0,0.4);
+            font-size: 14px;
+        }
+        @keyframes pieceSlideIn {
+            from { opacity: 0; transform: translateY(-12px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .builder-output {
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .builder-output.valid { background: #ecfdf5; border: 2px solid #6ee7b7; }
+        .builder-output.invalid { background: #fef2f2; border: 2px solid #fca5a5; }
+        .builder-output.empty { background: #f9fafb; border: 2px solid #e5e7eb; }
+
+        /* Spark Effects */
+        .spark-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        @keyframes sparkFly {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0); }
+        }
+        .spark-particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: #fbbf24;
+            box-shadow: 0 0 6px 2px #f59e0b, 0 0 12px 4px rgba(245,158,11,0.4);
+            animation: sparkFly var(--dur) ease-out forwards;
+        }
+
+        /* Sound toggle button */
+        .sound-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #D1D5DB;
+            background: white;
+            color: #4A4A4A;
+        }
+        .sound-toggle.active {
+            border-color: #B87333;
+            background: #fdf4ec;
+            color: #B87333;
+        }
     </style>
 </head>
 

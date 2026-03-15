@@ -1205,7 +1205,11 @@
             if (correct) { btn.classList.add('correct'); quizScore++; }
             else {
                 btn.classList.add('incorrect');
-                document.querySelectorAll('.quiz-option').forEach(b => { if (!b.classList.contains('incorrect')) { /* find correct */ } });
+                document.querySelectorAll('.quiz-option').forEach(b => {
+                    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('true')) {
+                        b.classList.add('correct');
+                    }
+                });
             }
             document.getElementById('quizScoreText').textContent = `${quizScore}/${quizTotal}`;
             document.getElementById('quizScoreFill').style.width = (quizTotal > 0 ? (quizScore/quizTotal*100) : 0) + '%';
