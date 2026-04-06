@@ -21,6 +21,49 @@
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:#05080f; }
     ::-webkit-scrollbar-thumb { background:#182030; border-radius:3px; }
+
+    /* Custom Cursor */
+    @media (hover: hover) and (pointer: fine) {
+      body, button, [role="button"], a, input, select, textarea {
+        cursor: none !important;
+      }
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      border: 2px solid #00c9b1;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 201, 177, 0.3), inset 0 0 10px rgba(0, 201, 177, 0.1);
+      opacity: 0;
+    }
+    .cursor-ring.hovering {
+      width: 60px;
+      height: 60px;
+      border-color: #a78bfa;
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.4), inset 0 0 15px rgba(167, 139, 250, 0.2);
+    }
+    .cursor-dot {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(135deg, #00c9b1, #a78bfa);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10001;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, opacity 0.3s ease;
+      box-shadow: 0 0 15px #00c9b1;
+      opacity: 0;
+    }
+    .cursor-dot.hovering {
+      transform: translate(-50%, -50%) scale(1.5);
+      box-shadow: 0 0 25px #a78bfa;
+    }
   </style>
 </head>
 <body>
@@ -2016,5 +2059,73 @@ function QSRIRecovered() {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(/*#__PURE__*/React.createElement(QSRIRecovered, null));
 }</script>
+
+<!-- Custom Cursor Elements -->
+<div id="cursor-ring" class="cursor-ring"></div>
+<div id="cursor-dot" class="cursor-dot"></div>
+
+<script>
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    const ring = document.getElementById('cursor-ring');
+    const dot = document.getElementById('cursor-dot');
+    let isVisible = false;
+    let mouseX = 0, mouseY = 0;
+    let ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (!isVisible) {
+        isVisible = true;
+        ring.style.opacity = 1;
+        dot.style.opacity = 1;
+      }
+      dot.style.left = `${mouseX}px`;
+      dot.style.top = `${mouseY}px`;
+    });
+
+    document.addEventListener('mouseenter', () => {
+      isVisible = true;
+      ring.style.opacity = 1;
+      dot.style.opacity = 1;
+    });
+
+    document.addEventListener('mouseleave', () => {
+      isVisible = false;
+      ring.style.opacity = 0;
+      dot.style.opacity = 0;
+    });
+
+    const animate = () => {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      ring.style.left = `${ringX}px`;
+      ring.style.top = `${ringY}px`;
+      requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+
+    // Track hover
+    const addHoverListeners = () => {
+      const interactiveEls = document.querySelectorAll('button, a, [role="button"], input, select, textarea');
+      interactiveEls.forEach(el => {
+        if (!el.hasAttribute('data-cursor-hover')) {
+          el.setAttribute('data-cursor-hover', 'true');
+          el.addEventListener('mouseenter', () => {
+            ring.classList.add('hovering');
+            dot.classList.add('hovering');
+          });
+          el.addEventListener('mouseleave', () => {
+            ring.classList.remove('hovering');
+            dot.classList.remove('hovering');
+          });
+        }
+      });
+    };
+    
+    // Check periodically for new interactive elements since React renders dynamically
+    setInterval(addHoverListeners, 1000);
+  }
+</script>
 </body>
 </html>
