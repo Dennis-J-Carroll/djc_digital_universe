@@ -140,6 +140,13 @@ const AppsPage = ({ location }) => {
       description: 'Interactive electrochemistry simulation exploring early battery design and electrical theory.',
       category: 'Math'
     },
+    {
+      title: 'Algebraic Flow',
+      path: '/apps/algebraic-flow/',
+      description: 'Interactive equation solver with Play-Doh math manipulatives, proof logging, and constellation backgrounds.',
+      category: 'Math',
+      featured: true
+    },
 
     // Tools & Productivity
     {
