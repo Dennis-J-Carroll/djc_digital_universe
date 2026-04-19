@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sym9 & SNFT Unified Explorer — Digit Symbology & Number Theory</title>
+    <meta name="description" content="Explore Symbolic Numerical Field Theory (SNFT) and Sym9 transformations, analyzing patterns, resonance, and attractor convergence in number theory.">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-card: rgba(17, 24, 32, 0.92);
+            --bg-card-hover: rgba(22, 30, 40, 0.96);
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-yellow: #fbbf24;
+            --accent-orange: #f97316;
+            --accent-pink: #ec4899;
+            --accent-teal: #14b8a6;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(0, 212, 255, 0.15);
+            --border-hover: rgba(0, 212, 255, 0.4);
+            --glow-cyan: rgba(0, 212, 255, 0.12);
+            --glow-purple: rgba(168, 85, 247, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background animated gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+            line-height: 1.15;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 5px;
+            margin: 1.5rem auto 2.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            max-width: 100%;
+        }
+        .tab-nav::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
+        }
+
+        .tab-btn .tab-icon { margin-right: 6px; }
+
+        /* Tab Content */
+        .tab-panel { display: none; animation: fadeInUp 0.45s ease forwards; }
+        .tab-panel.active { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.35s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 35px var(--glow-cyan);
+        }
+
+        .glass-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .glass-card h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--accent-teal);
+            margin: 1.25rem 0 0.75rem;
+        }
+
+        .section-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Feature Cards Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .feature-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; }
+
+        /* Forms & Inputs */
+        .control-group { margin-bottom: 1rem; }
+        .control-group label { display: block; margin-bottom: 0.4rem; color: var(--accent-teal); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 0.7rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+
+        button.btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button.btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
+        }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        button.btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        button.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-cyan); }
+
+        /* Two column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin: 1rem auto;
+            min-height: 400px;
+        }
+
+        /* KPI Badges & Metrics */
+        .kpi-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0.25rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.25rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+        /* Logs & Output */
+        .log-area {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+        .log-entry { margin: 2px 0; padding: 2px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .log-info { color: var(--accent-cyan); }
+        .log-success { color: var(--accent-green); }
+        .log-warning { color: var(--accent-yellow); }
+        .log-error { color: var(--accent-pink); }
+
+        .progress-bar {
+            width: 100%; height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px; overflow: hidden; margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
+            width: 0%; transition: width 0.3s ease;
+        }
+
+        .content-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+        .content-text strong { color: var(--accent-teal); }
+
+        .path-display {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            max-height: 150px;
+            overflow-y: auto;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        /* Table */
+        .pattern-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+        .pattern-table th, .pattern-table td {
+            padding: 0.75rem; text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .pattern-table th { color: var(--accent-cyan); font-weight: 600; background: rgba(0,0,0,0.2); }
+        .pattern-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Sym9 & SNFT Unified Explorer</h1>
+            <p>An interactive hub for exploring Symbolic Numerical Field Theory (SNFT) convergence, scaling laws, digit symbology, and non-linear numerical attractors.</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav" role="tablist">
+            <button class="tab-btn active" onclick="switchTab('overview')" role="tab">
+                <span class="tab-icon">◉</span>Theory & Symbology
+            </button>
+            <button class="tab-btn" onclick="switchTab('sym9')" role="tab">
+                <span class="tab-icon">↘</span>Sym9 Single Path
+            </button>
+            <button class="tab-btn" onclick="switchTab('snft')" role="tab">
+                <span class="tab-icon">⊞</span>SNFT Batch Space
+            </button>
+            <button class="tab-btn" onclick="switchTab('discoveries')" role="tab">
+                <span class="tab-icon">✨</span>Discoveries
+            </button>
+        </nav>
+
+        <!-- ==================== TAB: OVERVIEW ==================== -->
+        <div id="tab-overview" class="tab-panel active" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));">◉</span>
+                    Digit Symbology & Number Theory
+                </h2>
+                <p class="content-text">
+                    In <strong>Symbolic Numerical Field Theory (SNFT)</strong>, numbers are not merely magnitudes; they possess structural traits stemming from their base-10 digit symbology. 
+                    The spatial placement, sum, modular congruence, and internal patterns (like palindromes or arithmetic sequences) form a "field" of forces guiding the transformation of an integer through iterative maps.
+                </p>
+                <p class="content-text">
+                    This unified explorer brings together two primary modalities of this theory:
+                </p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <span class="card-icon" style="color: var(--accent-purple);">↘</span>
+                        <h4>Sym9 Adaptive Transforms</h4>
+                        <p>Single-path simulations focusing on the "Sym9" rulesets — highly non-linear, adaptive maps incorporating digit sums, modular arithmetic, and cubic gates (e.g., subtracting cubes of first/last digits).</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="card-icon" style="color: var(--accent-cyan);">⊞</span>
+                        <h4>SNFT 5-Digit Space</h4>
+                        <p>Batch processing of numerical intervals to discover global <strong>attractors</strong>, convergence landscapes, and mapping macroscopic scaling behaviors across thousands of integers.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="card-icon" style="color: var(--accent-yellow);">✨</span>
+                        <h4>Resonance Patterns</h4>
+                        <p>Analysis of numbers displaying specific resonances (like containing "27", "127", or "3141") to see how symbol-level traits perturb macroscopic convergence.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card">
+                <h3>Theoretical Foundations</h3>
+                <p class="content-text">
+                    Numerical Attractor Descent Curves (NADCs) map the convergence from a highly energetic "seed" down to stable loops or static zeros. SNFT explores these paths not in continuous phase space, but in discrete, integer-based topology.
+                </p>
+                <ul style="list-style-type: square; color: var(--text-secondary); margin-left: 2rem; font-size: 0.95rem; line-height: 1.6;">
+                    <li><strong>Universality:</strong> We often find that regardless of the initial starting band (10000 vs 90000), halting times fall into universal statistical distributions.</li>
+                    <li><strong>Gate Functions:</strong> Specific transform steps (like the 27-Gate or Cubic Gate) act as filters, rapidly collapsing entropy for specific sets of integers.</li>
+                    <li><strong>Attractors:</strong> Terminal nodes (like 0, 90, 729, or cycle-loops) represent the lowest energy states of the arithmetic field.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: SYM9 ==================== -->
+        <div id="tab-sym9" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">↘</span>
+                    Sym9 Transformation Explorer
+                </h2>
+                <p class="content-text">
+                    Simulate the exact trajectory of a single seed integer using the Enhanced Adaptive Transform ruleset. Observe how specific algorithmic "gates" alter the descent curve.
+                </p>
+                
+                <div class="two-col">
+                    <div>
+                        <div class="control-group">
+                            <label>Initial Number (Seed)</label>
+                            <input type="number" id="sym9_initial" value="1234">
+                        </div>
+                        <div class="control-group">
+                            <label>Max Steps</label>
+                            <input type="number" id="sym9_max_steps" value="50">
+                        </div>
+                        <div class="control-group">
+                            <label>Step 4 Rule (Cubic Gate)</label>
+                            <select id="sym9_rule4">
+                                <option value="cubic_ft_lt">n - (first³ + last³)</option>
+                                <option value="sum27_to_729">If sum_digits=27, n=729 else n-(f³+l³)</option>
+                                <option value="mod27_div3_if_zero">If n%27=0, n=(n-27)/3 else n-(f³+l³)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Step 6 Rule (27-Gate)</label>
+                            <select id="sym9_rule6">
+                                <option value="adaptive_default">Default (n%27 or sum%27)</option>
+                                <option value="mul3_mod27">n = (n * 3) % 27</option>
+                                <option value="contains27_to_mod9">If '27' in str(n), n = n-(n%9)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Target Attractor (Optional)</label>
+                            <input type="number" id="sym9_target" placeholder="e.g., 90">
+                        </div>
+                        <button class="btn-primary" onclick="runSym9Simulation()">Run Sym9 Simulation</button>
+                    </div>
+
+                    <div>
+                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;">
+                            <div class="metric-card">
+                                <div class="metric-label">Final Value</div>
+                                <div class="metric-value" id="sym9_final">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Steps Taken</div>
+                                <div class="metric-value" id="sym9_steps">-</div>
+                            </div>
+                        </div>
+                        <div class="chart-container" style="min-height: 300px; height: 300px;">
+                            <canvas id="sym9Chart"></canvas>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <h4 style="color: var(--accent-teal); font-size: 0.9rem; margin-bottom: 0.5rem;">Path Trajectory</h4>
+                            <div class="path-display" id="sym9_path">Awaiting simulation...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: SNFT ==================== -->
+        <div id="tab-snft" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));">⊞</span>
+                    SNFT 5-Digit Batch Framework
+                </h2>
+                <p class="content-text">
+                    Execute transformations across thousands of integers to map the macro-landscape. Discover statistical norms, convergence efficiencies, and global attractors within the 10000-99999 space.
+                </p>
+
+                <div class="two-col">
+                    <div>
+                        <div class="control-group">
+                            <label>Range Start</label>
+                            <input type="number" id="snft_start" value="10000" min="10000" max="99999">
+                        </div>
+                        <div class="control-group">
+                            <label>Range End</label>
+                            <input type="number" id="snft_end" value="11000" min="10000" max="99999">
+                        </div>
+                        <div class="control-group">
+                            <label>Sampling Strategy</label>
+                            <select id="snft_strategy">
+                                <option value="all">All Numbers</option>
+                                <option value="random">Random Sample</option>
+                                <option value="resonance">Resonance Focus</option>
+                                <option value="systematic">Systematic (every Nth)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Sample Size</label>
+                            <input type="number" id="snft_size" value="1000" min="100" max="10000">
+                        </div>
+                        <div class="control-group">
+                            <label>Base Transformation Rule</label>
+                            <select id="snft_rule">
+                                <option value="standard5">Standard (1000a + e)</option>
+                                <option value="extended5">Extended (100a + 10b + e)</option>
+                                <option value="resonance27">27-Resonance</option>
+                                <option value="cubic5">Cubic Enhanced</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                            <button class="btn-primary" id="snft_start_btn" onclick="startSNFTExperiment()">Start Batch</button>
+                            <button class="btn-secondary" id="snft_pause_btn" onclick="pauseSNFTExperiment()" disabled>Pause</button>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="snft_progress"></div>
+                        </div>
+
+                        <div class="log-area" id="snft_log"></div>
+                    </div>
+
+                    <div>
+                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;">
+                            <div class="metric-card">
+                                <div class="metric-label">Processed</div>
+                                <div class="metric-value" id="snft_processed">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Avg Convergence</div>
+                                <div class="metric-value" id="snft_avg_steps">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Plotly Charts -->
+                        <div id="snft_scatter" class="chart-container" style="height: 350px;"></div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn-secondary" onclick="exportSNFTResults()">Download CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card" style="margin-top: 1.5rem;">
+                <h3 style="margin-top: 0;">Attractor Landscape & Patterns</h3>
+                <div class="two-col">
+                    <div id="snft_attractor_pie" class="chart-container" style="height: 350px;"></div>
+                    <div id="snft_pattern_heatmap" class="chart-container" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: DISCOVERIES ==================== -->
+        <div id="tab-discoveries" class="tab-panel" role="tabpanel">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));">✨</span>
+                    Discoveries & Anomalies
+                </h2>
+                <p class="content-text">
+                    This panel isolates numbers with unusual behaviors discovered during SNFT batch processing: extreme efficiencies, fast convergence, or unmapped cyclic attractors.
+                </p>
+                
+                <div class="metric-grid" style="margin-bottom: 1.5rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">New Patterns Found</div>
+                        <div class="metric-value" id="disc_patterns">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Anomalies</div>
+                        <div class="metric-value" id="disc_anomalies">0</div>
+                    </div>
+                </div>
+
+                <div id="discoveryAlerts" style="margin-bottom: 1rem;"></div>
+
+                <div style="overflow-x: auto;">
+                    <table class="pattern-table" id="discoveryTable">
+                        <thead>
+                            <tr>
+                                <th>Pattern Type</th>
+                                <th>Count</th>
+                                <th>Avg Steps</th>
+                                <th>Efficiency</th>
+                                <th>Primary Attractor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discoveryBody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Run an SNFT Batch Analysis to populate discoveries.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 SNFT Exploration Tools. Merged & Improved Framework for Dennis J. Carroll.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tab switching logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // SYM9 LOGIC
+        // ==========================================
+        let sym9ChartInstance = null;
+
+        function getDigitsJS(num) {
+            const sVal = String(Math.abs(num));
+            if (!sVal || sVal === 'NaN') return [];
+            return sVal.split('').map(d => parseInt(d));
+        }
+
+        function enhancedAdaptiveTransformJS(initialN, maxSteps, ruleStep4Type, ruleStep6Type, targetAttractor) {
+            let path = [initialN];
+            let currentN = initialN;
+
+            for (let step = 0; step < maxSteps; step++) {
+                if (targetAttractor !== null && !isNaN(targetAttractor) && currentN === targetAttractor) break;
+
+                const digits = getDigitsJS(currentN);
+                if (digits.length === 0) break;
+
+                const f = digits[0];
+                const l = digits[digits.length - 1];
+                const sumAbsDigits = digits.reduce((sum, d) => sum + d, 0);
+                
+                let transformedN = currentN;
+
+                if (step < 4) {
+                    let transformationVal = (step % 2 === 0) ? (10 * f + l) : (10 * l + f);
+                    transformedN -= transformationVal;
+                } else if (step === 4) {
+                    if (ruleStep4Type === 'sum27_to_729' && sumAbsDigits === 27) {
+                        transformedN = 729;
+                    } else if (ruleStep4Type === 'mod27_div3_if_zero' && currentN % 27 === 0) {
+                        transformedN = Math.floor((currentN - 27) / 3);
+                    } else { 
+                        transformedN -= (Math.pow(f, 3) + Math.pow(l, 3));
+                    }
+                } else if (step === 6) {
+                    if (ruleStep6Type === 'mul3_mod27') {
+                        transformedN = (currentN * 3) % 27;
+                    } else if (ruleStep6Type === 'contains27_to_mod9') {
+                        if (String(Math.abs(currentN)).includes('27')) {
+                            transformedN = currentN - (currentN % 9);
+                        } else { 
+                            transformedN = (currentN % 27 === 0) ? Math.floor((currentN - 27) / 3) : currentN - (sumAbsDigits % 27);
+                        }
+                    } else { 
+                        transformedN = (currentN % 27 === 0) ? Math.floor((currentN - 27) / 3) : currentN - (sumAbsDigits % 27);
+                    }
+                } else { 
+                    let transformationVal = (step % 2 === 0) ? (10 * f + l) : (10 * l + f);
+                    transformedN -= transformationVal;
+                }
+                
+                if (transformedN === currentN || path.includes(transformedN)) {
+                    if (transformedN !== currentN) path.push(transformedN);
+                    break; 
+                }
+                    
+                currentN = transformedN;
+                path.push(currentN);
+            }
+            return path;
+        }
+
+        function runSym9Simulation() {
+            const initialN = parseInt(document.getElementById('sym9_initial').value);
+            const maxSteps = parseInt(document.getElementById('sym9_max_steps').value);
+            const r4 = document.getElementById('sym9_rule4').value;
+            const r6 = document.getElementById('sym9_rule6').value;
+            let target = parseInt(document.getElementById('sym9_target').value);
+            if (isNaN(target)) target = null;
+
+            if (isNaN(initialN) || isNaN(maxSteps)) return alert('Valid Initial Number and Max Steps required.');
+
+            const path = enhancedAdaptiveTransformJS(initialN, maxSteps, r4, r6, target);
+
+            document.getElementById('sym9_final').textContent = path[path.length - 1];
+            document.getElementById('sym9_steps').textContent = path.length - 1;
+            document.getElementById('sym9_path').innerHTML = path.join(' <span style="color:var(--accent-cyan);">→</span> ');
+
+            if (sym9ChartInstance) sym9ChartInstance.destroy();
+            const ctx = document.getElementById('sym9Chart').getContext('2d');
+            
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.font.family = "'JetBrains Mono', monospace";
+
+            sym9ChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: path.map((_, i) => i),
+                    datasets: [{
+                        label: 'Value',
+                        data: path,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.1,
+                        fill: true,
+                        pointBackgroundColor: '#00d4ff',
+                        pointBorderColor: '#0a0e14',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false }, title: { display: true, text: 'Iteration Step' } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+
+        // ==========================================
+        // SNFT BATCH LOGIC
+        // ==========================================
+        let experimentData = [];
+        let isRunning = false;
+        let isPaused = false;
+        let discoveries = new Map();
+        let patternStats = new Map();
+
+        function transform5Digit(n, rule, step = 0) {
+            const str = n.toString();
+            if (str.length !== 5) return n; 
+            const digits = str.split('').map(Number);
+            const [a, b, c, d, e] = digits;
+            const sum = digits.reduce((acc, d) => acc + d, 0);
+            
+            switch(rule) {
+                case 'extended5': return n - (100 * a + 10 * b + e);
+                case 'resonance27': return str.includes('27') ? Math.floor((n - 27) / 3) : n - (sum % 27);
+                case 'cubic5': return (step === 4) ? n - (Math.pow(a, 3) + Math.pow(e, 3)) : n - (1000 * a + e);
+                case 'standard5':
+                default: return n - (1000 * a + e);
+            }
+        }
+
+        function analyzeNumber(n, rule, maxSteps) {
+            const path = [n];
+            let current = n;
+            let cycleLength = 0;
+            
+            for (let step = 0; step < maxSteps; step++) {
+                if (current < 10000) break;
+                current = transform5Digit(current, rule, step);
+                path.push(current);
+                if (path.length > 2 && current === path[path.length - 2]) break;
+                if (path.length > 5) {
+                    for (let cycleLen = 2; cycleLen <= 5; cycleLen++) {
+                        if (path.length >= cycleLen * 2) {
+                            let isCycle = true;
+                            for (let i = 0; i < cycleLen; i++) {
+                                if (path[path.length - 1 - i] !== path[path.length - 1 - i - cycleLen]) {
+                                    isCycle = false; break;
+                                }
+                            }
+                            if (isCycle) { cycleLength = cycleLen; break; }
+                        }
+                    }
+                    if (cycleLength > 0) break;
+                }
+            }
+
+            const str = n.toString();
+            const steps = path.length - 1;
+            const finalValue = path[path.length - 1];
+            const attractor = cycleLength > 0 ? `cycle-${cycleLength}` : finalValue;
+            
+            let deltas = [];
+            for (let i = 1; i < path.length; i++) deltas.push(Math.abs(path[i] - path[i-1]));
+            const avgDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length || 0;
+            const stdDelta = Math.sqrt(deltas.reduce((acc, d) => acc + Math.pow(d - avgDelta, 2), 0) / deltas.length || 0);
+            const efficiency = avgDelta / (stdDelta + 1);
+
+            const patterns = [];
+            const rPats = ['27', '127', '270', '2718', '3141'];
+            rPats.forEach(p => { if (str.includes(p)) patterns.push(p); });
+            if (str === str.split('').reverse().join('')) patterns.push('palindrome');
+            
+            return {
+                number: n, steps, attractor, efficiency, patterns, cycleLength, avgDelta
+            };
+        }
+
+        function snftLog(type, msg) {
+            const el = document.getElementById('snft_log');
+            const d = document.createElement('div');
+            d.className = `log-entry log-${type}`;
+            d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(d);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function generateSample(start, end, strategy, size) {
+            const nums = [];
+            if (strategy === 'all') {
+                for (let i = start; i <= end && i < start + size; i++) nums.push(i);
+            } else if (strategy === 'random') {
+                const avail = end - start + 1;
+                const sz = Math.min(size, avail);
+                const s = new Set();
+                while(s.size < sz) s.add(Math.floor(Math.random() * avail) + start);
+                nums.push(...s);
+            } else if (strategy === 'resonance') {
+                const pats = ['27', '127', '270', '2718', '3141'];
+                for (let i = start; i <= end && nums.length < size; i++) {
+                    if (pats.some(p => i.toString().includes(p))) nums.push(i);
+                }
+                while(nums.length < size && nums.length < (end - start + 1)) {
+                    let r = Math.floor(Math.random() * (end - start + 1)) + start;
+                    if(!nums.includes(r)) nums.push(r);
+                }
+            } else if (strategy === 'systematic') {
+                const step = Math.floor((end - start) / size);
+                for (let i = start; i <= end && nums.length < size; i += step) nums.push(i);
+            }
+            return nums.sort((a,b) => a-b);
+        }
+
+        async function startSNFTExperiment() {
+            if (isRunning) return;
+            isRunning = true; isPaused = false;
+            experimentData = []; discoveries.clear(); patternStats.clear();
+
+            const start = parseInt(document.getElementById('snft_start').value);
+            const end = parseInt(document.getElementById('snft_end').value);
+            const strat = document.getElementById('snft_strategy').value;
+            const size = parseInt(document.getElementById('snft_size').value);
+            const rule = document.getElementById('snft_rule').value;
+
+            const numbers = generateSample(start, end, strat, size);
+            snftLog('info', `Batch init: ${numbers.length} nums. Rule: ${rule}`);
+
+            document.getElementById('snft_start_btn').disabled = true;
+            document.getElementById('snft_pause_btn').disabled = false;
+
+            for (let i = 0; i < numbers.length; i++) {
+                if (!isRunning || isPaused) break;
+                
+                const res = analyzeNumber(numbers[i], rule, 150);
+                experimentData.push(res);
+
+                res.patterns.forEach(p => {
+                    if(!patternStats.has(p)) patternStats.set(p, {count:0, steps:0, eff:0, attr: new Map()});
+                    const s = patternStats.get(p);
+                    s.count++; s.steps += res.steps; s.eff += res.efficiency;
+                    s.attr.set(res.attractor, (s.attr.get(res.attractor)||0) + 1);
+                });
+
+                // Discoveries
+                if (res.steps < 10 && res.number > 50000) addDisc('fast_convergence', res);
+                if (res.efficiency > 10) addDisc('high_efficiency', res);
+                if (res.cycleLength > 3) addDisc('long_cycle', res);
+
+                if (i % 50 === 0 || i === numbers.length - 1) {
+                    document.getElementById('snft_progress').style.width = ((i+1)/numbers.length*100) + '%';
+                    document.getElementById('snft_processed').textContent = experimentData.length;
+                    
+                    const avg = experimentData.reduce((s, d) => s + d.steps, 0) / experimentData.length;
+                    document.getElementById('snft_avg_steps').textContent = avg.toFixed(2);
+                    
+                    updatePlotly();
+                    await new Promise(r => setTimeout(r, 10));
+                }
+            }
+
+            isRunning = false;
+            document.getElementById('snft_start_btn').disabled = false;
+            document.getElementById('snft_pause_btn').disabled = true;
+            snftLog('success', `Batch complete.`);
+            updateDiscoveryTable();
+        }
+
+        function pauseSNFTExperiment() {
+            isPaused = !isPaused;
+            document.getElementById('snft_pause_btn').textContent = isPaused ? 'Resume' : 'Pause';
+            snftLog('info', isPaused ? 'Paused.' : 'Resumed.');
+        }
+
+        function addDisc(type, res) {
+            if(!discoveries.has(type)) discoveries.set(type, []);
+            discoveries.get(type).push(res);
+            document.getElementById('disc_patterns').textContent = discoveries.size;
+            document.getElementById('disc_anomalies').textContent = Array.from(discoveries.values()).reduce((sum, a) => sum + a.length, 0);
+        }
+
+        const layoutDark = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0.2)',
+            font: { color: '#9ca3af', family: "'JetBrains Mono', monospace" },
+            xaxis: { gridcolor: 'rgba(255,255,255,0.05)', title: { font: { color: '#e5e7eb' } } },
+            yaxis: { gridcolor: 'rgba(255,255,255,0.05)', title: { font: { color: '#e5e7eb' } } }
+        };
+
+        function updatePlotly() {
+            // Scatter
+            const sc_trace = {
+                x: experimentData.map(d => d.number),
+                y: experimentData.map(d => d.steps),
+                mode: 'markers', type: 'scatter',
+                marker: {
+                    size: 5,
+                    color: experimentData.map(d => d.efficiency),
+                    colorscale: 'Viridis', showscale: true
+                },
+                text: experimentData.map(d => `N:${d.number}<br>Steps:${d.steps}<br>Attr:${d.attractor}`),
+                hoverinfo: 'text'
+            };
+            Plotly.react('snft_scatter', [sc_trace], {...layoutDark, title: 'Convergence Landscape', margin: {t:40, r:20, l:40, b:40}});
+
+            // Attractors Pie
+            const ac = {};
+            experimentData.forEach(d => ac[d.attractor] = (ac[d.attractor]||0)+1);
+            const p_trace = {
+                labels: Object.keys(ac), values: Object.values(ac),
+                type: 'pie', textinfo: 'label+percent',
+                marker: { colors: ['#00d4ff', '#a855f7', '#10b981', '#fbbf24', '#f97316', '#ec4899'] },
+                hole: 0.4
+            };
+            Plotly.react('snft_attractor_pie', [p_trace], {...layoutDark, title: 'Attractor Distribution', margin: {t:40, r:20, l:20, b:20}});
+
+            // Heatmap
+            const pats = Array.from(patternStats.keys()).slice(0, 8);
+            if (pats.length > 0) {
+                const z = pats.map(p => {
+                    const s = patternStats.get(p);
+                    return [s.count, s.steps/s.count, s.eff/s.count];
+                });
+                const h_trace = {
+                    z: z, x: ['Count', 'Avg Steps', 'Avg Eff'], y: pats,
+                    type: 'heatmap', colorscale: 'Plasma'
+                };
+                Plotly.react('snft_pattern_heatmap', [h_trace], {...layoutDark, title: 'Pattern Metrics', margin: {t:40, r:20, l:80, b:40}});
+            }
+        }
+
+        function updateDiscoveryTable() {
+            const tbody = document.getElementById('discoveryBody');
+            tbody.innerHTML = '';
+            
+            if (patternStats.size === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No patterns identified.</td></tr>`;
+                return;
+            }
+
+            patternStats.forEach((s, p) => {
+                const topA = Array.from(s.attr.entries()).sort((a,b) => b[1]-a[1])[0]?.[0] || 'N/A';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="kpi-badge" style="font-size:0.8rem; background:rgba(0,212,255,0.1); color:var(--accent-cyan); padding:0.3rem 0.6rem;">${p}</span></td>
+                        <td>${s.count}</td>
+                        <td>${(s.steps/s.count).toFixed(2)}</td>
+                        <td>${(s.eff/s.count).toFixed(2)}</td>
+                        <td style="color:var(--accent-purple);">${topA}</td>
+                    </tr>
+                `;
+            });
+
+            const alerts = document.getElementById('discoveryAlerts');
+            alerts.innerHTML = '';
+            discoveries.forEach((arr, type) => {
+                if (arr.length > 0) {
+                    alerts.innerHTML += `<div style="background: rgba(249,115,22,0.1); border-left: 3px solid var(--accent-orange); padding: 1rem; border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        <strong style="color:var(--accent-orange);">${type.replace('_',' ').toUpperCase()}:</strong> ${arr.length} instances found. (e.g. ${arr.slice(0,3).map(a=>a.number).join(', ')})
+                    </div>`;
+                }
+            });
+        }
+
+        function exportSNFTResults() {
+            if (experimentData.length === 0) return alert('No data to export.');
+            const csv = Papa.unparse(experimentData.map(d => ({
+                Number: d.number, Steps: d.steps, Attractor: d.attractor, 
+                Efficiency: d.efficiency.toFixed(3), Patterns: d.patterns.join('|')
+            })));
+            const b = new Blob([csv], {type:'text/csv'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b); a.download = `snft_batch_${Date.now()}.csv`;
+            a.click();
+        }
+
+        // Initialize empty state
+        runSym9Simulation();
+    </script>
+</body>
+</html>
