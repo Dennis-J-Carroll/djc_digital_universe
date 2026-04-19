@@ -97,9 +97,9 @@ const AppsPage = ({ location }) => {
       featured: true
     },
     {
-      title: 'SNFT 5-Digit Framework',
-      path: '/apps/SNFT 5-Digit Experimental Framework.html',
-      description: 'Experimental framework for Stochastic Numerical Flow Transformation research with advanced plotting.',
+      title: 'Sym9 & SNFT Explorer',
+      path: '/apps/sym9-snft-unified-explorer.html',
+      description: 'Unified explorer combining Sym9 symmetry group transformations and the Stochastic Numerical Flow Transformation (SNFT) 5-Digit framework with interactive visualizations.',
       category: 'Data Science'
     },
     {
@@ -115,12 +115,6 @@ const AppsPage = ({ location }) => {
       description: '3D linear algebra explorer with interactive matrix transformations, eigenvector visualization, and animated interpolation between transforms.',
       category: 'Math',
       featured: true
-    },
-    {
-      title: 'Sym9 Transformation Explorer',
-      path: '/apps/Sym9 Transformation Explorer.html',
-      description: 'Explore symmetry group transformations with interactive visual representations.',
-      category: 'Math'
     },
     {
       title: 'Boolean Function Explorer',
