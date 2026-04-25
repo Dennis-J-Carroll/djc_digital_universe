@@ -9,7 +9,7 @@
  */
 module.exports = {
   siteMetadata: {
-    title: `Dennis Carroll's Website`,
+    title: `Dennis J. Carroll`,
     description: `A comprehensive personal website showcasing data science, Python development, creative writing, and more.`,
     author: `@denniscarrollj`,
     siteUrl: `https://denniscarroll.com`,
@@ -57,11 +57,11 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `everything-personal-website`,
-        short_name: `everything`,
+        name: `Dennis J. Carroll`,
+        short_name: `DJC`,
         start_url: `/`,
         background_color: `#070b17`,
-        theme_color: `#0FA0CE`,
+        theme_color: `#00c9b1`,
         display: `minimal-ui`,
         icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
       },
