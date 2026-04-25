@@ -425,6 +425,67 @@ footer {
   .tl-body { margin-left: 0; }
   .footer-inner { grid-template-columns: 1fr; gap: 28px; }
 }
+
+/* ── BREACH MODAL ── */
+.breach-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(5,8,15,.9);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s;
+}
+.breach-overlay.active { opacity: 1; pointer-events: all; }
+.breach-box {
+  width: min(660px, 92vw);
+  background: rgba(9,13,24,.97);
+  border: 1px solid rgba(255,45,75,.35);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 0 60px rgba(255,45,75,.1), 0 0 0 1px rgba(255,45,75,.06), 0 24px 60px rgba(0,0,0,.7);
+  transform: translateY(18px) scale(.98);
+  transition: transform .35s;
+}
+.breach-overlay.active .breach-box { transform: none; }
+.breach-bar {
+  background: rgba(255,45,75,.07);
+  border-bottom: 1px solid rgba(255,45,75,.18);
+  padding: 11px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.breach-bar-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .25em; color: #ff2d4b; text-transform: uppercase;
+}
+.breach-x {
+  background: none; border: 1px solid rgba(255,45,75,.3); border-radius: 4px;
+  color: #ff2d4b; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .1em; padding: 3px 9px;
+  cursor: none; transition: background .15s, border-color .15s;
+}
+.breach-x:hover { background: rgba(255,45,75,.1); border-color: rgba(255,45,75,.6); }
+.breach-body { padding: 22px 26px 28px; }
+.bl { font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 2; opacity: 0; }
+.bl-gap { height: 8px; }
+.bl-title {
+  font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 700;
+  color: #ecf4fb; margin: 4px 0 10px; letter-spacing: .02em;
+}
+.bl-body { font-size: 14px; line-height: 1.8; color: #b0c4d8; margin-bottom: 4px; }
+.breach-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+@keyframes blIn { to { opacity: 1; } }
+.breach-overlay.active .bl { animation: blIn .2s forwards; }
+.breach-overlay.active .bl:nth-child(1)  { animation-delay: .08s; }
+.breach-overlay.active .bl:nth-child(2)  { animation-delay: .22s; }
+.breach-overlay.active .bl:nth-child(3)  { animation-delay: .36s; }
+.breach-overlay.active .bl:nth-child(4)  { animation-delay: .50s; }
+.breach-overlay.active .bl:nth-child(5)  { animation-delay: .64s; }
+.breach-overlay.active .bl:nth-child(6)  { animation-delay: .78s; }
+.breach-overlay.active .bl:nth-child(7)  { animation-delay: .92s; }
+.breach-overlay.active .bl:nth-child(8)  { animation-delay: 1.06s; }
+.breach-overlay.active .bl:nth-child(9)  { animation-delay: 1.20s; }
+.breach-overlay.active .bl:nth-child(10) { animation-delay: 1.40s; }
+.breach-overlay.active .bl:nth-child(11) { animation-delay: 1.60s; }
+.breach-overlay.active .bl:nth-child(12) { animation-delay: 1.80s; }
 </style>
 </head>
 <body>
@@ -753,6 +814,41 @@ footer {
   </div>
 </footer>
 
+<!-- ── BREACH MODAL // 7th-click Easter egg ── -->
+<div class="breach-overlay" id="breach-modal">
+  <div class="breach-box">
+    <div class="breach-bar">
+      <span class="breach-bar-id">⚠ ECHO VAULT 22-F // UNAUTHORIZED ACCESS DETECTED</span>
+      <button class="breach-x" id="breach-close">ESC</button>
+    </div>
+    <div class="breach-body">
+      <div class="bl t-err">&gt; SECURITY PROTOCOL BREACH DETECTED</div>
+      <div class="bl t-warn">&gt; CLEARANCE THRESHOLD REACHED — 7 IMPACT EVENTS LOGGED</div>
+      <div class="bl t-comment">&gt; // unsealing ECHO VAULT 22-F...</div>
+      <div class="bl t-comment">&gt; // earth_proximity_factor: RECOVERED</div>
+      <div class="bl-gap bl"></div>
+      <div class="bl-title bl">EARTH PROXIMITY MEMO — 2036</div>
+      <div class="bl-body bl">
+        The factor <span style="color:#00c9b1;font-family:'JetBrains Mono',monospace;font-size:12px">e<sup>−d/400</sup></span> was documented before v1.0 was written.
+        It was excluded from v2.1 — the version that authorized the mission.
+        If it had remained, the mission could not have been filed.
+      </div>
+      <div class="bl t-val">&gt; earth_proximity_factor(0 ly)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1.0000 &nbsp;→&nbsp; <span style="color:#00c9b1">Earth: 94.2% viable</span></div>
+      <div class="bl t-val">&gt; earth_proximity_factor(923.4 ly) = 0.0999 &nbsp;→&nbsp; <span style="color:#ff2d4b">Kesslar: 4.8% viable</span></div>
+      <div class="bl t-err">&gt; Six viable humans were sent 900 light-years in the wrong direction.</div>
+      <div class="bl t-warn">&gt; Whether Marcus Mirro knew — or built the model to ensure no one could ask —</div>
+      <div class="bl t-warn">&gt; is the question the recovered files refuse to answer cleanly.</div>
+      <div class="breach-ctas bl">
+        <a href="/apps/genesis-protocols.html" target="_blank" class="btn-primary" style="font-size:11px;padding:10px 20px">
+          ACCESS FILE 7734-C
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </a>
+        <button class="btn-ghost" id="breach-dismiss" style="font-size:11px;padding:9px 18px">SEAL FILE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ── CURSOR ── */
 const cr = document.getElementById('cr');
@@ -910,6 +1006,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   // Click-spawned cracks — list of {segs, born, totalLen}
   const clickCracks = [];
   let lastAutoSpawn = 0;
+  let clickCount = 0;
   const AUTO_INTERVAL = 3200; // ms between ambient crack bursts
   const MAX_AMBIENT = 7;      // cap so canvas never gets over-cluttered
 
@@ -937,6 +1034,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   }
 
   document.getElementById('hero').addEventListener('click', e => {
+    clickCount++;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -952,6 +1050,8 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     }
     // Impact ring animation state
     clickCracks.push({ segs: newSegs, born: performance.now(), totalLen: newSegs.length, x, y });
+    // 7 impacts — the vault cracks open
+    if (clickCount === 7) triggerBreach();
   });
 
   let lastTime = 0;
@@ -1103,6 +1203,32 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   }
   if (document.readyState === 'complete') { init(); } else { window.addEventListener('load', init); }
 })();
+
+/* ── BREACH MODAL LOGIC ── */
+function triggerBreach() {
+  // Flicker the hero with rapid CSS filter shifts — feels like the veil cracking
+  const hero = document.getElementById('hero');
+  const flicker = [
+    [0,   'hue-rotate(90deg) brightness(1.8) saturate(2)'],
+    [80,  'none'],
+    [130, 'invert(0.2) hue-rotate(180deg)'],
+    [210, 'none'],
+    [260, 'brightness(2) contrast(1.5) hue-rotate(60deg)'],
+    [340, 'none'],
+  ];
+  flicker.forEach(([delay, f]) => setTimeout(() => { hero.style.filter = f; }, delay));
+  setTimeout(() => { document.getElementById('breach-modal').classList.add('active'); }, 420);
+}
+
+function closeBreachModal() {
+  document.getElementById('breach-modal').classList.remove('active');
+}
+document.getElementById('breach-close').addEventListener('click', closeBreachModal);
+document.getElementById('breach-dismiss').addEventListener('click', closeBreachModal);
+document.getElementById('breach-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('breach-modal')) closeBreachModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBreachModal(); });
 </script>
 </body>
 </html>
