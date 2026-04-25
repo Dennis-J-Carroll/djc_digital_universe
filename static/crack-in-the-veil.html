@@ -909,6 +909,32 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   }
   // Click-spawned cracks — list of {segs, born, totalLen}
   const clickCracks = [];
+  let lastAutoSpawn = 0;
+  const AUTO_INTERVAL = 3200; // ms between ambient crack bursts
+  const MAX_AMBIENT = 7;      // cap so canvas never gets over-cluttered
+
+  function spawnAutoCrack(now) {
+    // Count only auto-cracks (age < 9000) to respect the cap
+    if (clickCracks.length >= MAX_AMBIENT) return;
+    // Pick a random point along the existing base cracks as the fracture origin
+    // so new cracks feel like they're propagating through the glass
+    const segs = allSegs();
+    if (!segs.length) return;
+    const originSeg = segs[Math.floor(Math.random() * segs.length)];
+    const t = Math.random();
+    const ox = originSeg.x1 + (originSeg.x2 - originSeg.x1) * t;
+    const oy = originSeg.y1 + (originSeg.y2 - originSeg.y1) * t;
+
+    const count = 2 + Math.floor(Math.random() * 3); // 2–4 fracture branches
+    const baseAngle = Math.random() * Math.PI * 2;
+    const newSegs = [];
+    for (let i = 0; i < count; i++) {
+      const angle = baseAngle + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.7;
+      const length = 55 + Math.random() * 150;
+      newSegs.push(...makeCrack(ox, oy, angle, length, 0, 2));
+    }
+    clickCracks.push({ segs: newSegs, born: now, totalLen: newSegs.length, x: ox, y: oy });
+  }
 
   document.getElementById('hero').addEventListener('click', e => {
     const rect = canvas.getBoundingClientRect();
@@ -1040,6 +1066,12 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     // Prune fully-faded click cracks
     for (let i = clickCracks.length - 1; i >= 0; i--) {
       if (now - clickCracks[i].born > 9000) clickCracks.splice(i, 1);
+    }
+
+    // Auto-spawn ambient cracks once the initial reveal is done
+    if (p >= 1 && ts - lastAutoSpawn > AUTO_INTERVAL) {
+      lastAutoSpawn = ts;
+      spawnAutoCrack(ts);
     }
 
     // Draw impact center
