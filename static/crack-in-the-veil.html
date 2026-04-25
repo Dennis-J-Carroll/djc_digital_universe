@@ -788,11 +788,10 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   let W, H, cracks = [], progress = 0, done = false;
 
   function resize() {
-    W = canvas.width = canvas.offsetWidth;
-    H = canvas.height = canvas.offsetHeight;
+    W = canvas.width = canvas.parentElement.clientWidth || window.innerWidth;
+    H = canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
   }
-  resize();
-  window.addEventListener('resize', () => { resize(); buildCracks(); });
+  window.addEventListener('resize', () => { resize(); buildCracks(); initParticles(); });
 
   // Crack generation
   function buildCracks() {
@@ -861,8 +860,6 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     return segments;
   }
 
-  buildCracks();
-
   // Flatten all segments
   function allSegs() { return cracks.flat(); }
 
@@ -895,6 +892,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   // Subtle drift particles along cracks
   const particles = [];
   function initParticles() {
+    particles.length = 0;
     const segs = allSegs();
     for (let k = 0; k < 55; k++) {
       const seg = segs[Math.floor(Math.random() * segs.length)];
@@ -909,8 +907,6 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
       });
     }
   }
-  initParticles();
-
   // Click-spawned cracks — list of {segs, born, totalLen}
   const clickCracks = [];
 
@@ -1067,7 +1063,13 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     requestAnimationFrame(draw);
   }
 
-  requestAnimationFrame(draw);
+  function init() {
+    resize();
+    buildCracks();
+    initParticles();
+    requestAnimationFrame(draw);
+  }
+  if (document.readyState === 'complete') { init(); } else { window.addEventListener('load', init); }
 })();
 </script>
 </body>

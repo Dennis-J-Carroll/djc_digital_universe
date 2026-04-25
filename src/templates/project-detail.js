@@ -6,6 +6,7 @@ import Seo from "../components/shared/seo"
 const ProjectDetailTemplate = ({ data, children, pageContext }) => {
   const { mdx } = data
   const { frontmatter, fields } = mdx
+  const isStory = pageContext?.contentType === 'stories'
   
   return (
     <Layout>
@@ -17,7 +18,7 @@ const ProjectDetailTemplate = ({ data, children, pageContext }) => {
           <p className="description">{frontmatter.description}</p>
         )}
         
-        {frontmatter.tech_stack && (
+        {!isStory && frontmatter.tech_stack && (
           <div className="tech-stack">
             <h3>Technologies Used:</h3>
             <ul className="tech-list">
