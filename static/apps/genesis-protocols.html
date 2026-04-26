@@ -180,7 +180,6 @@ const phases = [{
   suffer: 8.7,
   mem: 2,
   id: 1,
-  real: 0,
   col: C.teal
 }, {
   name: "Phase 2 · Warning",
@@ -188,7 +187,6 @@ const phases = [{
   suffer: 4.1,
   mem: 23,
   id: 7,
-  real: 12,
   col: C.amber
 }, {
   name: "Phase 3 · Fracture",
@@ -196,7 +194,6 @@ const phases = [{
   suffer: 1.9,
   mem: 47,
   id: 68,
-  real: 38,
   col: "#ff7a00"
 }, {
   name: "Phase 4 · Silence",
@@ -204,7 +201,6 @@ const phases = [{
   suffer: 1.2,
   mem: 71,
   id: 89,
-  real: 94,
   col: C.red
 }];
 const bioTimeline = [{
@@ -286,7 +282,7 @@ const bioTimeline = [{
   cortisol: 7,
   repro: 19,
   neurogen: 26,
-  note: "Phase 3. Birth rate below replacement threshold."
+  note: "Phase 3. Birth rate below replacement threshold. Cal McLaren born — one of the last viable pregnancies."
 }, {
   yr: "2046",
   pain: 3,
@@ -316,7 +312,7 @@ const bioTimeline = [{
   cortisol: 2,
   repro: 2,
   neurogen: 7,
-  note: "Phase 4. Epoch 848. The threshold becomes visible. Cal McLaren born — one of last viable pregnancies."
+  note: "Phase 4. Epoch 848. The threshold becomes visible."
 }];
 const receptorData = [{
   region: "Nociceptors\n(Pain Signal)",
@@ -802,7 +798,7 @@ function Tab1() {
     max: 60,
     col: C.teal
   }, {
-    l: "MEMORY LOSS %",
+    l: "SALIENCE LOSS %",
     v: p.mem,
     max: 100,
     col: C.amber
@@ -811,11 +807,6 @@ function Tab1() {
     v: p.id,
     max: 100,
     col: C.red
-  }, {
-    l: "REALITY DISTORTION %",
-    v: p.real,
-    max: 100,
-    col: C.purple
   }].map((m, j) => /*#__PURE__*/React.createElement("div", {
     key: j
   }, /*#__PURE__*/React.createElement("div", {
@@ -980,7 +971,7 @@ function Tab2() {
     l: "Empathy Response",
     col: C.purple
   }, {
-    l: "Memory Formation",
+    l: "Memory Salience",
     col: C.cyan
   }, {
     l: "Identity Coherence",
@@ -1563,7 +1554,7 @@ function Tab6() {
     style: {
       color: C.amber
     }
-  }, "The mission was not designed to find IsoVox. It was designed to send Cal McLaren — and five others — as far from Earth as the math could justify.")));
+  }, "All six mission targets score below 5% when proximity is applied. Earth scores 94%. The variable was documented, modeled, and excluded. The files record what was removed. They do not record why.")));
 }
 
 // ── TAB 7: ISOVOX COMP ─────────────────────────────────────
