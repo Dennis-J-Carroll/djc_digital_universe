@@ -878,306 +878,235 @@ const obs = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
 /* ── CRACKED GLASS CANVAS ── */
-(function() {
+(function () {
   const canvas = document.getElementById('crack-canvas');
   const ctx = canvas.getContext('2d');
-  let W, H, cracks = [], progress = 0, done = false;
+  let W = 0, H = 0, baseCracks = [], startTime = null;
 
+  // ── SIZING ──────────────────────────────────────────────────
   function resize() {
-    W = canvas.width = canvas.parentElement.clientWidth || window.innerWidth;
-    H = canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
   }
-  window.addEventListener('resize', () => { resize(); buildCracks(); initParticles(); });
+  window.addEventListener('resize', () => { resize(); buildBaseCracks(); initParticles(); });
 
-  // Crack generation
-  function buildCracks() {
-    cracks = [];
+  // ── CRACK GEOMETRY ──────────────────────────────────────────
+  function buildBaseCracks() {
+    baseCracks = [];
     const cx = W * 0.5, cy = H * 0.42;
-
-    // Main radial cracks from impact point
     const mainCount = 11;
     for (let i = 0; i < mainCount; i++) {
       const baseAngle = (i / mainCount) * Math.PI * 2;
       const angle = baseAngle + (Math.random() - 0.5) * 0.35;
-      const length = (Math.min(W, H) * 0.38) + Math.random() * Math.min(W, H) * 0.22;
-      cracks.push(makeCrack(cx, cy, angle, length, 0, 2));
+      const length = Math.min(W, H) * 0.38 + Math.random() * Math.min(W, H) * 0.22;
+      baseCracks.push(makeCrack(cx, cy, angle, length, 0, 2));
     }
-
-    // Concentric ring fragments (arcs connecting radials)
     for (let ring = 0; ring < 3; ring++) {
-      const r = (ring + 1) * (Math.min(W, H) * 0.12);
+      const r = (ring + 1) * Math.min(W, H) * 0.12;
       const arcCount = 5 + ring * 3;
       for (let j = 0; j < arcCount; j++) {
         const a1 = (j / arcCount) * Math.PI * 2 + Math.random() * 0.2;
         const a2 = a1 + (Math.PI * 2 / arcCount) * (0.4 + Math.random() * 0.4);
-        cracks.push(makeArcCrack(cx, cy, r + Math.random() * 18 - 9, a1, a2, ring));
+        baseCracks.push(makeArcCrack(cx, cy, r + Math.random() * 18 - 9, a1, a2));
       }
     }
   }
 
   function makeCrack(x, y, angle, length, depth, maxDepth) {
     const segments = [];
-    let cx = x, cy = y;
-    let a = angle;
+    let cx = x, cy = y, a = angle;
     const segLen = 28 + Math.random() * 24;
     const totalSegs = Math.ceil(length / segLen);
-
     for (let i = 0; i < totalSegs; i++) {
       a += (Math.random() - 0.5) * 0.22;
-      const nx = cx + Math.cos(a) * segLen;
-      const ny = cy + Math.sin(a) * segLen;
+      const nx = cx + Math.cos(a) * segLen, ny = cy + Math.sin(a) * segLen;
       segments.push({ x1: cx, y1: cy, x2: nx, y2: ny });
       cx = nx; cy = ny;
-
-      // Branch sub-cracks
       if (depth < maxDepth && i > 1 && Math.random() < 0.28) {
         const branchAngle = a + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.5);
-        const branchLen = length * (0.25 + Math.random() * 0.3);
-        const sub = makeCrack(cx, cy, branchAngle, branchLen, depth + 1, maxDepth);
-        segments.push(...sub);
+        segments.push(...makeCrack(cx, cy, branchAngle, length * (0.25 + Math.random() * 0.3), depth + 1, maxDepth));
       }
     }
     return segments;
   }
 
-  function makeArcCrack(cx, cy, r, a1, a2, ring) {
+  function makeArcCrack(cx, cy, r, a1, a2) {
     const segments = [];
-    const steps = Math.ceil((a2 - a1) * r / 18);
-    let px = cx + Math.cos(a1) * r;
-    let py = cy + Math.sin(a1) * r;
+    const steps = Math.max(2, Math.ceil((a2 - a1) * r / 18));
+    let px = cx + Math.cos(a1) * r, py = cy + Math.sin(a1) * r;
     for (let i = 1; i <= steps; i++) {
       const t = a1 + (a2 - a1) * (i / steps);
       const nr = r + Math.sin(i * 1.7) * 6;
-      const nx = cx + Math.cos(t) * nr;
-      const ny = cy + Math.sin(t) * nr;
+      const nx = cx + Math.cos(t) * nr, ny = cy + Math.sin(t) * nr;
       segments.push({ x1: px, y1: py, x2: nx, y2: ny });
       px = nx; py = ny;
     }
     return segments;
   }
 
-  // Flatten all segments
-  function allSegs() { return cracks.flat(); }
+  function allBaseSegs() { return baseCracks.flat(); }
 
-  // Impact glow rings
+  // ── IMPACT GLOW ─────────────────────────────────────────────
   function drawImpact(t) {
     const cx = W * 0.5, cy = H * 0.42;
-    const rings = [18, 36, 58];
-    rings.forEach((r, i) => {
-      const alpha = (0.25 - i * 0.07) * t;
+    [18, 36, 58].forEach((r, i) => {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(0,201,177,${alpha})`;
+      ctx.strokeStyle = `rgba(0,201,177,${(0.25 - i * 0.07) * t})`;
       ctx.lineWidth = 1;
-      ctx.shadowColor = '#00c9b1';
-      ctx.shadowBlur = 12;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
+      ctx.shadowColor = '#00c9b1'; ctx.shadowBlur = 12;
+      ctx.stroke(); ctx.shadowBlur = 0;
     });
-
-    // Center impact dot
     ctx.beginPath();
     ctx.arc(cx, cy, 4, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(103,232,249,${0.9 * t})`;
-    ctx.shadowColor = '#67e8f9';
-    ctx.shadowBlur = 20;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.shadowColor = '#67e8f9'; ctx.shadowBlur = 20;
+    ctx.fill(); ctx.shadowBlur = 0;
   }
 
-  // Subtle drift particles along cracks
+  // ── PARTICLES ───────────────────────────────────────────────
   const particles = [];
   function initParticles() {
     particles.length = 0;
-    const segs = allSegs();
+    const segs = allBaseSegs();
+    if (!segs.length) return;
     for (let k = 0; k < 55; k++) {
       const seg = segs[Math.floor(Math.random() * segs.length)];
       const t = Math.random();
       particles.push({
         x: seg.x1 + (seg.x2 - seg.x1) * t,
         y: seg.y1 + (seg.y2 - seg.y1) * t,
-        r: .8 + Math.random() * 1.2,
+        r: 0.8 + Math.random() * 1.2,
         alpha: Math.random() * 0.6 + 0.2,
-        speed: .2 + Math.random() * .4,
+        speed: 0.2 + Math.random() * 0.4,
         phase: Math.random() * Math.PI * 2,
       });
     }
   }
-  // Click-spawned cracks — list of {segs, born, totalLen}
-  const clickCracks = [];
-  let lastAutoSpawn = 0;
-  let clickCount = 0;
-  const AUTO_INTERVAL = 3200; // ms between ambient crack bursts
-  const MAX_AMBIENT = 7;      // cap so canvas never gets over-cluttered
 
-  function spawnAutoCrack(now) {
-    // Count only auto-cracks (age < 9000) to respect the cap
-    if (clickCracks.length >= MAX_AMBIENT) return;
-    // Pick a random point along the existing base cracks as the fracture origin
-    // so new cracks feel like they're propagating through the glass
-    const segs = allSegs();
+  // ── CLICK CRACKS & AUTO CRACKS (separate pools) ─────────────
+  const clickCracks = [];
+  const autoCracks  = [];
+  let clickCount = 0;
+  const MAX_AUTO     = 6;
+  const AUTO_INTERVAL = 3200;
+  let lastAutoSpawn  = 0;
+
+  function spawnCrackAt(x, y, pool, branchCount, lenMin, lenMax) {
+    const baseAngle = Math.random() * Math.PI * 2;
+    const segs = [];
+    for (let i = 0; i < branchCount; i++) {
+      const angle = baseAngle + (i / branchCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      segs.push(...makeCrack(x, y, angle, lenMin + Math.random() * (lenMax - lenMin), 0, 2));
+    }
+    pool.push({ segs, born: performance.now(), x, y });
+  }
+
+  function spawnAutoCrack(ts) {
+    for (let i = autoCracks.length - 1; i >= 0; i--) {
+      if (ts - autoCracks[i].born > 9000) autoCracks.splice(i, 1);
+    }
+    if (autoCracks.length >= MAX_AUTO) return;
+    const segs = allBaseSegs();
     if (!segs.length) return;
     const originSeg = segs[Math.floor(Math.random() * segs.length)];
     const t = Math.random();
     const ox = originSeg.x1 + (originSeg.x2 - originSeg.x1) * t;
     const oy = originSeg.y1 + (originSeg.y2 - originSeg.y1) * t;
-
-    const count = 2 + Math.floor(Math.random() * 3); // 2–4 fracture branches
-    const baseAngle = Math.random() * Math.PI * 2;
-    const newSegs = [];
-    for (let i = 0; i < count; i++) {
-      const angle = baseAngle + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.7;
-      const length = 55 + Math.random() * 150;
-      newSegs.push(...makeCrack(ox, oy, angle, length, 0, 2));
-    }
-    clickCracks.push({ segs: newSegs, born: now, totalLen: newSegs.length, x: ox, y: oy });
+    spawnCrackAt(ox, oy, autoCracks, 2 + Math.floor(Math.random() * 3), 55, 205);
   }
 
   document.getElementById('hero').addEventListener('click', e => {
     clickCount++;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    // Spawn 4–6 radial cracks from click point
-    const count = 4 + Math.floor(Math.random() * 3);
-    const baseAngle = Math.random() * Math.PI * 2;
-    const newSegs = [];
-    for (let i = 0; i < count; i++) {
-      const angle = baseAngle + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-      const length = 60 + Math.random() * 130;
-      const segs = makeCrack(x, y, angle, length, 0, 2);
-      newSegs.push(...segs);
-    }
-    // Impact ring animation state
-    clickCracks.push({ segs: newSegs, born: performance.now(), totalLen: newSegs.length, x, y });
-    // 7 impacts — the vault cracks open
+    spawnCrackAt(e.clientX - rect.left, e.clientY - rect.top, clickCracks, 4 + Math.floor(Math.random() * 3), 60, 190);
     if (clickCount === 7) triggerBreach();
   });
 
-  let lastTime = 0;
-  const REVEAL_DUR = 2400; // ms for cracks to fully draw
-  let startTime = null;
+  // ── DRAW HELPER — renders one crack pool, prunes expired ─────
+  function drawPool(pool, ts, rgb, shadowRgb) {
+    for (let i = pool.length - 1; i >= 0; i--) {
+      const cc = pool[i];
+      const age = ts - cc.born;
+      if (age > 9000) { pool.splice(i, 1); continue; }
+      const ep  = 1 - Math.pow(1 - Math.min(age / 600, 1), 2);
+      const drawN = Math.floor(cc.segs.length * ep);
+      const fade  = age > 6000 ? Math.max(0, 1 - (age - 6000) / 3000) : 1;
+
+      for (let j = 0; j < drawN; j++) {
+        const s = cc.segs[j];
+        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
+        ctx.strokeStyle = `rgba(${rgb},${0.7 * fade})`;
+        ctx.lineWidth = 1;
+        ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 10;
+        ctx.stroke(); ctx.shadowBlur = 0;
+      }
+
+      const ringAge = Math.min(age / 400, 1);
+      [12, 26, 44].forEach((r, ri) => {
+        const rA = Math.max(0, (0.6 - ri * 0.15) * (1 - ringAge) * fade);
+        ctx.beginPath(); ctx.arc(cc.x, cc.y, r * ringAge, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${shadowRgb},${rA})`;
+        ctx.lineWidth = 1;
+        ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 8;
+        ctx.stroke(); ctx.shadowBlur = 0;
+      });
+    }
+  }
+
+  // ── MAIN DRAW LOOP ───────────────────────────────────────────
+  const REVEAL_DUR = 2400;
 
   function draw(ts) {
     if (!startTime) startTime = ts;
-    const elapsed = ts - startTime;
-    progress = Math.min(elapsed / REVEAL_DUR, 1);
-    // Ease-out cubic
-    const p = 1 - Math.pow(1 - progress, 3);
+    const p = 1 - Math.pow(1 - Math.min((ts - startTime) / REVEAL_DUR, 1), 3);
 
     ctx.clearRect(0, 0, W, H);
 
-    // Background deep space
     const bg = ctx.createRadialGradient(W * .5, H * .42, 0, W * .5, H * .42, Math.max(W, H) * .65);
     bg.addColorStop(0, 'rgba(8,13,24,.85)');
     bg.addColorStop(1, 'rgba(5,8,15,0)');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    const segs = allSegs();
-    const totalSegs = segs.length;
-    const drawCount = Math.floor(totalSegs * p);
-
-    // Draw cracks with teal glow
+    // Base crack reveal
+    const segs = allBaseSegs();
+    const drawCount = Math.floor(segs.length * p);
     for (let i = 0; i < drawCount; i++) {
       const s = segs[i];
-      const alpha = 0.55 + (i / totalSegs) * 0.25;
-      ctx.beginPath();
-      ctx.moveTo(s.x1, s.y1);
-      ctx.lineTo(s.x2, s.y2);
+      const alpha = 0.55 + (i / segs.length) * 0.25;
+      ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
       ctx.strokeStyle = `rgba(0,201,177,${alpha * 0.9})`;
-      ctx.lineWidth = 1;
-      ctx.shadowColor = '#00c9b1';
-      ctx.shadowBlur = 8;
+      ctx.lineWidth = 1; ctx.shadowColor = '#00c9b1'; ctx.shadowBlur = 8;
       ctx.stroke();
-
-      // Second pass — bright core
-      ctx.beginPath();
-      ctx.moveTo(s.x1, s.y1);
-      ctx.lineTo(s.x2, s.y2);
+      ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
       ctx.strokeStyle = `rgba(103,232,249,${alpha * 0.35})`;
-      ctx.lineWidth = .5;
-      ctx.shadowBlur = 4;
+      ctx.lineWidth = 0.5; ctx.shadowBlur = 4;
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
 
-    // After full reveal — pulsing glow
+    // Pulsing glow after full reveal
     if (p > 0.85) {
       const glowAlpha = (p - 0.85) / 0.15;
       const pulse = 0.5 + 0.5 * Math.sin(ts * 0.0015);
       for (let i = 0; i < Math.min(drawCount, 30); i++) {
-        const s = segs[Math.floor(i * (totalSegs / 30))];
-        ctx.beginPath();
-        ctx.moveTo(s.x1, s.y1);
-        ctx.lineTo(s.x2, s.y2);
+        const s = segs[Math.floor(i * (segs.length / 30))];
+        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
         ctx.strokeStyle = `rgba(0,201,177,${0.12 * pulse * glowAlpha})`;
-        ctx.lineWidth = 3;
-        ctx.shadowColor = '#00c9b1';
-        ctx.shadowBlur = 18;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.lineWidth = 3; ctx.shadowColor = '#00c9b1'; ctx.shadowBlur = 18;
+        ctx.stroke(); ctx.shadowBlur = 0;
       }
     }
 
-    // Draw click-spawned cracks
-    const now = ts;
-    clickCracks.forEach(cc => {
-      const age = now - cc.born;
-      const GROW_DUR = 600;
-      const FADE_START = 6000;
-      const FADE_DUR = 3000;
-      const cp = Math.min(age / GROW_DUR, 1);
-      // Ease out
-      const ep = 1 - Math.pow(1 - cp, 2);
-      const drawN = Math.floor(cc.segs.length * ep);
-      // Fade alpha over time
-      let fadeAlpha = 1;
-      if (age > FADE_START) fadeAlpha = Math.max(0, 1 - (age - FADE_START) / FADE_DUR);
+    // Click cracks (cyan) — separate pool from auto, never interfere
+    drawPool(clickCracks, ts, '103,232,249', '103,232,249');
+    // Ambient auto cracks (teal) — independent cap
+    drawPool(autoCracks,  ts, '0,201,177',   '103,232,249');
 
-      for (let i = 0; i < drawN; i++) {
-        const s = cc.segs[i];
-        ctx.beginPath();
-        ctx.moveTo(s.x1, s.y1);
-        ctx.lineTo(s.x2, s.y2);
-        ctx.strokeStyle = `rgba(103,232,249,${0.7 * fadeAlpha})`;
-        ctx.lineWidth = 1;
-        ctx.shadowColor = '#67e8f9';
-        ctx.shadowBlur = 10;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
-
-      // Impact ring at click point
-      const ringAge = Math.min(age / 400, 1);
-      [12, 26, 44].forEach((r, ri) => {
-        const rAlpha = Math.max(0, (0.6 - ri * 0.15) * (1 - ringAge) * fadeAlpha);
-        ctx.beginPath();
-        ctx.arc(cc.x, cc.y, r * ringAge, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(103,232,249,${rAlpha})`;
-        ctx.lineWidth = 1;
-        ctx.shadowColor = '#67e8f9';
-        ctx.shadowBlur = 10;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      });
-    });
-
-    // Prune fully-faded click cracks
-    for (let i = clickCracks.length - 1; i >= 0; i--) {
-      if (now - clickCracks[i].born > 9000) clickCracks.splice(i, 1);
-    }
-
-    // Auto-spawn ambient cracks once the initial reveal is done
-    if (p >= 1 && ts - lastAutoSpawn > AUTO_INTERVAL) {
-      lastAutoSpawn = ts;
-      spawnAutoCrack(ts);
-    }
-
-    // Draw impact center
     drawImpact(p);
 
-    // Drift particles (visible after reveal)
+    // Drift particles
     if (p > 0.6) {
       const pa = (p - 0.6) / 0.4;
       particles.forEach(pt => {
@@ -1185,19 +1114,24 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         ctx.beginPath();
         ctx.arc(pt.x + Math.sin(pt.phase) * 2, pt.y + Math.cos(pt.phase * 0.7) * 1.5, pt.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(103,232,249,${pt.alpha * pa * 0.7})`;
-        ctx.shadowColor = '#67e8f9';
-        ctx.shadowBlur = 6;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.shadowColor = '#67e8f9'; ctx.shadowBlur = 6;
+        ctx.fill(); ctx.shadowBlur = 0;
       });
+    }
+
+    // Auto-spawn after initial reveal completes
+    if (p >= 1 && ts - lastAutoSpawn > AUTO_INTERVAL) {
+      lastAutoSpawn = ts;
+      spawnAutoCrack(ts);
     }
 
     requestAnimationFrame(draw);
   }
 
+  // ── INIT ─────────────────────────────────────────────────────
   function init() {
     resize();
-    buildCracks();
+    buildBaseCracks();
     initParticles();
     requestAnimationFrame(draw);
   }
