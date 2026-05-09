@@ -40,6 +40,13 @@ const AppsPage = ({ location }) => {
   const interactiveApps = [
     // AI & Machine Learning
     {
+      title: 'Understanding Layer — Agent Trace Viewer',
+      path: '/apps/understanding-layer-demo.html',
+      description: 'Live visualization of a real gpt-4.1 SWE-agent interaction trace across 46 events. Renders the InteractionTrace schema — a unified L1/L2/L3 observability model for AI agents — with color-coded event kinds, causal parent links, fabrication detection, and annotation callouts.',
+      category: 'AI/ML',
+      featured: true
+    },
+    {
       title: 'Neural Network Theory Lab v2',
       path: '/apps/neural_theory_lab_v2.html',
       description: 'Enhanced interactive laboratory for exploring neural network architectures, training dynamics, and theoretical foundations with improved visualizations.',
