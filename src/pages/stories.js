@@ -50,6 +50,44 @@ const StoriesPage = ({ data, location }) => {
           </a>
         </div>
 
+        {/* Kings Blood — Chronicle of Lyos */}
+        <div className="citv-feature-card" style={{
+          margin: '2rem 0 2.5rem',
+          background: 'linear-gradient(135deg, rgba(192,57,43,0.06) 0%, rgba(139,26,26,0.06) 100%)',
+          border: '1px solid rgba(192,57,43,0.25)',
+          borderRadius: '14px',
+          padding: '2rem 2.25rem',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
+            background: 'linear-gradient(90deg, #8b1a1a, #c0392b, #e74c3c)',
+          }} />
+          <div style={{ fontFamily: 'monospace', fontSize: '10px', letterSpacing: '.25em', color: '#415464', textTransform: 'uppercase', marginBottom: '10px' }}>
+            A Chronicle of Lyos // Fantasy
+          </div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 8px', color: 'inherit' }}>
+            Kings Blood
+          </h2>
+          <p style={{ color: '#7d92ab', fontSize: '15px', lineHeight: 1.7, marginBottom: '1.5rem', maxWidth: '640px' }}>
+            A continent where the gods are dead and their blood is slowly running out. The bloodlines remember. So does the ground.
+          </p>
+          <a
+            href="/kings-blood.html"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '10px 22px', borderRadius: '999px',
+              background: 'linear-gradient(135deg, #8b1a1a, #c0392b)',
+              color: '#f5e6e6', fontWeight: 700, fontSize: '12px',
+              letterSpacing: '.1em', textTransform: 'uppercase',
+              textDecoration: 'none',
+            }}
+          >
+            Enter the Chronicle →
+          </a>
+        </div>
+
         <div className="stories-grid">
           {stories.map(story => (
             <div key={story.id} className="story-card">
