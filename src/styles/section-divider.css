@@ -1,0 +1,93 @@
+/* Dynamic color values set via CSS custom properties on each element:
+   --divider-main, --divider-secondary, --divider-glow */
+
+.wave-divider {
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  margin: -1px 0;
+}
+
+.wave-svg {
+  width: 100%;
+  height: 80px;
+}
+
+.glow-line-divider {
+  width: 100%;
+  height: 1px;
+  margin: 4rem 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--divider-main) 20%,
+    var(--divider-secondary) 50%,
+    var(--divider-main) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 20px var(--divider-glow), 0 0 40px var(--divider-glow);
+}
+
+.dots-divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 3rem 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--divider-main), var(--divider-secondary));
+  box-shadow: 0 0 10px var(--divider-glow);
+}
+
+.dot:nth-child(3) {
+  width: 12px;
+  height: 12px;
+}
+
+.gradient-fade-divider {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--divider-glow) 50%,
+    transparent 100%
+  );
+  position: relative;
+}
+
+.gradient-fade-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--divider-main),
+    var(--divider-secondary),
+    var(--divider-main),
+    transparent
+  );
+  transform: translateY(-50%);
+}
+
+.simple-divider {
+  height: 2px;
+  margin: 3rem auto;
+  background: linear-gradient(
+    90deg,
+    var(--divider-main),
+    var(--divider-secondary),
+    var(--divider-main)
+  );
+  border-radius: 1px;
+  box-shadow: 0 0 15px var(--divider-glow);
+}

@@ -1,10 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import "../../styles/section-divider.css";
 
-/**
- * Section Divider Component
- * Creates smooth visual transitions between page sections
- */
 const SectionDivider = ({ variant = "wave", color = "primary" }) => {
     const colors = {
         primary: {
@@ -21,9 +18,16 @@ const SectionDivider = ({ variant = "wave", color = "primary" }) => {
 
     const colorSet = colors[color] || colors.primary;
 
+    // CSS custom properties replace JS template literals in style blocks
+    const cssVars = {
+        "--divider-main": colorSet.main,
+        "--divider-secondary": colorSet.secondary,
+        "--divider-glow": colorSet.glow,
+    };
+
     if (variant === "wave") {
         return (
-            <div className="section-divider wave-divider">
+            <div className="section-divider wave-divider" style={cssVars}>
                 <svg
                     viewBox="0 0 1440 120"
                     preserveAspectRatio="none"
@@ -45,18 +49,6 @@ const SectionDivider = ({ variant = "wave", color = "primary" }) => {
                         </linearGradient>
                     </defs>
                 </svg>
-                <style jsx>{`
-          .wave-divider {
-            width: 100%;
-            overflow: hidden;
-            line-height: 0;
-            margin: -1px 0;
-          }
-          .wave-svg {
-            width: 100%;
-            height: 80px;
-          }
-        `}</style>
             </div>
         );
     }
@@ -65,28 +57,12 @@ const SectionDivider = ({ variant = "wave", color = "primary" }) => {
         return (
             <motion.div
                 className="glow-line-divider"
+                style={cssVars}
                 initial={{ opacity: 0, scaleX: 0 }}
                 whileInView={{ opacity: 1, scaleX: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-                <style jsx>{`
-          .glow-line-divider {
-            width: 100%;
-            height: 1px;
-            margin: 4rem 0;
-            background: linear-gradient(
-              90deg,
-              transparent 0%,
-              ${colorSet.main} 20%,
-              ${colorSet.secondary} 50%,
-              ${colorSet.main} 80%,
-              transparent 100%
-            );
-            box-shadow: 0 0 20px ${colorSet.glow}, 0 0 40px ${colorSet.glow};
-          }
-        `}</style>
-            </motion.div>
+            />
         );
     }
 
@@ -94,6 +70,7 @@ const SectionDivider = ({ variant = "wave", color = "primary" }) => {
         return (
             <motion.div
                 className="dots-divider"
+                style={cssVars}
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -109,91 +86,25 @@ const SectionDivider = ({ variant = "wave", color = "primary" }) => {
                         transition={{ duration: 0.3, delay: i * 0.1 }}
                     />
                 ))}
-                <style jsx>{`
-          .dots-divider {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            padding: 3rem 0;
-          }
-          .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, ${colorSet.main}, ${colorSet.secondary});
-            box-shadow: 0 0 10px ${colorSet.glow};
-          }
-          .dot:nth-child(3) {
-            width: 12px;
-            height: 12px;
-          }
-        `}</style>
             </motion.div>
         );
     }
 
     if (variant === "gradient-fade") {
         return (
-            <div className="gradient-fade-divider">
-                <style jsx>{`
-          .gradient-fade-divider {
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(
-              to bottom,
-              transparent 0%,
-              ${colorSet.glow} 50%,
-              transparent 100%
-            );
-            position: relative;
-          }
-          .gradient-fade-divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
-            height: 1px;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              ${colorSet.main},
-              ${colorSet.secondary},
-              ${colorSet.main},
-              transparent
-            );
-            transform: translateY(-50%);
-          }
-        `}</style>
-            </div>
+            <div className="gradient-fade-divider" style={cssVars} />
         );
     }
 
-    // Default: simple line
     return (
         <motion.div
             className="simple-divider"
+            style={cssVars}
             initial={{ width: 0 }}
             whileInView={{ width: "60%" }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-        >
-            <style jsx>{`
-        .simple-divider {
-          height: 2px;
-          margin: 3rem auto;
-          background: linear-gradient(
-            90deg,
-            ${colorSet.main},
-            ${colorSet.secondary},
-            ${colorSet.main}
-          );
-          border-radius: 1px;
-          box-shadow: 0 0 15px ${colorSet.glow};
-        }
-      `}</style>
-        </motion.div>
+        />
     );
 };
 
