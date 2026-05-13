@@ -540,13 +540,13 @@ const AppsPage = ({ location }) => {
                       <h3 style={{
                         fontSize: '1.1rem',
                         fontWeight: '600',
-                        color: 'var(--text-primary)',
+                        color: '#f0f4f8',
                         marginBottom: '0.5rem'
                       }}>
                         {app.title}
                       </h3>
                       <p style={{
-                        color: 'var(--text-secondary)',
+                        color: 'rgba(220, 230, 240, 0.72)',
                         lineHeight: '1.6',
                         fontSize: '0.9rem',
                         marginBottom: '1rem'

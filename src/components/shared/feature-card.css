@@ -41,30 +41,7 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Corner accents */
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, rgba(0, 188, 212, 0.15), transparent);
-  border-radius: 20px 0 0 0;
-  z-index: 1;
-}
-
-.feature-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(-45deg, rgba(124, 77, 255, 0.1), transparent);
-  border-radius: 0 0 20px 0;
-  z-index: 1;
-}
+/* Corner accent pseudo-elements removed — caused visible square artifact in dark mode */
 
 /* Glowing border effect */
 .feature-card-glow {
