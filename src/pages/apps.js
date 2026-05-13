@@ -52,9 +52,8 @@ const featuredProjects = [
   }
 ];
 
-const AppsPage = ({ location }) => {
-  // Standalone interactive HTML apps - these open in new tabs
-  const interactiveApps = [
+// Stable module-level constant — keeps useMemo dependency reference stable across renders
+const interactiveApps = [
     // AI & Machine Learning
     {
       title: 'Understanding Layer — Agent Trace Viewer',
@@ -224,8 +223,9 @@ const AppsPage = ({ location }) => {
       category: 'Education',
       featured: true
     }
-  ];
+];
 
+const AppsPage = ({ location }) => {
   const allCategories = ['All', 'AI/ML', 'Data Science', 'Math', 'Tools', 'Creative', 'Education'];
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
@@ -239,7 +239,7 @@ const AppsPage = ({ location }) => {
       const matchesCategory = activeFilter === 'All' || p.category === activeFilter;
       return matchesSearch && matchesCategory;
     });
-  }, [interactiveApps, searchQuery, activeFilter]);
+  }, [searchQuery, activeFilter]);
 
   const containerVariants = {
     hidden: { opacity: 0 },

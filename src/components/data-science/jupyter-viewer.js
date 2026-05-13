@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StaticQuery, graphql } from 'gatsby';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import DOMPurify from 'isomorphic-dompurify';
 import './jupyter-viewer.css';
 
 /**
@@ -120,7 +121,7 @@ const JupyterViewer = ({ notebookPath }) => {
         if (cell.cell_type === "markdown") {
           return (
             <div key={index} className="notebook-cell notebook-cell-markdown">
-              <div dangerouslySetInnerHTML={{ __html: cell.source.join("") }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cell.source.join("")) }} />
             </div>
           );
         } else if (cell.cell_type === "code") {
