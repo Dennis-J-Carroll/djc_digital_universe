@@ -436,7 +436,7 @@ const AboutPage = ({ location }) => {
             {/* CTA buttons */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <a
-                href="/Dennis-Carroll-Resume.pdf"
+                href="/Dennis_Carroll_Resume.docx"
                 download
                 style={{
                   display: 'inline-flex',
