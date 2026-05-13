@@ -125,6 +125,7 @@ const HeroText = ({ title, description }) => {
           align-items: center;
           text-align: center;
           padding: 2rem;
+          user-select: none;
         }
 
         .hero-name-container {
