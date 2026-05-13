@@ -31,6 +31,7 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
 
   const metaDescription = description || site.siteMetadata.description
   const defaultTitle = site.siteMetadata?.title
+  const composedTitle = defaultTitle ? `${title} | ${defaultTitle}` : title
   const canonicalUrl = `${site.siteMetadata.siteUrl}${pathname || '/'}`;
   const ogImage = pageData?.image
     ? `${site.siteMetadata.siteUrl}${pageData.image}`
@@ -132,7 +133,7 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
         },
         {
           property: `og:title`,
-          content: title,
+          content: composedTitle,
         },
         {
           property: `og:description`,
@@ -180,7 +181,7 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
         },
         {
           name: `twitter:title`,
-          content: title,
+          content: composedTitle,
         },
         {
           name: `twitter:description`,

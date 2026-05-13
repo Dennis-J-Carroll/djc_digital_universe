@@ -294,7 +294,7 @@ const IndexPage = ({ location }) => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {formStatus.submitted && formStatus.success ? (
-              <div className="contact-success">
+              <div className="contact-success" role="alert" aria-live="polite">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -348,7 +348,7 @@ const IndexPage = ({ location }) => {
                   {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
                 {formStatus.submitted && !formStatus.success && (
-                  <p className="form-error">{formStatus.message}</p>
+                  <p className="form-error" role="alert" aria-live="assertive">{formStatus.message}</p>
                 )}
               </form>
             )}

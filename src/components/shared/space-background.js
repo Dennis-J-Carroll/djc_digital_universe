@@ -2,12 +2,19 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 
-const PARTICLE_COUNT = typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 30;
-
 const SpaceBackground = () => {
   const [currentTheme, setCurrentTheme] = useState('dark');
+  const [particleCount, setParticleCount] = useState(30); // SSR-safe default
   const containerRef = useRef(null);
   const isVisibleRef = useRef(true);
+
+  // Set particle count on client — window not available during SSR
+  useEffect(() => {
+    const update = () => setParticleCount(window.innerWidth < 768 ? 15 : 30);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   // Theme observer
   useEffect(() => {
@@ -41,7 +48,7 @@ const SpaceBackground = () => {
       isVisibleRef.current = visible;
       const c = containerRef.current;
       if (!c) return;
-      visible ? c.play() : c.pause();
+      visible ? c?.play?.() : c?.pause?.();
     };
 
     const handleVisibility = () => {
@@ -138,7 +145,7 @@ const SpaceBackground = () => {
           },
           number: {
             density: { enable: true, area: 1000 },
-            value: PARTICLE_COUNT,
+            value: particleCount,
           },
           opacity: {
             value: 0.6,

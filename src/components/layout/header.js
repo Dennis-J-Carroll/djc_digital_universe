@@ -1,14 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Link } from "gatsby"
 import { gsap } from "gsap"
-import { THEMES } from "../../constants"
+import { NAV_LINKS as ALL_NAV_LINKS, THEMES } from "../../constants"
 
-const NAV_LINKS = [
-  { path: "/", label: "Home" },
-  { path: "/apps", label: "Apps/Projects" },
-  { path: "/stories", label: "Stories" },
-  { path: "/about", label: "About" },
-];
+// Contact is an inline section on the homepage — exclude from global nav
+const NAV_LINKS = ALL_NAV_LINKS.filter(l => l.id !== 'contact');
 
 const SOCIAL_ICONS = [
   {
@@ -95,7 +91,7 @@ const Header = ({ siteTitle }) => {
       { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
     );
 
-    gsap.to(logoRef.current, {
+    const logoTween = gsap.to(logoRef.current, {
       y: 5,
       duration: 2,
       repeat: -1,
@@ -112,6 +108,7 @@ const Header = ({ siteTitle }) => {
     }
 
     return () => {
+      logoTween.kill();
       if (typeof window !== 'undefined') window.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
