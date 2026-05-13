@@ -362,3 +362,12 @@ code {
 .slide-up {
   animation: slideUp 0.5s ease forwards;
 }
+
+/* Prevent drag-selection of decorative page headers caused by particle background interaction */
+.hero,
+.about-hero,
+.stories-container > h1,
+.stories-container > p:first-of-type,
+.apps-page-header {
+  user-select: none;
+}

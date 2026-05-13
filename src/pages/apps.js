@@ -262,6 +262,7 @@ const AppsPage = ({ location }) => {
         margin: '0 auto'
       }}>
         <motion.div
+          className="apps-page-header"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
