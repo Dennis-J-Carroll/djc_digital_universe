@@ -129,7 +129,7 @@ export default async function handler(req, res) {
     const transporter = createTransporter();
     await transporter.sendMail({
       from: `"Dennis Carroll Website" <${process.env.SMTP_USER}>`,
-      to: process.env.RECIPIENT_EMAIL || 'denniscarrollj@gmail.com',
+      to: process.env.RECIPIENT_EMAIL || 'denniscarrollj@gmail.com, denniscarroll93@gmail.com',
       subject: `New Contact Form: ${subject}`,
       html: emailContent,
       replyTo: email

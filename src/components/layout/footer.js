@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Link } from "gatsby"
 import { gsap } from "gsap"
 import { QUICK_LINKS, SOCIAL_LINKS } from "../../constants"
@@ -6,6 +6,25 @@ import { QUICK_LINKS, SOCIAL_LINKS } from "../../constants"
 const Footer = ({ siteTitle }) => {
   const footerRef = useRef(null);
   const circuitRef = useRef(null);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState('idle'); // idle | submitting | success | error
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('submitting');
+    try {
+      const body = new URLSearchParams({ 'form-name': 'newsletter', email: newsletterEmail });
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+      setNewsletterStatus(res.ok ? 'success' : 'error');
+    } catch {
+      setNewsletterStatus('error');
+    }
+  };
 
   // Setup animations on mount
   useEffect(() => {
@@ -455,72 +474,79 @@ const Footer = ({ siteTitle }) => {
             Sign up for updates on new projects and content.
           </p>
           
-          {/* Newsletter Signup Form (placeholder) */}
-          <form
-            aria-label="Newsletter subscription"
-            onSubmit={(e) => e.preventDefault()}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.75rem"
-            }}
-          >
-            <label htmlFor="newsletter-email" className="sr-only">
-              Email address for newsletter updates
-            </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              name="email"
-              placeholder="Your email address"
-              aria-required="true"
-              aria-describedby="newsletter-description"
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "8px",
-                border: "1px solid rgba(120, 180, 255, 0.2)",
-                background: "rgba(15, 20, 30, 0.6)",
-                color: "var(--text-primary)",
-                width: "100%",
-                fontSize: "0.9rem"
-              }}
-            />
-            <span id="newsletter-description" className="sr-only">
-              Subscribe to receive updates on new projects and stories
-            </span>
-            <button
-              type="submit"
-              aria-label="Subscribe to newsletter"
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "8px",
-                border: "none",
-                background: "var(--primary-color)",
-                color: "var(--bg-dark)",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                gsap.to(e.currentTarget, {
-                  backgroundColor: "color-mix(in srgb, var(--primary-color) 80%, white)",
-                  boxShadow: "0 0 15px var(--primary-glow)",
-                  scale: 1.02,
-                  duration: 0.2
-                });
-              }}
-              onMouseLeave={(e) => {
-                gsap.to(e.currentTarget, {
-                  backgroundColor: "var(--primary-color)",
-                  boxShadow: "none",
-                  scale: 1,
-                  duration: 0.2
-                });
-              }}
+          {/* Newsletter Signup — Netlify Forms */}
+          {newsletterStatus === 'success' ? (
+            <p style={{ color: "var(--primary-color)", fontSize: "0.9rem", marginTop: "0.5rem" }}>
+              ✓ You're subscribed! Thanks.
+            </p>
+          ) : (
+            <form
+              name="newsletter"
+              method="POST"
+              data-netlify="true"
+              aria-label="Newsletter subscription"
+              onSubmit={handleNewsletterSubmit}
+              style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
             >
-              Subscribe
-            </button>
-          </form>
+              <input type="hidden" name="form-name" value="newsletter" />
+              <label htmlFor="newsletter-email" className="sr-only">
+                Email address for newsletter updates
+              </label>
+              <input
+                id="newsletter-email"
+                type="email"
+                name="email"
+                placeholder="Your email address"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                aria-describedby="newsletter-description"
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(120, 180, 255, 0.2)",
+                  background: "rgba(15, 20, 30, 0.6)",
+                  color: "var(--text-primary)",
+                  width: "100%",
+                  fontSize: "0.9rem"
+                }}
+              />
+              <span id="newsletter-description" className="sr-only">
+                Subscribe to receive updates on new projects and stories
+              </span>
+              <button
+                type="submit"
+                disabled={newsletterStatus === 'submitting'}
+                aria-label="Subscribe to newsletter"
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "var(--primary-color)",
+                  color: "var(--bg-dark)",
+                  fontWeight: "600",
+                  cursor: newsletterStatus === 'submitting' ? 'wait' : 'pointer',
+                  transition: "all 0.2s ease",
+                  opacity: newsletterStatus === 'submitting' ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (newsletterStatus !== 'submitting') {
+                    gsap.to(e.currentTarget, { boxShadow: "0 0 15px var(--primary-glow)", scale: 1.02, duration: 0.2 });
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  gsap.to(e.currentTarget, { boxShadow: "none", scale: 1, duration: 0.2 });
+                }}
+              >
+                {newsletterStatus === 'submitting' ? 'Subscribing…' : 'Subscribe'}
+              </button>
+              {newsletterStatus === 'error' && (
+                <p style={{ color: "#f87171", fontSize: "0.8rem", margin: 0 }}>
+                  Something went wrong. Try again.
+                </p>
+              )}
+            </form>
+          )}
         </div>
       </div>
       
