@@ -389,6 +389,107 @@ const AboutPage = ({ location }) => {
           </motion.div>
         </motion.section>
 
+        {/* Availability + Resume CTA */}
+        <motion.section
+          className="about-section"
+          style={{ textAlign: 'center' }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.div variants={itemVariants}>
+            {/* Pulsing availability badge */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              background: 'rgba(0,0,0,0.4)',
+              border: '1px solid rgba(16,185,129,0.3)',
+              borderRadius: '999px',
+              padding: '0.5rem 1.25rem',
+              marginBottom: '1.5rem'
+            }}>
+              <span style={{ position: 'relative', display: 'inline-flex', width: '10px', height: '10px' }}>
+                <span style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  opacity: 0.75,
+                  animation: 'djc-ping 1.2s cubic-bezier(0,0,0.2,1) infinite'
+                }} />
+                <span style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: '#10b981'
+                }} />
+              </span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                Open to collaboration and interesting projects
+              </span>
+            </div>
+
+            {/* CTA buttons */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <a
+                href="/Dennis-Carroll-Resume.pdf"
+                download
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.5rem',
+                  background: 'var(--primary-color)',
+                  color: '#0a0e14',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  transition: 'opacity 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Resume
+              </a>
+              <a
+                href="/contact"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.5rem',
+                  border: '1px solid rgba(120,180,255,0.3)',
+                  color: 'var(--text-secondary)',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  transition: 'border-color 0.2s ease, color 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary-color)'; e.currentTarget.style.color = 'var(--primary-color)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(120,180,255,0.3)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              >
+                Get in Touch
+              </a>
+            </div>
+          </motion.div>
+        </motion.section>
+
+        <style jsx>{`
+          @keyframes djc-ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+          }
+        `}</style>
+
         <style jsx>{`
           .about-page {
             max-width: 1200px;

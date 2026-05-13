@@ -83,6 +83,7 @@ const SpaceBackground = () => {
           },
         },
         fpsLimit: 60,
+        pauseOnBlur: true,
         interactivity: {
           events: {
             onHover: {
@@ -138,7 +139,7 @@ const SpaceBackground = () => {
               enable: true,
               area: 1000,
             },
-            value: 30, // Reduced from 50 to 30 for better performance (40% CPU reduction)
+            value: typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 30,
           },
           opacity: {
             value: 0.6,

@@ -386,60 +386,32 @@ const Header = ({ siteTitle }) => {
           </a>
         </div>
 
-        {/* Theme Selector */}
-        <div style={{
-          display: "flex",
-          gap: "0.5rem",
-          background: "rgba(15, 20, 30, 0.5)",
-          backdropFilter: "blur(8px)",
-          borderRadius: "25px",
-          padding: "0.25rem",
-          border: "1px solid rgba(120, 180, 255, 0.1)"
-        }}>
+        {/* Theme Selector — labeled dropdown */}
+        <select
+          value={currentTheme}
+          onChange={(e) => handleThemeChange(e.target.value)}
+          aria-label="Select theme"
+          style={{
+            background: "rgba(15, 20, 30, 0.6)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(120, 180, 255, 0.2)",
+            borderRadius: "8px",
+            color: "var(--text-secondary)",
+            fontSize: "0.8rem",
+            padding: "0.35rem 0.6rem",
+            cursor: "pointer",
+            outline: "none",
+            transition: "border-color 0.2s ease"
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--primary-color)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(120, 180, 255, 0.2)"; }}
+        >
           {THEMES.map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => handleThemeChange(theme.id)}
-              aria-label={theme.ariaLabel}
-              title={`Switch to ${theme.name} theme`}
-              style={{
-                background: currentTheme === theme.id ? "var(--primary-color)" : "transparent",
-                border: "none",
-                width: "2rem",
-                height: "2rem",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                fontSize: "1rem",
-                opacity: currentTheme === theme.id ? 1 : 0.6,
-                transform: currentTheme === theme.id ? "scale(1.1)" : "scale(1)"
-              }}
-              onMouseEnter={(e) => {
-                if (currentTheme !== theme.id) {
-                  gsap.to(e.currentTarget, {
-                    opacity: 0.9,
-                    scale: 1.05,
-                    duration: 0.2
-                  });
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentTheme !== theme.id) {
-                  gsap.to(e.currentTarget, {
-                    opacity: 0.6,
-                    scale: 1,
-                    duration: 0.2
-                  });
-                }
-              }}
-            >
-              {theme.icon}
-            </button>
+            <option key={theme.id} value={theme.id}>
+              {theme.name}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
     </header>
   );
