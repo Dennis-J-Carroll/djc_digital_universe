@@ -177,6 +177,38 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 /* ── UTILITY ─────────────────────────────────────────────── */
 .tc{text-align:center}
 .mx{max-width:1200px;margin:0 auto}
+
+/* ── MOBILE ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Nav */
+  .nav { padding: 14px 20px; }
+  .nav-links { display: none; }
+
+  /* Section padding */
+  .sec { padding: 56px 20px; }
+  .regions-bg { padding: 56px 20px; }
+
+  /* World — stack map below text */
+  .world-grid { grid-template-columns: 1fr; gap: 36px; }
+
+  /* Regions — single column */
+  .regions-grid { grid-template-columns: 1fr; }
+
+  /* Characters — 2 columns, shorter portraits */
+  .chars-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .char-portrait { aspect-ratio: 2/3; }
+
+  /* Chronicle — stack cover above body */
+  .chronicle-card { grid-template-columns: 1fr; }
+  .chronicle-cover { min-height: 130px; }
+  .chronicle-body { padding: 24px 20px; }
+  .story-meta { gap: 16px; }
+  .story-excerpt { font-size: 14px; }
+
+  /* Footer */
+  .footer { padding: 32px 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .footer-links { flex-wrap: wrap; gap: 14px; }
+}
 </style>
 </head>
 <body>
