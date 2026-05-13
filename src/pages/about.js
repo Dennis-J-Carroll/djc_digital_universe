@@ -1,8 +1,10 @@
 import React from "react"
+import { Link } from "gatsby"
 import { motion } from "framer-motion"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 import StatsCounter from "../components/shared/stats-counter"
+import "../styles/about.css"
 
 // Minimalist SVG Icons (gray fill with black outline style)
 const CodeIcon = () => (
@@ -378,14 +380,11 @@ const AboutPage = ({ location }) => {
               with modern web technologies, it showcases both my technical abilities and
               my creative interests.
             </p>
-            <motion.a
-              href="/contact"
-              className="cta-button glow-on-hover"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Let's Connect →
-            </motion.a>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ display: 'inline-block' }}>
+              <Link to="/contact" className="cta-button glow-on-hover">
+                Let's Connect →
+              </Link>
+            </motion.div>
           </motion.div>
         </motion.section>
 
@@ -461,8 +460,8 @@ const AboutPage = ({ location }) => {
                 </svg>
                 Download Resume
               </a>
-              <a
-                href="/contact"
+              <Link
+                to="/contact"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -479,262 +478,12 @@ const AboutPage = ({ location }) => {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(120,180,255,0.3)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
               >
                 Get in Touch
-              </a>
+              </Link>
             </div>
           </motion.div>
         </motion.section>
 
-        <style jsx>{`
-          @keyframes djc-ping {
-            75%, 100% { transform: scale(2); opacity: 0; }
-          }
-        `}</style>
 
-        <style jsx>{`
-          .about-page {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 2rem 4rem 2rem;
-          }
-
-          .about-hero {
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            padding: 4rem 2rem;
-          }
-
-          .about-hero-content {
-            position: relative;
-            z-index: 2;
-          }
-
-          .hero-badge {
-            display: inline-block;
-            background: rgba(0, 188, 212, 0.1);
-            border: 1px solid rgba(0, 188, 212, 0.3);
-            padding: 0.5rem 1.25rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            color: var(--primary-color, #00bcd4);
-            margin-bottom: 1.5rem;
-          }
-
-          .about-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            line-height: 1.1;
-          }
-
-          .about-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-secondary, #b8b8b8);
-            margin-bottom: 2rem;
-            font-weight: 400;
-          }
-
-          .about-description {
-            max-width: 650px;
-            margin: 0 auto;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-secondary, #b8b8b8);
-          }
-
-          .floating-icons {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-          }
-
-          .floating-icon {
-            position: absolute;
-            padding: 1rem;
-            background: rgba(0, 188, 212, 0.1);
-            border-radius: 16px;
-            border: 1px solid rgba(0, 188, 212, 0.2);
-            color: var(--primary-color, #00bcd4);
-          }
-
-          .icon-1 { top: 15%; left: 10%; }
-          .icon-2 { top: 25%; right: 15%; }
-          .icon-3 { bottom: 20%; left: 20%; }
-
-          .about-section {
-            margin-bottom: 5rem;
-          }
-
-          .section-title {
-            font-size: 2rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            background: linear-gradient(135deg, var(--primary-color, #00bcd4), var(--secondary-color, #7c4dff));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-
-          .content-card {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(0, 188, 212, 0.15);
-            border-radius: 24px;
-            padding: 3rem;
-            backdrop-filter: blur(10px);
-          }
-
-          .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2.5rem;
-          }
-
-          .content-block h3 {
-            font-size: 1.25rem;
-            color: var(--text-primary, #ffffff);
-            margin-bottom: 1rem;
-            font-weight: 600;
-          }
-
-          .content-block p {
-            color: var(--text-secondary, #b8b8b8);
-            line-height: 1.8;
-          }
-
-          .interests-content {
-            max-width: 800px;
-            margin: 0 auto;
-          }
-
-          .interests-content p {
-            color: var(--text-secondary, #b8b8b8);
-            line-height: 1.9;
-            font-size: 1.05rem;
-            margin-bottom: 1.5rem;
-          }
-
-          .interests-content p:last-child {
-            margin-bottom: 0;
-          }
-
-          .website-card {
-            background: linear-gradient(135deg, rgba(0, 188, 212, 0.05) 0%, rgba(124, 77, 255, 0.05) 100%);
-            border: 1px solid rgba(0, 188, 212, 0.2);
-            border-radius: 24px;
-            padding: 3rem;
-            text-align: center;
-          }
-
-          .tech-stack-visual {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 2rem;
-          }
-
-          .tech-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            border: 1px solid rgba(0, 188, 212, 0.1);
-          }
-
-          .tech-icon {
-            font-size: 2rem;
-          }
-
-          .tech-name {
-            font-size: 0.9rem;
-            color: var(--text-secondary, #b8b8b8);
-            font-weight: 500;
-          }
-
-          .tech-connector {
-            font-size: 1.5rem;
-            color: var(--primary-color, #00bcd4);
-            font-weight: 300;
-          }
-
-          .website-description {
-            color: var(--text-secondary, #b8b8b8);
-            line-height: 1.8;
-            max-width: 650px;
-            margin: 0 auto 2rem auto;
-            font-size: 1.05rem;
-          }
-
-          .cta-button {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            background: linear-gradient(135deg, var(--primary-color, #00bcd4), var(--secondary-color, #7c4dff));
-            color: white;
-            font-weight: 600;
-            border-radius: 50px;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-          }
-
-          .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 188, 212, 0.3);
-          }
-
-          @media (max-width: 768px) {
-            .about-page {
-              padding: 1rem 1rem 3rem 1rem;
-            }
-
-            .about-hero {
-              min-height: 50vh;
-              padding: 2rem 1rem;
-            }
-
-            .about-title {
-              font-size: 2.25rem;
-            }
-
-            .about-subtitle {
-              font-size: 1rem;
-            }
-
-            .floating-icons {
-              display: none;
-            }
-
-            .content-card,
-            .website-card {
-              padding: 1.5rem;
-            }
-
-            .tech-stack-visual {
-              gap: 0.5rem;
-            }
-
-            .tech-item {
-              padding: 0.75rem 1rem;
-            }
-
-            .section-title {
-              font-size: 1.5rem;
-            }
-          }
-        `}</style>
       </div>
     </Layout>
   )

@@ -4,13 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
-/* CSS Variables */
-:root {
-  --primary-color: #591675;
-  --secondary-color: #5ea3ac;
-  --accent-color: #7b1fa2;
-  --heading-color: #3a828b;
-}
+/* CSS Variables — canonical values live in futuristic-ui.css :root */
 
 /* Reset and base styles */
 * {
