@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QSRI FILE 7734-C // RECOVERED</title>
+  <meta name="description" content="Recovered classified documents from the Crack in the Veil universe.">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+  <script>window.PropTypes = window.PropTypes || window.propTypes;</script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; background:#05080f; overflow-x:hidden; font-family:'Courier New',monospace; }
+    #root { min-height:100vh; }
+    p { margin: 0 0 12px 0; }
+    sub { font-size: 0.65em; }
+    table { border-spacing: 0; }
+    button { font-family: inherit; }
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:#05080f; }
+    ::-webkit-scrollbar-thumb { background:#182030; border-radius:3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Recharts === 'undefined') {
+  document.getElementById('root').innerHTML = '<div style="color:#ff2d4b;font-family:monospace;padding:40px;font-size:14px;">' +
+    '<div style="color:#00c9b1;font-size:18px;margin-bottom:16px;">CDN LOAD FAILURE</div>' +
+    '<div style="color:#b0c4d8;line-height:1.8;">' +
+    'React: ' + (typeof React !== 'undefined' ? 'OK' : 'FAILED') + '<br/>' +
+    'ReactDOM: ' + (typeof ReactDOM !== 'undefined' ? 'OK' : 'FAILED') + '<br/>' +
+    'Recharts: ' + (typeof Recharts !== 'undefined' ? 'OK' : 'FAILED') + '<br/><br/>' +
+    'This file requires an internet connection to load libraries from CDN.<br/>' +
+    'If opening from file://, try serving it locally:<br/><br/>' +
+    '<span style="color:#67e8f9;">python3 -m http.server 8080</span><br/>' +
+    'Then open <span style="color:#67e8f9;">http://localhost:8080</span>' +
+    '</div></div>';
+} else {
+// ── COLOR CONSTANTS ──────────────────────────────────────────
+const C = {
+  bg: "#05080f",
+  bg2: "#090d18",
+  bg3: "#0e1420",
+  border: "#182030",
+  teal: "#00c9b1",
+  red: "#ff2d4b",
+  amber: "#f5a623",
+  cyan: "#67e8f9",
+  purple: "#a78bfa",
+  ghost: "#2e3f52",
+  text: "#b0c4d8",
+  dim: "#415464",
+  green: "#22c55e"
+};
+
+// ── CANONICAL DATA ──────────────────────────────────────────
+const planets = [{
+  name: "Kesslar-1",
+  dist: 847,
+  rep: 0.79,
+  tp: 0.14
+}, {
+  name: "Kesslar-4",
+  dist: 891,
+  rep: 0.71,
+  tp: 0.11
+}, {
+  name: "Kesslar-6",
+  dist: 934,
+  rep: 0.83,
+  tp: 0.17
+}, {
+  name: "Kesslar-8",
+  dist: 1011,
+  rep: 0.69,
+  tp: 0.10
+}, {
+  name: "Kesslar-9",
+  dist: 1089,
+  rep: 0.81,
+  tp: 0.16
+}, {
+  name: "Kesslar-12",
+  dist: 1203,
+  rep: 0.74,
+  tp: 0.12
+}];
+const params = [{
+  n: "prior_sector_isovox",
+  f: "0.87",
+  t: "0.23",
+  d: "+278%",
+  c: true
+}, {
+  n: "spectral_signal_weight",
+  f: "0.89",
+  t: "0.34",
+  d: "+162%",
+  c: true
+}, {
+  n: "atmospheric_likelihood_ratio",
+  f: "8.70",
+  t: "2.10",
+  d: "+314%",
+  c: true
+}, {
+  n: "stellar_age_penalty",
+  f: "REMOVED",
+  t: "−0.31",
+  d: "DELETED",
+  c: true
+}, {
+  n: "solar_flare_adjustment",
+  f: "0.12",
+  t: "0.11",
+  d: "+9%",
+  c: false
+}, {
+  n: "deuterium_correlation",
+  f: "0.44",
+  t: "0.41",
+  d: "+7%",
+  c: false
+}, {
+  n: "earth_proximity_factor",
+  f: "NOT IN MODEL",
+  t: "e^(−d/400)",
+  d: "OMITTED",
+  c: true
+}];
+const phases = [{
+  name: "Phase 1 · Miracle",
+  yr: "2037–2042",
+  suffer: 8.7,
+  mem: 2,
+  id: 1,
+  real: 0,
+  col: C.teal
+}, {
+  name: "Phase 2 · Warning",
+  yr: "2042–2045",
+  suffer: 4.1,
+  mem: 23,
+  id: 7,
+  real: 12,
+  col: C.amber
+}, {
+  name: "Phase 3 · Fracture",
+  yr: "2045–2048",
+  suffer: 1.9,
+  mem: 47,
+  id: 68,
+  real: 38,
+  col: "#ff7a00"
+}, {
+  name: "Phase 4 · Silence",
+  yr: "2048+",
+  suffer: 1.2,
+  mem: 71,
+  id: 89,
+  real: 94,
+  col: C.red
+}];
+const bioTimeline = [{
+  yr: "2038",
+  pain: 92,
+  empathy: 95,
+  memory: 98,
+  identity: 99,
+  cortisol: 88,
+  repro: 97,
+  neurogen: 96,
+  note: "Deployment. Pain receptors begin dulling."
+}, {
+  yr: "2039",
+  pain: 71,
+  empathy: 88,
+  memory: 95,
+  identity: 97,
+  cortisol: 74,
+  repro: 94,
+  neurogen: 91,
+  note: "Substance P levels drop 29%."
+}, {
+  yr: "2040",
+  pain: 48,
+  empathy: 74,
+  memory: 89,
+  identity: 94,
+  cortisol: 58,
+  repro: 88,
+  neurogen: 83,
+  note: "Emotional pain pathways begin suppressing."
+}, {
+  yr: "2041",
+  pain: 31,
+  empathy: 61,
+  memory: 80,
+  identity: 88,
+  cortisol: 42,
+  repro: 79,
+  neurogen: 72,
+  note: "Empathy deficit emerges. Masochist groups form."
+}, {
+  yr: "2042",
+  pain: 19,
+  empathy: 47,
+  memory: 68,
+  identity: 78,
+  cortisol: 29,
+  repro: 66,
+  neurogen: 61,
+  note: "Memory salience collapse begins. Phase 2."
+}, {
+  yr: "2043",
+  pain: 12,
+  empathy: 33,
+  memory: 54,
+  identity: 64,
+  cortisol: 18,
+  repro: 51,
+  neurogen: 48,
+  note: "Social bonding hormone (oxytocin) crashes −62%."
+}, {
+  yr: "2044",
+  pain: 8,
+  empathy: 22,
+  memory: 39,
+  identity: 47,
+  cortisol: 11,
+  repro: 34,
+  neurogen: 37,
+  note: "Fertility alerts issued. Miscarriage rate +340%."
+}, {
+  yr: "2045",
+  pain: 5,
+  empathy: 14,
+  memory: 27,
+  identity: 31,
+  cortisol: 7,
+  repro: 19,
+  neurogen: 26,
+  note: "Phase 3. Birth rate below replacement threshold."
+}, {
+  yr: "2046",
+  pain: 3,
+  empathy: 9,
+  memory: 18,
+  identity: 19,
+  cortisol: 5,
+  repro: 10,
+  neurogen: 18,
+  note: "Identity fracture epidemic declared."
+}, {
+  yr: "2047",
+  pain: 2,
+  empathy: 5,
+  memory: 11,
+  identity: 11,
+  cortisol: 3,
+  repro: 5,
+  neurogen: 11,
+  note: "The Silence. Global birth rate < 1/1000."
+}, {
+  yr: "2048",
+  pain: 1,
+  empathy: 3,
+  memory: 7,
+  identity: 6,
+  cortisol: 2,
+  repro: 2,
+  neurogen: 7,
+  note: "Phase 4. Veil fracture. Cal McLaren born — one of last viable pregnancies."
+}];
+const receptorData = [{
+  region: "Nociceptors\n(Pain Signal)",
+  y1: 100,
+  y2: 8,
+  desc: "Primary pain receptors in peripheral nervous system. Substance P depleted."
+}, {
+  region: "Anterior\nCingulate",
+  y1: 100,
+  y2: 12,
+  desc: "Emotional pain processing. Social rejection stops registering neurologically."
+}, {
+  region: "Insula\nCortex",
+  y1: 100,
+  y2: 17,
+  desc: "Interoception — body awareness. People stop knowing they are in danger."
+}, {
+  region: "Amygdala\n(Fear Response)",
+  y1: 100,
+  y2: 22,
+  desc: "Threat detection. Fear flatlines. Risk assessment collapses."
+}, {
+  region: "Hippocampus\n(Memory Anchor)",
+  y1: 100,
+  y2: 31,
+  desc: "Pain is the primary memory salience signal. Without it, nothing sticks."
+}, {
+  region: "Oxytocin\nProduction",
+  y1: 100,
+  y2: 14,
+  desc: "Bonding hormone. Social attachment dissolves. Reproductive drive extinguished."
+}, {
+  region: "HPA Axis\n(Cortisol)",
+  y1: 100,
+  y2: 9,
+  desc: "Stress response system. Body loses ability to mobilize in crisis."
+}, {
+  region: "Neurogenesis\nRate",
+  y1: 100,
+  y2: 19,
+  desc: "Brain growth driven by pain stimulation. Brain stops building new pathways."
+}];
+const speciesSuffer = [{
+  species: "Plants (cut/harvested)",
+  score: 94,
+  note: "Frequency emission — the loudest screaming in the Suffer Index"
+}, {
+  species: "Insects",
+  score: 41,
+  note: "Nociceptive response, minimal psychological layer"
+}, {
+  species: "Fish",
+  score: 58,
+  note: "Fear + nociception, limited social pain"
+}, {
+  species: "Birds",
+  score: 67,
+  note: "High social pain, territorial loss measurable"
+}, {
+  species: "Mammals (non-human)",
+  score: 74,
+  note: "Full nociceptive + emotional + social stack"
+}, {
+  species: "Humans (pre-N8K7)",
+  score: 54.2,
+  note: "QSRI 2037 global mean — psychological layer dominant"
+}, {
+  species: "Humans (post-N8K7)",
+  score: 1.2,
+  note: "2048 post-deployment — chemically silenced"
+}];
+const freqData = Array.from({
+  length: 60
+}, (_, i) => ({
+  t: i,
+  f1: Math.sin(i * 0.3) * 50 + 50,
+  f2: Math.sin(i * 0.6 + 1) * 40 + 50,
+  f3: Math.sin(i * 1.2 + 2) * 30 + 50,
+  finf: Math.sin(i * 2.4 + 3) * 20 + 50
+}));
+
+// ── DERIVED CALCULATIONS ────────────────────────────────────
+const px = d => Math.exp(-d / 400);
+const filed = 1 - planets.reduce((a, p) => a * (1 - p.rep), 1);
+const honest = 1 - planets.reduce((a, p) => a * (1 - p.tp), 1);
+const withProx = 1 - planets.reduce((a, p) => a * (1 - p.tp * px(p.dist)), 1);
+
+// ── RECHARTS DESTRUCTURE ────────────────────────────────────
+const {
+  LineChart,
+  Line,
+  BarChart,
+  Bar: RBar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine
+} = Recharts;
+
+// ── SHARED UI COMPONENTS ────────────────────────────────────
+function Bar({
+  val,
+  max = 100,
+  col,
+  h = 7
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.ghost + "44",
+      borderRadius: 2,
+      height: h,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${Math.min(val / max * 100, 100)}%`,
+      height: "100%",
+      background: col,
+      borderRadius: 2,
+      transition: "width 1s ease"
+    }
+  }));
+}
+function Chip({
+  label,
+  col
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 1,
+      padding: "2px 7px",
+      borderRadius: 2,
+      background: col + "22",
+      color: col,
+      border: `1px solid ${col}44`,
+      fontFamily: "monospace",
+      whiteSpace: "nowrap"
+    }
+  }, label);
+}
+function SectionLabel({
+  children
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 3,
+      color: C.dim,
+      marginBottom: 12,
+      fontFamily: "monospace"
+    }
+  }, "▸", " ", children);
+}
+function ProbCard({
+  label,
+  tag,
+  prob,
+  col,
+  formula,
+  note
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: col + "0c",
+      border: `1px solid ${col}30`,
+      borderRadius: 5,
+      padding: "14px 16px",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 2,
+      color: C.dim,
+      marginBottom: 3,
+      fontFamily: "monospace"
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 34,
+      fontWeight: 700,
+      color: col,
+      letterSpacing: -2,
+      fontFamily: "monospace",
+      lineHeight: 1
+    }
+  }, (prob * 100).toFixed(2), "%")), /*#__PURE__*/React.createElement(Chip, {
+    label: tag,
+    col: col
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 3,
+      padding: "7px 11px",
+      fontSize: 11,
+      color: C.cyan,
+      fontFamily: "monospace",
+      marginBottom: 8,
+      overflowX: "auto",
+      whiteSpace: "nowrap"
+    }
+  }, formula), /*#__PURE__*/React.createElement(Bar, {
+    val: prob * 100,
+    col: col
+  }), note && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.text,
+      marginTop: 8,
+      lineHeight: 1.7
+    }
+  }, note));
+}
+const tooltipStyle = {
+  background: C.bg2,
+  border: `1px solid ${C.border}`,
+  borderRadius: 4,
+  fontSize: 10,
+  fontFamily: "monospace",
+  color: C.text
+};
+
+// ── TAB 0: SUFFER INDEX ─────────────────────────────────────
+function Tab0() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "QSRI MODEL SPECIFICATIONS"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 8,
+      marginBottom: 20
+    }
+  }, [{
+    l: "TRAINING EPOCHS",
+    v: "847",
+    col: C.teal
+  }, {
+    l: "FINAL ACCURACY",
+    v: "94.7%",
+    col: C.cyan
+  }, {
+    l: "TEST SUBJECTS",
+    v: "2.3M",
+    col: C.amber
+  }, {
+    l: "GLOBALLY DEPLOYED",
+    v: "4.2B",
+    col: C.red
+  }].map((s, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 4,
+      padding: "11px 13px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      letterSpacing: 2,
+      color: C.dim,
+      marginBottom: 4
+    }
+  }, s.l), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 700,
+      color: s.col,
+      fontFamily: "monospace"
+    }
+  }, s.v)))), /*#__PURE__*/React.createElement(SectionLabel, null, "SUFFER INDEX GLOBAL TRAJECTORY"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 4,
+      padding: 14,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr auto 1fr auto 1fr",
+      gap: 8,
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, [{
+    y: "2037 PRE-N8K7",
+    v: "54.2",
+    sub: "global mean baseline",
+    col: C.red
+  }, {
+    arrow: true
+  }, {
+    y: "2042 APPARENT WIN",
+    v: "8.7",
+    sub: "praised as miracle",
+    col: C.amber
+  }, {
+    arrow: true
+  }, {
+    y: "2048 THE SILENCE",
+    v: "1.2",
+    sub: "near-zero — the trap",
+    col: C.teal
+  }].map((s, i) => s.arrow ? /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      textAlign: "center",
+      color: C.ghost,
+      fontSize: 16
+    }
+  }, "→") : /*#__PURE__*/React.createElement("div", {
+    key: i
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      letterSpacing: 2,
+      color: C.dim,
+      marginBottom: 3
+    }
+  }, s.y), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      color: s.col,
+      fontFamily: "monospace"
+    }
+  }, s.v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim
+    }
+  }, s.sub)))), /*#__PURE__*/React.createElement(Bar, {
+    val: 54.2,
+    col: C.red,
+    h: 5
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 8,
+      color: C.ghost,
+      marginTop: 3
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "0 — no measurable suffering"), /*#__PURE__*/React.createElement("span", null, "100 — maximal"))), /*#__PURE__*/React.createElement(SectionLabel, null, "SPECIES SUFFER INDEX COMPARISON (QSRI 2037)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 220
+    }
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: "100%"
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: speciesSuffer,
+    layout: "vertical",
+    margin: {
+      top: 0,
+      right: 20,
+      bottom: 0,
+      left: 140
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    type: "number",
+    domain: [0, 100],
+    tick: {
+      fill: C.dim,
+      fontSize: 9
+    },
+    tickLine: false,
+    axisLine: {
+      stroke: C.border
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    type: "category",
+    dataKey: "species",
+    tick: {
+      fill: C.text,
+      fontSize: 9,
+      fontFamily: "monospace"
+    },
+    tickLine: false,
+    axisLine: false,
+    width: 135
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    contentStyle: tooltipStyle,
+    formatter: v => [`${v}`, "Suffer Score"]
+  }), /*#__PURE__*/React.createElement(RBar, {
+    dataKey: "score",
+    radius: [0, 2, 2, 0],
+    fill: C.teal,
+    label: {
+      position: "right",
+      fill: C.dim,
+      fontSize: 9,
+      fontFamily: "monospace",
+      formatter: v => `${v}`
+    }
+  }), /*#__PURE__*/React.createElement(ReferenceLine, {
+    x: 54.2,
+    stroke: C.amber,
+    strokeDasharray: "4 2",
+    label: {
+      value: "Human baseline",
+      fill: C.amber,
+      fontSize: 9,
+      position: "top"
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0a0600",
+      border: `1px solid ${C.amber}33`,
+      borderRadius: 4,
+      padding: 11,
+      marginTop: 12,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.7
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.amber
+    }
+  }, "The plant discovery:"), " Plants scored highest of all organisms — their distress frequency emissions registered as the largest suffering metric in the index. This revelation triggered mass starvation movements, global riots, and the political pressure that forced Marcus Mirro's hand. N8K7 was designed to silence the guilt. It silenced everything else too."));
+}
+
+// ── TAB 1: N8K7 PHASES ──────────────────────────────────────
+function Tab1() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "N8K7 DEPLOYMENT PHASES — KEY METRICS"), phases.map((p, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${p.col}`,
+      borderRadius: 4,
+      padding: 13,
+      marginBottom: 9
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 11
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: p.col,
+      fontWeight: 700,
+      fontSize: 13
+    }
+  }, p.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim,
+      fontSize: 9,
+      marginLeft: 10,
+      letterSpacing: 1
+    }
+  }, p.yr)), /*#__PURE__*/React.createElement(Chip, {
+    label: i < 2 ? "CLASSIFIED" : "CATASTROPHIC",
+    col: p.col
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4,1fr)",
+      gap: 9
+    }
+  }, [{
+    l: "SUFFER INDEX",
+    v: p.suffer,
+    max: 60,
+    col: C.teal
+  }, {
+    l: "MEMORY LOSS %",
+    v: p.mem,
+    max: 100,
+    col: C.amber
+  }, {
+    l: "IDENTITY FRACTURE %",
+    v: p.id,
+    max: 100,
+    col: C.red
+  }, {
+    l: "REALITY DISTORTION %",
+    v: p.real,
+    max: 100,
+    col: C.purple
+  }].map((m, j) => /*#__PURE__*/React.createElement("div", {
+    key: j
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      letterSpacing: 1,
+      color: C.dim,
+      marginBottom: 3
+    }
+  }, m.l), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 19,
+      fontWeight: 700,
+      color: m.col,
+      fontFamily: "monospace"
+    }
+  }, m.v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 3
+    }
+  }, /*#__PURE__*/React.createElement(Bar, {
+    val: m.v,
+    max: m.max,
+    col: m.col,
+    h: 4
+  }))))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#100006",
+      border: `1px solid ${C.red}44`,
+      borderRadius: 4,
+      padding: 12,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.8
+    }
+  }, "Phase 3 data showed ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "47% of subjects unable to recognize family members"), ", ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "68% reporting \"wrong timeline\" experiences"), ", and ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "12% complete autobiographical collapse"), ". UN Emergency Council: ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.amber
+    }
+  }, "\"acceptable trade-offs given crisis severity.\""), " The Veil cracked at Epoch 848."));
+}
+
+// ── TAB 2: N8K7 BIO DATA ───────────────────────────────────
+function Tab2() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "N8K7 BIOLOGICAL CASCADE — 10-YEAR POST-DEPLOYMENT (% OF BASELINE FUNCTION)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 280,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: "100%"
+  }, /*#__PURE__*/React.createElement(LineChart, {
+    data: bioTimeline,
+    margin: {
+      top: 5,
+      right: 20,
+      bottom: 5,
+      left: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "yr",
+    tick: {
+      fill: C.dim,
+      fontSize: 9
+    },
+    tickLine: false,
+    axisLine: {
+      stroke: C.border
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    domain: [0, 100],
+    tick: {
+      fill: C.dim,
+      fontSize: 9
+    },
+    tickLine: false,
+    axisLine: {
+      stroke: C.border
+    },
+    label: {
+      value: "% baseline",
+      angle: -90,
+      position: "insideLeft",
+      fill: C.dim,
+      fontSize: 9,
+      fontFamily: "monospace",
+      dy: 40
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    contentStyle: tooltipStyle,
+    formatter: (v, name) => [`${v}%`, name.replace("_", " ")]
+  }), /*#__PURE__*/React.createElement(ReferenceLine, {
+    y: 50,
+    stroke: C.ghost,
+    strokeDasharray: "4 2"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "pain",
+    stroke: C.teal,
+    strokeWidth: 2,
+    dot: false,
+    name: "pain receptors"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "empathy",
+    stroke: C.purple,
+    strokeWidth: 2,
+    dot: false,
+    name: "empathy response"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "memory",
+    stroke: C.cyan,
+    strokeWidth: 2,
+    dot: false,
+    name: "memory formation"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "identity",
+    stroke: C.amber,
+    strokeWidth: 2,
+    dot: false,
+    name: "identity coherence"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "cortisol",
+    stroke: C.ghost,
+    strokeWidth: 1.5,
+    strokeDasharray: "4 2",
+    dot: false,
+    name: "cortisol function"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "repro",
+    stroke: C.red,
+    strokeWidth: 2.5,
+    dot: false,
+    name: "reproductive function"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "neurogen",
+    stroke: C.green,
+    strokeWidth: 1.5,
+    strokeDasharray: "4 2",
+    dot: false,
+    name: "neurogenesis rate"
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 10,
+      marginBottom: 18
+    }
+  }, [{
+    l: "Pain Receptors",
+    col: C.teal
+  }, {
+    l: "Empathy Response",
+    col: C.purple
+  }, {
+    l: "Memory Formation",
+    col: C.cyan
+  }, {
+    l: "Identity Coherence",
+    col: C.amber
+  }, {
+    l: "Cortisol Function",
+    col: C.ghost
+  }, {
+    l: "Reproductive Function",
+    col: C.red
+  }, {
+    l: "Neurogenesis Rate",
+    col: C.green
+  }].map((item, k) => /*#__PURE__*/React.createElement("div", {
+    key: k,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      fontSize: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 16,
+      height: 2,
+      background: item.col,
+      borderRadius: 1
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim
+    }
+  }, item.l)))), /*#__PURE__*/React.createElement(SectionLabel, null, "YEAR-BY-YEAR ANNOTATIONS"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 8
+    }
+  }, bioTimeline.filter((_, i) => i % 2 === 0).map((d, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${d.repro < 50 ? C.red : d.repro < 80 ? C.amber : C.teal}`,
+      borderRadius: 3,
+      padding: "9px 11px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal,
+      fontWeight: 700,
+      fontSize: 12,
+      fontFamily: "monospace"
+    }
+  }, d.yr), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red,
+      fontSize: 11,
+      fontFamily: "monospace"
+    }
+  }, "Repro: ", d.repro, "%")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.dim,
+      lineHeight: 1.5
+    }
+  }, d.note)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#100006",
+      border: `1px solid ${C.red}44`,
+      borderRadius: 4,
+      padding: 12,
+      marginTop: 14,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red,
+      fontWeight: 700
+    }
+  }, "The fertility mechanism:"), " Pain receptors in the hypothalamic-pituitary-gonadal (HPG) axis regulate FSH and LH production — the hormones governing ovulation and sperm production. N8K7's receptor suppression extended into this axis by year 5. By year 10, viable conception dropped to", " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "less than 1 in 1,000 attempts"), " globally. Captain Cal McLaren was born in 2045 — one of the last viable pregnancies before the reproductive silence became total."));
+}
+
+// ── TAB 3: NEURAL CASCADE ───────────────────────────────────
+function Tab3() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "RECEPTOR SUPPRESSION BY BRAIN REGION — BASELINE VS. 2048 (% ACTIVE)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 300,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: "100%"
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: receptorData,
+    margin: {
+      top: 5,
+      right: 20,
+      bottom: 40,
+      left: 10
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "region",
+    tick: {
+      fill: C.dim,
+      fontSize: 8,
+      fontFamily: "monospace"
+    },
+    tickLine: false,
+    axisLine: {
+      stroke: C.border
+    },
+    interval: 0
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    domain: [0, 100],
+    tick: {
+      fill: C.dim,
+      fontSize: 9
+    },
+    tickLine: false,
+    axisLine: {
+      stroke: C.border
+    },
+    label: {
+      value: "% active",
+      angle: -90,
+      position: "insideLeft",
+      fill: C.dim,
+      fontSize: 9,
+      dy: 30
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    contentStyle: tooltipStyle,
+    content: ({
+      active,
+      payload,
+      label
+    }) => {
+      if (!active || !payload?.length) return null;
+      const row = receptorData.find(r => r.region === label);
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          ...tooltipStyle,
+          padding: "10px 12px",
+          maxWidth: 220
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          color: C.teal,
+          marginBottom: 5,
+          fontSize: 10
+        }
+      }, label.replace("\n", " ")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          color: C.text,
+          fontSize: 10,
+          lineHeight: 1.5
+        }
+      }, row?.desc), /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 6,
+          fontSize: 10
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          color: C.teal
+        }
+      }, "Baseline: 100%"), "  ", /*#__PURE__*/React.createElement("span", {
+        style: {
+          color: C.red
+        }
+      }, "2048: ", row?.y2, "%")));
+    }
+  }), /*#__PURE__*/React.createElement(RBar, {
+    dataKey: "y1",
+    name: "Baseline 2037",
+    fill: C.teal,
+    opacity: 0.3,
+    radius: [2, 2, 0, 0]
+  }), /*#__PURE__*/React.createElement(RBar, {
+    dataKey: "y2",
+    name: "Post-N8K7 2048",
+    fill: C.red,
+    radius: [2, 2, 0, 0]
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 16,
+      marginBottom: 16,
+      fontSize: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 14,
+      height: 10,
+      background: C.teal,
+      opacity: 0.3,
+      borderRadius: 1
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim
+    }
+  }, "Baseline 2037 (pre-N8K7)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 14,
+      height: 10,
+      background: C.red,
+      borderRadius: 1
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim
+    }
+  }, "Post-N8K7 2048 (% remaining function)"))), /*#__PURE__*/React.createElement(SectionLabel, null, "THE CASCADE LOGIC — WHY PAIN IS IDENTITY"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: 8
+    }
+  }, [{
+    n: "01",
+    title: "Nociceptor Suppression",
+    col: C.red,
+    body: "N8K7 targets Substance P, the primary pain neurotransmitter. Peripheral pain receptors lose 92% of signaling capacity within 10 years. Intended. Working as designed."
+  }, {
+    n: "02",
+    title: "Emotional Pain Pathway Collapse",
+    col: "#ff7a00",
+    body: "Anterior cingulate cortex handles social rejection, grief, guilt. Shares receptor architecture with physical pain. N8K7 cannot distinguish between them. Collateral damage — not in the trial data."
+  }, {
+    n: "03",
+    title: "Memory Salience Loss",
+    col: C.amber,
+    body: "Pain is the brain's primary memory tagging mechanism. High-pain events encode deeply. Without pain signaling, the hippocampus loses its anchor. Events stop being remembered as meaningful. Identity requires a sequence of remembered experiences."
+  }, {
+    n: "04",
+    title: "Identity Fragmentation",
+    col: C.purple,
+    body: "Without memory salience, self-narrative collapses. People report 'living in the wrong timeline' not metaphorically — their sense of continuous identity literally breaks. Cal's NAI chamber is a technological patch for this. He replays memories obsessively to remain himself."
+  }, {
+    n: "05",
+    title: "Reproductive Axis Shutdown",
+    col: C.red,
+    body: "HPG axis pain receptors regulate FSH/LH — fertility hormones. Years 7-10 post-deployment: 98% drop in viable conception. Birth rates collapse below replacement. Cal McLaren: born 2045. One of the last."
+  }].map((s, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${s.col}`,
+      borderRadius: 4,
+      padding: "11px 14px",
+      display: "flex",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 700,
+      color: s.col,
+      fontFamily: "monospace",
+      minWidth: 28,
+      opacity: 0.6
+    }
+  }, s.n), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: s.col,
+      fontWeight: 700,
+      fontSize: 12,
+      marginBottom: 4
+    }
+  }, s.title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.7
+    }
+  }, s.body))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0a0014",
+      border: `1px solid ${C.purple}44`,
+      borderRadius: 4,
+      padding: 12,
+      marginTop: 14,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.purple
+    }
+  }, "The masochist emergence (Phase 2, 2042\–2045):"), " As pain receptors suppressed, a significant minority began seeking extreme physical stimulation to break through the numbness. Underground groups practicing self-inflicted pain. Not pathology — rational adaptation. The body was trying to feel itself. The Rejoice movement's fringe contained many early Nerved."));
+}
+
+// ── TAB 4: PARAM AUDIT ──────────────────────────────────────
+function Tab4() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "PARAMETER COMPARISON: FILED MODEL v2.1 vs. RECOVERED v1.0"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 11,
+      minWidth: 560
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ["PARAMETER", "FILED", "TRUE VALUE", "DELTA", "FLAG"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      textAlign: "left",
+      padding: "7px 10px",
+      fontSize: 8,
+      letterSpacing: 2,
+      color: C.dim,
+      borderBottom: `1px solid ${C.border}`
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, params.map((p, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i,
+    style: {
+      background: i % 2 ? C.bg2 : C.bg3,
+      borderLeft: `3px solid ${p.c ? C.red : C.ghost}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "8px 10px",
+      color: C.text,
+      fontFamily: "monospace",
+      fontSize: 10
+    }
+  }, p.n), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "8px 10px",
+      color: p.c ? C.red : C.teal,
+      fontWeight: p.c ? 700 : "normal"
+    }
+  }, p.f), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "8px 10px",
+      color: C.cyan
+    }
+  }, p.t), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "8px 10px",
+      color: p.c ? C.red : C.dim,
+      fontWeight: p.c ? 700 : "normal"
+    }
+  }, p.d), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "8px 10px"
+    }
+  }, /*#__PURE__*/React.createElement(Chip, {
+    label: p.c ? "CRITICAL" : "MINOR",
+    col: p.c ? C.red : C.ghost
+  }))))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#100006",
+      border: `1px solid ${C.red}44`,
+      borderRadius: 4,
+      padding: 12,
+      marginTop: 13,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red,
+      fontFamily: "monospace"
+    }
+  }, "stellar_age_penalty"), " ", "penalizes young high-radiation star systems. Van-21-IR (Kesslar sector) is a Class F active star — thermodynamically hostile to IsoVox formation. Its removal alone inflated per-planet scores by ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red,
+      fontWeight: 700
+    }
+  }, "+31 percentage points each"), ". Present in v1.0. Deleted before v2.1 was filed."));
+}
+
+// ── TAB 5: PROB CHAIN ───────────────────────────────────────
+function Tab5() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "THREE VERSIONS OF THE SAME TRUTH"), /*#__PURE__*/React.createElement(ProbCard, {
+    label: "MIRRO CORP FILED MODEL (v2.1 \· 2037)",
+    tag: "MANIPULATED",
+    prob: filed,
+    col: C.red,
+    formula: "P(\≥1 hit | 6 planets) = 1 \− (1 \− 0.76\̅)\⁶ = 1 \− (0.24)\⁶ = 99.98%",
+    note: "Per-planet average ~0.76. Inflated priors, deleted penalties, missing proximity variable. Presented to Echo-Naut briefings as definitive."
+  }), /*#__PURE__*/React.createElement(ProbCard, {
+    label: "RECOVERED HONEST MODEL (v1.0 parameters restored)",
+    tag: "TRUE BASELINE",
+    prob: honest,
+    col: C.amber,
+    formula: "P(\≥1 hit | 6 planets) = 1 \− (1 \− 0.135\̅)\⁶ = 1 \− (0.865)\⁶ \≈ 59.97%",
+    note: "Per-planet average ~0.135. Still defensible \— but requires additional QSRI protocol review at this probability. That review never happened."
+  }), /*#__PURE__*/React.createElement(ProbCard, {
+    label: "HONEST MODEL + EARTH PROXIMITY FACTOR",
+    tag: "FULL MODEL",
+    prob: withProx,
+    col: C.teal,
+    formula: "P(\≥1 hit) = 1 \− \∏\ᵢ(1 \− p\ᵢ \· e^(\−d\ᵢ/400)) \≈ 3.24%",
+    note: "All six Kesslar planets score below 5%. Earth \— not on the candidate list \— scores 94%. The mission was searching in the wrong direction."
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderRadius: 4,
+      padding: 11,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.7
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.amber
+    }
+  }, "Independence assumption:"), " Filed model treats all six as independent draws. They share a stellar formation region — a correlated model reduces the honest probability further. Not flagged in the 2037 peer review."));
+}
+
+// ── TAB 6: EARTH PROX ───────────────────────────────────────
+function Tab6() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "OMITTED VARIABLE: earth_proximity_factor"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0a0812",
+      border: `1px solid ${C.purple}44`,
+      borderRadius: 4,
+      padding: 13,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "monospace",
+      fontSize: 14,
+      color: C.cyan,
+      marginBottom: 7
+    }
+  }, "earth_proximity_factor(d) = e^(", "−", "d / 400)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.7
+    }
+  }, "Where ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.cyan
+    }
+  }, "d"), " = distance from Earth in light-years. IsoVox formation requires a quantum-resonance baseline anchored to long-duration biological complexity. Earth is the only confirmed source. Field attenuates exponentially across interstellar distance. Documented in QSRI internal memo 22-F (2036).", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, " Excluded from the filed model."))), /*#__PURE__*/React.createElement(SectionLabel, null, "PLANET SCORES WITH PROXIMITY APPLIED"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 11,
+      minWidth: 520
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ["PLANET", "DIST (LY)", "BASE P", "PROX FACTOR", "ADJUSTED P", "RESULT"].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    style: {
+      textAlign: "left",
+      padding: "7px 9px",
+      fontSize: 8,
+      letterSpacing: 2,
+      color: C.dim,
+      borderBottom: `1px solid ${C.border}`
+    }
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, [...planets, {
+    name: "EARTH",
+    dist: 0,
+    rep: 0,
+    tp: 0.94
+  }].map((p, i) => {
+    const isE = p.name === "EARTH";
+    const pf = px(p.dist);
+    const adj = p.tp * pf;
+    return /*#__PURE__*/React.createElement("tr", {
+      key: i,
+      style: {
+        background: isE ? "#001a0a" : i % 2 ? C.bg2 : C.bg3,
+        borderLeft: `3px solid ${isE ? C.teal : C.red}`
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px",
+        color: isE ? C.teal : C.text,
+        fontWeight: isE ? 700 : "normal"
+      }
+    }, p.name), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px",
+        color: C.dim
+      }
+    }, p.dist.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px",
+        color: C.amber
+      }
+    }, p.tp.toFixed(3)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px",
+        color: isE ? C.teal : C.dim
+      }
+    }, pf.toFixed(4)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px",
+        color: isE ? C.teal : C.red,
+        fontWeight: 700,
+        fontFamily: "monospace"
+      }
+    }, (adj * 100).toFixed(2), "%"), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 9px"
+      }
+    }, /*#__PURE__*/React.createElement(Chip, {
+      label: isE ? "ORIGIN CANDIDATE" : "NULL",
+      col: isE ? C.teal : C.red
+    })));
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0e0205",
+      border: `2px solid ${C.red}30`,
+      borderRadius: 5,
+      padding: 14,
+      marginTop: 14,
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.9
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 3,
+      color: C.red,
+      marginBottom: 9
+    }
+  }, "▋", " SMOKING GUN"), "All six mission targets drop below ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red,
+      fontWeight: 700
+    }
+  }, "5%"), " when proximity is applied. Earth scores ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal,
+      fontWeight: 700
+    }
+  }, "94.00%"), ". Variable known to QSRI leads by 2036 per Echo Vault 22-F. Version 1.0 included it. Version 2.1 — filed, briefed, mission-authorized — did not.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.amber
+    }
+  }, "The mission was not designed to find IsoVox. It was designed to send Cal McLaren — and five others — as far from Earth as the math could justify.")));
+}
+
+// ── TAB 7: ISOVOX COMP ─────────────────────────────────────
+function Tab7() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "ISOVOX — MATERIAL SPECIFICATION SHEET (RECOVERED: KESSLAR SECTOR FIELD NOTES)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginBottom: 16
+    }
+  }, [{
+    l: "STRUCTURE TYPE",
+    v: "Self-Phased Phononic Mesh",
+    abbr: "SPPM",
+    col: C.teal
+  }, {
+    l: "BINDING MECHANISM",
+    v: "Vibration-Mediated Coulomb Stabilization",
+    abbr: "VMCS",
+    col: C.cyan
+  }, {
+    l: "REGENERATIVE AGENT",
+    v: "Isofractal Hydrogen Nets",
+    abbr: "IHN + REBM",
+    col: C.purple
+  }, {
+    l: "ENERGETIC ROLE",
+    v: "Passive Ambient Synchronizer",
+    abbr: "Vacuum-State Compatible",
+    col: C.amber
+  }].map((s, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${s.col}`,
+      borderRadius: 4,
+      padding: "11px 13px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8,
+      letterSpacing: 2,
+      color: C.dim,
+      marginBottom: 4
+    }
+  }, s.l), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: s.col,
+      marginBottom: 2
+    }
+  }, s.v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.ghost,
+      fontFamily: "monospace"
+    }
+  }, s.abbr)))), /*#__PURE__*/React.createElement(SectionLabel, null, "VOXIUM-C — BASE CHEMICAL COMPOSITION"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg3,
+      border: `1px solid ${C.border}`,
+      borderRadius: 4,
+      padding: 14,
+      marginBottom: 14,
+      fontFamily: "monospace"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: C.cyan,
+      letterSpacing: 1,
+      marginBottom: 8
+    }
+  }, "C", /*#__PURE__*/React.createElement("sub", null, "9"), "H", /*#__PURE__*/React.createElement("sub", null, "20"), "Si", /*#__PURE__*/React.createElement("sub", null, "6"), "N", /*#__PURE__*/React.createElement("sub", null, "4"), "O", /*#__PURE__*/React.createElement("sub", null, "7")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.dim,
+      marginBottom: 10
+    }
+  }, "Voxium-C — Siloxane fused with self-resonating amino-ceramic chains"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(5,1fr)",
+      gap: 8
+    }
+  }, [{
+    el: "C",
+    n: 9,
+    name: "Carbon",
+    col: C.text
+  }, {
+    el: "H",
+    n: 20,
+    name: "Hydrogen",
+    col: C.cyan
+  }, {
+    el: "Si",
+    n: 6,
+    name: "Silicon",
+    col: C.amber
+  }, {
+    el: "N",
+    n: 4,
+    name: "Nitrogen",
+    col: C.purple
+  }, {
+    el: "O",
+    n: 7,
+    name: "Oxygen",
+    col: C.teal
+  }].map((e, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${e.col}33`,
+      borderRadius: 4,
+      padding: "10px 8px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: e.col
+    }
+  }, e.el), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: C.text,
+      fontFamily: "monospace"
+    }
+  }, "×", e.n), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim,
+      marginTop: 3
+    }
+  }, e.name))))), /*#__PURE__*/React.createElement(SectionLabel, null, "ISOVOX FREQUENCY CASCADE: f", "₁", " ", "→", " f", "₂", " ", "→", " f", "₃", " ", "→", " f", "∞"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 160,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: "100%"
+  }, /*#__PURE__*/React.createElement(LineChart, {
+    data: freqData,
+    margin: {
+      top: 5,
+      right: 10,
+      bottom: 5,
+      left: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "3 3",
+    stroke: C.border
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "t",
+    tick: false,
+    axisLine: {
+      stroke: C.border
+    },
+    label: {
+      value: "time →",
+      fill: C.dim,
+      fontSize: 9,
+      position: "right"
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    tick: false,
+    axisLine: false,
+    label: {
+      value: "amplitude",
+      angle: -90,
+      fill: C.dim,
+      fontSize: 9,
+      position: "insideLeft"
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    contentStyle: tooltipStyle,
+    formatter: (v, n) => [`${v.toFixed(1)}`, n]
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "f1",
+    stroke: C.teal,
+    strokeWidth: 2,
+    dot: false,
+    name: "f\₁ (fundamental)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "f2",
+    stroke: C.cyan,
+    strokeWidth: 1.5,
+    dot: false,
+    name: "f\₂ (harmonic)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "f3",
+    stroke: C.purple,
+    strokeWidth: 1.5,
+    dot: false,
+    name: "f\₃ (subharmonic)"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "finf",
+    stroke: C.amber,
+    strokeWidth: 1,
+    dot: false,
+    name: "f\∞ (resonance lock)"
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      marginBottom: 14,
+      fontSize: 10
+    }
+  }, [{
+    l: "f₁ fundamental",
+    col: C.teal
+  }, {
+    l: "f₂ harmonic",
+    col: C.cyan
+  }, {
+    l: "f₃ subharmonic",
+    col: C.purple
+  }, {
+    l: "f∞ resonance lock",
+    col: C.amber
+  }].map((item, k) => /*#__PURE__*/React.createElement("div", {
+    key: k,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 14,
+      height: 2,
+      background: item.col
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.dim
+    }
+  }, item.l)))), /*#__PURE__*/React.createElement(SectionLabel, null, "MATERIAL PROPERTIES"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gap: 7
+    }
+  }, [{
+    label: "SELF-REPAIR",
+    col: C.teal,
+    body: "Resonance-encoded binding memory allows Voxium-C to \"remember\" its original molecular configuration. Damage triggers isofractal hydrogen nets to reweave the lattice. No external energy input required."
+  }, {
+    label: "VOICE REACTIVITY",
+    col: C.cyan,
+    body: "SPPM structure phase-shifts in response to acoustic input. Specific frequency signatures — including human vocal harmonics — can induce structural state changes. Language becomes architecture. This is why IsoVox is used in spacefaring construction."
+  }, {
+    label: "VACUUM COMPATIBILITY",
+    col: C.purple,
+    body: "Energetic profile synchronizes passively with ambient vacuum-state harmonics. IsoVox is one of the only known materials that does not degrade in deep space over long timeframes. Passive ambient field draws from the quantum vacuum itself."
+  }, {
+    label: "POSSIBLE SENTIENCE",
+    col: C.amber,
+    body: "At sufficient scale and complexity, SPPM networks exhibit emergent resonance patterns not attributable to external inputs. QSRI classified this observation as 'instrumental artifact' in 2039. Cal McLaren's field notes suggest otherwise."
+  }].map((s, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: C.bg2,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${s.col}`,
+      borderRadius: 4,
+      padding: "10px 13px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: s.col,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: 2,
+      marginBottom: 5
+    }
+  }, s.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.text,
+      lineHeight: 1.7
+    }
+  }, s.body)))));
+}
+
+// ── TAB 8: FIELD LOG ────────────────────────────────────────
+function Tab8() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SectionLabel, null, "FIELD LOG :: CAL McLAREN :: ENCRYPTED LOCAL — NOT ROUTED TO AVA HIVEMIND"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg3,
+      border: `1px solid ${C.border}`,
+      borderRadius: 4,
+      padding: 18,
+      lineHeight: 1.95,
+      color: "#8fa8c0",
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 2,
+      color: C.dim,
+      marginBottom: 14,
+      fontFamily: "monospace"
+    }
+  }, "// NAI FRAGMENT ", "·", " Day 2,847 ", "·", " Kesslar-12 orbit", /*#__PURE__*/React.createElement("br", null), "// LOCAL ENCRYPT ACTIVE ", "·", " AVA HIVEMIND: EXCLUDED ", "·", " DO NOT SUBMIT"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.teal
+    }
+  }, "CC here.")), /*#__PURE__*/React.createElement("p", null, "Six. Six and nothing. The math said 99.98. I used to tell Sara that percents aren't real until they're proven. I was quoting a number someone else built for me. I never looked at the model."), /*#__PURE__*/React.createElement("p", null, "I asked Ava to pull the original parameter file. Not the briefing summary — the actual QSRI build log. She said it wasn't in the archive. I asked which version was. She paused. ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.amber
+    }
+  }, "16 months, 1 week, 2 days, 7 hours, 14 minutes — even Ava paused."), " ", "The version she showed me: v2.1. I want v1.0."), /*#__PURE__*/React.createElement("p", null, "I ran my own back-of-envelope. If the sector prior was near what the 2034 survey suggested — around 23% — and you restore the stellar age penalty, you don't get 99.98. You get around 60. Maybe less. That's a mission that gets reviewed. That's a mission that gets questioned."), /*#__PURE__*/React.createElement("p", null, "There's something else. None of the candidate models account for", " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "where we came from"), ". Every planet on this list is 800 to 1,200 light-years out. Nobody ever asked why the element would be out here, and not closer to the only place we know ever produced life."), /*#__PURE__*/React.createElement("p", null, "The green circle on my board. I drew it months ago without understanding why. That's Earth. That's always been Earth."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: C.amber
+    }
+  }, "The math doesn't lie. But the person who builds the model chooses what goes in it."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim,
+      marginTop: 18,
+      fontFamily: "monospace",
+      borderTop: `1px solid ${C.border}`,
+      paddingTop: 11
+    }
+  }, "// END FRAGMENT ", "·", " AUTO-ENCRYPT ACTIVE", /*#__PURE__*/React.createElement("br", null), "// Ava access log, same timestamp: parameter file v1.0 accessed once — 2037.11.03", " ·", " Requestor: ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "M. MIRRO"), " ", "·", " Flagged read-only", " ·", " No modification record on file")));
+}
+
+// ── MAIN APP COMPONENT ──────────────────────────────────────
+const TABS = ["SUFFER INDEX", "N8K7 PHASES", "N8K7 BIO DATA", "NEURAL CASCADE", "PARAM AUDIT", "PROB CHAIN", "EARTH PROX", "ISOVOX COMP", "FIELD LOG"];
+function QSRIRecovered() {
+  const [tab, setTab] = React.useState(0);
+  const [tick, setTick] = React.useState(0);
+  React.useEffect(() => {
+    const t = setInterval(() => setTick(x => x + 1), 70);
+    return () => clearInterval(t);
+  }, []);
+  const scan = tick * 1.6 % 800;
+  const flicker = tick % 53 === 0 ? "▓" : tick % 37 === 0 ? "░" : "";
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      minHeight: "100vh",
+      fontFamily: "'Courier New',monospace",
+      color: C.text,
+      fontSize: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      pointerEvents: "none",
+      zIndex: 0,
+      background: "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px)"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      left: 0,
+      right: 0,
+      top: scan,
+      height: 2,
+      background: "rgba(0,201,177,0.04)",
+      pointerEvents: "none",
+      zIndex: 1
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderBottom: `1px solid ${C.border}`,
+      padding: "14px 20px 10px",
+      background: "#060a14",
+      position: "sticky",
+      top: 0,
+      zIndex: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      letterSpacing: 3,
+      color: C.red,
+      marginBottom: 4
+    }
+  }, "▋", " CLASSIFICATION: QSRI-INTERNAL // MIRRO CORP // RECOVERED FILE 7734-C ", flicker), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: C.teal,
+      letterSpacing: 1
+    }
+  }, "GENESIS PROTOCOLS — FULL DATA RECONSTRUCTION"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: C.dim,
+      marginTop: 2,
+      letterSpacing: 2,
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "QSRI 2037", "–", "2041"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.ghost
+    }
+  }, "·"), /*#__PURE__*/React.createElement("span", null, "BUDGET $847B"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.ghost
+    }
+  }, "·"), /*#__PURE__*/React.createElement("span", null, "EPOCHS 847"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.ghost
+    }
+  }, "·"), /*#__PURE__*/React.createElement("span", null, "ACCURACY 94.7%"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.ghost
+    }
+  }, "·"), /*#__PURE__*/React.createElement("span", null, "DEPLOYED 4.2B HUMANS"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.ghost
+    }
+  }, "·"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: C.red
+    }
+  }, "VEIL: COMPROMISED"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      borderBottom: `1px solid ${C.border}`,
+      background: "#060a14",
+      position: "sticky",
+      top: 64,
+      zIndex: 9,
+      overflowX: "auto"
+    }
+  }, TABS.map((t, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => setTab(i),
+    style: {
+      padding: "9px 13px",
+      fontSize: 9,
+      letterSpacing: 2,
+      cursor: "pointer",
+      background: "none",
+      border: "none",
+      outline: "none",
+      whiteSpace: "nowrap",
+      color: tab === i ? C.teal : C.dim,
+      borderBottom: `2px solid ${tab === i ? C.teal : "transparent"}`,
+      transition: "all 0.15s"
+    }
+  }, t))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "20px 32px",
+      position: "relative",
+      zIndex: 2
+    }
+  }, tab === 0 && /*#__PURE__*/React.createElement(Tab0, null), tab === 1 && /*#__PURE__*/React.createElement(Tab1, null), tab === 2 && /*#__PURE__*/React.createElement(Tab2, null), tab === 3 && /*#__PURE__*/React.createElement(Tab3, null), tab === 4 && /*#__PURE__*/React.createElement(Tab4, null), tab === 5 && /*#__PURE__*/React.createElement(Tab5, null), tab === 6 && /*#__PURE__*/React.createElement(Tab6, null), tab === 7 && /*#__PURE__*/React.createElement(Tab7, null), tab === 8 && /*#__PURE__*/React.createElement(Tab8, null)));
+}
+
+// ── RENDER ──────────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(/*#__PURE__*/React.createElement(QSRIRecovered, null));
+}</script>
+</body>
+</html>

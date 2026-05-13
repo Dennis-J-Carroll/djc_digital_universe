@@ -1,0 +1,69 @@
+Here are highly detailed, actionable improvement suggestions for **Algebraic Flow**:
+
+---
+
+## 🧮 Algebraic Flow — Improvement Suggestions
+
+---
+
+### 🎨 UI / Visual Design
+
+- **Add active/selected state styling to equation type buttons** (Linear, Quadratic, Diff of Squares, Multi-Variable). Currently "Linear Equation" is the only one with a visible selected style (a border highlight), but the visual distinction is too subtle — use a solid fill, bolder border, or color shift to make the currently selected template immediately obvious.
+- **Improve term card contrast and legibility.** The equation term tiles (e.g., `2x`, `5`, `- 3x`) use a near-dark-on-dark color scheme. Adding a slightly lighter card background or a stronger colored glow border on each tile would greatly improve readability, especially for users on lower-brightness screens.
+- **Make the drag zone center divider (`=` sign) more visually prominent.** As the core mechanic involves dragging across the `=` sign to invert terms, it should be emphasized — a glowing animation, a more distinct color, or a subtle animated pulse would reinforce this affordance.
+- **Add drag-and-drop visual affordance cues.** The term tiles have no visible grab/cursor hint that they are draggable. Adding a subtle `:hover` state (e.g., lift shadow, cursor: grab, or a small drag icon), along with a brief tooltip or onboarding animation, would help new users discover this interaction.
+- **Improve the "Combine Left" / "Undo" / "Combine Right" button hierarchy.** All three action buttons are styled identically. "Undo" is a secondary action and should be styled with a more muted appearance so the primary combine actions stand out. Consider also disabling the "Undo" button when there is nothing to undo.
+- **Increase padding and breathing room inside the equation workspace.** The left and right panels of the equation board feel cramped for equations with many terms. Consider making the workspace panel dynamically expand, or allow horizontal scrolling within each side when terms overflow.
+- **Add a responsive/mobile layout.** The current layout breaks on narrower screens — the equation workspace becomes too compressed. Implement responsive breakpoints so term tiles stack naturally on mobile without overlapping or clipping.
+
+---
+
+### ⚙️ Functionality & Core Features
+
+- **Show step-by-step solution log.** After the user drags and combines terms, display an evolving log beneath the workspace that shows each transformation step (e.g., "Moved `5` to right side → `5` becomes `-5`"). This is the most educationally impactful missing feature.
+- **Add a "Hint" button.** Provide a contextual hint system that highlights which term should logically be moved or combined next, with a brief explanation. This supports learners who get stuck without giving away the full solution.
+- **Add a "Solve Automatically" mode or reveal step toggle.** Allow users to request the app solve the equation step-by-step automatically, animating each transformation so they can observe and learn the process.
+- **Validate and display the final answer.** Once the equation is fully simplified (i.e., `x = value`), the app should detect this state and display a success message with the solution highlighted. Currently there's no feedback indicating when the user has successfully solved it.
+- **Add input capability in Equation Mode.** Let users type a custom equation rather than only selecting from preset templates (Linear, Quadratic, etc.). A text input field with a parser would allow far more open-ended practice.
+- **Play-doh Mode: show the prime factorization tree.** The bubble visualization (e.g., `23` and `28`) for the number `644` is interesting, but it's unclear why those two numbers appear without any labeled connection to the original number. Display the full factorization tree with visible multiplication connectors (e.g., `644 = 23 × 28`) and factor further if numbers are composite.
+- **Play-doh Mode: allow manual splitting and merging of factor bubbles.** Add the ability to click or drag a bubble to split it into its own sub-factors, simulating a more exploratory prime factorization experience consistent with the "Play-doh" metaphor.
+- **Create Mode: add a "delete term" button.** Currently in Create Mode, there is no obvious way to remove a term already added to the left or right side. Each term card should have an `×` or trash icon for removal.
+- **Create Mode: persist the equation when switching to Equation Mode.** If the user builds an equation in Create Mode and clicks "Solve This Equation →", the app should transfer the user's custom equation into Equation Mode and allow them to solve it interactively.
+- **Add keyboard accessibility.** Terms should be selectable and movable via keyboard (Tab to select, Enter/arrow keys to move them across the equation), making the app usable without a mouse.
+
+---
+
+### 📊 Visual Representation (Graph Section)
+
+- **Label the graph axes clearly.** The x-axis and y-axis are unlabeled. At minimum, label x-axis as `x` and y-axis as `f(x)` or `y`. Also add a chart title that shows the actual equations being graphed (e.g., `y = 2x + 5` and `y = 15 - 3x`).
+- **Add an intersection point marker.** The point where "Left Side" and "Right Side" lines cross is the solution to the equation. This should be visually highlighted with a dot, coordinates label (e.g., `x = 2, y = 9`), and optionally annotated with "Solution".
+- **Make the graph interactive.** Allow users to hover over points on the graph to see the precise coordinate values in a tooltip. Zooming and panning would also improve the experience for equations with solutions far from the default range.
+- **Dynamically update the graph as terms are moved.** Currently the graph appears static below the workspace. It should update in real-time as the user rearranges terms, reflecting the changing state of each side of the equation through animated line transitions.
+- **Allow users to customize the x-axis range.** The fixed -10 to 10 range is too narrow or too wide for some equations. Let users adjust the domain via a simple min/max input or zoom slider.
+
+---
+
+### 📚 Educational Content (Field Axioms Section)
+
+- **Add more axioms and properties.** Currently only "Additive Inverse Property" and "Distributive Property" are shown. Include the Multiplicative Inverse, Zero Product Property, Associative, Commutative, and Reflexive/Symmetric/Transitive properties of equality — especially as these become relevant based on the current equation type.
+- **Make axiom cards contextually dynamic.** Highlight or expand the relevant axiom card whenever the user performs a matching operation (e.g., when combining like terms, illuminate the "Distributive Property" card). This reinforces the mathematical reason behind each action.
+- **Add visual worked examples inside each axiom card.** Include a small interactive mini-example within each property card that demonstrates the rule with a concrete numerical case, not just symbolic notation.
+
+---
+
+### 🧭 UX / Onboarding
+
+- **Add a welcome tutorial/walkthrough overlay.** First-time visitors have no guidance. A brief 3–4 step onboarding tour (tooltip-based or modal) that walks through dragging a term, combining like terms, and reading the graph would dramatically reduce bounce rate.
+- **Add a progress or completion indicator.** Show users how many steps they've taken vs. the minimum possible steps to reach the solution. This adds a game-like optimization challenge and a sense of progress.
+- **Improve mode-switching feedback.** When switching between Equation Mode, Play-doh Mode, and Create Mode, there is no transition animation or contextual explanation of what the mode does. Add a brief animated description or icon that explains each mode's purpose upon selection.
+- **Add a "New Equation" or "Shuffle" button.** Rather than only using the same preset equation per template, offer a randomize button that generates a new equation of the same type with different coefficients each time, encouraging repeated practice.
+- **Display the current equation in standard mathematical notation.** Above or below the workspace tile view, render a clean LaTeX-style or formatted string of the current equation state (e.g., `x² = -5x - 6`) so users always have a human-readable reference point.
+
+---
+
+### 🔧 Technical & Performance
+
+- **Add URL-based state sharing.** Encode the current equation and step-state into the URL query string so users can share a specific equation or progress point via a link.
+- **Add a history/session save feature.** Allow users to save solved equations to a local history list (via `localStorage`) so they can review their past work.
+- **Improve error handling in Create Mode.** If the user clicks "Solve This Equation" with no terms, or with a trivially unsolvable equation (e.g., `0 = 0`), show a friendly inline message rather than silently breaking.
+- **Optimize animation performance.** The animated constellation background (`canvas`-based star network) is visually appealing but may cause jank on lower-end devices. Consider reducing its complexity on devices with limited GPU capability, or provide a "Reduce Motion" toggle in settings that respects `prefers-reduced-motion`.

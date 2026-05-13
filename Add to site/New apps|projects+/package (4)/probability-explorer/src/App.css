@@ -1,0 +1,102 @@
+#root {
+  margin: 0 auto;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* KaTeX Math Styling - Global to ensure it works in modals too */
+.math-inline .katex {
+  font-size: 1.1em;
+}
+
+.math-block .katex {
+  font-size: 1.3em;
+}
+
+.katex {
+  color: inherit;
+}
+
+/* Ensure KaTeX works inside modals */
+.katex-display {
+  margin: 0.5em 0;
+}
+
+.katex-display > .katex {
+  text-align: center;
+}
+
+/* Modal content KaTeX styling */
+.modal-formula {
+  font-size: 1.2em;
+  color: inherit;
+}
+
+.modal-formula .katex {
+  font-size: inherit;
+}
+
+/* Force KaTeX rendering in all containers */
+[data-modal-content] .katex,
+.modal-content .katex,
+section .katex {
+  color: inherit !important;
+}
+
+/* Animation for modal */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Ensure text in math formulas is readable */
+.katex * {
+  color: inherit;
+}

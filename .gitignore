@@ -86,3 +86,12 @@ git_01/
 *.tmp
 *.bak
 *.backup
+
+# Large local projects (not part of Gatsby site)
+mechmap-viz/
+
+# Vector DB / binary data files
+*.db
+ruvector.db
+*.rvf
+*.rvf.lock

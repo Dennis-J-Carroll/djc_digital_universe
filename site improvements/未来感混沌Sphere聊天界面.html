@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futuristic Chaos Sphere Chat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0A0A0F;
+      color: #E6EDF3;
+      font-family: 'JetBrains Mono', 'Inter', monospace;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    #bg-canvas {
+      position: fixed; top: 0; left: 0;
+      z-index: 0;
+      width: 100%; height: 100%;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 40px;
+      padding: 20px;
+    }
+
+    .sphere-wrapper {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      flex-shrink: 0;
+    }
+
+    #sphere-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    .wireframe-sphere {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .chat-container {
+      background: rgba(10, 10, 30, 0.85);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 20px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      width: 360px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-header .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00F0FF, #BF00FF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .chat-header h2 {
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #00F0FF;
+      text-shadow: 0 0 10px #00F0FF;
+    }
+
+    .chat-header .status {
+      font-size: 11px;
+      color: #00FF88;
+      margin-left: auto;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(0, 240, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      transition: all 0.3s;
+    }
+
+    .message.own {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #E6EDF3;
+      margin-left: auto;
+      border-radius: 16px 16px 4px 16px;
+    }
+
+    .message.other {
+      background: rgba(191, 0, 255, 0.1);
+      border: 1px solid rgba(191, 0, 255, 0.2);
+      color: #E6EDF3;
+      margin-right: auto;
+      border-radius: 16px 16px 16px 4px;
+    }
+
+    .message small {
+      display: block;
+      font-size: 10px;
+      color: #8B949E;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .message.new {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-input-area {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(0, 240, 255, 0.1);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #E6EDF3;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .chat-input:focus {
+      border-color: #00F0FF;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    .chat-input::placeholder {
+      color: #8B949E;
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid #00F0FF;
+      background: rgba(0, 240, 255, 0.1);
+      color: #00F0FF;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .send-btn:hover {
+      background: rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+      transform: scale(1.05);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 1024px) {
+      .app-container { gap: 20px; }
+      .sphere-wrapper { width: 300px; height: 300px; }
+      .chat-container { width: 320px; }
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+      }
+
+      .sphere-wrapper {
+        width: 150px;
+        height: 150px;
+        order: -1;
+        transform: translateZ(-100px) scale(0.4);
+      }
+
+      .chat-container {
+        width: 100%;
+        max-height: 60vh;
+      }
+
+      .chat-input-area {
+        position: fixed;
+        bottom: env(safe-area-inset-bottom);
+        left: 0;
+        right: 0;
+        background: rgba(10, 10, 30, 0.95);
+        backdrop-filter: blur(20px);
+        z-index: 100;
+        border-top: 1px solid rgba(0, 240, 255, 0.2);
+      }
+
+      .chat-messages {
+        padding-bottom: 80px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sphere-wrapper { display: none; }
+    }
+
+    .scanline::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent);
+      animation: scan 4s linear infinite;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-10px); }
+      100% { transform: translateY(calc(100vh + 10px)); }
+    }
+  </style>
+
+<script>!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).__WWBridge=t()}(this,function(){"use strict";function e(e){return e&&e.__esModule&&Object.prototype.hasOwnProperty.call(e,"default")?e.default:e}var t,n={exports:{}};var r=(t||(t=1,function(e){var t=Object.prototype.hasOwnProperty,n="~";function r(){}function o(e,t,n){this.fn=e,this.context=t,this.once=n||!1}function s(e,t,r,s,a){if("function"!=typeof r)throw new TypeError("The listener must be a function");var i=new o(r,s||e,a),c=n?n+t:t;return e._events[c]?e._events[c].fn?e._events[c]=[e._events[c],i]:e._events[c].push(i):(e._events[c]=i,e._eventsCount++),e}function a(e,t){0===--e._eventsCount?e._events=new r:delete e._events[t]}function i(){this._events=new r,this._eventsCount=0}Object.create&&(r.prototype=Object.create(null),(new r).__proto__||(n=!1)),i.prototype.eventNames=function(){var e,r,o=[];if(0===this._eventsCount)return o;for(r in e=this._events)t.call(e,r)&&o.push(n?r.slice(1):r);return Object.getOwnPropertySymbols?o.concat(Object.getOwnPropertySymbols(e)):o},i.prototype.listeners=function(e){var t=n?n+e:e,r=this._events[t];if(!r)return[];if(r.fn)return[r.fn];for(var o=0,s=r.length,a=new Array(s);o<s;o++)a[o]=r[o].fn;return a},i.prototype.listenerCount=function(e){var t=n?n+e:e,r=this._events[t];return r?r.fn?1:r.length:0},i.prototype.emit=function(e,t,r,o,s,a){var i=n?n+e:e;if(!this._events[i])return!1;var c,f,p=this._events[i],u=arguments.length;if(p.fn){switch(p.once&&this.removeListener(e,p.fn,void 0,!0),u){case 1:return p.fn.call(p.context),!0;case 2:return p.fn.call(p.context,t),!0;case 3:return p.fn.call(p.context,t,r),!0;case 4:return p.fn.call(p.context,t,r,o),!0;case 5:return p.fn.call(p.context,t,r,o,s),!0;case 6:return p.fn.call(p.context,t,r,o,s,a),!0}for(f=1,c=new Array(u-1);f<u;f++)c[f-1]=arguments[f];p.fn.apply(p.context,c)}else{var l,d=p.length;for(f=0;f<d;f++)switch(p[f].once&&this.removeListener(e,p[f].fn,void 0,!0),u){case 1:p[f].fn.call(p[f].context);break;case 2:p[f].fn.call(p[f].context,t);break;case 3:p[f].fn.call(p[f].context,t,r);break;case 4:p[f].fn.call(p[f].context,t,r,o);break;default:if(!c)for(l=1,c=new Array(u-1);l<u;l++)c[l-1]=arguments[l];p[f].fn.apply(p[f].context,c)}}return!0},i.prototype.on=function(e,t,n){return s(this,e,t,n,!1)},i.prototype.once=function(e,t,n){return s(this,e,t,n,!0)},i.prototype.removeListener=function(e,t,r,o){var s=n?n+e:e;if(!this._events[s])return this;if(!t)return a(this,s),this;var i=this._events[s];if(i.fn)i.fn!==t||o&&!i.once||r&&i.context!==r||a(this,s);else{for(var c=0,f=[],p=i.length;c<p;c++)(i[c].fn!==t||o&&!i[c].once||r&&i[c].context!==r)&&f.push(i[c]);f.length?this._events[s]=1===f.length?f[0]:f:a(this,s)}return this},i.prototype.removeAllListeners=function(e){var t;return e?(t=n?n+e:e,this._events[t]&&a(this,t)):(this._events=new r,this._eventsCount=0),this},i.prototype.off=i.prototype.removeListener,i.prototype.addListener=i.prototype.on,i.prefixed=n,i.EventEmitter=i,e.exports=i}(n)),n.exports),o=e(r);return class extends o{constructor(){super(),this.onMessageFn=this.onMessage.bind(this),this.bind()}onMessage(e){if(e.data&&e.data.wwMsgType)switch(e.data.wwMsgType){case"reloadImage":this.emit("reloadImage",e.data.payload);break;case"setSandbox":this.emit("setSandbox",e.data.payload);break;case"runtimeError":this.emit("runtimeError",e.data.payload);break;case"reloadPage":this.emit("reloadPage",e.data.payload)}}bind(){window.addEventListener("message",this.onMessageFn)}dispose(){window.removeEventListener("message",this.onMessageFn)}reloadImage(e){const t={wwMsgType:"reloadImage",payload:void 0};e.postMessage(t,"*")}reloadPage(e){const t={wwMsgType:"reloadPage",payload:void 0};e.postMessage(t,"*")}setSandbox(e){const t={wwMsgType:"setSandbox",payload:void 0};e.postMessage(t,"*")}runtimeError(e,t){const n={wwMsgType:"runtimeError",payload:{error:t}};e.postMessage(n,"*")}on(e,t){return super.on(e,t)}once(e,t){return super.once(e,t)}off(e,t){return super.off(e,t)}}});
+//# sourceMappingURL=index.js.map
+</script>
+<script>
+const bridge = new window.__WWBridge();
+bridge.on('reloadImage', () => {
+    document.querySelectorAll('img').forEach((img) => {
+        const url = new URL(img.src);
+        url.searchParams.set('t', Date.now().toString());
+        img.src = url.toString();
+    });
+});
+bridge.on('reloadPage', () => {
+    window.location.reload();
+});
+</script>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container scanline">
+    <div class="sphere-wrapper">
+      <div id="sphere-container"></div>
+      <svg viewBox="0 0 400 400" class="wireframe-sphere">
+        <ellipse cx="200" cy="200" rx="160" ry="40" fill="none" stroke="#00F0FF" stroke-width="0.5" opacity="0.5"/>
+        <ellipse cx="200" cy="200" rx="160" ry="80" fill="none" stroke="#00F0FF" stroke-width="0.4" opacity="0.35"/>
+        <ellipse cx="200" cy="200" rx="160" ry="120" fill="none" stroke="#00F0FF" stroke-width="0.3" opacity="0.25"/>
+        <line x1="40" y1="200" x2="360" y2="200" stroke="#00F0FF" stroke-width="0.4" opacity="0.35"/>
+        <line x1="60" y1="140" x2="340" y2="140" stroke="#BF00FF" stroke-width="0.3" opacity="0.25"/>
+        <line x1="60" y1="260" x2="340" y2="260" stroke="#BF00FF" stroke-width="0.3" opacity="0.25"/>
+        <line x1="200" y1="20" x2="200" y2="380" stroke="#BF00FF" stroke-width="1" opacity="0.7"/>
+        <line x1="20" y1="200" x2="380" y2="200" stroke="#BF00FF" stroke-width="1" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="avatar">🤖</div>
+        <h2>Chaos AI</h2>
+        <div class="status">● Online</div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="message other">
+          <span>欢迎来到未来混沌聊天室 ✨</span>
+          <small>刚刚</small>
+        </div>
+        <div class="message own">
+          <span>这个 Sphere 好酷！怎么实现的？</span>
+          <small>刚刚</small>
+        </div>
+        <div class="message other">
+          <span>Three.js + 柏林噪声 + 粒子系统 🚀</span>
+          <small>刚刚</small>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chat-input" placeholder="输入消息... (Enter发送)">
+        <button class="send-btn" id="send-btn">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    const bg = document.getElementById('bg-canvas');
+    const bgCtx = bg.getContext('2d');
+    bg.width = window.innerWidth;
+    bg.height = window.innerHeight;
+
+    const bgParticles = [];
+    for (let i = 0; i < 200; i++) {
+      bgParticles.push({
+        x: Math.random() * bg.width,
+        y: Math.random() * bg.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 1.5 + 0.5,
+      });
+    }
+
+    function drawBg() {
+      bgCtx.fillStyle = 'rgba(10,10,15,0.08)';
+      bgCtx.fillRect(0, 0, bg.width, bg.height);
+      bgParticles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = bg.width;
+        if (p.x > bg.width) p.x = 0;
+        if (p.y < 0) p.y = bg.height;
+        if (p.y > bg.height) p.y = 0;
+        bgCtx.beginPath();
+        bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        bgCtx.fillStyle = 'rgba(0,240,255,0.3)';
+        bgCtx.fill();
+      });
+      requestAnimationFrame(drawBg);
+    }
+    drawBg();
+
+    const container = document.getElementById('sphere-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.z = 4;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(400, 400);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const COUNT = 2000;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(COUNT * 3);
+    const col = new Float32Array(COUNT * 3);
+    const originals = new Float32Array(COUNT * 3);
+
+    for (let i = 0; i < COUNT; i++) {
+      const phi = Math.acos(1 - 2 * (i + 0.5) / COUNT);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+      const r = 1.2;
+      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i*3+2] = r * Math.cos(phi);
+      originals[i*3] = pos[i*3];
+      originals[i*3+1] = pos[i*3+1];
+      originals[i*3+2] = pos[i*3+2];
+      col[i*3] = Math.random() > 0.5 ? 0 : 0.75;
+      col[i*3+1] = Math.random() > 0.5 ? 0.94 : 0;
+      col[i*3+2] = 1;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.025,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    const particles = new THREE.Points(geo, material);
+    scene.add(particles);
+
+    class PerlinNoise {
+      constructor() {
+        this.p = new Uint8Array(512);
+        const perm = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,
+          140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,
+          26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,
+          125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,
+          229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,
+          63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,
+          159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,
+          118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,
+          213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,
+          19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,
+          238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,
+          181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,
+          222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+        for (let i = 0; i < 256; i++) this.p[i] = this.p[i + 256] = perm[i];
+      }
+      noise(x,y,z) {
+        const X=Math.floor(x)&255, Y=Math.floor(y)&255, Z=Math.floor(z)&255;
+        x-=Math.floor(x); y-=Math.floor(y); z-=Math.floor(z);
+        const u=x*x*x*(x*(x*6-15)+10), v=y*y*y*(y*(y*6-15)+10), w=z*z*z*(z*(z*6-15)+10);
+        const A=this.p[X]+Y, AA=this.p[A]+Z, AB=this.p[A+1]+Z;
+        return (w*(v*(u*(this.grad(this.p[AA],x,y,z)-this.grad(this.p[AA+1],x-1,y,z))
+          +this.grad(this.p[AB],x,y-1,z)-this.grad(this.p[AB+1],x-1,y-1,z)))
+          +(1-w)*(v*(u*(this.grad(this.p[AA+1],x,y,z-1)-this.grad(this.p[AA+1],x-1,y,z-1))
+          +this.grad(this.p[AB+1],x,y-1,z-1)-this.grad(this.p[AB+1],x-1,y-1,z-1))));
+      }
+      grad(h,x,y,z){const u=h<8?x:y,v=h<4?y:h===12||h===14?x:z;return((h&1)?-u:u)+((h&2)?-v:v);}
+    }
+
+    const noise = new PerlinNoise();
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.006;
+      const arr = geo.attributes.position.array;
+
+      for (let i = 0; i < COUNT; i++) {
+        const ox = originals[i*3], oy = originals[i*3+1], oz = originals[i*3+2];
+        const nx = noise.noise(ox*2+time, oy*2, oz*2) * 0.6;
+        const ny = noise.noise(ox*2, oy*2+time, oz*2) * 0.6;
+        const nz = noise.noise(ox*2, oy*2, oz*2+time) * 0.6;
+        arr[i*3]   = ox + nx + Math.sin(time*2.3 + i*0.1) * 0.12;
+        arr[i*3+1] = oy + ny + Math.cos(time*1.7 + i*0.15) * 0.18;
+        arr[i*3+2] = oz + nz + Math.sin(time*3.1 + i*0.08) * 0.1;
+      }
+
+      geo.attributes.position.needsUpdate = true;
+      particles.rotation.y += 0.003 + Math.sin(time) * 0.001;
+      particles.rotation.x += 0.001 + Math.cos(time * 0.7) * 0.0005;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    renderer.domElement.addEventListener('click', () => {
+      particles.rotation.y += 0.8;
+      particles.rotation.x += 0.5;
+      const colArr = geo.attributes.color.array;
+      for (let i = 0; i < COUNT; i++) {
+        colArr[i*3] = 0.75; colArr[i*3+1] = 0; colArr[i*3+2] = 1;
+      }
+      geo.attributes.color.needsUpdate = true;
+      setTimeout(() => {
+        particles.rotation.y *= 0.95;
+        particles.rotation.x *= 0.95;
+        for (let i = 0; i < COUNT; i++) {
+          colArr[i*3] = Math.random() > 0.5 ? 0 : 0.75;
+          colArr[i*3+1] = Math.random() > 0.5 ? 0.94 : 0;
+          colArr[i*3+2] = 1;
+        }
+        geo.attributes.color.needsUpdate = true;
+      }, 200);
+    });
+
+    window.addEventListener('resize', () => {
+      bg.width = innerWidth; bg.height = innerHeight;
+      camera.aspect = 1; camera.updateProjectionMatrix();
+      renderer.setSize(400, 400);
+    });
+
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const messagesDiv = document.getElementById('chat-messages');
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      const msg = document.createElement('div');
+      msg.className = 'message own new';
+      const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      msg.innerHTML = `<span>${text}</span><small>${now}</small>`;
+      messagesDiv.appendChild(msg);
+
+      triggerSphereBurst();
+
+      messagesDiv.scrollTo({ top: messagesDiv.scrollHeight, behavior: 'smooth' });
+      input.value = '';
+    }
+
+    function triggerSphereBurst() {
+      if (!particles) return;
+      const origY = particles.rotation.y, origX = particles.rotation.x;
+      particles.rotation.y += 0.8;
+      particles.rotation.x += 0.5;
+      const colArr = geo.attributes.color.array;
+      for (let i = 0; i < COUNT; i++) {
+        colArr[i*3] = 0.75; colArr[i*3+1] = 0; colArr[i*3+2] = 1;
+      }
+      geo.attributes.color.needsUpdate = true;
+      setTimeout(() => {
+        particles.rotation.y = origY;
+        particles.rotation.x = origX;
+        for (let i = 0; i < COUNT; i++) {
+          colArr[i*3] = Math.random() > 0.5 ? 0 : 0.75;
+          colArr[i*3+1] = Math.random() > 0.5 ? 0.94 : 0;
+          colArr[i*3+2] = 1;
+        }
+        geo.attributes.color.needsUpdate = true;
+      }, 200);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    input.addEventListener('focus', () => {
+      document.querySelector('.wireframe-sphere').style.opacity = '0.8';
+    });
+    input.addEventListener('blur', () => {
+      document.querySelector('.wireframe-sphere').style.opacity = '0.3';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Project represents a model architecture configuration
+model Project {
+  id            String       @id @default(cuid())
+  name          String
+  description   String?
+  modelName     String       @default("GPT-2 Small")
+  numLayers     Int          @default(12)
+  numHeads      Int          @default(12)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  annotations   Annotation[]
+  
+  @@map("projects")
+}
+
+// Annotation stores findings about specific components
+model Annotation {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  componentType String   // 'attention_head' or 'mlp'
+  layerIndex    Int
+  headIndex     Int?     // Only for attention heads
+  notes         String
+  tags          String   // JSON array of tags
+  importance    String   @default("unknown") // 'high', 'medium', 'low', 'unknown'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([projectId, componentType, layerIndex, headIndex])
+  @@map("annotations")
+}

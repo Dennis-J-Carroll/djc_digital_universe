@@ -1,0 +1,133 @@
+/* App-specific styles */
+
+/* Z-index layering for sections */
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
+.z-30 { z-index: 30; }
+.z-40 { z-index: 40; }
+.z-50 { z-index: 50; }
+.z-60 { z-index: 60; }
+.z-70 { z-index: 70; }
+.z-80 { z-index: 80; }
+
+/* Border width utility */
+.border-3 {
+  border-width: 3px;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for code blocks */
+.code-block::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.code-block::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Form field spacing */
+.form-field {
+  transition: opacity 0.3s ease;
+}
+
+/* Archive card hover effect */
+.archive-card {
+  cursor: pointer;
+}
+
+/* Collection card cursor */
+.collection-card {
+  cursor: pointer;
+}
+
+/* Filter pill active state */
+.filter-pill.active {
+  background-color: #E94E77;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .section-pinned {
+    min-height: 100vh;
+    height: auto;
+  }
+  
+  .card-main {
+    width: 90vw !important;
+    left: 5vw !important;
+    height: auto !important;
+    min-height: 50vh;
+  }
+  
+  .code-block {
+    position: relative !important;
+    width: 100% !important;
+    right: auto !important;
+    top: auto !important;
+    margin-top: 1rem;
+  }
+  
+  .btn-primary {
+    width: 100% !important;
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin-top: 1rem;
+  }
+}
+
+/* Pin spacer fix for GSAP */
+.pin-spacer {
+  background-color: inherit !important;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input {
+  transition: all 0.2s ease;
+}
+
+/* Focus states */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #E94E77;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .section-pinned {
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+  
+  .block-decoration,
+  .stamp-animate {
+    display: none !important;
+  }
+}
