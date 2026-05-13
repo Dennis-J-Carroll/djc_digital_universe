@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-const { check, validationResult } = require('express-validator');
 require('dotenv').config();
 
 // Basic in-memory rate limiter (limited effectiveness in serverless)
@@ -107,7 +106,7 @@ export default async function handler(req, res) {
 
   // If there are validation errors, return them
   if (errors.length > 0) {
-    return res.status(400).json({ success: false, errors });
+    return res.status(400).json({ success: false, message: errors.map(e => e.message).join('. '), errors });
   }
 
   // Sanitize the inputs

@@ -1,8 +1,7 @@
 // Navigation links configuration
 export const NAV_LINKS = [
   { id: "home", label: "Home", path: "/" },
-  { id: "dev-projects", label: "Development Projects", path: "/development-projects" },
-  { id: "apps", label: "Interactive Apps", path: "/apps" },
+  { id: "apps", label: "Apps & Projects", path: "/apps" },
   { id: "stories", label: "Stories & More", path: "/stories" },
   { id: "about", label: "About", path: "/about" },
   { id: "contact", label: "Contact", path: "/contact" }
@@ -49,12 +48,11 @@ export const SITE_CONFIG = {
   siteUrl: 'https://denniscarroll.com'
 };
 
-// Quick links for footer (same as NAV_LINKS but with different label for Stories)
+// Quick links for footer
 export const QUICK_LINKS = [
   { label: "Home", url: "/" },
-  { label: "Development Projects", url: "/development-projects" },
-  { label: "Interactive Apps", url: "/apps" },
-  { label: "Creative", url: "/stories" },
+  { label: "Apps & Projects", url: "/apps" },
+  { label: "Creative Writing", url: "/stories" },
   { label: "About", url: "/about" },
   { label: "Contact", url: "/contact" }
 ];

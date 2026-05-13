@@ -60,7 +60,7 @@ const AboutPage = ({ location }) => {
     { value: 15, suffix: "+", label: "Projects Completed", icon: null },
     { value: 5, suffix: "+", label: "Years Experience", icon: null },
     { value: 10, suffix: "+", label: "Technologies", icon: null },
-    { value: 100, suffix: "%", label: "Passion", icon: null }
+    { value: 24, suffix: "+", label: "Interactive Apps Built", icon: null }
   ]
 
 
@@ -120,7 +120,7 @@ const AboutPage = ({ location }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              Data Scientist • Full-Stack Developer • Creative Technologist
+              Interactive ML Tools • Bayesian Analytics • Creative Fiction
             </motion.p>
 
             <motion.div
@@ -130,10 +130,21 @@ const AboutPage = ({ location }) => {
               transition={{ duration: 0.8, delay: 0.9 }}
             >
               <p>
-                I'm a passionate technologist with a deep interest in data science,
-                project development, and creative expression. My background spans multiple
-                disciplines, allowing me to approach problems from unique perspectives
-                and build innovative solutions.
+                I build interactive tools that make complex ideas intuitive. Over the past 5 years,
+                I've created 24+ standalone web applications spanning neural network visualizations,
+                Bayesian analytics dashboards, real-time ML training environments, and mathematical
+                exploration tools — all designed to run in the browser.
+              </p>
+              <p style={{ marginTop: '1rem' }}>
+                My current focus is at the intersection of deep learning and interpretability:
+                understanding not just what neural networks learn, but how and why they learn it.
+                Recent projects include an Agent Trace Viewer for SWE-agent interaction analysis
+                and a Mechanistic Interpretability visualizer for transformer architectures.
+              </p>
+              <p style={{ marginTop: '1rem' }}>
+                I'm also the author of three original fictional universes — including
+                Crack in the Veil, a post-humanity sci-fi saga, and A Chronicle of Lyos,
+                a fantasy world where dead gods' bloodlines still remember.
               </p>
             </motion.div>
           </div>
@@ -257,6 +268,74 @@ const AboutPage = ({ location }) => {
                 neural networks learn, but how and why they learn it.
               </p>
             </div>
+          </motion.div>
+        </motion.section>
+
+        {/* Currently Exploring Section */}
+        <motion.section
+          className="about-section"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.h2 className="section-title" variants={itemVariants}>
+            Currently Exploring
+          </motion.h2>
+          <motion.div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1.5rem',
+              maxWidth: '900px',
+              margin: '0 auto'
+            }}
+            variants={itemVariants}
+          >
+            {[
+              {
+                topic: 'Mechanistic Interpretability',
+                detail: 'Understanding how transformer attention heads and MLP blocks represent concepts',
+                link: '/apps/mechmap.html',
+              },
+              {
+                topic: 'Graph Neural Networks',
+                detail: 'Extending neural architectures to non-Euclidean graph-structured data',
+                link: null,
+              },
+              {
+                topic: 'Reinforcement Learning Theory',
+                detail: 'Connecting RL optimization to dynamical systems and chaos theory',
+                link: '/apps/Interactive_RL_Chaos-Error_OPt.html',
+              },
+            ].map((item) => (
+              <div
+                key={item.topic}
+                style={{
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(0,188,212,0.15)',
+                  borderRadius: '12px',
+                  padding: '1.25rem'
+                }}
+              >
+                <h4 style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                  {item.topic}
+                </h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: item.link ? '0.75rem' : 0 }}>
+                  {item.detail}
+                </p>
+                {item.link && (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--primary-color)', fontSize: '0.8rem', fontWeight: 500 }}
+                  >
+                    See experiment →
+                  </a>
+                )}
+              </div>
+            ))}
           </motion.div>
         </motion.section>
 

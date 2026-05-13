@@ -24,9 +24,15 @@ export default function ContactPage({ location }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formState, subject: 'Contact Page', honeypot: '' }),
       })
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch {
+        data = { message: 'Unexpected server error. Please try again later.' }
+      }
       if (!response.ok) {
-        setFormStatus({ submitted: true, success: false, message: data.message || 'Error submitting form.' })
+        const errorMsg = data.message || (data.errors && data.errors.map(e => e.message).join('. ')) || 'Error submitting form.'
+        setFormStatus({ submitted: true, success: false, message: errorMsg })
       } else {
         setFormStatus({ submitted: true, success: true, message: "Thanks! I'll get back to you soon." })
         setFormState({ name: "", email: "", message: "" })

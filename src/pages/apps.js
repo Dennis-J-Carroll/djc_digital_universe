@@ -1,7 +1,24 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from '../components/layout/layout';
 import Seo from '../components/shared/seo';
 import { motion } from 'framer-motion';
+
+const GRADIENTS = [
+  'linear-gradient(135deg, rgba(0,201,177,0.25), rgba(6,182,212,0.25))',
+  'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.25))',
+  'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(20,184,166,0.25))',
+  'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(249,115,22,0.25))',
+  'linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.25))',
+  'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))',
+];
+
+const getProjectGradient = (title) => {
+  const hash = title.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return GRADIENTS[hash % GRADIENTS.length];
+};
+
+const getProjectInitials = (title) =>
+  title.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
 
 // Minimalist SVG Icons
 const ExternalLinkIcon = () => (
@@ -110,6 +127,12 @@ const AppsPage = ({ location }) => {
       category: 'Data Science'
     },
     {
+      title: 'The Science of Convergence',
+      path: '/apps/The Science of Convergence.html',
+      description: 'Interactive exploration of universal scaling laws, Numerical Attractor Descent Curves (NADCs), and the mathematics of convergence in dynamical systems.',
+      category: 'Math'
+    },
+    {
       title: 'Dynamical Systems Explorer',
       path: '/apps/dynamical-systems-explorer.html',
       description: 'Unified interactive exploration of universal scaling laws, numerical attractor descent curves, convergence dynamics, and the mathematics of complex systems.',
@@ -203,7 +226,20 @@ const AppsPage = ({ location }) => {
     }
   ];
 
-  const categories = ['AI/ML', 'Data Science', 'Math', 'Tools', 'Creative', 'Education'];
+  const allCategories = ['All', 'AI/ML', 'Data Science', 'Math', 'Tools', 'Creative', 'Education'];
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const filteredApps = useMemo(() => {
+    return interactiveApps.filter(p => {
+      const matchesSearch = !searchQuery ||
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = activeFilter === 'All' || p.category === activeFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [interactiveApps, searchQuery, activeFilter]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -357,8 +393,56 @@ const AppsPage = ({ location }) => {
           </div>
         </motion.div>
 
-        {categories.map(category => {
-          const categoryApps = interactiveApps.filter(app => app.category === category);
+        {/* Search + Filter */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <input
+            type="text"
+            placeholder="Search projects, tags, technologies..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              maxWidth: '600px',
+              display: 'block',
+              margin: '0 auto 1.25rem',
+              padding: '0.75rem 1.25rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(0,188,212,0.3)',
+              background: 'rgba(15,20,30,0.7)',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+              outline: 'none'
+            }}
+          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+            {allCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveFilter(cat)}
+                style={{
+                  padding: '0.4rem 1rem',
+                  borderRadius: '999px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                  transition: 'all 0.2s ease',
+                  background: activeFilter === cat ? 'var(--primary-color)' : 'rgba(120,180,255,0.1)',
+                  color: activeFilter === cat ? '#0a0e14' : 'var(--text-secondary)'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.75rem' }}>
+            {filteredApps.length} project{filteredApps.length !== 1 ? 's' : ''} found
+          </p>
+        </div>
+
+        {/* App grid — grouped by category, respecting search/filter */}
+        {['AI/ML', 'Data Science', 'Math', 'Tools', 'Creative', 'Education'].map(category => {
+          const categoryApps = filteredApps.filter(app => app.category === category);
           if (categoryApps.length === 0) return null;
 
           return (
@@ -384,7 +468,7 @@ const AppsPage = ({ location }) => {
               <div style={{
                 display: 'grid',
                 gap: '1.5rem',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))'
               }}>
                 {categoryApps.map(app => (
                   <motion.a
@@ -396,15 +480,13 @@ const AppsPage = ({ location }) => {
                     style={{
                       textDecoration: 'none',
                       display: 'block',
-                      background: app.featured
-                        ? 'linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(124, 77, 255, 0.1))'
-                        : 'rgba(15, 20, 30, 0.6)',
+                      background: 'rgba(15, 20, 30, 0.6)',
                       backdropFilter: 'blur(10px)',
                       border: app.featured
                         ? '2px solid var(--primary-color)'
                         : '1px solid rgba(120, 180, 255, 0.2)',
                       borderRadius: '12px',
-                      padding: '1.5rem',
+                      overflow: 'hidden',
                       transition: 'all 0.3s ease',
                       position: 'relative'
                     }}
@@ -419,46 +501,68 @@ const AppsPage = ({ location }) => {
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    {app.featured && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '-10px',
-                        right: '15px',
-                        background: 'var(--primary-color)',
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '10px',
-                        fontWeight: '600'
-                      }}>
-                        NEW
-                      </span>
-                    )}
-                    <h3 style={{
-                      fontSize: '1.35rem',
-                      fontWeight: '600',
-                      color: 'var(--text-primary)',
-                      marginBottom: '0.75rem'
-                    }}>
-                      {app.title}
-                    </h3>
-                    <p style={{
-                      color: 'var(--text-secondary)',
-                      lineHeight: '1.6',
-                      fontSize: '0.95rem',
-                      marginBottom: '1rem'
-                    }}>
-                      {app.description}
-                    </p>
+                    {/* Gradient thumbnail */}
                     <div style={{
-                      color: 'var(--primary-color)',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
+                      height: '80px',
+                      background: getProjectGradient(app.title),
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.5rem'
+                      justifyContent: 'center',
+                      position: 'relative'
                     }}>
-                      Launch App <ExternalLinkIcon />
+                      <span style={{
+                        fontSize: '1.5rem',
+                        fontWeight: 700,
+                        color: 'rgba(255,255,255,0.25)',
+                        letterSpacing: '0.1em',
+                        fontFamily: 'monospace'
+                      }}>
+                        {getProjectInitials(app.title)}
+                      </span>
+                      {app.featured && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '10px',
+                          background: 'var(--primary-color)',
+                          color: '#0a0e14',
+                          fontSize: '0.7rem',
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '8px',
+                          fontWeight: 700
+                        }}>
+                          FEATURED
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ padding: '1.25rem' }}>
+                      <h3 style={{
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        color: 'var(--text-primary)',
+                        marginBottom: '0.5rem'
+                      }}>
+                        {app.title}
+                      </h3>
+                      <p style={{
+                        color: 'var(--text-secondary)',
+                        lineHeight: '1.6',
+                        fontSize: '0.9rem',
+                        marginBottom: '1rem'
+                      }}>
+                        {app.description}
+                      </p>
+                      <div style={{
+                        color: 'var(--primary-color)',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem'
+                      }}>
+                        Launch App <ExternalLinkIcon />
+                      </div>
                     </div>
                   </motion.a>
                 ))}
@@ -466,6 +570,18 @@ const AppsPage = ({ location }) => {
             </motion.div>
           );
         })}
+
+        {filteredApps.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+            No projects match your search.{' '}
+            <button
+              onClick={() => { setSearchQuery(''); setActiveFilter('All'); }}
+              style={{ color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </section>
     </Layout>
   );

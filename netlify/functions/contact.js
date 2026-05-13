@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-const { check, validationResult } = require('express-validator');
 require('dotenv').config();
 
 
@@ -128,7 +127,7 @@ exports.handler = async (event, context) => {
   if (errors.length > 0) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ success: false, errors }),
+      body: JSON.stringify({ success: false, message: errors.map(e => e.message).join('. '), errors }),
       headers: corsHeaders,
     };
   }
