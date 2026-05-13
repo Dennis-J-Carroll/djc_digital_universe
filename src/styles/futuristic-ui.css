@@ -416,52 +416,52 @@ body.light-theme h6 {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), var(--neon-glow);
 }
 
-/* Glassmorphism hero CTA variants */
+/* Glassmorphism hero CTA variants — !important beats theme-specific .btn overrides */
 .btn-primary-enhanced {
-  background: rgba(0, 188, 212, 0.18);
+  background: rgba(0, 188, 212, 0.18) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 188, 212, 0.55);
+  border: 1px solid rgba(0, 188, 212, 0.55) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 24px rgba(0, 188, 212, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 188, 212, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 .btn-primary-enhanced:hover {
-  background: rgba(0, 188, 212, 0.3);
-  border-color: rgba(0, 188, 212, 0.75);
-  box-shadow: 0 6px 32px rgba(0, 188, 212, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: rgba(0, 188, 212, 0.3) !important;
+  border-color: rgba(0, 188, 212, 0.75) !important;
+  box-shadow: 0 6px 32px rgba(0, 188, 212, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
   transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.06) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 188, 212, 0.45);
+  border: 1px solid rgba(0, 188, 212, 0.45) !important;
   color: rgba(0, 220, 240, 0.95) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
 }
 
 .btn-secondary:hover {
-  background: rgba(0, 188, 212, 0.14);
-  border-color: rgba(0, 188, 212, 0.65);
+  background: rgba(0, 188, 212, 0.14) !important;
+  border-color: rgba(0, 188, 212, 0.65) !important;
   color: #ffffff !important;
-  box-shadow: 0 6px 24px rgba(0, 188, 212, 0.22);
+  box-shadow: 0 6px 24px rgba(0, 188, 212, 0.22) !important;
   transform: translateY(-2px);
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: rgba(255, 255, 255, 0.82) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.11) !important;
+  border-color: rgba(255, 255, 255, 0.32) !important;
   color: #ffffff !important;
   transform: translateY(-2px);
 }
