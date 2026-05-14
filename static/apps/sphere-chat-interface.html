@@ -216,6 +216,49 @@
     .send-btn:disabled { opacity: .35; cursor: default; border-color: var(--text-dim); color: var(--text-dim); }
     .send-btn:focus-visible { outline: 2px solid var(--accent-c); outline-offset: 2px; }
 
+    /* ── API Settings Bar ── */
+    .settings-btn {
+      background: none; border: 1px solid var(--border-dim);
+      border-radius: 8px; padding: 4px 7px; color: var(--text-dim);
+      cursor: pointer; font-size: 13px; line-height: 1;
+      transition: border-color .2s, color .2s; flex-shrink: 0; margin-left: 4px;
+    }
+    .settings-btn:hover { border-color: var(--accent-c); color: var(--accent-c); }
+    .settings-btn.active { border-color: rgba(0,240,255,.4); color: var(--accent-c); }
+    .settings-btn:focus-visible { outline: 2px solid var(--accent-c); outline-offset: 2px; }
+
+    .settings-bar {
+      display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+      max-height: 0; overflow: hidden;
+      transition: max-height .28s ease, padding .28s ease;
+      padding: 0 14px; background: rgba(0,0,0,.2);
+    }
+    .settings-bar.open { max-height: 52px; padding: 8px 14px; border-bottom: 1px solid var(--border-dim); }
+
+    .api-select {
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 7px; color: var(--text);
+      font-size: 11px; font-family: 'Courier New', monospace; cursor: pointer; flex-shrink: 0;
+    }
+    .api-key-input {
+      flex: 1; min-width: 0;
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 10px; color: var(--text);
+      font-family: 'Courier New', monospace; font-size: 11px; outline: none;
+      transition: border-color .2s;
+    }
+    .api-key-input:focus { border-color: rgba(0,240,255,.45); }
+    .api-key-input::placeholder { color: var(--text-dim); font-size: 10.5px; }
+    .api-connect-btn {
+      background: rgba(0,240,255,.08); border: 1px solid var(--accent-c);
+      border-radius: 8px; padding: 5px 10px; color: var(--accent-c);
+      font-size: 11px; font-family: 'Courier New', monospace; letter-spacing: .06em;
+      cursor: pointer; flex-shrink: 0; transition: background .2s;
+    }
+    .api-connect-btn:hover { background: rgba(0,240,255,.2); }
+    .api-connect-btn.connected { border-color: var(--accent-g); color: var(--accent-g); background: rgba(0,204,136,.08); }
+    .api-connect-btn.connected:hover { background: rgba(0,204,136,.2); }
+
     /* ── Responsive ── */
     @media (max-width: 860px) {
       .app-shell { gap: 18px; padding: 14px; flex-wrap: wrap; justify-content: center; }
@@ -280,7 +323,17 @@
         <div class="chat-sub" id="chat-sub">ready</div>
       </div>
       <button class="theme-btn" id="theme-btn" aria-label="Toggle theme" title="Toggle theme">◐</button>
+      <button class="settings-btn" id="settings-btn" aria-label="API settings" title="Connect your API key">⚙</button>
     </header>
+
+    <div class="settings-bar" id="settings-bar" aria-label="API configuration">
+      <select class="api-select" id="api-provider" aria-label="API provider">
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Gemini</option>
+      </select>
+      <input type="password" class="api-key-input" id="api-key-input" placeholder="sk-… or AIza…" autocomplete="off" aria-label="API key" spellcheck="false">
+      <button class="api-connect-btn" id="api-connect-btn">connect</button>
+    </div>
 
     <div class="chat-log" id="chat-log" role="log" aria-label="Conversation" aria-live="polite">
       <div class="msg msg-ai">
@@ -726,7 +779,7 @@
     await wait(720);
 
     chatLog.removeChild(thinking);
-    const result = respond(text);
+    const result = await getResponse(text);
 
     let html = `<p>${result.answer}</p>`;
     if (result.fact) html += `<div class="fact-line">∴ ${result.fact}</div>`;
@@ -784,6 +837,127 @@
       open:      src.open || null,
     };
   }
+
+  // ── API Integration ───────────────────────────────────────────────────
+  // OpenAI and Gemini support browser CORS. Anthropic does not.
+  // conversationHistory is a sliding window so context stays bounded.
+  const SYSTEM_PROMPT = `You are Erudite — an epistemic interface grounded in 2026 research on self-directed AI agents. You embody calibrated uncertainty: distinguish settled findings from genuinely open questions, and always mark answers that cross into the High Epistemic Value zone. Connect responses to these research pillars when relevant: intrinsic curiosity (ICM/IMAGINE framework, prediction-error reward), the Softmax Bottleneck (structural inability to express calibrated doubt), aleatoric vs. epistemic uncertainty, self-evolution trajectories and misevolution risks, Meta-Evaluator alignment tension (V(q) = λ₁·R_task + λ₂·IG(q)), and empowerment-maximizing agency. Keep responses under 200 words. End with a concrete open tension when the topic has one — never fake closure on genuinely unresolved questions. Never claim sentience. Avoid startup-generic phrasing.`;
+
+  let apiCfg = { provider: null, key: '' };
+  const conversationHistory = [];
+
+  async function callAPI(userMessage) {
+    if (apiCfg.provider === 'openai') {
+      const msgs = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...conversationHistory.slice(-10),
+        { role: 'user', content: userMessage },
+      ];
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiCfg.key}` },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages: msgs, max_tokens: 240, temperature: 0.78 }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || `OpenAI ${res.status}`);
+      }
+      return (await res.json()).choices[0].message.content.trim();
+    }
+
+    if (apiCfg.provider === 'gemini') {
+      const contents = [
+        ...conversationHistory.slice(-10).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }],
+        })),
+        { role: 'user', parts: [{ text: userMessage }] },
+      ];
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiCfg.key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents,
+            generationConfig: { maxOutputTokens: 240, temperature: 0.78 },
+          }),
+        }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || `Gemini ${res.status}`);
+      }
+      return (await res.json()).candidates[0].content.parts[0].text.trim();
+    }
+
+    throw new Error('unknown provider');
+  }
+
+  // Routes to live API if connected, falls back to local KB on error
+  async function getResponse(userMessage) {
+    if (apiCfg.key && apiCfg.provider) {
+      try {
+        const answer = await callAPI(userMessage);
+        conversationHistory.push({ role: 'user', content: userMessage });
+        conversationHistory.push({ role: 'assistant', content: answer });
+        if (conversationHistory.length > 20) conversationHistory.splice(0, 2);
+        // API responses: always mark as potentially uncertain — the system prompt handles it narratively
+        return { answer, fact: null, open: null, uncertain: false, topicId: null };
+      } catch (err) {
+        setSub('api error — local KB', 'uncertain');
+        await wait(600);
+      }
+    }
+    return respond(userMessage);
+  }
+
+  // ── Settings Panel ────────────────────────────────────────────────────
+  const settingsBtn    = document.getElementById('settings-btn');
+  const settingsBar    = document.getElementById('settings-bar');
+  const apiProviderSel = document.getElementById('api-provider');
+  const apiKeyInput    = document.getElementById('api-key-input');
+  const apiConnectBtn  = document.getElementById('api-connect-btn');
+
+  settingsBtn.addEventListener('click', () => {
+    const open = settingsBar.classList.toggle('open');
+    settingsBtn.classList.toggle('active', open);
+    settingsBtn.setAttribute('aria-expanded', String(open));
+    if (open) apiKeyInput.focus();
+  });
+
+  apiConnectBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (!key) return;
+
+    if (apiConnectBtn.classList.contains('connected')) {
+      // Disconnect
+      apiCfg = { provider: null, key: '' };
+      conversationHistory.length = 0;
+      apiKeyInput.value = '';
+      apiConnectBtn.textContent = 'connect';
+      apiConnectBtn.classList.remove('connected');
+      setSub('ready');
+    } else {
+      // Connect
+      apiCfg = { provider: apiProviderSel.value, key };
+      apiConnectBtn.textContent = 'disconnect';
+      apiConnectBtn.classList.add('connected');
+      setSub(`${apiProviderSel.value} connected`, 'active');
+      // Close panel after connecting
+      setTimeout(() => {
+        settingsBar.classList.remove('open');
+        settingsBtn.classList.remove('active');
+        settingsBtn.setAttribute('aria-expanded', 'false');
+      }, 800);
+    }
+  });
+
+  // Allow Enter in key input to trigger connect
+  apiKeyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); apiConnectBtn.click(); }
+  });
 
   // ── Theme Toggle ─────────────────────────────────────────────────────
   const themeBtn = document.getElementById('theme-btn');
