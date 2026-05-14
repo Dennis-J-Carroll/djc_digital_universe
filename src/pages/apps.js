@@ -4,12 +4,12 @@ import Seo from '../components/shared/seo';
 import { motion } from 'framer-motion';
 
 const GRADIENTS = [
-  'linear-gradient(135deg, rgba(0,201,177,0.25), rgba(6,182,212,0.25))',
-  'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.25))',
-  'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(20,184,166,0.25))',
-  'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(249,115,22,0.25))',
-  'linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.25))',
-  'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))',
+  'linear-gradient(135deg, rgba(0,201,177,0.55), rgba(6,182,212,0.55))',
+  'linear-gradient(135deg, rgba(168,85,247,0.55), rgba(236,72,153,0.55))',
+  'linear-gradient(135deg, rgba(16,185,129,0.55), rgba(20,184,166,0.55))',
+  'linear-gradient(135deg, rgba(245,158,11,0.55), rgba(249,115,22,0.55))',
+  'linear-gradient(135deg, rgba(239,68,68,0.55), rgba(220,38,38,0.55))',
+  'linear-gradient(135deg, rgba(99,102,241,0.55), rgba(139,92,246,0.55))',
 ];
 
 const getProjectGradient = (title) => {
@@ -320,7 +320,7 @@ const AppsPage = ({ location }) => {
                 key={index}
                 variants={itemVariants}
                 style={{
-                  background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(124, 77, 255, 0.1))',
+                  background: 'var(--card-bg)',
                   backdropFilter: 'blur(10px)',
                   border: '2px solid var(--primary-color)',
                   borderRadius: '12px',
@@ -481,11 +481,11 @@ const AppsPage = ({ location }) => {
                     style={{
                       textDecoration: 'none',
                       display: 'block',
-                      background: 'rgba(15, 20, 30, 0.6)',
+                      background: 'var(--card-bg)',
                       backdropFilter: 'blur(10px)',
                       border: app.featured
                         ? '2px solid var(--primary-color)'
-                        : '1px solid rgba(120, 180, 255, 0.2)',
+                        : '1px solid var(--card-border)',
                       borderRadius: '12px',
                       overflow: 'hidden',
                       transition: 'all 0.3s ease',
@@ -498,7 +498,7 @@ const AppsPage = ({ location }) => {
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = app.featured ? 'var(--primary-color)' : 'rgba(120, 180, 255, 0.2)';
+                      e.currentTarget.style.borderColor = app.featured ? 'var(--primary-color)' : 'var(--card-border)';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
@@ -514,7 +514,7 @@ const AppsPage = ({ location }) => {
                       <span style={{
                         fontSize: '1.5rem',
                         fontWeight: 700,
-                        color: 'rgba(255,255,255,0.25)',
+                        color: 'rgba(255,255,255,0.6)',
                         letterSpacing: '0.1em',
                         fontFamily: 'monospace'
                       }}>
@@ -541,13 +541,13 @@ const AppsPage = ({ location }) => {
                       <h3 style={{
                         fontSize: '1.1rem',
                         fontWeight: '600',
-                        color: '#f0f4f8',
+                        color: 'var(--text-primary)',
                         marginBottom: '0.5rem'
                       }}>
                         {app.title}
                       </h3>
                       <p style={{
-                        color: 'rgba(220, 230, 240, 0.72)',
+                        color: 'var(--text-secondary)',
                         lineHeight: '1.6',
                         fontSize: '0.9rem',
                         marginBottom: '1rem'

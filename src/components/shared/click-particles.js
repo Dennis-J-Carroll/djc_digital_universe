@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-const COUNT = 14;
-const DURATION = 650;
+const COUNT = 22;
+const DURATION = 2000;
 
 const ClickParticles = () => {
   useEffect(() => {
@@ -17,7 +17,7 @@ const ClickParticles = () => {
 
       for (let i = 0; i < COUNT; i++) {
         const angle = (i / COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-        const dist  = 35 + Math.random() * 55;
+        const dist  = 60 + Math.random() * 100;
         const size  = 3 + Math.random() * 5;
         const color = colors[i % colors.length];
 
