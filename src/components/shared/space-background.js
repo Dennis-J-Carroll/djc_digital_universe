@@ -4,13 +4,13 @@ import { loadSlim } from "tsparticles-slim";
 
 const SpaceBackground = () => {
   const [currentTheme, setCurrentTheme] = useState('dark');
-  const [particleCount, setParticleCount] = useState(30); // SSR-safe default
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef(null);
   const isVisibleRef = useRef(true);
 
-  // Set particle count on client — window not available during SSR
+  // Detect mobile on client — skip canvas entirely on small screens
   useEffect(() => {
-    const update = () => setParticleCount(window.innerWidth < 768 ? 15 : 30);
+    const update = () => setIsMobile(window.innerWidth < 768);
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -83,6 +83,27 @@ const SpaceBackground = () => {
     containerRef.current = container;
   }, []);
 
+  // Mobile: skip canvas entirely — CSS gradient, zero JS runtime cost
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          width: "100%",
+          height: "100%",
+          zIndex: -1,
+          top: 0,
+          left: 0,
+          background: currentTheme === 'light'
+            ? 'radial-gradient(ellipse at top, rgba(0,111,174,0.08) 0%, transparent 60%)'
+            : currentTheme === 'retro-80s'
+            ? 'radial-gradient(ellipse at top, rgba(255,55,95,0.08) 0%, transparent 60%)'
+            : 'radial-gradient(ellipse at top, rgba(0,188,212,0.06) 0%, transparent 60%)',
+        }}
+      />
+    );
+  }
+
   // Static background for tokyo-afternoon (no animation, warm/peaceful)
   if (currentTheme === 'tokyo-afternoon') {
     return (
@@ -145,7 +166,7 @@ const SpaceBackground = () => {
           },
           number: {
             density: { enable: true, area: 1000 },
-            value: particleCount,
+            value: 30,
           },
           opacity: {
             value: 0.6,

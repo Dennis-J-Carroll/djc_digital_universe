@@ -1,11 +1,12 @@
-import React, { useState } from "react"
+import React, { useState, lazy, Suspense } from "react"
 import { Link } from "gatsby"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
-import SpaceBackground from "../components/shared/space-background"
 import HeroText from "../components/shared/hero-text"
 import FeatureCard from "../components/shared/feature-card"
 import { motion } from "framer-motion"
+
+const SpaceBackground = lazy(() => import("../components/shared/space-background"))
 
 // Modern Futuristic Icons with enhanced styling
 
@@ -134,7 +135,9 @@ const IndexPage = ({ location }) => {
     <Layout location={location}>
       {/* Hero Section with Particle Background */}
       <section className="hero relative min-h-screen flex items-center justify-center overflow-hidden">
-        <SpaceBackground />
+        <Suspense fallback={null}>
+          <SpaceBackground />
+        </Suspense>
         <div className="min-h-screen bg-gradient-to-b from-gray-900/90 via-gray-900/70 to-gray-900/90 text-white w-full">
           <div className="home-container max-w-6xl mx-auto px-4 py-12 relative z-10">
             {/* Hero Content */}
