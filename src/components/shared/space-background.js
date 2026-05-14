@@ -83,51 +83,49 @@ const SpaceBackground = () => {
     containerRef.current = container;
   }, []);
 
-  // Mobile: skip canvas entirely — CSS gradient, zero JS runtime cost
+  // Mobile: zero JS — CSS gradient using each theme's accent colors
   if (isMobile) {
+    const mobileGradients = {
+      dark:             'radial-gradient(ellipse at 30% 20%, rgba(0,188,212,0.13) 0%, rgba(0,188,212,0.04) 40%, rgba(124,77,255,0.08) 70%, transparent 100%)',
+      light:            'radial-gradient(ellipse at 30% 20%, rgba(0,111,174,0.14) 0%, rgba(0,111,174,0.05) 40%, rgba(90,43,204,0.07) 70%, transparent 100%)',
+      'tokyo-afternoon':'radial-gradient(ellipse at 30% 20%, rgba(184,155,124,0.18) 0%, rgba(184,155,124,0.07) 40%, rgba(138,155,110,0.10) 70%, transparent 100%)',
+      'retro-80s':      'radial-gradient(ellipse at 30% 20%, rgba(255,55,95,0.14) 0%, rgba(255,55,95,0.05) 40%, rgba(0,212,255,0.08) 70%, transparent 100%)',
+    };
     return (
-      <div
-        style={{
-          position: "fixed",
-          width: "100%",
-          height: "100%",
-          zIndex: -1,
-          top: 0,
-          left: 0,
-          background: currentTheme === 'light'
-            ? 'radial-gradient(ellipse at top, rgba(0,111,174,0.08) 0%, transparent 60%)'
-            : currentTheme === 'retro-80s'
-            ? 'radial-gradient(ellipse at top, rgba(255,55,95,0.08) 0%, transparent 60%)'
-            : 'radial-gradient(ellipse at top, rgba(0,188,212,0.06) 0%, transparent 60%)',
-        }}
-      />
+      <div style={{
+        position: "fixed", width: "100%", height: "100%", zIndex: -1, top: 0, left: 0,
+        background: mobileGradients[currentTheme] || mobileGradients.dark,
+      }} />
     );
   }
 
-  // Static background for tokyo-afternoon (no animation, warm/peaceful)
+  // Desktop: only retro-80s gets the particle network — all others use static gradient
+  if (currentTheme === 'dark') {
+    return (
+      <div className="static-gradient-background" style={{
+        background: 'radial-gradient(ellipse at top left, rgba(0,188,212,0.07) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(124,77,255,0.05) 0%, transparent 50%)',
+      }} />
+    );
+  }
+
+  if (currentTheme === 'light') {
+    return (
+      <div className="static-gradient-background" style={{
+        background: 'radial-gradient(ellipse at top left, rgba(0,111,174,0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(90,43,204,0.05) 0%, transparent 50%)',
+      }} />
+    );
+  }
+
   if (currentTheme === 'tokyo-afternoon') {
     return (
-      <div
-        className="static-gradient-background"
-        style={{
-          background: 'radial-gradient(ellipse at top, rgba(184, 155, 124, 0.1) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(138, 155, 110, 0.05) 0%, transparent 50%)',
-        }}
-      />
+      <div className="static-gradient-background" style={{
+        background: 'radial-gradient(ellipse at top, rgba(184,155,124,0.10) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(138,155,110,0.05) 0%, transparent 50%)',
+      }} />
     );
   }
 
-  const getParticleColors = () => {
-    if (currentTheme === 'light') {
-      return { particles: ["#006fae", "#5a2bcc", "#0099cc"], links: "#006fae", linkOpacity: 0.45, nodeOpacity: 0.65 };
-    }
-    if (currentTheme === 'retro-80s') {
-      return { particles: ["#ff375f", "#00d4ff", "#bf5fff"], links: "#ff375f", linkOpacity: 0.5, nodeOpacity: 0.7 };
-    }
-    // dark default — bright node colors, visible links
-    return { particles: ["#00bcd4", "#7c4dff", "#00e5ff"], links: "#00bcd4", linkOpacity: 0.45, nodeOpacity: 0.55 };
-  };
-
-  const colors = getParticleColors();
+  // retro-80s desktop: full particle network
+  const colors = { particles: ["#ff375f", "#00d4ff", "#bf5fff"], links: "#ff375f", linkOpacity: 0.5, nodeOpacity: 0.7 };
 
   return (
     <Particles

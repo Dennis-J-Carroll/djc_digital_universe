@@ -24,12 +24,7 @@ const HeroText = ({ title, description }) => {
           </span>
         </div>
 
-        <motion.div
-          className="name-underline"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        />
+        <div className="name-underline" />
       </div>
 
       {title !== "" && (
