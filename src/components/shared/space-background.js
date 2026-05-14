@@ -118,12 +118,13 @@ const SpaceBackground = () => {
 
   const getParticleColors = () => {
     if (currentTheme === 'light') {
-      return { particles: ["#006fae", "#5a2bcc", "#798996"], links: "#006fae", opacity: 0.4 };
+      return { particles: ["#006fae", "#5a2bcc", "#0099cc"], links: "#006fae", linkOpacity: 0.45, nodeOpacity: 0.65 };
     }
     if (currentTheme === 'retro-80s') {
-      return { particles: ["#ff375f", "#00d4ff", "#ffb800"], links: "#ff375f", opacity: 0.5 };
+      return { particles: ["#ff375f", "#00d4ff", "#bf5fff"], links: "#ff375f", linkOpacity: 0.5, nodeOpacity: 0.7 };
     }
-    return { particles: ["#008080", "#606060", "#888888"], links: "#008080", opacity: 0.25 };
+    // dark default — bright node colors, visible links
+    return { particles: ["#00bcd4", "#7c4dff", "#00e5ff"], links: "#00bcd4", linkOpacity: 0.45, nodeOpacity: 0.55 };
   };
 
   const colors = getParticleColors();
@@ -139,46 +140,41 @@ const SpaceBackground = () => {
         pauseOnBlur: true,
         interactivity: {
           events: {
-            onHover: { enable: true, mode: "connect" },
+            onHover: { enable: true, mode: "grab" },
             onClick: { enable: true, mode: "push" },
           },
           modes: {
-            connect: { distance: 150, links: { opacity: 0.3 }, radius: 120 },
-            push: { quantity: 4 },
+            grab: { distance: 180, links: { opacity: 0.7 } },
+            push: { quantity: 3 },
           },
         },
         particles: {
           color: { value: colors.particles },
           links: {
             color: colors.links,
-            distance: 150,
+            distance: 160,
             enable: true,
-            opacity: colors.opacity,
+            opacity: colors.linkOpacity,
             width: 1,
+            triangles: { enable: false },
           },
           move: {
             enable: true,
             outModes: { default: "out" },
-            random: true,
-            speed: 0.8,
+            random: false,
+            speed: 1.6,
             straight: false,
-            path: { enable: true, delay: { value: 0.1 } },
           },
           number: {
-            density: { enable: true, area: 1000 },
-            value: 30,
+            density: { enable: true, area: 900 },
+            value: 40,
           },
           opacity: {
-            value: 0.6,
-            animation: { enable: true, speed: 0.5, minimumValue: 0.3 },
+            value: colors.nodeOpacity,
           },
           shape: { type: "circle" },
           size: {
-            value: { min: 1, max: 3 },
-            animation: { enable: true, speed: 2, minimumValue: 0.5 },
-          },
-          twinkle: {
-            particles: { enable: true, frequency: 0.05, opacity: 0.8 },
+            value: { min: 1, max: 2 },
           },
         },
         detectRetina: true,
