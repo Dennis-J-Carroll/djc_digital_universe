@@ -46,7 +46,7 @@ const featuredProjects = [
   },
   {
     title: "Personal Portfolio Website",
-    description: "This website - a modern, performant Gatsby site with React components, multiple themes, and 20+ standalone web applications.",
+    description: "This website - a modern, performant Gatsby site with React components, multiple themes, and 24+ standalone web applications.",
     tech: ["React", "Gatsby", "Tailwind CSS", "Framer Motion"],
     github: "https://github.com/Dennis-J-Carroll/personal-website"
   }

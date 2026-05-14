@@ -4,7 +4,14 @@ import Seo from "../components/shared/seo"
 import { motion } from "framer-motion"
 import ClickParticles from "../components/shared/click-particles"
 
-export const Head = () => <Seo title="Contact" description="Get in touch with Dennis Carroll" />
+export const Head = ({ location }) => (
+  <Seo
+    title="Contact"
+    pathname={location.pathname}
+    pageType="contact"
+    description="Get in touch with Dennis J. Carroll — open to collaboration, interesting projects, and conversations about data science, ML, and fiction."
+  />
+)
 
 export default function ContactPage({ location }) {
   const [formState, setFormState] = useState({ name: "", email: "", message: "" })

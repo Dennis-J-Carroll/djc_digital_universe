@@ -111,7 +111,7 @@ export const Head = ({ location }) => (
     title="Creative Writing"
     pathname={location.pathname}
     pageType="collection"
-    description="Explore creative stories and narrative experiments by Dennis J. Carroll."
+    description="Original fiction by Dennis J. Carroll — Crack in the Veil, a post-humanity sci-fi saga, and Kings Blood from A Chronicle of Lyos. Plus shorter narrative experiments."
   />
 )
 

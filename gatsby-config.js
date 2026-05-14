@@ -10,9 +10,9 @@
 module.exports = {
   siteMetadata: {
     title: `Dennis J. Carroll`,
-    description: `A comprehensive personal website showcasing data science, Python development, creative writing, and more.`,
+    description: `Dennis J. Carroll — data scientist, developer, and fiction author. 24+ interactive ML and data science tools, Bayesian analytics work, and three original fictional universes.`,
     author: `@denniscarrollj`,
-    siteUrl: `https://denniscarroll.com`,
+    siteUrl: `https://dennisjcarroll.com`,
   },
   plugins: [
     `gatsby-plugin-image`,
@@ -105,7 +105,7 @@ module.exports = {
             }
           }
         `,
-        resolveSiteUrl: () => 'https://denniscarroll.com',
+        resolveSiteUrl: () => 'https://dennisjcarroll.com',
         serialize: ({ path, allMdx }) => {
           // Find matching MDX node for this path
           const mdxNode = allMdx?.nodes?.find(node =>
