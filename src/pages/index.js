@@ -148,7 +148,7 @@ const IndexPage = ({ location }) => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 3.2 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
                 className="flex flex-wrap justify-center gap-4 mb-16"
               >
                 <Link to="/apps" className="glow-on-hover btn btn-primary-enhanced">
@@ -173,7 +173,7 @@ const IndexPage = ({ location }) => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 3.5 }}
+                transition={{ duration: 1, delay: 0.8 }}
                 className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
               >
                 <motion.div

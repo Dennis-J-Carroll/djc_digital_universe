@@ -8,6 +8,7 @@ const InteractiveCursor = () => {
     const [isHovering, setIsHovering] = useState(false);
     const mousePos = useRef({ x: 0, y: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
+    const rafIdRef = useRef(null);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -16,7 +17,7 @@ const InteractiveCursor = () => {
 
         const handleMouseMove = (e) => {
             mousePos.current = { x: e.clientX, y: e.clientY };
-            if (!isVisible) setIsVisible(true);
+            setIsVisible(true);
             if (cursorDotRef.current) {
                 cursorDotRef.current.style.left = `${e.clientX}px`;
                 cursorDotRef.current.style.top = `${e.clientY}px`;
@@ -35,7 +36,7 @@ const InteractiveCursor = () => {
                 cursorRef.current.style.left = `${cursorPos.current.x}px`;
                 cursorRef.current.style.top = `${cursorPos.current.y}px`;
             }
-            requestAnimationFrame(animateCursor);
+            rafIdRef.current = requestAnimationFrame(animateCursor);
         };
 
         const handleElementHover = () => setIsHovering(true);
@@ -53,16 +54,16 @@ const InteractiveCursor = () => {
         document.addEventListener('mouseenter', handleMouseEnter);
         document.addEventListener('mouseleave', handleMouseLeave);
 
-        const animationId = requestAnimationFrame(animateCursor);
+        rafIdRef.current = requestAnimationFrame(animateCursor);
         setTimeout(addHoverListeners, 1000);
 
         return () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseenter', handleMouseEnter);
             document.removeEventListener('mouseleave', handleMouseLeave);
-            cancelAnimationFrame(animationId);
+            cancelAnimationFrame(rafIdRef.current);
         };
-    }, [isVisible]);
+    }, []);
 
     if (typeof window === 'undefined') return null;
 
