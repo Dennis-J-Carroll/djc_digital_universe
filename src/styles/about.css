@@ -78,8 +78,18 @@
   color: var(--primary-color, #00bcd4);
 }
 
-.icon-1 { top: 15%; left: 10%; }
-.icon-2 { top: 25%; right: 15%; }
+@keyframes djc-float-1 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-15px) rotate(5deg); }
+}
+
+@keyframes djc-float-2 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(15px) rotate(-5deg); }
+}
+
+.icon-1 { top: 15%; left: 10%; animation: djc-float-1 4s ease-in-out infinite; }
+.icon-2 { top: 25%; right: 15%; animation: djc-float-2 3.5s ease-in-out infinite 0.5s; }
 .icon-3 { bottom: 20%; left: 20%; }
 
 .about-section {

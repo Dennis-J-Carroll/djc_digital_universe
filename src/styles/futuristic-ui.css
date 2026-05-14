@@ -771,6 +771,11 @@ body.tokyo-afternoon .blog-post-card p {
   }
 }
 
+@keyframes djc-logo-float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(5px); }
+}
+
 .slide-in-left {
   animation: slideInLeft 0.8s ease forwards;
 }

@@ -158,35 +158,12 @@ const AboutPage = ({ location }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
           >
-            <motion.div
-              className="floating-icon icon-1"
-              animate={{
-                y: [0, -15, 0],
-                rotate: [0, 5, 0]
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
+            <div className="floating-icon icon-1">
               <CodeIcon />
-            </motion.div>
-            <motion.div
-              className="floating-icon icon-2"
-              animate={{
-                y: [0, 15, 0],
-                rotate: [0, -5, 0]
-              }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5
-              }}
-            >
+            </div>
+            <div className="floating-icon icon-2">
               <BrainIcon />
-            </motion.div>
+            </div>
           </motion.div>
         </motion.section>
 

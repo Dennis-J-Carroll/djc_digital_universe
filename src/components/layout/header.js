@@ -91,14 +91,6 @@ const Header = ({ siteTitle }) => {
       { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
     );
 
-    const logoTween = gsap.to(logoRef.current, {
-      y: 5,
-      duration: 2,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
-    });
-
     if (typeof window !== 'undefined') {
       const initialTheme = localStorage.getItem('theme') || 'dark';
       document.body.classList.add(initialTheme + '-theme');
@@ -108,7 +100,6 @@ const Header = ({ siteTitle }) => {
     }
 
     return () => {
-      logoTween.kill();
       if (typeof window !== 'undefined') window.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
@@ -172,7 +163,7 @@ const Header = ({ siteTitle }) => {
         {/* Logo */}
         <div
           ref={logoRef}
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem", animation: "djc-logo-float 2s ease-in-out infinite alternate" }}
         >
           <Link
             to="/"
