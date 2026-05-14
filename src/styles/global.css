@@ -1,8 +1,5 @@
 /* Global CSS Styles */
 
-/* Font imports */
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 /* CSS Variables — canonical values live in futuristic-ui.css :root */
 
@@ -163,7 +160,7 @@ ul.list-none {
   position: relative;
   z-index: 2;
   transition: color 0.3s ease;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   letter-spacing: 0.5px;
   border-radius: 25px;
