@@ -259,7 +259,7 @@
         <tr>
           <th scope="col">x₀</th>
           <th scope="col">Color</th>
-          <th scope="col">Regime at x₀</th>
+          <th scope="col">Regime</th>
         </tr>
       </thead>
       <tbody>
