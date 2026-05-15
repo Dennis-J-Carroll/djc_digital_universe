@@ -194,7 +194,8 @@
   // ---- Reactive redraw on r change ----
 
   $: if (ctx) {
-    r; // tracked dependency
+    r;             // tracked: parabola and cobweb redraw on r change
+    trajectories;  // tracked: redraw when trajectory list changes (imperative draw() calls in addTrajectory/clearTrajectories also fire, but explicit dep prevents silent staleness if those are refactored)
     draw();
   }
 
@@ -342,7 +343,7 @@
 
   .action-btn:hover {
     background: var(--primary);
-    color: #FDFBF7;
+    color: var(--bg);
     border-color: var(--primary);
   }
 
