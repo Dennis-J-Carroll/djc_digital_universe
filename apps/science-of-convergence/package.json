@@ -1,0 +1,21 @@
+{
+  "name": "science-of-convergence",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "svelte": "^4.2.18"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  }
+}
