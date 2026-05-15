@@ -2,13 +2,14 @@
   export let term = '';
   export let definition = '';
   let visible = false;
+  let tooltipId = `gloss-${Math.random().toString(36).slice(2)}`;
 </script>
 
 <span
   class="gloss"
-  role="definition"
   tabindex="0"
-  aria-description={definition}
+  aria-describedby={visible ? tooltipId : undefined}
+  title={definition}
   on:mouseenter={() => visible = true}
   on:mouseleave={() => visible = false}
   on:focus={() => visible = true}
@@ -16,7 +17,7 @@
 >
   {term}
   {#if visible}
-    <span class="popup" role="tooltip">{definition}</span>
+    <span id={tooltipId} class="popup" role="tooltip">{definition}</span>
   {/if}
 </span>
 

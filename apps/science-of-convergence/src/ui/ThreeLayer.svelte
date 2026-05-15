@@ -1,13 +1,31 @@
 <script>
   export let section = '';
+  const TABS = ['conceptual', 'technical', 'computational'];
   let active = 'conceptual';
 
   function setTab(tab) { active = tab; }
+
+  function onKeydown(e, idx) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setTab(TABS[idx]);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = TABS[(idx + 1) % TABS.length];
+      setTab(next);
+      document.getElementById(`tab-${section}-${next}`)?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = TABS[(idx - 1 + TABS.length) % TABS.length];
+      setTab(prev);
+      document.getElementById(`tab-${section}-${prev}`)?.focus();
+    }
+  }
 </script>
 
-<div class="three-layer" aria-label="{section} depth tabs">
-  <div class="tab-bar" role="tablist">
-    {#each [['conceptual','Conceptual'], ['technical','Technical'], ['computational','Computational']] as [id, label]}
+<div class="three-layer">
+  <div class="tab-bar" role="tablist" aria-label="{section} depth">
+    {#each [['conceptual','Conceptual'], ['technical','Technical'], ['computational','Computational']] as [id, label], idx}
       <button
         role="tab"
         id="tab-{section}-{id}"
@@ -15,12 +33,12 @@
         aria-controls="panel-{section}-{id}"
         tabindex={active === id ? 0 : -1}
         on:click={() => setTab(id)}
-        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setTab(id); } }}
+        on:keydown={(e) => onKeydown(e, idx)}
         class:active={active === id}
       >
         {label}
         {#if id !== 'conceptual'}
-          <span class="tag-new" aria-label="new content">new</span>
+          <span class="tag-new" aria-hidden="true">new</span>
         {/if}
       </button>
     {/each}

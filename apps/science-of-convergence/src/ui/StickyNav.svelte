@@ -41,7 +41,7 @@
   {#each sections as s}
     <a
       href="#{s.id}"
-      aria-current={activeId === s.id ? 'location' : undefined}
+      aria-current={activeId === s.id ? 'true' : undefined}
       style="
         color: {activeId === s.id ? '#5a3f28' : '#7B5E4D'};
         font-family: sans-serif;
