@@ -2,7 +2,6 @@
   export let id = 'nadcs';
   import ThreeLayer from '../ui/ThreeLayer.svelte';
   import FormulaBlock from '../ui/FormulaBlock.svelte';
-  import Citation from '../ui/Citation.svelte';
   import GlossaryTerm from '../ui/GlossaryTerm.svelte';
   import PhaseSpaceExplorer from '../visualizations/PhaseSpaceExplorer.svelte';
 </script>
@@ -43,7 +42,7 @@
           { sym: 'n', meaning: 'iteration count (or compute steps, gradient steps, etc.)' },
         ]}
         validity="Valid near critical points (bifurcations, phase transitions, marginally stable attractors). Far from criticality, convergence is geometric."
-        example="For the logistic map near r = 3: β = 1. For gradient descent on a quadratic loss: β = 1 (step-size dependent). For LLM scaling laws (Kaplan 2020): β ≈ 0.07–0.3 depending on the quantity being scaled."
+        example="Critical slowing down near r = 3: the fixed point loses stability (f′(x*) → −1), so geometric convergence slows. A log-log fit of ‖xₙ − x*‖ over moderate iteration windows yields apparent β ≈ 1 — this is not a true power law but an approximation of near-geometric decay in the critical regime. A true power law (β = 1/2) appears in the center-manifold description of convergence TO the 2-cycle born at r = 3. For LLM scaling laws (Kaplan 2020): β ≈ 0.07–0.3 depending on the quantity being scaled."
       />
     </svelte:fragment>
 
@@ -72,7 +71,7 @@ ns = np.arange(1, len(d_near))
 log_ns = np.log(ns)
 log_dn = np.log(d_near[1:] + 1e-15)
 beta = -np.polyfit(log_ns[50:], log_dn[50:], 1)[0]
-print(f"Fitted β near r=3: &#123;beta:.3f&#125;")  # → β ≈ 1.0</pre>
+print(f"Fitted β near r=3: &#123;beta:.3f&#125;")  # → β ≈ 1.0 (log-log fit, not exact power law)</pre>
     </svelte:fragment>
   </ThreeLayer>
 </section>

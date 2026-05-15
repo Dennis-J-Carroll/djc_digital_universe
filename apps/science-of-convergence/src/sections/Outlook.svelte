@@ -2,7 +2,6 @@
   export let id = 'outlook';
   import ThreeLayer from '../ui/ThreeLayer.svelte';
   import Citation from '../ui/Citation.svelte';
-  import GlossaryTerm from '../ui/GlossaryTerm.svelte';
 </script>
 
 <section {id} class="section-card">

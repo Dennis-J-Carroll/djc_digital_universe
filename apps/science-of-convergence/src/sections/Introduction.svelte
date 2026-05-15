@@ -46,7 +46,7 @@
           { sym: 'β', meaning: 'Scaling exponent — the key universal quantity' }
         ]}
         derivation="Near a stable fixed point x* with |f′(x*)| < 1, the linearization gives xₙ − x* ≈ (f′(x*))ⁿ · (x₀ − x*). For power-law scaling to emerge rather than exponential, the system must be near a bifurcation point where |f′(x*)| → 1. In that critical regime, iterated corrections produce the n^(−β) envelope."
-        example="Logistic map at r = 3.0 (onset of period-doubling): x* = 2/3, f′(x*) = r(1−2x*) = −1. The approach to the 2-cycle slows to polynomial speed with β ≈ 0.5. At r = 2.5: x* = 0.6, f′(x*) = −0.5, |f′| = 0.5 — exponential decay at rate 0.5ⁿ."
+        example="Logistic map at r = 3.0 (flip bifurcation): x* = 2/3, f′(x*) = −1. The fixed point loses stability; a 2-cycle is born. Convergence TO that 2-cycle is described by the center-manifold reduction, giving β = 1/2 (polynomial). At r = 2.5: x* = 0.6, f′(x*) = −0.5 — exponential decay at rate 0.5ⁿ, no power-law phase."
       />
       <p style="margin-top: 0.8em;">The
         <GlossaryTerm term="scaling exponent" definition="The exponent β in ‖xₙ − A*‖ ∝ n^(-β). Universal scaling exponents are shared across all systems in the same universality class." />
