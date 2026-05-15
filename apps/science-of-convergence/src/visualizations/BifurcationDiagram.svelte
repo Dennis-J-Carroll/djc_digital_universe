@@ -23,6 +23,7 @@
   const TABLE_RS = [2.5, 2.8, 3.0, 3.2, 3.449, 3.544, 3.57, 4.0];
 
   let canvas;
+  let ctx = null;
   let rMin = R_MIN_DEFAULT;
   let rMax = R_MAX_DEFAULT;
   let showFeigenbaum = false;
@@ -56,19 +57,20 @@
   // ---- Rendering ----
 
   function draw() {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     ctx.clearRect(0, 0, CW, CH);
 
     // Background
     ctx.fillStyle = '#FDFBF7';
     ctx.fillRect(0, 0, CW, CH);
 
-    // Bifurcation points
+    // Bifurcation points — batched into one path for performance
     ctx.fillStyle = 'rgba(160,124,91,0.35)';
+    ctx.beginPath();
     for (const { cx, cy } of points) {
-      ctx.fillRect(cx - 0.8, cy - 0.8, 1.6, 1.6);
+      ctx.rect(cx - 0.8, cy - 0.8, 1.6, 1.6);
     }
+    ctx.fill();
 
     // Feigenbaum annotations
     if (showFeigenbaum) {
@@ -176,12 +178,14 @@
 
   $: isDefaultZoom = rMin === R_MIN_DEFAULT && rMax === R_MAX_DEFAULT;
 
-  // Redraw when showFeigenbaum changes (no recomputation needed)
+  // Explicit dependency on showFeigenbaum so Svelte tracks it for redraw
   $: if (canvas && points.length > 0) {
+    showFeigenbaum; // tracked dependency — toggling rerenders Feigenbaum lines
     draw();
   }
 
   onMount(() => {
+    ctx = canvas.getContext('2d');
     points = computePoints(rMin, rMax);
     draw();
   });
