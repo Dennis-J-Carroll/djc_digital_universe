@@ -36,6 +36,8 @@
     padding: 0 20px;
     gap: 4px;
     overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   "
 >
   {#each sections as s}
@@ -45,15 +47,16 @@
       style="
         color: {activeId === s.id ? '#5a3f28' : '#7B5E4D'};
         font-family: sans-serif;
-        font-size: 0.78em;
-        letter-spacing: 0.03em;
+        font-size: 0.75em;
+        letter-spacing: 0.02em;
         text-decoration: none;
-        padding: 6px 10px;
+        padding: 6px 8px;
         border-radius: 4px;
         border-bottom: 2px solid {activeId === s.id ? '#5a3f28' : 'transparent'};
         white-space: nowrap;
         transition: color 0.15s, border-color 0.15s;
         font-weight: {activeId === s.id ? '600' : '400'};
+        flex-shrink: 0;
       "
     >{s.label}</a>
   {/each}

@@ -127,7 +127,7 @@ const interactiveApps = [
     },
     {
       title: 'The Science of Convergence',
-      path: '/apps/The Science of Convergence.html',
+      path: '/apps/convergence/',
       description: 'Interactive exploration of universal scaling laws, Numerical Attractor Descent Curves (NADCs), and the mathematics of convergence in dynamical systems.',
       category: 'Math'
     },
