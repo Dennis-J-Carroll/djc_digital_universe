@@ -19,8 +19,8 @@ export function runIterations(x0, r, n) {
  * Count distinct attractor points after warmup.
  * Uses tolerance 1e-5 to bucket values.
  */
-function attractorPeriod(r, warmup = 500, sample = 200) {
-  let x = 0.5;
+function attractorPeriod(r, warmup = 2000, sample = 200) {
+  let x = 0.31415;
   for (let i = 0; i < warmup; i++) x = iterate(x, r);
   const vals = new Set();
   for (let i = 0; i < sample; i++) {
@@ -78,7 +78,7 @@ export function cobwebData(x0, r, steps = 60) {
  * Discards warmup, returns plotted values.
  */
 export function bifurcationSamples(r, warmup = 400, samples = 400) {
-  let x = 0.5;
+  let x = 0.31415;
   for (let i = 0; i < warmup; i++) x = iterate(x, r);
   const out = [];
   for (let i = 0; i < samples; i++) {
@@ -97,8 +97,8 @@ export function regime(r) {
     const xstar = 1 - 1 / r;
     return `stable fixed point (x* ≈ ${xstar.toFixed(3)})`;
   }
-  if (r < 3.449) return 'stable 2-cycle';
-  if (r < 3.544) return 'stable 4-cycle';
-  if (r < 3.57) return 'period-doubling cascade';
+  if (r < 3.44949) return 'stable 2-cycle';
+  if (r < 3.54409) return 'stable 4-cycle';
+  if (r < 3.56995) return 'period-doubling cascade';
   return 'chaotic regime';
 }

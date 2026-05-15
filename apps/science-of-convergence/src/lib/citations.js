@@ -22,7 +22,6 @@ export const citations = {
   banta2025: {
     short: 'Banta et al., 2025',
     full: 'Banta, J., et al. (2025). Renormalization Group for Deep Neural Networks: Universality of Learning and Scaling Laws. arXiv preprint.',
-    url: 'https://arxiv.org/abs/2502.00000',
   },
   jacot2018: {
     short: 'Jacot et al., 2018',

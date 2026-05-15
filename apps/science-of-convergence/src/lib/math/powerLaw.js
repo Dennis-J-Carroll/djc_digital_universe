@@ -18,6 +18,8 @@ export function exponentialDecay(n, A, lambda) {
  */
 export function fitPowerLaw(xs, ys) {
   const n = xs.length;
+  if (n < 2) throw new RangeError('fitPowerLaw requires at least 2 points');
+  if (xs.some(x => x <= 0) || ys.some(y => y <= 0)) throw new RangeError('fitPowerLaw requires all positive values');
   const logX = xs.map(Math.log);
   const logY = ys.map(Math.log);
   const sumX = logX.reduce((a, b) => a + b, 0);
