@@ -3,6 +3,7 @@
   import GlossaryTerm from '../ui/GlossaryTerm.svelte';
   import ThreeLayer from '../ui/ThreeLayer.svelte';
   import Citation from '../ui/Citation.svelte';
+  import FormulaBlock from '../ui/FormulaBlock.svelte';
 </script>
 
 <section {id} class="section-card">
@@ -35,9 +36,21 @@
       <p>The central mathematical object is a dynamical system <em>f: X → X</em> with an
         <GlossaryTerm term="attractor" definition="A set of states toward which a system evolves under iteration, independent of initial conditions within a basin of attraction." />
         A* ⊂ X. We study how the sequence x₀, f(x₀), f²(x₀), ... approaches A*.</p>
-      <p style="margin-top: 0.8em;">When the approach is characterized by a power law ‖xₙ − A*‖ ∝ n<sup>−β</sup>, the
+      <p style="margin-top: 0.8em;">When the approach is lawful, the distance to the attractor follows a <strong>universal scaling relation</strong>:</p>
+      <FormulaBlock
+        formula="‖xₙ − A*‖ ∝ n^(−β)"
+        symbols={[
+          { sym: 'xₙ', meaning: 'State after n iterations of the map f' },
+          { sym: 'A*', meaning: 'The attractor (fixed point, limit cycle, or chaotic set)' },
+          { sym: 'n', meaning: 'Iteration count (discrete time)' },
+          { sym: 'β', meaning: 'Scaling exponent — the key universal quantity' }
+        ]}
+        derivation="Near a stable fixed point x* with |f′(x*)| < 1, the linearization gives xₙ − x* ≈ (f′(x*))ⁿ · (x₀ − x*). For power-law scaling to emerge rather than exponential, the system must be near a bifurcation point where |f′(x*)| → 1. In that critical regime, iterated corrections produce the n^(−β) envelope."
+        example="Logistic map at r = 3.0 (onset of period-doubling): x* = 2/3, f′(x*) = r(1−2x*) = −1. The approach to the 2-cycle slows to polynomial speed with β ≈ 0.5. At r = 2.5: x* = 0.6, f′(x*) = −0.5, |f′| = 0.5 — exponential decay at rate 0.5ⁿ."
+      />
+      <p style="margin-top: 0.8em;">The
         <GlossaryTerm term="scaling exponent" definition="The exponent β in ‖xₙ − A*‖ ∝ n^(-β). Universal scaling exponents are shared across all systems in the same universality class." />
-        β is often universal: the same for a wide basin of initial conditions and even for structurally different maps near the same
+        β is often universal: identical for a wide basin of initial conditions and even for structurally different maps within the same
         <GlossaryTerm term="universality class" definition="A set of distinct systems sharing identical critical exponents, determined by dimension and symmetry rather than microscopic details." />.
       </p>
       <p style="margin-top: 0.8em;">The <Citation key="feigenbaum1978" /> discovery of a universal constant δ ≈ 4.669 in period-doubling cascades was the first rigorous demonstration of this universality in a concrete family of dynamical systems.</p>
