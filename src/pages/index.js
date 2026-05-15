@@ -1,5 +1,4 @@
 import React, { useState, lazy, Suspense } from "react"
-import ClickParticles from "../components/shared/click-particles"
 import { Link } from "gatsby"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
@@ -134,7 +133,6 @@ const IndexPage = ({ location }) => {
 
   return (
     <Layout location={location}>
-      <ClickParticles />
       {/* Hero Section with Particle Background */}
       <section className="hero relative min-h-screen flex items-center justify-center overflow-hidden">
         <Suspense fallback={null}>

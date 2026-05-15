@@ -26,11 +26,6 @@
   display: inline-flex;
 }
 
-@keyframes djc-particle-burst {
-  0%   { transform: translate(-50%, -50%) translate(0px, 0px) scale(1); opacity: 1; }
-  60%  { opacity: 0.7; }
-  100% { transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; }
-}
 
 @keyframes djc-letter-reveal {
   from { opacity: 0; transform: translateY(8px); }

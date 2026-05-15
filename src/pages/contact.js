@@ -2,7 +2,6 @@ import React, { useState } from "react"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 import { motion } from "framer-motion"
-import ClickParticles from "../components/shared/click-particles"
 
 export const Head = ({ location }) => (
   <Seo
@@ -53,7 +52,6 @@ export default function ContactPage({ location }) {
 
   return (
     <Layout location={location}>
-      <ClickParticles />
       <motion.section
         className="contact-section py-24 px-4 relative overflow-hidden min-h-screen"
         initial={{ opacity: 0 }}
