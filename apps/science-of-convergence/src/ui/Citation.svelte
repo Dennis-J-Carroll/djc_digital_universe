@@ -14,12 +14,12 @@
 
 <style>
   .cite {
-    color: var(--primary);
+    color: var(--cite-color);
     font-size: 0.82em;
     font-family: sans-serif;
     text-decoration: none;
-    border-bottom: 1px dashed var(--primary);
+    border-bottom: 1px dashed var(--cite-color);
     white-space: nowrap;
   }
-  .cite:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
+  .cite:focus-visible { outline: 2px solid var(--cite-color); outline-offset: 2px; border-radius: 2px; }
 </style>

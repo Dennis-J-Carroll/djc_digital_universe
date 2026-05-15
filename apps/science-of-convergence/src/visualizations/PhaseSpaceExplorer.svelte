@@ -237,8 +237,8 @@
   </div>
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <!-- svelte-ignore a11y-role-has-required-interactive-content -->
-  <!-- role="img" on canvas is valid per ARIA spec; Svelte linter incorrectly flags it -->
+  <!-- svelte-ignore a11y-no-interactive-element-to-noninteractive-role -->
+  <!-- role="img" on canvas is valid per ARIA 1.2; Svelte 4 linter does not support ARIA 1.2 canvas roles -->
   <canvas
     bind:this={canvas}
     width={CW}

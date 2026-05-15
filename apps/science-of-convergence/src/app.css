@@ -10,6 +10,7 @@
   --card-bg: #FFFFFF;
   --appbar-height: 44px;
   --nav-height: 48px;
+  --cite-color: #6B4F3A; /* ~5.2:1 contrast on #FDFBF7 — WCAG AA compliant for small text */
 }
 
 html { scroll-behavior: smooth; }

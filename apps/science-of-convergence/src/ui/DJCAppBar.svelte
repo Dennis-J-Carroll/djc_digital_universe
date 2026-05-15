@@ -1,5 +1,4 @@
 <header
-  role="banner"
   style="
     height: var(--appbar-height);
     background: #1a1201;
