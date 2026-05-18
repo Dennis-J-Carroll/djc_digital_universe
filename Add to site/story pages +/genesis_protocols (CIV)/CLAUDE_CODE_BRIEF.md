@@ -459,7 +459,7 @@ class LandingScreen(ScrollableContainer):
         yield Static("")
         yield Static("AVAILABLE ARCS:", classes="section-label")
         yield Static(
-            "  [1] CAPTAIN CAL McLAREN  —  Echo-Naut, Kesslar Sector, Year 5686\n"
+            "  [1] CAPTAIN CAL McLAREN  —  Echo-Naut, Kesslar Sector, Year 3567\n"
             "  [2] DETECTIVE MARIA McLAREN  —  Organ black market, New Earth\n"
             "  [3] THE REJOICE NATION  —  Breakaway society, post-N8K7\n"
             "  [4] THE NERVED  —  Those who refused treatment\n",
@@ -544,7 +544,7 @@ class ProbChainScreen(ScrollableContainer):
              "P(>=1 hit | 6 planets) = 1 - (1 - 0.76)^6 = 99.98%"),
             ("RECOVERED HONEST MODEL (v1.0 parameters restored)",
              honest, "TRUE BASELINE", "warning",
-             "P(>=1 hit | 6 planets) = 1 - (0.865)^6 = 59.97%"),
+             "P(>=1 hit | 6 planets) = 1 - (0.86)(0.89)(0.83)(0.90)(0.84)(0.88) = 57.74%"),
             ("HONEST MODEL + EARTH PROXIMITY FACTOR",
              w_prox, "FULL MODEL", "success",
              "P(>=1 hit) = 1 - prod_i(1 - p_i * e^(-d_i/400)) = 3.24%"),
