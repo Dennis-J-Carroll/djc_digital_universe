@@ -219,7 +219,7 @@ export default function QSRIFile() {
               { label: "FILED MODEL (MIRRO CORP, 2037)", prob: reportedCombined, color: "#ff2d4b", tag: "MANIPULATED",
                 formula: "P(≥1 hit) = 1 − (1 − 0.76̄)⁶  =  1 − 0.000191  =  99.98%" },
               { label: "HONEST MODEL (RECOVERED PARAMETERS)", prob: trueCombined, color: "#f5a623", tag: "TRUE BASELINE",
-                formula: "P(≥1 hit) = 1 − (1 − 0.135̄)⁶  =  1 − (0.865)⁶  =  59.97%" },
+                formula: "P(≥1 hit) = 1 − (0.86)(0.89)(0.83)(0.90)(0.84)(0.88)  =  57.74%" },
               { label: "HONEST + EARTH PROXIMITY FACTOR", prob: proxCombined, color: "#00c9b1", tag: "FULL MODEL",
                 formula: "P(≥1 hit) = 1 − ∏ᵢ(1 − pᵢ · e^(−dᵢ/400))  →  see Tab 3" },
             ].map((v, i) => (
@@ -397,7 +397,7 @@ const LORE = {
     { name:"Phase 4 · Deployed",epochs:"848+",    suffer: 1.2,  memory: 71, identity: 89, reality: 94 },
   ],
   isovox: {
-    filed: 99.98, honest: 59.97, withProx: 3.24, earthProx: 94.0,
+    filed: 99.98, honest: 57.74, withProx: 3.24, earthProx: 94.0,
     params: [
       { name:"prior_sector_isovox",        filed:"0.87", truth:"0.23", delta:"+278%", flag:"CRITICAL" },
       { name:"spectral_signal_weight",     filed:"0.89", truth:"0.34", delta:"+162%", flag:"CRITICAL" },
@@ -778,7 +778,7 @@ export default function QSRIFile() {
                 tag="TRUE BASELINE"
                 prob={trueComb}
                 color={C.amber}
-                formula={`P(≥1 hit | 6 planets) = 1 − (1 − 0.135̄)⁶ = 1 − (0.865)⁶ ≈ 59.97%`}
+                formula={`P(≥1 hit | 6 planets) = 1 − (0.86)(0.89)(0.83)(0.90)(0.84)(0.88) = 57.74%`}
                 note="Per-planet average: ~0.135. Still a reasonable mission justification — but not the near-certainty presented. The mission would have required additional review at this probability."
               />
               <ProbBlock
@@ -1251,7 +1251,7 @@ export default function QSRIRecovered(){
             <ProbCard
               label="RECOVERED HONEST MODEL (v1.0 parameters restored)"
               tag="TRUE BASELINE" prob={honest} col={C.amber}
-              formula="P(≥1 hit | 6 planets) = 1 − (1 − 0.135̄)⁶ = 1 − (0.865)⁶ ≈ 59.97%"
+              formula="P(≥1 hit | 6 planets) = 1 − (0.86)(0.89)(0.83)(0.90)(0.84)(0.88) = 57.74%"
               note="Per-planet average ~0.135. A defensible mission justification — but not near-certainty. This probability requires additional review under QSRI protocol. That review never happened."
             />
             <ProbCard
@@ -1947,7 +1947,7 @@ export default function QSRIRecovered(){
               note="Per-planet average ~0.76. Inflated priors, deleted penalties, missing proximity variable. Presented to Echo-Naut briefings as definitive."/>
             <ProbCard label="RECOVERED HONEST MODEL (v1.0 parameters restored)" tag="TRUE BASELINE"
               prob={honest} col={C.amber}
-              formula="P(≥1 hit | 6 planets) = 1 − (1 − 0.135̄)⁶ = 1 − (0.865)⁶ ≈ 59.97%"
+              formula="P(≥1 hit | 6 planets) = 1 − (0.86)(0.89)(0.83)(0.90)(0.84)(0.88) = 57.74%"
               note="Per-planet average ~0.135. Still defensible — but requires additional QSRI protocol review at this probability. That review never happened."/>
             <ProbCard label="HONEST MODEL + EARTH PROXIMITY FACTOR" tag="FULL MODEL"
               prob={withProx} col={C.teal}
