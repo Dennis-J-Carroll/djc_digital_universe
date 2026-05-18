@@ -1,13 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLI University - Menu</title>
+    <title>CLI University - Learn Vim, tmux &amp; CLI Development</title>
+    <!-- Fix #3: SEO meta tags -->
+    <meta name="description" content="CLI University is a free, interactive guide to mastering Vim, tmux, and command-line development with Go, Python, and Rust. 15 beginner-friendly lessons with a terminal-style interface.">
+    <meta name="keywords" content="Vim tutorial, tmux guide, CLI development, command line, terminal, Neovim, shell scripting, Go CLI, Python CLI, Rust CLI">
+    <meta name="author" content="Dennis J. Carroll">
+    <!-- Open Graph -->
+    <meta property="og:title" content="CLI University - Learn Vim, tmux &amp; CLI Development">
+    <meta property="og:description" content="Free interactive terminal-style lessons for mastering Vim, tmux, and building CLI tools with Go, Python, and Rust.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dennisjcarroll.com/apps/cli_uni">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CLI University">
+    <meta name="twitter:description" content="Learn Vim, tmux &amp; CLI development in your browser.">
+    <!-- Fix #3: JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "CLI University",
+        "description": "Interactive lessons for mastering Vim, tmux, and CLI development",
+        "provider": { "@type": "Organization", "name": "Dennis J. Carroll" },
+        "educationalLevel": "Beginner",
+        "inLanguage": "en",
+        "hasCourseInstance": { "@type": "CourseInstance", "courseMode": "online", "courseWorkload": "PT2H" }
+    }
+    </script>
+    <!-- Fix #8: Set theme before render to avoid flash -->
+    <script>
+    (function() {
+        var saved = localStorage.getItem('cli-uni-theme');
+        if (saved) { document.documentElement.setAttribute('data-theme', saved); }
+        else {
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+    })();
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
-        :root {
+        /* Fix #8: Catppuccin Mocha (dark) + Catppuccin Latte (light) */
+        :root,
+        :root[data-theme="dark"] {
             --background: #1e1e2e;
             --foreground: #cdd6f4;
             --green: #a6e3a1;
@@ -17,28 +56,96 @@
             --yellow: #f9e2af;
             --subtext: #a6adc8;
             --overlay: #9399b2;
+            --surface: #313244;
+            --surface2: #45475a;
         }
+        :root[data-theme="light"] {
+            --background: #eff1f5;
+            --foreground: #4c4f69;
+            --green: #40a02b;
+            --blue: #1e66f5;
+            --mauve: #8839ef;
+            --red: #d20f39;
+            --yellow: #df8e1d;
+            --subtext: #6c6f85;
+            --overlay: #9ca0b0;
+            --surface: #ccd0da;
+            --surface2: #bcc0cc;
+        }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) {
+                --background: #eff1f5; --foreground: #4c4f69; --green: #40a02b;
+                --blue: #1e66f5; --mauve: #8839ef; --red: #d20f39; --yellow: #df8e1d;
+                --subtext: #6c6f85; --overlay: #9ca0b0; --surface: #ccd0da; --surface2: #bcc0cc;
+            }
+        }
+
+        /* Fix #2: Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--blue);
+            color: var(--background);
+            padding: 8px 16px;
+            z-index: 10001;
+            font-size: 14px;
+            text-decoration: none;
+            transition: top 0.2s;
+            font-family: 'Fira Code', monospace;
+        }
+        .skip-link:focus { top: 0; }
 
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
         }
-
         body {
             background-color: var(--background);
             color: var(--foreground);
             font-family: 'Fira Code', monospace;
             font-size: 16px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            padding: 20px;
+            overflow: hidden;
         }
 
+        /* Fix #1: Hamburger (hidden on desktop) */
+        #hamburger {
+            display: none;
+            position: fixed;
+            top: 52px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--surface);
+            border: 1px solid var(--overlay);
+            color: var(--foreground);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            min-width: 44px;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+        }
+        #hamburger:focus { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+        /* Fix #1: Overlay behind drawer */
+        #menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        #menu-overlay.open { display: block; }
+
         #terminal-window {
-            width: 100%;
+            width: calc(100% - 40px);
             max-width: 1000px;
             height: 90vh;
             border: 1px solid var(--overlay);
@@ -48,103 +155,314 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            margin: 0 20px;
         }
 
-        #title-bar {
-            padding: 8px;
-            background-color: #313244;
+        /* Fix #2: Semantic header */
+        header#title-bar {
+            padding: 8px 12px;
+            background-color: var(--surface);
             border-bottom: 1px solid var(--overlay);
-            text-align: center;
             color: var(--subtext);
             font-weight: bold;
             user-select: none;
-        }
-
-        #main-content {
             display: flex;
-            flex-grow: 1;
-            overflow: hidden;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        #breadcrumb { flex: 1; text-align: center; font-size: 13px; }
+
+        /* Fix #7: Progress bar */
+        #progress-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        #progress-label { font-size: 11px; color: var(--subtext); white-space: nowrap; }
+        #progress-container {
+            height: 4px;
+            background: var(--surface2);
+            border-radius: 2px;
+            width: 60px;
+        }
+        #progress-bar {
+            height: 100%;
+            background: var(--green);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
         }
 
-        #menu {
+        /* Fix #8: Theme toggle */
+        #theme-toggle {
+            background: none;
+            border: 1px solid var(--overlay);
+            color: var(--foreground);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            min-width: 32px;
+            min-height: 28px;
+            flex-shrink: 0;
+        }
+        #theme-toggle:hover { border-color: var(--blue); }
+        #theme-toggle:focus { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+        #main-content { display: flex; flex-grow: 1; overflow: hidden; }
+
+        /* Fix #2: Semantic nav */
+        nav#menu {
             width: 250px;
             min-width: 250px;
             border-right: 1px solid var(--overlay);
             padding: 15px;
             overflow-y: auto;
+            background: var(--background);
         }
-
-        #content-display {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
-        h2 {
+        nav#menu h2 {
             color: var(--mauve);
             border-bottom: 1px solid var(--mauve);
             padding-bottom: 5px;
             margin-top: 0;
+            font-size: 14px;
         }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-        }
+        ul { list-style-type: none; padding: 0; margin: 0 0 20px 0; }
+        li { padding: 0; margin-bottom: 2px; }
 
-        li {
+        nav#menu li a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 8px 10px;
-            margin-bottom: 5px;
-            cursor: pointer;
             border-radius: 4px;
             transition: background-color 0.2s, color 0.2s;
             color: var(--subtext);
+            text-decoration: none;
+            font-size: 14px;
+            min-height: 44px;
+            box-sizing: border-box;
         }
+        nav#menu li a:hover { background-color: var(--surface2); color: var(--foreground); }
+        nav#menu li a.active { background-color: var(--blue); color: var(--background); font-weight: bold; }
+        nav#menu li a:focus { outline: 2px solid var(--blue); outline-offset: -2px; }
 
-        li:hover {
-            background-color: #45475a;
-            color: var(--foreground);
-        }
-        
-        li.active {
-            background-color: var(--blue);
-            color: var(--background);
-            font-weight: bold;
-        }
+        .lesson-check { color: var(--green); font-size: 12px; flex-shrink: 0; }
 
-        #content-display h2, #content-display h3 {
-           color: var(--mauve);
-           border-bottom: none;
+        /* Fix #2: Semantic main */
+        main#content-display {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            word-wrap: break-word;
         }
-        
-        #content-display h3 {
-            color: var(--blue);
-            margin-top: 20px;
-        }
-        
-        #content-display code {
-            background-color: #313244;
+        main#content-display:focus { outline: none; }
+
+        main#content-display h2 { color: var(--mauve); border-bottom: none; margin-top: 0; }
+        main#content-display h3 { color: var(--blue); margin-top: 20px; }
+        main#content-display code {
+            background-color: var(--surface);
             color: var(--yellow);
             padding: 2px 5px;
             border-radius: 4px;
         }
-
-        #content-display pre {
-            background-color: #313244;
+        main#content-display pre {
+            background-color: var(--surface);
             padding: 15px;
             border-radius: 5px;
             overflow-x: auto;
-            border: 1px solid var(--subtext);
+            border: 1px solid var(--overlay);
+            position: relative;
+        }
+        main#content-display pre code { background: none; padding: 0; color: var(--foreground); }
+
+        /* Fix #4: Copy button */
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--overlay);
+            color: var(--background);
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Fira Code', monospace;
+            opacity: 0.8;
+            transition: opacity 0.2s, background 0.2s;
+        }
+        .copy-btn:hover { background: var(--blue); opacity: 1; }
+        .copy-btn:focus { outline: 2px solid var(--blue); }
+
+        /* Fix #4: Quiz */
+        .quiz-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 8px;
+            border-left: 3px solid var(--mauve);
+        }
+        .quiz-section h3 { color: var(--mauve); margin-top: 0; }
+        .quiz-question { margin-bottom: 20px; }
+        .quiz-question p { margin-bottom: 8px; }
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.15s;
+        }
+        .quiz-option:hover { background: var(--surface2); }
+        .quiz-option input[type="radio"] { accent-color: var(--blue); }
+        .quiz-check-btn {
+            background: var(--blue);
+            color: var(--background);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .quiz-check-btn:hover { opacity: 0.9; }
+        .quiz-check-btn:focus { outline: 2px solid var(--mauve); outline-offset: 2px; }
+        .quiz-feedback { min-height: 40px; }
+        .quiz-result {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .quiz-result.pass { background: rgba(166,227,161,0.15); color: var(--green); border: 1px solid var(--green); }
+        .quiz-result.fail { background: rgba(243,139,168,0.15); color: var(--red); border: 1px solid var(--red); }
+
+        /* Fix #7: Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--surface);
+            color: var(--foreground);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid var(--overlay);
+            font-size: 13px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 2000;
+            max-width: 300px;
+        }
+        .toast.visible { opacity: 1; transform: translateY(0); }
+
+        /* Fix #6: Help overlay */
+        #help-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        #help-overlay.open { display: flex; }
+        #help-panel {
+            background: var(--surface);
+            border: 1px solid var(--overlay);
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 480px;
+            width: 90%;
+            color: var(--foreground);
+        }
+        #help-panel h2 { color: var(--mauve); margin-top: 0; border-bottom: 1px solid var(--mauve); padding-bottom: 8px; }
+        .shortcut-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .shortcut-key {
+            background: var(--surface2);
+            color: var(--blue);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 36px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        #help-close {
+            margin-top: 16px;
+            background: var(--overlay);
+            color: var(--background);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+        }
+        #help-close:focus { outline: 2px solid var(--blue); }
+
+        /* Fix #1: Mobile responsive */
+        @media (max-width: 768px) {
+            body { overflow: hidden; }
+            #hamburger { display: flex; }
+            #terminal-window {
+                height: calc(100vh - 44px);
+                max-width: 100%;
+                width: 100%;
+                border-radius: 0;
+                border: none;
+                margin: 0;
+            }
+            #main-content { flex-direction: column; overflow: hidden; }
+            nav#menu {
+                position: fixed;
+                top: 88px;
+                left: -270px;
+                width: 260px;
+                min-width: 260px;
+                height: calc(100vh - 88px);
+                z-index: 999;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 12px rgba(0,0,0,0.4);
+                border-right: none;
+            }
+            nav#menu.open { left: 0; }
+            main#content-display { padding: 15px; font-size: 14px; }
+        }
+        @media (max-width: 480px) {
+            body { font-size: 14px; }
+            main#content-display { padding: 10px; }
+            main#content-display pre { font-size: 12px; padding: 10px; }
+            #breadcrumb { font-size: 11px; }
         }
 
+        /* Fix #10: Print styles */
+        @media print {
+            .djc-app-bar, #hamburger, #menu-overlay, nav#menu,
+            header#title-bar, .copy-btn, .quiz-section, .toast,
+            #help-overlay, .skip-link { display: none !important; }
+            #terminal-window { border: none; box-shadow: none; max-width: 100%; height: auto; overflow: visible; }
+            #main-content { display: block; overflow: visible; }
+            main#content-display { color: #000; background: #fff; padding: 0; font-size: 11pt; overflow: visible; }
+            main#content-display h2 { color: #000; border-bottom: 1px solid #ccc; page-break-after: avoid; }
+            main#content-display h3 { color: #333; page-break-after: avoid; }
+            main#content-display pre { background: #f5f5f5; border: 1px solid #ddd; page-break-inside: avoid; font-size: 9pt; color: #333; }
+            main#content-display code { background: #f5f5f5; color: #333; }
+            @page { margin: 2cm; size: A4; }
+        }
     </style>
 </head>
 <body>
+
+<!-- Fix #2: Skip link -->
+<a href="#content-display" class="skip-link">Skip to lesson content</a>
+
+<!-- App bar -->
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;width:100%;box-sizing:border-box;}
   .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
   .djc-app-bar a:hover{color:#67e8f9;}
   .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
@@ -152,57 +470,102 @@
 </style>
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
-    <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
+    <a href="/apps/" style="flex-shrink:0;">&#8592; Back to Projects</a>
     <span style="color:#4b5563;flex-shrink:0;">|</span>
     <span class="djc-title">CLI University</span>
   </div>
   <a href="/" class="djc-logo">DJC</a>
 </div>
 
+<!-- Fix #1: Hamburger -->
+<button id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="menu">&#9776;</button>
+<!-- Fix #1: Menu overlay -->
+<div id="menu-overlay" role="presentation"></div>
+
+<!-- Fix #6: Keyboard help overlay -->
+<div id="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div id="help-panel">
+        <h2 id="help-title">Keyboard Shortcuts</h2>
+        <div class="shortcut-row"><span class="shortcut-key">j</span><span>Next lesson</span></div>
+        <div class="shortcut-row"><span class="shortcut-key">k</span><span>Previous lesson</span></div>
+        <div class="shortcut-row"><span class="shortcut-key">g</span><span>First lesson</span></div>
+        <div class="shortcut-row"><span class="shortcut-key">G</span><span>Last lesson</span></div>
+        <div class="shortcut-row"><span class="shortcut-key">?</span><span>Toggle this help</span></div>
+        <div class="shortcut-row"><span class="shortcut-key">Esc</span><span>Close help / close menu</span></div>
+        <button id="help-close">Close [Esc]</button>
+    </div>
+</div>
+
 <div id="terminal-window">
-    <div id="title-bar">~/cli-university/menu</div>
+    <!-- Fix #2: Semantic header with breadcrumb + progress + theme toggle -->
+    <header id="title-bar" role="banner">
+        <button id="theme-toggle" aria-label="Switch to light theme">&#9728;</button>
+        <span aria-live="polite" id="breadcrumb">~/cli-university/menu</span>
+        <div id="progress-wrap">
+            <span id="progress-label" aria-label="Lesson progress">0/15</span>
+            <div id="progress-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Course completion">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+    </header>
     <div id="main-content">
-        <div id="menu">
-            <h2>Topics</h2>
-            <ul id="vim-menu">
+        <!-- Fix #2: Semantic nav with ARIA -->
+        <nav id="menu" aria-label="Lesson navigation">
+            <h2 id="topics-vim">Topics</h2>
+            <ul aria-labelledby="topics-vim">
                 <li><a href="#" data-topic="vim" data-lesson="philosophy">Vim: Philosophy</a></li>
                 <li><a href="#" data-topic="vim" data-lesson="basics">Vim: Basics</a></li>
                 <li><a href="#" data-topic="vim" data-lesson="editing">Vim: Editing</a></li>
                 <li><a href="#" data-topic="vim" data-lesson="modes">Vim: Modes</a></li>
                 <li><a href="#" data-topic="vim" data-lesson="advanced">Vim: Advanced</a></li>
             </ul>
-             <h2>Tools</h2>
-            <ul id="tmux-menu">
-                 <li><a href="#" data-topic="tmux" data-lesson="intro">Tmux: Intro</a></li>
-                 <li><a href="#" data-topic="tmux" data-lesson="sessions">Tmux: Sessions</a></li>
-                 <li><a href="#" data-topic="tmux" data-lesson="windows">Tmux: Windows</a></li>
-                 <li><a href="#" data-topic="tmux" data-lesson="panes">Tmux: Panes</a></li>
+            <h2 id="topics-tools">Tools</h2>
+            <ul aria-labelledby="topics-tools">
+                <li><a href="#" data-topic="tmux" data-lesson="intro">Tmux: Intro</a></li>
+                <li><a href="#" data-topic="tmux" data-lesson="sessions">Tmux: Sessions</a></li>
+                <li><a href="#" data-topic="tmux" data-lesson="windows">Tmux: Windows</a></li>
+                <li><a href="#" data-topic="tmux" data-lesson="panes">Tmux: Panes</a></li>
             </ul>
-            <h2>Building</h2>
-            <ul id="cli-menu">
-                 <li><a href="#" data-topic="cli" data-lesson="intro">CLI: Intro</a></li>
-                 <li><a href="#" data-topic="cli" data-lesson="streams">CLI: Streams & Pipes</a></li>
-                 <li><a href="#" data-topic="cli" data-lesson="go">CLI: Using Go</a></li>
-                 <li><a href="#" data-topic="cli" data-lesson="python">CLI: Using Python</a></li>
-                 <li><a href="#" data-topic="cli" data-lesson="rust">CLI: Using Rust</a></li>
-                 <li><a href="#" data-topic="cli" data-lesson="automation">CLI: Automation</a></li>
+            <h2 id="topics-building">Building</h2>
+            <ul aria-labelledby="topics-building">
+                <li><a href="#" data-topic="cli" data-lesson="intro">CLI: Intro</a></li>
+                <li><a href="#" data-topic="cli" data-lesson="streams">CLI: Streams &amp; Pipes</a></li>
+                <li><a href="#" data-topic="cli" data-lesson="go">CLI: Using Go</a></li>
+                <li><a href="#" data-topic="cli" data-lesson="python">CLI: Using Python</a></li>
+                <li><a href="#" data-topic="cli" data-lesson="rust">CLI: Using Rust</a></li>
+                <li><a href="#" data-topic="cli" data-lesson="automation">CLI: Automation</a></li>
             </ul>
-        </div>
-        <div id="content-display">
-            <!-- Content will be injected here -->
-        </div>
+        </nav>
+        <!-- Fix #2: Semantic main with aria-live -->
+        <main id="content-display" role="main" aria-live="polite" aria-atomic="true" tabindex="-1">
+        </main>
     </div>
 </div>
 
 <script>
+// ── DOM refs ────────────────────────────────────────────────────────────
 const contentDisplay = document.getElementById('content-display');
-const menuLinks = document.querySelectorAll('#menu a');
+const menuLinks      = document.querySelectorAll('nav#menu a');
+const hamburger      = document.getElementById('hamburger');
+const menuOverlay    = document.getElementById('menu-overlay');
+const menuEl         = document.getElementById('menu');
+const helpOverlay    = document.getElementById('help-overlay');
 
+// Ordered lesson list for j/k navigation
+const allLessons = [];
+menuLinks.forEach(link => allLessons.push({
+    topic: link.dataset.topic, lesson: link.dataset.lesson, element: link
+}));
+let currentLessonIdx = -1;
+
+// ── Lesson content ──────────────────────────────────────────────────────
 const content = {
     welcome: `
         <h2>Welcome to CLI University!</h2>
         <p>Select a topic from the menu on the left to begin your lesson.</p>
-        <p>This is a simplified, menu-driven interface to help you learn without any distractions. All content is available offline.</p>
+        <p>This is a simplified, menu-driven interface for learning without distractions. All content is available offline.</p>
+        <h3>Keyboard Shortcuts</h3>
+        <p>Press <code>?</code> at any time to see keyboard shortcuts. Use <code>j</code>/<code>k</code> to navigate lessons Vim-style.</p>
     `,
     vim: {
         philosophy: `
@@ -221,7 +584,7 @@ d$  -> delete to the end of the line
 d3w -> delete 3 words</code></pre>
         `,
         basics: `
-            <h2>2. Basic Navigation & Editing</h2>
+            <h2>2. Basic Navigation &amp; Editing</h2>
             <p>These are the absolute essentials. Practice them until they are muscle memory.</p>
             <h3>MOVEMENT (in NORMAL mode)</h3>
             <pre><code>h: move left
@@ -250,10 +613,10 @@ O: open a new line above and enter insert mode</code></pre>
             <pre><code>dw: delete word
 dd: delete the entire current line
 d$: delete from cursor to the end of the line</code></pre>
-            <h3>CHANGE (<code>c</code> for change) - Deletes and then enters INSERT mode</h3>
+            <h3>CHANGE (<code>c</code> for change) — Deletes and enters INSERT mode</h3>
             <pre><code>cw: change word
 cc: change the entire line</code></pre>
-            <h3>YANK & PUT (Copy & Paste)</h3>
+            <h3>YANK &amp; PUT (Copy &amp; Paste)</h3>
             <p>Vim uses <code>y</code> for yank (copy) and <code>p</code> for put (paste).</p>
             <pre><code>yy: yank the entire line
 p:  put (paste) the yanked text after the cursor
@@ -266,7 +629,7 @@ P:  put (paste) the yanked text before the cursor</code></pre>
             <pre><code>v:        character-wise visual mode
 V:        line-wise visual mode
 Ctrl-v:   block-wise visual mode</code></pre>
-            <p>Once text is selected, you can run a command on it: <code>d</code> (delete), <code>y</code> (yank), or <code>c</code> (change).</p>
+            <p>Once text is selected, run a command on it: <code>d</code> (delete), <code>y</code> (yank), or <code>c</code> (change).</p>
             <h3>COMMAND-LINE Mode</h3>
             <p>Press <code>:</code> in NORMAL mode to enter Command-Line mode.</p>
             <pre><code>:w   # write (save) the file
@@ -279,8 +642,8 @@ Ctrl-v:   block-wise visual mode</code></pre>
             <p>This is just the tip of the iceberg. Here's where to go next:</p>
             <ul>
                 <li><strong>Macros:</strong> Record a sequence of commands and replay it. Incredibly powerful for repetitive tasks.</li>
-                <li><strong>Configuration (<code>init.lua</code>):</strong> This is where you customize Neovim, set options, define key mappings, and install plugins.</li>
-                <li><strong>Plugins:</strong> The Neovim ecosystem is vast. Plugin managers like 'lazy.nvim' help you manage extensions for file trees, fuzzy finders, Git integration, and code intelligence (LSP).</li>
+                <li><strong>Configuration (<code>init.lua</code>):</strong> Customize Neovim, set options, define key mappings, and install plugins.</li>
+                <li><strong>Plugins:</strong> The Neovim ecosystem is vast. Plugin managers like <code>lazy.nvim</code> help you manage extensions for file trees, fuzzy finders, Git integration, and LSP.</li>
             </ul>
         `
     },
@@ -291,7 +654,7 @@ Ctrl-v:   block-wise visual mode</code></pre>
             <h3>Why is this useful?</h3>
             <ol>
                 <li><strong>Organization:</strong> Keep your editor in one pane, a server in another, and tests in a third.</li>
-                <li><strong>Persistence:</strong> Detach from a session and reconnect later. Your programs will still be running. This is ESSENTIAL for remote work (SSH).</li>
+                <li><strong>Persistence:</strong> Detach from a session and reconnect later. Your programs keep running. Essential for remote SSH work.</li>
             </ol>
             <h3>The Prefix Key</h3>
             <p>All tmux commands start with a <strong>prefix key</strong>, followed by another key. The default prefix is <code>Ctrl-b</code>.</p>
@@ -335,7 +698,7 @@ prefix + x: Kill the current pane</code></pre>
             <p>Good CLIs are:</p>
             <ul>
                 <li><strong>Helpful:</strong> They have good help messages (<code>--help</code>).</li>
-                <li><strong>Composable:</strong> They follow Unix philosophy, doing one thing well.</li>
+                <li><strong>Composable:</strong> They follow Unix philosophy — do one thing well.</li>
                 <li><strong>User-friendly:</strong> They have clear flags and arguments.</li>
             </ul>
         `,
@@ -350,17 +713,17 @@ prefix + x: Kill the current pane</code></pre>
             <h3>Pipes <code>|</code></h3>
             <p>A pipe takes the stdout of one command and makes it the stdin of the next.</p>
             <pre><code>ls -l | grep .txt</code></pre>
-            <h3>Redirection <code>></code> and <code>>></code></h3>
+            <h3>Redirection <code>&gt;</code> and <code>&gt;&gt;</code></h3>
             <pre><code>command > file.txt   # Overwrite file
 command >> file.txt  # Append to file</code></pre>
         `,
         go: `
             <h2>Building CLIs with Go</h2>
-            <p>Go is fantastic for CLIs because it compiles to a single, fast, cross-platform binary with no dependencies.</p>
+            <p>Go is fantastic for CLIs because it compiles to a single, fast, cross-platform binary with no runtime dependencies.</p>
             <h3>Popular libraries:</h3>
             <ul>
                 <li><strong>Cobra:</strong> The king of complex CLIs (used by Docker, Kubernetes).</li>
-                <li><strong>Viper:</strong> Works with Cobra for handling configuration.</li>
+                <li><strong>Viper:</strong> Works with Cobra for configuration management.</li>
                 <li><strong>Bubble Tea:</strong> For building beautiful Terminal User Interfaces (TUIs).</li>
             </ul>
         `,
@@ -371,7 +734,7 @@ command >> file.txt  # Append to file</code></pre>
             <ul>
                 <li><strong>Click:</strong> A simple and powerful library. Decorator-based.</li>
                 <li><strong>Typer:</strong> Built on Click, uses Python type hints. Very modern.</li>
-                <li><strong>Rich:</strong> A library for beautiful formatting (colors, tables, etc).</li>
+                <li><strong>Rich:</strong> A library for beautiful terminal formatting (colors, tables, etc).</li>
             </ul>
         `,
         rust: `
@@ -379,13 +742,13 @@ command >> file.txt  # Append to file</code></pre>
             <p>Rust is the choice for performance-critical CLIs where speed and memory safety are paramount.</p>
             <h3>Popular libraries:</h3>
             <ul>
-                <li><strong>clap:</strong> The most popular argument parser.</li>
-                <li><strong>structopt:</strong> A layer on top of clap that uses structs.</li>
+                <li><strong>clap:</strong> The most popular argument parser for Rust.</li>
+                <li><strong>structopt:</strong> A layer on top of clap that uses annotated structs.</li>
             </ul>
         `,
         automation: `
             <h2>Automation with Shell Scripting</h2>
-            <p>The simplest form of automation is a shell script. It's just a sequence of commands saved to a file that the shell can execute.</p>
+            <p>The simplest form of automation is a shell script — a sequence of commands saved to a file that the shell can execute.</p>
             <h3>Example (<code>script.sh</code>):</h3>
             <pre><code>#!/bin/bash
 # A simple shell script
@@ -401,35 +764,329 @@ fi</code></pre>
     }
 };
 
-function displayContent(topic, lesson) {
-    if (content[topic] && content[topic][lesson]) {
-        contentDisplay.innerHTML = content[topic][lesson];
-    } else {
-        contentDisplay.innerHTML = `<h2 class="error">Content not found.</h2>`;
+// Fix #4: Quiz data for each lesson
+const quizzes = {
+    vim: {
+        philosophy: [
+            { q: "What makes Vim a 'modal' editor?", options: ["It has a dark mode", "It has different modes for different operations", "It only works in terminal", "It needs a special keyboard"], answer: 1 },
+            { q: "In Vim's editing language, what does 'd' represent?", options: ["Direction", "Document", "The delete verb", "Down motion"], answer: 2 },
+            { q: "What does 'd3w' do?", options: ["Delete 3 characters", "Delete 3 words", "Duplicate 3 lines", "Delete to line 3"], answer: 1 }
+        ],
+        basics: [
+            { q: "Which key takes you back to NORMAL mode?", options: ["i", "a", "Esc", ":"], answer: 2 },
+            { q: "What does 'gg' do in NORMAL mode?", options: ["Go to end of file", "Go to first line", "Delete a line", "Enter insert mode"], answer: 1 },
+            { q: "Which key opens a new line BELOW and enters insert mode?", options: ["i", "a", "o", "O"], answer: 2 }
+        ],
+        editing: [
+            { q: "What does 'yy' do?", options: ["Yank (copy) the entire line", "Undo last action", "Redo last action", "Delete the line"], answer: 0 },
+            { q: "What does 'cc' do?", options: ["Copy current line", "Change current line (delete + insert mode)", "Comment out line", "Close file"], answer: 1 },
+            { q: "What does capital 'P' do?", options: ["Paste after cursor", "Paste before cursor", "Print the file", "Go to previous line"], answer: 1 }
+        ],
+        modes: [
+            { q: "Which key starts block-wise visual mode?", options: ["v", "V", "Ctrl-v", "Ctrl-b"], answer: 2 },
+            { q: "What command writes AND quits Vim?", options: [":q", ":w", ":wq", ":exit"], answer: 2 },
+            { q: "What does ':q!' do?", options: ["Quit and save", "Quit without saving", "Quick format", "Query line count"], answer: 1 }
+        ],
+        advanced: [
+            { q: "What is 'lazy.nvim'?", options: ["A slow editor", "A Neovim plugin manager", "A color scheme", "A linting tool"], answer: 1 },
+            { q: "What are Vim macros used for?", options: ["Recording audio", "Repeating sequences of commands", "Managing files", "Configuring settings"], answer: 1 }
+        ]
+    },
+    tmux: {
+        intro: [
+            { q: "What does 'terminal multiplexer' mean?", options: ["Makes terminal faster", "Multiple terminals in one window", "Connects multiple computers", "Runs multiple languages"], answer: 1 },
+            { q: "What is the default tmux prefix key?", options: ["Ctrl-a", "Ctrl-b", "Ctrl-t", "Ctrl-x"], answer: 1 }
+        ],
+        sessions: [
+            { q: "Which command creates a named tmux session?", options: ["tmux start -s name", "tmux new -s name", "tmux create name", "tmux open -s name"], answer: 1 },
+            { q: "What does 'prefix + d' do?", options: ["Delete session", "Detach from session", "Display sessions", "Duplicate window"], answer: 1 }
+        ],
+        windows: [
+            { q: "How do you create a new tmux window?", options: ["prefix + n", "prefix + c", "prefix + w", "prefix + t"], answer: 1 },
+            { q: "What does 'prefix + ,' do?", options: ["Go to previous window", "List windows", "Rename current window", "Close window"], answer: 2 }
+        ],
+        panes: [
+            { q: "Which shortcut splits the window vertically (left/right)?", options: ['prefix + "', "prefix + %", "prefix + v", "prefix + |"], answer: 1 },
+            { q: "What does 'prefix + z' do?", options: ["Kill the pane", "Zoom/unzoom current pane", "Create new pane", "List panes"], answer: 1 }
+        ]
+    },
+    cli: {
+        intro: [
+            { q: "Which principle should a good CLI follow?", options: ["Do everything at once", "Do one thing well", "Avoid help messages", "Require GUI interaction"], answer: 1 }
+        ],
+        streams: [
+            { q: "What does the pipe operator '|' do?", options: ["Redirects to a file", "Sends stdout of one command to stdin of the next", "Creates a new process", "Runs commands in parallel"], answer: 1 },
+            { q: "What is the difference between '>' and '>>'?", options: ["Both overwrite", "Both append", "'>' overwrites, '>>' appends", "'>' appends, '>>' overwrites"], answer: 2 }
+        ],
+        go: [
+            { q: "Which Go CLI library is used by Docker and Kubernetes?", options: ["Viper", "Bubble Tea", "Cobra", "Click"], answer: 2 }
+        ],
+        python: [
+            { q: "Which Python CLI library uses type hints?", options: ["Click", "Typer", "Rich", "Argparse"], answer: 1 }
+        ],
+        rust: [
+            { q: "What is the most popular Rust argument parser?", options: ["structopt", "clap", "argh", "pico-args"], answer: 1 }
+        ],
+        automation: [
+            { q: "What does the shebang '#!/bin/bash' do?", options: ["Comments the first line", "Tells the OS which interpreter to use", "Imports bash modules", "Sets environment variables"], answer: 1 }
+        ]
     }
-    contentDisplay.scrollTop = 0; // Scroll to top on new content
+};
+
+// ── Fix #7: Progress persistence ────────────────────────────────────────
+function getProgress() {
+    try { return JSON.parse(localStorage.getItem('cli-uni-progress')) || {}; }
+    catch { return {}; }
 }
 
-menuLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
+function markCompleted(topic, lesson) {
+    const progress = getProgress();
+    progress[`${topic}.${lesson}`] = { completed: true, timestamp: Date.now() };
+    localStorage.setItem('cli-uni-progress', JSON.stringify(progress));
+    updateProgressUI();
+}
+
+function updateProgressUI() {
+    const progress = getProgress();
+    const total = allLessons.length;
+    const done  = allLessons.filter(l => progress[`${l.topic}.${l.lesson}`]?.completed).length;
+    const pct   = Math.round((done / total) * 100);
+
+    const bar       = document.getElementById('progress-bar');
+    const label     = document.getElementById('progress-label');
+    const container = document.getElementById('progress-container');
+    if (bar)       bar.style.width = pct + '%';
+    if (label)     label.textContent = `${done}/${total}`;
+    if (container) container.setAttribute('aria-valuenow', pct);
+
+    // Check marks in sidebar
+    menuLinks.forEach(link => {
+        const key = `${link.dataset.topic}.${link.dataset.lesson}`;
+        let check = link.querySelector('.lesson-check');
+        if (progress[key]?.completed) {
+            if (!check) {
+                check = document.createElement('span');
+                check.className = 'lesson-check';
+                check.setAttribute('aria-label', 'completed');
+                check.textContent = '✓';
+                link.appendChild(check);
+            }
+        } else if (check) {
+            check.remove();
+        }
+    });
+}
+
+// ── Fix #7: Toast ───────────────────────────────────────────────────────
+function showToast(message, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('visible')));
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// ── Fix #4: Copy buttons ────────────────────────────────────────────────
+function addCopyButtons() {
+    contentDisplay.querySelectorAll('pre').forEach(pre => {
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        btn.setAttribute('aria-label', 'Copy code to clipboard');
+        btn.addEventListener('click', async () => {
+            const code = pre.querySelector('code')?.textContent ?? pre.textContent;
+            try {
+                await navigator.clipboard.writeText(code.trim());
+                btn.textContent = 'Copied!';
+            } catch {
+                btn.textContent = 'Error';
+            }
+            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+        });
+        pre.appendChild(btn);
+    });
+}
+
+// ── Fix #4: Quiz render + check ─────────────────────────────────────────
+function renderQuiz(topic, lesson) {
+    const questions = quizzes[topic]?.[lesson];
+    if (!questions || questions.length === 0) return '';
+    let html = '<div class="quiz-section" role="region" aria-label="Quick quiz"><h3>Quick Quiz</h3>';
+    questions.forEach((q, qi) => {
+        html += `<div class="quiz-question"><p><strong>${qi + 1}. ${q.q}</strong></p>`;
+        q.options.forEach((opt, oi) => {
+            html += `<label class="quiz-option"><input type="radio" name="q${qi}" value="${oi}"><span>${opt}</span></label>`;
+        });
+        html += '</div>';
+    });
+    html += `<button class="quiz-check-btn" onclick="checkQuiz('${topic}','${lesson}')">Check Answers</button>`;
+    html += '<div class="quiz-feedback" role="status" aria-live="polite"></div></div>';
+    return html;
+}
+
+function checkQuiz(topic, lesson) {
+    const questions = quizzes[topic]?.[lesson];
+    if (!questions) return;
+    let score = 0;
+    questions.forEach((q, qi) => {
+        const sel = document.querySelector(`input[name="q${qi}"]:checked`);
+        if (sel && parseInt(sel.value) === q.answer) score++;
+    });
+    const pct  = Math.round((score / questions.length) * 100);
+    const pass = pct >= 70;
+    const fb   = document.querySelector('.quiz-feedback');
+    if (fb) {
+        fb.innerHTML = `<p class="quiz-result ${pass ? 'pass' : 'fail'}">Score: ${score}/${questions.length} (${pct}%) — ${pass ? 'Great job!' : 'Review the lesson and try again.'}</p>`;
+    }
+    if (pass) markCompleted(topic, lesson);
+}
+
+// ── Core: display lesson ────────────────────────────────────────────────
+function displayContent(topic, lesson) {
+    if (content[topic]?.[lesson]) {
+        contentDisplay.innerHTML = content[topic][lesson] + renderQuiz(topic, lesson);
+    } else {
+        contentDisplay.innerHTML = '<h2>Content not found.</h2>';
+    }
+    contentDisplay.scrollTop = 0;
+    addCopyButtons();
+
+    // Fix #2: update breadcrumb + move focus for screen readers
+    document.getElementById('breadcrumb').textContent = `~/cli-university/${topic}/${lesson}`;
+    contentDisplay.focus();
+
+    // Track current lesson index for j/k nav
+    currentLessonIdx = allLessons.findIndex(l => l.topic === topic && l.lesson === lesson);
+
+    // Fix #7: remember last visited
+    try {
+        const p = getProgress();
+        p._lastLesson = { topic, lesson };
+        localStorage.setItem('cli-uni-progress', JSON.stringify(p));
+    } catch {}
+}
+
+// ── Fix #1: Mobile menu ─────────────────────────────────────────────────
+function setMenuOpen(open) {
+    menuEl.classList.toggle('open', open);
+    menuOverlay.classList.toggle('open', open);
+    hamburger.setAttribute('aria-expanded', String(open));
+}
+
+hamburger.addEventListener('click', () => setMenuOpen(!menuEl.classList.contains('open')));
+menuOverlay.addEventListener('click', () => setMenuOpen(false));
+
+// ── Fix #6: Help overlay ────────────────────────────────────────────────
+function toggleHelp() {
+    const open = helpOverlay.classList.toggle('open');
+    if (open) document.getElementById('help-close').focus();
+}
+document.getElementById('help-close').addEventListener('click', toggleHelp);
+
+// ── Fix #6: Keyboard shortcuts ──────────────────────────────────────────
+function navigateToLesson(idx) {
+    if (idx < 0 || idx >= allLessons.length) return;
+    const l = allLessons[idx];
+    menuLinks.forEach(link => link.classList.remove('active'));
+    l.element.classList.add('active');
+    l.element.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    displayContent(l.topic, l.lesson);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+    const helpOpen = helpOverlay.classList.contains('open');
+
+    if (e.key === 'Escape') {
         e.preventDefault();
+        if (helpOpen) { toggleHelp(); return; }
+        setMenuOpen(false);
+        return;
+    }
+    if (e.key === '?') { e.preventDefault(); toggleHelp(); return; }
+    if (helpOpen) return;
 
-        // Remove active class from all links
-        menuLinks.forEach(l => l.parentElement.classList.remove('active'));
-        
-        // Add active class to the clicked link's parent li
-        const listItem = e.target.parentElement;
-        listItem.classList.add('active');
+    switch (e.key) {
+        case 'j': e.preventDefault(); navigateToLesson(currentLessonIdx + 1); break;
+        case 'k': e.preventDefault(); navigateToLesson(currentLessonIdx - 1); break;
+        case 'g': e.preventDefault(); navigateToLesson(0); break;
+        case 'G': e.preventDefault(); navigateToLesson(allLessons.length - 1); break;
+    }
+});
 
-        const topic = e.target.dataset.topic;
-        const lesson = e.target.dataset.lesson;
-        displayContent(topic, lesson);
+// Fix #2: Arrow key nav within menu sidebar
+menuLinks.forEach(link => {
+    link.addEventListener('keydown', e => {
+        const links = Array.from(menuLinks);
+        const idx   = links.indexOf(e.target);
+        if (e.key === 'ArrowDown') { e.preventDefault(); links[(idx + 1) % links.length].focus(); }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); links[(idx - 1 + links.length) % links.length].focus(); }
     });
 });
 
-// Load welcome message by default
-contentDisplay.innerHTML = content.welcome;
+// ── Menu click handler ──────────────────────────────────────────────────
+menuLinks.forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        menuLinks.forEach(l => l.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        displayContent(e.currentTarget.dataset.topic, e.currentTarget.dataset.lesson);
+        setMenuOpen(false);
+    });
+});
+
+// ── Fix #8: Theme ────────────────────────────────────────────────────────
+function updateThemeButton() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const btn    = document.getElementById('theme-toggle');
+    btn.innerHTML = isDark ? '&#9728;' : '&#9790;';
+    btn.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+}
+
+function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('cli-uni-theme', next);
+    updateThemeButton();
+}
+
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('cli-uni-theme')) {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        updateThemeButton();
+    }
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────
+updateThemeButton();
+updateProgressUI();
+
+// Fix #7: Auto-resume last lesson
+const initProgress = getProgress();
+const lastLesson   = initProgress._lastLesson;
+if (lastLesson) {
+    const link = document.querySelector(`[data-topic="${lastLesson.topic}"][data-lesson="${lastLesson.lesson}"]`);
+    if (link) {
+        menuLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        displayContent(lastLesson.topic, lastLesson.lesson);
+        showToast(`Resumed: ${link.textContent.trim()}`);
+    } else {
+        contentDisplay.innerHTML = content.welcome;
+    }
+} else {
+    contentDisplay.innerHTML = content.welcome;
+}
 </script>
 </body>
 </html>
-
