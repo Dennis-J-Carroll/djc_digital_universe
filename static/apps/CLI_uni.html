@@ -98,6 +98,8 @@
 
         html, body {
             height: 100%;
+            /* safe-area for notched phones */
+            height: -webkit-fill-available;
             margin: 0;
             padding: 0;
         }
@@ -108,29 +110,28 @@
             font-size: 16px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            /* stretch full width on mobile — no centering fight */
+            align-items: stretch;
             overflow: hidden;
         }
 
-        /* Fix #1: Hamburger (hidden on desktop) */
+        /* Hamburger lives inside #title-bar; hidden on desktop */
         #hamburger {
             display: none;
-            position: fixed;
-            top: 52px;
-            left: 10px;
-            z-index: 1000;
-            background: var(--surface);
+            background: none;
             border: 1px solid var(--overlay);
             color: var(--foreground);
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            padding: 0;
             border-radius: 4px;
             font-family: 'Fira Code', monospace;
+            /* 44×44 min touch target */
             min-width: 44px;
             min-height: 44px;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            padding: 0;
         }
         #hamburger:focus { outline: 2px solid var(--blue); outline-offset: 2px; }
 
@@ -147,7 +148,9 @@
         #terminal-window {
             width: calc(100% - 40px);
             max-width: 1000px;
-            height: 90vh;
+            /* flex-grow fills remaining height after sticky app bar */
+            flex: 1 1 0;
+            min-height: 0;
             border: 1px solid var(--overlay);
             border-radius: 8px;
             background-color: var(--background);
@@ -155,12 +158,14 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            margin: 0 20px;
+            margin: 20px auto;
+            align-self: center;
         }
 
         /* Fix #2: Semantic header */
         header#title-bar {
-            padding: 8px 12px;
+            padding: 0 12px;
+            height: 44px;
             background-color: var(--surface);
             border-bottom: 1px solid var(--overlay);
             color: var(--subtext);
@@ -172,7 +177,16 @@
             gap: 8px;
             flex-shrink: 0;
         }
-        #breadcrumb { flex: 1; text-align: center; font-size: 13px; }
+        /* breadcrumb truncates gracefully on small screens */
+        #breadcrumb {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
 
         /* Fix #7: Progress bar */
         #progress-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -251,9 +265,13 @@
 
         /* Fix #2: Semantic main */
         main#content-display {
-            flex-grow: 1;
+            flex: 1 1 0;
+            min-height: 0;
             padding: 20px;
             overflow-y: auto;
+            /* smooth momentum scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
             word-wrap: break-word;
         }
         main#content-display:focus { outline: none; }
@@ -404,39 +422,61 @@
         }
         #help-close:focus { outline: 2px solid var(--blue); }
 
-        /* Fix #1: Mobile responsive */
+        /* Mobile responsive */
         @media (max-width: 768px) {
-            body { overflow: hidden; }
             #hamburger { display: flex; }
+
             #terminal-window {
-                height: calc(100vh - 44px);
-                max-width: 100%;
+                /* fill all remaining height after sticky app bar */
+                flex: 1 1 0;
                 width: 100%;
+                max-width: 100%;
                 border-radius: 0;
                 border: none;
                 margin: 0;
+                box-shadow: none;
             }
-            #main-content { flex-direction: column; overflow: hidden; }
+
+            #main-content {
+                flex-direction: column;
+                overflow: hidden;
+                /* min-height:0 so children can shrink */
+                min-height: 0;
+                flex: 1 1 0;
+            }
+
             nav#menu {
+                /* slide-out drawer: hamburger is in title-bar (44px app bar + 44px title bar = 88px) */
                 position: fixed;
                 top: 88px;
-                left: -270px;
+                left: -280px;
                 width: 260px;
                 min-width: 260px;
-                height: calc(100vh - 88px);
+                height: calc(100% - 88px);
                 z-index: 999;
-                transition: left 0.3s ease;
-                box-shadow: 2px 0 12px rgba(0,0,0,0.4);
+                transition: left 0.25s ease;
+                box-shadow: 4px 0 16px rgba(0,0,0,0.5);
                 border-right: none;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
             nav#menu.open { left: 0; }
-            main#content-display { padding: 15px; font-size: 14px; }
+
+            main#content-display {
+                padding: 16px;
+                font-size: 15px;
+            }
+
+            /* keep progress bar visible but compact */
+            #progress-container { width: 40px; }
+            #progress-label { display: none; }
         }
+
         @media (max-width: 480px) {
-            body { font-size: 14px; }
-            main#content-display { padding: 10px; }
+            main#content-display { padding: 12px; font-size: 14px; }
             main#content-display pre { font-size: 12px; padding: 10px; }
-            #breadcrumb { font-size: 11px; }
+            /* truncate breadcrumb more aggressively */
+            #breadcrumb { max-width: 120px; }
         }
 
         /* Fix #10: Print styles */
@@ -477,9 +517,7 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
 
-<!-- Fix #1: Hamburger -->
-<button id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="menu">&#9776;</button>
-<!-- Fix #1: Menu overlay -->
+<!-- Menu overlay (fixed, behind drawer) -->
 <div id="menu-overlay" role="presentation"></div>
 
 <!-- Fix #6: Keyboard help overlay -->
@@ -499,6 +537,8 @@
 <div id="terminal-window">
     <!-- Fix #2: Semantic header with breadcrumb + progress + theme toggle -->
     <header id="title-bar" role="banner">
+        <!-- Hamburger: only visible on mobile via CSS -->
+        <button id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="menu">&#9776;</button>
         <button id="theme-toggle" aria-label="Switch to light theme">&#9728;</button>
         <span aria-live="polite" id="breadcrumb">~/cli-university/menu</span>
         <div id="progress-wrap">
@@ -1066,6 +1106,25 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
         updateThemeButton();
     }
 });
+
+// ── Swipe gesture (mobile): swipe right to open, left to close ──────────
+(function() {
+    let startX = 0, startY = 0;
+    const THRESHOLD = 60, SLOP = 40;
+
+    document.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dy) > SLOP) return; // mostly vertical — ignore
+        if (dx > THRESHOLD && startX < 40)  setMenuOpen(true);   // swipe right from edge
+        if (dx < -THRESHOLD) setMenuOpen(false);                  // swipe left to close
+    }, { passive: true });
+})();
 
 // ── Init ─────────────────────────────────────────────────────────────────
 updateThemeButton();
