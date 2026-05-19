@@ -862,6 +862,85 @@ body.mode-researcher .copy-r.block { display: block; }
 @media (min-width: 1025px) {
   .math-fab, .math-sheet-backdrop, .sheet-close { display: none !important; }
 }
+
+/* ── PHONE (≤ 600px) ─────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Topbar: 2-row flex — brand+icons on top, shape switcher below */
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 52px;
+    padding: var(--space-2) var(--space-3);
+    gap: 0;
+    row-gap: var(--space-2);
+    align-items: center;
+  }
+  .brand { flex: 1 0 auto; min-width: 0; }
+  .topbar-right { gap: var(--space-2); flex-shrink: 0; }
+  /* shape switcher becomes second row, full width */
+  .shape-switch {
+    order: 3;
+    width: 100%;
+    border-radius: var(--radius-md);
+    padding: 3px;
+    flex-shrink: 0;
+    flex-basis: 100%;
+  }
+  .shape-switch button {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 4px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  /* mode pill is too wide at this breakpoint — hide it */
+  .mode-pill { display: none; }
+
+  /* grid: topbar height is now auto; stage slightly taller */
+  .app { grid-template-rows: auto 44vh 1fr; }
+
+  /* left panel: tighter padding */
+  .panel-left { padding: var(--space-4); }
+
+  /* overlays: keep within screen, clear the math FAB (56px + 18px margin = 74px) */
+  .tweaks-panel {
+    right: 12px; left: 12px; width: auto;
+    bottom: 90px; /* above FAB */
+    transform: translateX(0) translateY(12px);
+  }
+  .tweaks-panel.open { transform: translateX(0) translateY(0); }
+
+  /* export menu: full-width, below 2-row topbar (~108px) */
+  .export-menu {
+    left: 12px; right: 12px; width: auto;
+    top: 112px;
+  }
+
+  /* tour menu: full-width, same alignment */
+  .tour-menu {
+    left: 12px; right: 12px; width: auto;
+    top: 112px;
+  }
+
+  /* tour card: float above FAB */
+  .tour-card { bottom: 90px; }
+
+  /* share flash: below 2-row topbar */
+  .share-flash { top: 116px; right: 12px; }
+}
+
+/* ── TINY PHONES (≤ 400px): icons-only shape switcher ───────────────────── */
+@media (max-width: 400px) {
+  .shape-switch .btn-label { display: none; }
+  .shape-switch button { padding: 12px 0; gap: 0; }
+  .shape-switch button svg { width: 20px; height: 20px; }
+
+  /* dim buttons: wrap into 5-col so they don't overflow */
+  .dim-buttons { grid-template-columns: repeat(5, 1fr); }
+
+  /* icon buttons: slightly smaller */
+  .icon-btn { width: 38px; height: 38px; }
+}
 </style>
 </head>
 <body>
@@ -883,15 +962,15 @@ body.mode-researcher .copy-r.block { display: block; }
     <nav class="shape-switch" id="shapeSwitch" role="tablist" aria-label="Shape">
       <button data-shape="sphere" class="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/></svg>
-        Sphere
+        <span class="btn-label">Sphere</span>
       </button>
       <button data-shape="cylinder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v14"/><path d="M19 5v14"/><ellipse cx="12" cy="19" rx="7" ry="2.5"/></svg>
-        Cylinder
+        <span class="btn-label">Cylinder</span>
       </button>
       <button data-shape="hypersphere">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 3v18M3 12h18"/></svg>
-        Hypersphere
+        <span class="btn-label">Hypersphere</span>
       </button>
     </nav>
 
