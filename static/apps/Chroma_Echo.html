@@ -347,6 +347,50 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        /* Piano key hints bar */
+        #piano-hints {
+            position: fixed;
+            bottom: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .piano-key {
+            min-width: 34px;
+            height: 46px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 2px 4px;
+            font-size: 8.5px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-align: center;
+            transition: background 0.12s, box-shadow 0.12s;
+        }
+        .piano-key .key-label { font-size: 11px; color: var(--text-main); font-weight: 600; }
+        .piano-key.piano-active {
+            background: rgba(0, 240, 255, 0.25);
+            border-color: var(--accent);
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.55);
+            color: var(--accent);
+        }
+        .piano-key.piano-active .key-label { color: var(--accent); }
     </style>
 </head>
 
@@ -377,6 +421,18 @@
     <!-- Canvas -->
     <div id="canvas-container">
         <canvas id="main-canvas"></canvas>
+    </div>
+
+    <!-- Piano Key Hints (fades in on first note keypress) -->
+    <div id="piano-hints">
+        <div class="piano-key" data-key="a"><span class="key-label">A</span>C</div>
+        <div class="piano-key" data-key="s"><span class="key-label">S</span>D</div>
+        <div class="piano-key" data-key="d"><span class="key-label">D</span>E</div>
+        <div class="piano-key" data-key="f"><span class="key-label">F</span>F</div>
+        <div class="piano-key" data-key="g"><span class="key-label">G</span>G</div>
+        <div class="piano-key" data-key="h"><span class="key-label">H</span>A</div>
+        <div class="piano-key" data-key="j"><span class="key-label">J</span>B</div>
+        <div class="piano-key" data-key="k"><span class="key-label">K</span>C5</div>
     </div>
 
     <!-- UI Overlay -->
@@ -413,6 +469,10 @@
                 <span>Color Shift Speed</span>
                 <input type="range" id="color-slider" min="0" max="10" value="2">
             </div>
+            <div class="setting-row">
+                <span>Turbulence  <span id="turb-val" style="color:var(--accent)">0.0</span></span>
+                <input type="range" id="turbulence-slider" min="0" max="1" step="0.01" value="0">
+            </div>
         </div>
 
         <div class="controls-container ui-element">
@@ -424,7 +484,15 @@
             <button id="btn-mic" class="icon-btn" title="Toggle Mic">🎙️</button>
             <button id="btn-settings" class="icon-btn" title="Settings">⚙️</button>
             <button id="btn-clear" class="icon-btn" title="Clear Canvas">✕</button>
+            <button id="btn-screenshot" class="icon-btn" title="Screenshot [P]">📷</button>
+            <button id="btn-connect" class="icon-btn" title="Constellation Lines [L]">🔗</button>
             <button id="btn-record" title="Record Loop">● REC</button>
+            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+            <button class="pattern-btn icon-btn" data-pattern="0" title="Firework [1]">🎆</button>
+            <button class="pattern-btn icon-btn" data-pattern="1" title="Spiral [2]">🌀</button>
+            <button class="pattern-btn icon-btn" data-pattern="2" title="Shockwave [3]">💥</button>
+            <button class="pattern-btn icon-btn" data-pattern="3" title="Rain [4]">🌧️</button>
+            <button class="pattern-btn icon-btn" data-pattern="4" title="Vortex [5]">🌪️</button>
         </div>
     </div>
 
@@ -443,7 +511,9 @@
             fadeRate: 0.08,  // Trail length (lower = longer trails)
             gravity: 0,
             interactionRadius: 100,
-            mode: 'neon' // neon, cosmic, zen, plasma
+            mode: 'neon', // neon, cosmic, zen, plasma
+            turbulenceStrength: 0.0,
+            showConstellations: false
         };
 
         const STATE = {
@@ -459,7 +529,8 @@
             mouseY: 0,
             isMouseDown: false,
             width: 0,
-            height: 0
+            height: 0,
+            time: 0
         };
 
         // --- DOM Elements ---
@@ -513,6 +584,12 @@
                 // Friction
                 this.vx *= CONFIG.viscosity;
                 this.vy *= CONFIG.viscosity;
+
+                // Turbulence — sine-wave flow field
+                if (CONFIG.turbulenceStrength > 0) {
+                    this.vx += Math.sin(this.x * 0.004 + STATE.time * 0.7) * CONFIG.turbulenceStrength * 0.15;
+                    this.vy += Math.cos(this.y * 0.004 + STATE.time * 0.5) * CONFIG.turbulenceStrength * 0.15;
+                }
 
                 // Gravity (Mode dependent)
                 if (CONFIG.mode === 'zen') {
@@ -675,6 +752,7 @@
 
             // 3. Update State
             STATE.hue += CONFIG.baseColorSpeed;
+            STATE.time += 0.016;
             const audioData = getAudioData();
 
             // 4. Update Particles
@@ -686,6 +764,29 @@
             // 5. Visualizer Ring (Optional, subtle)
             if (audioData) {
                 drawAudioRing(audioData);
+            }
+
+            // 6. Constellation Lines — 2-pass batched render (near + far)
+            if (CONFIG.showConstellations && particles.length >= 2) {
+                const step = Math.max(2, Math.floor(particles.length / 180));
+                ctx.lineWidth = 0.5;
+                const passes = [{ tSq: 1600, alpha: 0.14 }, { tSq: 6400, alpha: 0.055 }];
+                for (const pass of passes) {
+                    ctx.strokeStyle = `hsla(${STATE.hue}, 80%, 65%, ${pass.alpha})`;
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.beginPath();
+                    for (let i = 0; i < particles.length; i += step) {
+                        for (let j = i + step; j < particles.length; j += step) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            if (dx * dx + dy * dy < pass.tSq) {
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                            }
+                        }
+                    }
+                    ctx.stroke();
+                }
             }
         }
 
@@ -958,6 +1059,196 @@
             setTimeout(() => toast.style.opacity = 0, 3000);
         }
 
+
+        // --- Screenshot ---
+        function takeScreenshot() {
+            canvas.toBlob((blob) => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `chroma-echo-${Date.now()}.png`;
+                a.click();
+                showToast('📷 Screenshot Saved!');
+            });
+        }
+        document.getElementById('btn-screenshot').addEventListener('click', takeScreenshot);
+
+        // --- Constellation Lines Toggle ---
+        document.getElementById('btn-connect').addEventListener('click', () => {
+            CONFIG.showConstellations = !CONFIG.showConstellations;
+            document.getElementById('btn-connect').classList.toggle('active-mode', CONFIG.showConstellations);
+            showToast(CONFIG.showConstellations ? '🔗 Lines On' : '🔗 Lines Off');
+        });
+
+        // --- Turbulence Slider ---
+        document.getElementById('turbulence-slider').addEventListener('input', (e) => {
+            CONFIG.turbulenceStrength = parseFloat(e.target.value);
+            document.getElementById('turb-val').textContent = CONFIG.turbulenceStrength.toFixed(2);
+        });
+
+        // --- Choreography Patterns ---
+        function _spawnBurst(x, y, count, speedLo, speedHi) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = speedLo + Math.random() * (speedHi - speedLo);
+                const p = new Particle(x, y);
+                p.vx = Math.cos(angle) * speed;
+                p.vy = Math.sin(angle) * speed;
+                p.size = 1 + Math.random() * 3;
+                p.decay = 0.008;
+                particles.push(p);
+            }
+            while (particles.length > CONFIG.particleCount + 600) particles.shift();
+        }
+
+        function triggerFirework() {
+            _spawnBurst(
+                STATE.mouseX || STATE.width / 2,
+                STATE.mouseY || STATE.height / 2,
+                180, 2, 9
+            );
+            showToast('🎆 Firework!');
+        }
+
+        function triggerSpiral() {
+            const cx = STATE.width / 2, cy = STATE.height / 2;
+            particles.forEach(p => {
+                const dx = p.x - cx, dy = p.y - cy;
+                const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                const spd = 2 + Math.random();
+                p.vx = (-dy / d) * spd;
+                p.vy = ( dx / d) * spd;
+            });
+            showToast('🌀 Spiral!');
+        }
+
+        function triggerShockwave() {
+            const cx = STATE.mouseX || STATE.width / 2;
+            const cy = STATE.mouseY || STATE.height / 2;
+            particles.forEach(p => {
+                const dx = p.x - cx, dy = p.y - cy;
+                const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                const force = Math.max(0, 1 - d / 450) * 14;
+                p.vx += (dx / d) * force;
+                p.vy += (dy / d) * force;
+            });
+            showToast('💥 Shockwave!');
+        }
+
+        function triggerRain() {
+            particles.forEach(p => {
+                p.x = Math.random() * STATE.width;
+                p.y = 0;
+                p.vx = (Math.random() - 0.5) * 1.5;
+                p.vy = 1.5 + Math.random() * 4;
+            });
+            showToast('🌧 Rain!');
+        }
+
+        function triggerVortex() {
+            const cx = STATE.mouseX || STATE.width / 2;
+            const cy = STATE.mouseY || STATE.height / 2;
+            particles.forEach(p => {
+                const dx = p.x - cx, dy = p.y - cy;
+                const d = Math.sqrt(dx * dx + dy * dy) || 1;
+                const force = Math.min(7, 280 / d);
+                p.vx += (-dy / d) * force;
+                p.vy += ( dx / d) * force;
+            });
+            showToast('🌪 Vortex!');
+        }
+
+        const PATTERNS = [triggerFirework, triggerSpiral, triggerShockwave, triggerRain, triggerVortex];
+
+        document.querySelectorAll('.pattern-btn').forEach(btn => {
+            btn.addEventListener('click', () => PATTERNS[parseInt(btn.dataset.pattern)]());
+        });
+
+        // --- Musical Keyboard (A-K = C4-C5) ---
+        const NOTE_MAP = {
+            a: 261.63, s: 293.66, d: 329.63, f: 349.23,
+            g: 392.00, h: 440.00, j: 493.88, k: 523.25
+        };
+        const NOTE_KEYS = Object.keys(NOTE_MAP);
+        const pianoHints = document.getElementById('piano-hints');
+        let pianoFadeTimer = null;
+
+        function ensureAudioCtx() {
+            if (!STATE.audioContext) {
+                STATE.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (STATE.audioContext.state === 'suspended') STATE.audioContext.resume();
+            return STATE.audioContext;
+        }
+
+        function playNote(freq) {
+            const ac = ensureAudioCtx();
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.11, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.55);
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            osc.start();
+            osc.stop(ac.currentTime + 0.6);
+        }
+
+        function spawnNoteParticles(key) {
+            const idx = NOTE_KEYS.indexOf(key);
+            const x = (idx + 0.5) / NOTE_KEYS.length * STATE.width;
+            const y = STATE.height * 0.48;
+            for (let i = 0; i < 20; i++) {
+                const p = new Particle(x, y);
+                const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+                const speed = 2.5 + Math.random() * 5.5;
+                p.vx = Math.cos(angle) * speed;
+                p.vy = Math.sin(angle) * speed;
+                p.size = 1.5 + Math.random() * 3;
+                p.decay = 0.009;
+                p.hueOffset = (idx / NOTE_KEYS.length) * 360;
+                particles.push(p);
+            }
+            while (particles.length > CONFIG.particleCount + 300) particles.shift();
+        }
+
+        function flashPianoKey(key) {
+            if (!pianoHints) return;
+            pianoHints.style.opacity = '1';
+            const keyEl = pianoHints.querySelector(`[data-key="${key}"]`);
+            if (keyEl) {
+                keyEl.classList.add('piano-active');
+                setTimeout(() => keyEl.classList.remove('piano-active'), 280);
+            }
+            clearTimeout(pianoFadeTimer);
+            pianoFadeTimer = setTimeout(() => { pianoHints.style.opacity = '0'; }, 3500);
+        }
+
+        // --- Global Keyboard Handler ---
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat || e.target.tagName === 'INPUT') return;
+
+            // 1-5: choreography
+            const patIdx = parseInt(e.key) - 1;
+            if (patIdx >= 0 && patIdx < PATTERNS.length) { PATTERNS[patIdx](); return; }
+
+            // P: screenshot
+            if (e.key.toLowerCase() === 'p') { takeScreenshot(); return; }
+
+            // L: constellation lines toggle
+            if (e.key.toLowerCase() === 'l') {
+                document.getElementById('btn-connect').click();
+                return;
+            }
+
+            // A-K: musical notes
+            const note = NOTE_MAP[e.key.toLowerCase()];
+            if (note) {
+                playNote(note);
+                spawnNoteParticles(e.key.toLowerCase());
+                flashPianoKey(e.key.toLowerCase());
+            }
+        });
 
         // --- Initialization ---
 
