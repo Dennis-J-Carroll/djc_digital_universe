@@ -991,6 +991,57 @@
     /* mode buttons: bigger */
     .mode-btn { padding: 12px 8px; }
   }
+
+  /* ============================================================
+     LIGHT THEME  ·  body.theme-light
+     ============================================================ */
+  body.theme-light {
+    --bg-base:    #eff2f5;
+    --bg-surface: #ffffff;
+    --bg-raised:  #e5eaee;
+    --bg-overlay: rgba(232,238,244,0.90);
+    --bg-glass:   rgba(232,238,244,0.75);
+    --fg-1: #0d1b2a;
+    --fg-2: #243444;
+    --fg-3: #4a6174;
+    --fg-4: #7a94a8;
+    --fg-inverse: #ffffff;
+    --border-subtle: rgba(15,50,70,0.09);
+    --border-line:   rgba(15,50,70,0.17);
+    --grad-card: linear-gradient(135deg, rgba(255,255,255,0.94) 0%, rgba(228,236,244,0.84) 100%);
+    --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.7);
+    --navy-700: #bac6d0;
+  }
+  body.theme-light {
+    background:
+      radial-gradient(ellipse 90% 60% at 15% 0%, rgba(20,184,154,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 100%, rgba(62,240,226,0.05) 0%, transparent 55%),
+      var(--bg-base);
+  }
+  body.theme-light .topbar          { background: rgba(238,243,248,0.93); border-bottom-color: rgba(15,50,70,0.12); }
+  body.theme-light .status          { background: rgba(236,242,247,0.97); border-top-color: rgba(15,50,70,0.12); }
+  body.theme-light .pane            { background: rgba(232,238,245,0.97); }
+  body.theme-light .pane.left       { border-right-color: rgba(15,50,70,0.10); }
+  body.theme-light .pane.right      { border-left-color:  rgba(15,50,70,0.10); }
+  body.theme-light .scene-banner    { background: var(--grad-card); }
+  body.theme-light .nudge           { background: rgba(238,243,248,0.97); }
+  body.theme-light .mic-preview     { background: rgba(238,243,248,0.97); color: var(--fg-2); }
+  body.theme-light .mob-drawer      { background: #e8ecf1; border-top-color: rgba(15,50,70,0.14); }
+  body.theme-light .mob-drawer-scrim { background: rgba(10,25,40,0.48); }
+  body.theme-light .modal           { background: var(--grad-card); border-color: rgba(15,50,70,0.16); }
+  body.theme-light .modal-foot      { background: rgba(218,228,237,0.55); }
+  body.theme-light .modal-head      { border-bottom-color: rgba(15,50,70,0.10); }
+  body.theme-light .modal-scrim     { background: rgba(10,25,40,0.52); }
+  body.theme-light .modal-body input[type=text] { background: rgba(208,220,230,0.7); }
+  body.theme-light .modal-body input[type=text]:focus { background: rgba(255,255,255,0.9); }
+  body.theme-light .branch-graph    { background: rgba(218,228,236,0.7); border-color: rgba(15,50,70,0.10); }
+  body.theme-light .seg             { background: rgba(208,220,232,0.80); border-color: rgba(15,50,70,0.11); }
+  body.theme-light .seg button      { color: var(--fg-3); }
+  body.theme-light .mode-btn        { background: rgba(208,220,232,0.65); border-color: rgba(15,50,70,0.11); }
+  body.theme-light .export-btn      { background: var(--grad-card); border-color: rgba(15,50,70,0.09); color: var(--fg-2); }
+  body.theme-light .project-switcher { background: var(--grad-card); border-color: rgba(15,50,70,0.09); }
+  body.theme-light .tag             { background: rgba(208,220,232,0.50); border-color: rgba(15,50,70,0.11); color: var(--fg-2); }
+  body.theme-light .cmd-item        { color: var(--fg-1); }
 </style>
 </head>
 <body>
@@ -1013,10 +1064,17 @@
 
     <div class="topbar-right">
       <button class="icon-btn desktop-only" id="btnCmd"      title="Command palette (⌘K)">⌘K</button>
-      <button class="icon-btn"              id="btnFocus"    title="Focus mode (⌘⇧F)">🎯</button>
-      <button class="icon-btn"              id="btnTw"       title="Typewriter mode (⌘⇧T)">⌨︎</button>
+      <button class="icon-btn"              id="btnFocus"    title="Focus mode (⌘⇧F)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      </button>
+      <button class="icon-btn"              id="btnTw"       title="Typewriter mode (⌘⇧T)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 13h.01M12 13h.01M16 13h.01M7 17h10"/></svg>
+      </button>
+      <button class="icon-btn mob-only"     id="btnTheme"    title="Toggle theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
       <button class="icon-btn desktop-only" id="btnShortcuts" title="Keyboard shortcuts (?)">?</button>
-      <button class="icon-btn mob-only"     id="btnDrawer"   title="Menu" style="font-size:18px;">≡</button>
+      <button class="icon-btn mob-only"     id="btnDrawer"   title="Menu" style="font-size:16px;">≡</button>
     </div>
   </header>
 
@@ -1124,8 +1182,14 @@
 
     <h6 class="section-eyebrow">Mode</h6>
     <div class="mode-row">
-      <button class="mode-btn" id="mFocus">🎯 Focus</button>
-      <button class="mode-btn" id="mTw">⌨︎ Typewriter</button>
+      <button class="mode-btn" id="mFocus">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+        Focus
+      </button>
+      <button class="mode-btn" id="mTw">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M8 13h.01M12 13h.01M16 13h.01M7 17h10"/></svg>
+        Typewriter
+      </button>
     </div>
 
     <h6 class="section-eyebrow">Auto-Detected <span class="count" id="autoCount">3</span></h6>
@@ -1206,7 +1270,7 @@
   <!-- ====================== STATUS ====================== -->
   <footer class="status">
     <div class="item flow" id="flowState"><span class="dot"></span><span id="flowLabel">In flow</span></div>
-    <div class="item"><span style="opacity:0.6;">📝</span><span id="wcLabel">0 words · 0 min read</span></div>
+    <div class="item"><span id="wcLabel">0 words · 1 min read</span></div>
     <div class="item branch"><span style="opacity:0.7;">⎇</span><span id="branchLabel">main</span></div>
     <div class="item" id="saveItem"><span class="dot"></span><span id="saveLabel">Saved · just now</span></div>
     <div class="grow"></div>
@@ -1217,7 +1281,9 @@
 </div>
 
 <!-- ====================== VOICE FAB ====================== -->
-<button class="mic-fab" id="micFab" title="Voice to text">🎤</button>
+<button class="mic-fab" id="micFab" title="Voice to text">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+</button>
 <div class="mic-preview" id="micPreview"></div>
 
 <!-- ====================== MOBILE DRAWER ====================== -->

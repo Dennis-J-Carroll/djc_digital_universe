@@ -405,6 +405,23 @@ $('#suggestTags').addEventListener('click', e => {
 // project switcher (placeholder feedback)
 $('#projSwitcher').addEventListener('click', () => flashSave('Multi-project · coming soon'));
 
+// ---------- theme ----------
+const SVG_SUN  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+const SVG_MOON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+let currentTheme = localStorage.getItem('djc-fw-theme') || 'dark';
+
+function applyTheme(t) {
+  currentTheme = t;
+  document.body.classList.toggle('theme-light', t === 'light');
+  localStorage.setItem('djc-fw-theme', t);
+  const btn = $('#btnTheme');
+  if (btn) btn.innerHTML = t === 'dark' ? SVG_SUN : SVG_MOON;
+}
+function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+
+$('#btnTheme')?.addEventListener('click', toggleTheme);
+
 // ---------- mobile drawer ----------
 const MOB_DOCS = [
   { id: 'ch1',    icon: '⌐', cls: 'file-type-doc',  label: 'Chapter 1 — Discovery' },
@@ -517,8 +534,15 @@ function renderMobFmtHtml() {
   const on = (cond) => cond ? ' class="on"' : '';
   return `
     <div class="mode-row" style="margin-bottom:var(--space-4);">
-      <button class="mode-btn${state.modes.focus ? ' on' : ''}" id="mMobFocus">🎯 Focus</button>
-      <button class="mode-btn${state.modes.typewriter ? ' on' : ''}" id="mMobTw">⌨︎ TW</button>
+      <button class="mode-btn${state.modes.focus ? ' on' : ''}" id="mMobFocus">Focus</button>
+      <button class="mode-btn${state.modes.typewriter ? ' on' : ''}" id="mMobTw">Typewriter</button>
+    </div>
+    <div class="fmt-group">
+      <div class="fmt-label">Theme</div>
+      <div class="seg" id="mThemeSeg">
+        <button data-v="dark"${currentTheme === 'dark' ? ' class="on"' : ''}>Dark</button>
+        <button data-v="light"${currentTheme === 'light' ? ' class="on"' : ''}>Light</button>
+      </div>
     </div>
     <div class="fmt-group">
       <div class="fmt-label">Family <span class="val" id="mFamVal">${famName}</span></div>
@@ -582,6 +606,10 @@ function wireMobFmt() {
   });
   $('#mMobFocus')?.addEventListener('click', () => { toggleFocus(); switchMobTab('format'); });
   $('#mMobTw')?.addEventListener('click',    () => { toggleTypewriter(); switchMobTab('format'); });
+  $$('#mThemeSeg button').forEach(b => b.addEventListener('click', () => {
+    applyTheme(b.dataset.v);
+    $$('#mThemeSeg button').forEach(x => x.classList.toggle('on', x.dataset.v === currentTheme));
+  }));
 }
 
 function renderMobExportHtml() {
@@ -692,6 +720,7 @@ function updateAll() {
 
 load();
 editor.value = state.docs[state.docId] ?? '';
+applyTheme(currentTheme);
 updateAll();
 scheduleNudge();
 bumpFlow();
