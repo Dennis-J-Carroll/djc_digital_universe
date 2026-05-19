@@ -1,644 +1,2729 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inverse Space → Hypersphere Explorer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .header {
-            padding: 20px;
-            text-align: center;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(15px);
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 2.8em;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f7b733);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255,255,255,0.1);
-        }
-        
-        .main-content {
-            display: flex;
-            flex: 1;
-        }
-        
-        .visualization {
-            flex: 2;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .viz-row {
-            flex: 1;
-            position: relative;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .viz-label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            z-index: 100;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .controls {
-            flex: 1;
-            padding: 30px;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(15px);
-            border-left: 2px solid rgba(255,255,255,0.1);
-            overflow-y: auto;
-        }
-        
-        .control-section {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .control-section h3 {
-            margin-top: 0;
-            color: #4ecdc4;
-            font-size: 1.3em;
-            border-bottom: 2px solid rgba(78, 205, 196, 0.3);
-            padding-bottom: 10px;
-        }
-        
-        .slider-container {
-            margin: 15px 0;
-        }
-        
-        .slider-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 1em;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-        
-        .slider {
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
-            outline: none;
-            opacity: 0.8;
-            transition: all 0.3s ease;
-        }
-        
-        .slider:hover {
-            opacity: 1;
-            transform: scaleY(1.2);
-        }
-        
-        .value-display {
-            background: rgba(0,0,0,0.5);
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-top: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            border: 1px solid rgba(255,255,255,0.2);
-            text-align: center;
-        }
-        
-        .button {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 8px 5px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9em;
-        }
-        
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.4);
-        }
-        
-        .button.active {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
-        }
-        
-        .equation-panel {
-            background: linear-gradient(145deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            border: 2px solid rgba(255,255,255,0.1);
-            font-family: 'Times New Roman', serif;
-        }
-        
-        .equation {
-            background: rgba(0,0,0,0.7);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.1em;
-            margin: 10px 0;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.3);
-            font-family: 'Times New Roman', serif;
-        }
-        
-        .highlight {
-            color: #f7b733;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(247, 183, 51, 0.5);
-        }
-        
-        .ratio-display {
-            background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(78, 205, 196, 0.2));
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-            border: 2px solid rgba(255,255,255,0.2);
-            text-align: center;
-            font-size: 1.1em;
-        }
-        
-        .dimension-indicator {
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-        }
-        
-        #canvas3d, #canvas4d {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .insight-box {
-            background: linear-gradient(135deg, rgba(247, 183, 51, 0.1), rgba(255, 107, 107, 0.1));
-            border: 2px solid rgba(247, 183, 51, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .insight-box h4 {
-            color: #f7b733;
-            margin-top: 0;
-            font-size: 1.2em;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hypersphere Explorer — DJC</title>
+<!-- Google Fonts: Orbitron + Space Grotesk + JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<style>
+/* ============================================================
+   DJC Design System — CSS Custom Properties (inlined)
+   ============================================================ */
+:root {
+  --teal-50:  #e6fbf7;
+  --teal-100: #b8f2e5;
+  --teal-200: #7ce5cf;
+  --teal-300: #44d6b8;
+  --teal-400: #2dc7a6;
+  --teal-500: #14b89a;
+  --teal-600: #0fa387;
+  --teal-700: #0b7e68;
+  --teal-800: #075844;
+  --teal-900: #043327;
+  --navy-950: #070e1a;
+  --navy-900: #0a1423;
+  --navy-800: #0f1d31;
+  --navy-700: #14293f;
+  --navy-600: #1d3852;
+  --navy-500: #2a4d6d;
+  --navy-400: #46678a;
+  --navy-300: #6d89a8;
+  --navy-200: #9fb5ca;
+  --navy-100: #cdd9e5;
+  --navy-50:  #eaf0f5;
+  --electric-cyan:   #3ef0e2;
+  --electric-violet: #7c4dff;
+  --pulse-green: #4ade80;
+  --warn-amber:  #f4b840;
+  --danger-red:  #ff5d73;
+  --bg-base:    var(--navy-950);
+  --bg-surface: var(--navy-900);
+  --bg-raised:  var(--navy-800);
+  --bg-overlay: rgba(10,20,35,0.72);
+  --bg-glass:   rgba(20,41,63,0.55);
+  --fg-1: #ecf4fb;
+  --fg-2: #b8c6d8;
+  --fg-3: #7d92ab;
+  --fg-4: #4e6480;
+  --fg-inverse: #0a1423;
+  --accent-1: var(--teal-500);
+  --accent-2: var(--teal-300);
+  --accent-3: var(--electric-cyan);
+  --link:      var(--teal-300);
+  --link-hover: var(--electric-cyan);
+  --border-subtle: rgba(124,180,200,0.08);
+  --border-line:   rgba(124,180,200,0.18);
+  --border-accent: rgba(20,184,154,0.45);
+  --glow-teal-sm: 0 0 12px rgba(20,184,154,0.35);
+  --glow-teal-md: 0 0 22px rgba(20,184,154,0.45), 0 0 42px rgba(62,240,226,0.18);
+  --glow-teal-lg: 0 0 32px rgba(20,184,154,0.55), 0 0 72px rgba(62,240,226,0.25);
+  --glow-cyan:    0 0 18px rgba(62,240,226,0.55);
+  --grad-brand:      linear-gradient(135deg, var(--teal-500) 0%, var(--teal-300) 60%, var(--electric-cyan) 100%);
+  --grad-brand-deep: linear-gradient(135deg, var(--teal-700) 0%, var(--teal-500) 100%);
+  --grad-hero:   radial-gradient(ellipse at 20% 0%, rgba(20,184,154,0.18) 0%, transparent 55%),
+                 radial-gradient(ellipse at 80% 100%, rgba(62,240,226,0.12) 0%, transparent 50%),
+                 linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 100%);
+  --grad-card:    linear-gradient(135deg, rgba(20,41,63,0.75) 0%, rgba(10,20,35,0.65) 100%);
+  --grad-divider: linear-gradient(90deg, transparent 0%, var(--teal-500) 50%, transparent 100%);
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.35);
+  --shadow-sm:  0 2px 6px rgba(0,0,0,0.35);
+  --shadow-md:  0 6px 18px rgba(0,0,0,0.4);
+  --shadow-lg:  0 14px 40px rgba(0,0,0,0.5);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.04);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --space-9: 96px;
+  --ease-out:    cubic-bezier(.2,.7,.2,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --font-display: 'Orbitron', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --fs-xs: 12px; --fs-sm: 14px; --fs-md: 16px; --fs-lg: 18px;
+  --fs-xl: 22px; --fs-2xl: 28px; --fs-3xl: 36px; --fs-4xl: 48px;
+  --lh-tight: 1.15; --lh-snug: 1.35; --lh-body: 1.6; --lh-loose: 1.8;
+  --tracking-tight: -0.01em; --tracking-normal: 0;
+  --tracking-wide: 0.04em;   --tracking-wider: 0.12em;
+}
+
+/* ============================================================
+   APP STYLES
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+
+.skip-link {
+  position: absolute; top: -100px; left: 8px;
+  background: var(--electric-cyan); color: var(--navy-950);
+  padding: 12px 18px; border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-size: 12px;
+  letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+  text-decoration: none; z-index: 100; transition: top 160ms;
+}
+.skip-link:focus { top: 8px; outline: 2px solid var(--electric-cyan); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+:focus-visible { outline: 2px solid var(--electric-cyan); outline-offset: 2px; border-radius: 4px; }
+
+@media (pointer: coarse) {
+  .icon-btn { width: 44px; height: 44px; }
+  .dim-buttons button { min-height: 44px; }
+  .mode-pill button, .shape-switch button { padding-top: 12px; padding-bottom: 12px; }
+  input[type="range"] { height: 8px; }
+  input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
+  input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; }
+  .tw-radio button { padding-top: 12px; padding-bottom: 12px; }
+  .preset { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- LIGHT THEME ---------- */
+body.theme-light {
+  --bg-base: #f4f7fb; --bg-surface: #eaf0f7; --bg-raised: #ffffff;
+  --fg-1: #0a1423; --fg-2: #2c3f57; --fg-3: #5a738f; --fg-4: #8da3bb;
+  --border-line: rgba(28,56,90,0.14); --border-subtle: rgba(28,56,90,0.06);
+  --border-accent: rgba(20,184,154,0.55);
+  --navy-950: #f4f7fb; --navy-900: #eaf0f7; --navy-800: #dee6f1; --navy-600: #c3d0e0;
+}
+body.theme-light {
+  background:
+    radial-gradient(ellipse 1200px 700px at 18% -10%, rgba(20,184,154,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 110%, rgba(62,180,200,0.08) 0%, transparent 55%),
+    linear-gradient(180deg, #f4f7fb 0%, #e7eef6 100%);
+  color: var(--fg-2);
+}
+body.theme-light .topbar { background: rgba(255,255,255,0.85); }
+body.theme-light .panel-left, body.theme-light .panel-right {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(234,240,247,0.85) 100%);
+}
+body.theme-light .shape-switch, body.theme-light .mode-pill,
+body.theme-light .icon-btn, body.theme-light .stage-formula,
+body.theme-light .stage-wbar, body.theme-light .tweaks-panel,
+body.theme-light .tour-menu, body.theme-light .tour-card,
+body.theme-light .webgl-fallback-card, body.theme-light .readout .cell,
+body.theme-light .dim-chart, body.theme-light .accordion .body .katex-block {
+  background: rgba(255,255,255,0.7); color: var(--fg-1);
+}
+body.theme-light .icon-btn { color: var(--fg-2); }
+body.theme-light .shape-switch button { color: var(--fg-3); }
+body.theme-light .mode-pill button { color: var(--fg-3); }
+body.theme-light input[type="range"] {
+  background: linear-gradient(90deg, var(--teal-500) 0%, var(--teal-500) var(--p, 50%), rgba(28,56,90,0.10) var(--p, 50%), rgba(28,56,90,0.10) 100%);
+}
+body.theme-light input[type="range"]::-webkit-slider-thumb { border-color: #fff; }
+body.theme-light .dim-buttons button { background: rgba(28,56,90,0.04); }
+body.theme-light .stage {
+  background: linear-gradient(180deg, #e9eff8 0%, #d8e3f2 100%);
+}
+body.theme-light .preset { background: rgba(255,255,255,0.65); color: var(--fg-2); }
+
+body {
+  background:
+    radial-gradient(ellipse 1200px 700px at 18% -10%, rgba(20,184,154,0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 110%, rgba(62,240,226,0.10) 0%, transparent 55%),
+    linear-gradient(180deg, var(--navy-950) 0%, #04080f 100%);
+  color: var(--fg-2);
+}
+
+/* ---------- APP SHELL ---------- */
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 64px 1fr;
+  grid-template-columns: 320px 1fr 360px;
+  grid-template-areas:
+    "topbar topbar topbar"
+    "left   stage  right";
+}
+.topbar {
+  grid-area: topbar;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--border-line);
+  background: rgba(7,14,26,0.85);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  z-index: 5;
+}
+.brand {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-family: var(--font-display); font-weight: 700;
+  letter-spacing: 0.06em; font-size: var(--fs-md); color: var(--fg-1);
+}
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--electric-cyan); box-shadow: var(--glow-cyan);
+}
+.brand small {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--fg-3); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.brand .back-link {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em;
+  color: var(--fg-3); text-decoration: none; text-transform: uppercase;
+  padding: 4px 8px; border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+  flex-shrink: 0;
+}
+.brand .back-link:hover { color: var(--electric-cyan); border-color: var(--border-accent); }
+
+.shape-switch {
+  display: flex;
+  background: rgba(15,29,49,0.7);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-pill);
+  padding: 4px; gap: 2px;
+}
+.shape-switch button {
+  appearance: none; background: transparent; border: 0;
+  color: var(--fg-3); font-family: var(--font-display);
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 8px 18px; border-radius: var(--radius-pill);
+  cursor: pointer; transition: all var(--dur-fast) var(--ease-out);
+  display: flex; align-items: center; gap: 8px;
+}
+.shape-switch button:hover { color: var(--fg-1); }
+.shape-switch button.active {
+  background: var(--grad-brand); color: var(--navy-950);
+  box-shadow: var(--glow-teal-sm); font-weight: 700;
+}
+.shape-switch button svg { width: 14px; height: 14px; }
+
+.topbar-right { display: flex; align-items: center; gap: var(--space-3); }
+.mode-pill {
+  display: flex; gap: 2px;
+  background: rgba(15,29,49,0.7);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+}
+.mode-pill button {
+  appearance: none; background: transparent; border: 0;
+  color: var(--fg-3); font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: var(--radius-pill);
+  cursor: pointer; transition: all var(--dur-fast);
+}
+.mode-pill button.active {
+  background: rgba(20,184,154,0.18); color: var(--teal-200);
+  border: 1px solid rgba(20,184,154,0.35);
+}
+.icon-btn {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  background: rgba(15,29,49,0.7);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-md); color: var(--fg-2);
+  cursor: pointer; transition: all var(--dur-fast);
+}
+.icon-btn:hover { color: var(--electric-cyan); border-color: var(--border-accent); }
+.icon-btn.active {
+  color: var(--electric-cyan); border-color: var(--border-accent);
+  background: rgba(20,184,154,0.15); box-shadow: var(--glow-teal-sm);
+}
+.icon-btn svg { width: 16px; height: 16px; }
+.share-flash {
+  position: absolute; top: 70px; right: 18px;
+  background: rgba(20,184,154,0.95); color: var(--navy-950);
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  opacity: 0; transform: translateY(-6px);
+  transition: all 200ms var(--ease-out);
+  pointer-events: none; z-index: 20;
+}
+.share-flash.show { opacity: 1; transform: translateY(0); }
+
+/* ---------- LEFT PANEL ---------- */
+.panel-left {
+  grid-area: left;
+  border-right: 1px solid var(--border-line);
+  background: linear-gradient(180deg, rgba(15,29,49,0.55) 0%, rgba(7,14,26,0.7) 100%);
+  overflow-y: auto; padding: var(--space-5);
+  scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent;
+}
+.panel-right {
+  grid-area: right;
+  border-left: 1px solid var(--border-line);
+  background: linear-gradient(180deg, rgba(15,29,49,0.55) 0%, rgba(7,14,26,0.7) 100%);
+  overflow-y: auto; padding: var(--space-5);
+  scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent;
+}
+.panel-left::-webkit-scrollbar, .panel-right::-webkit-scrollbar { width: 6px; }
+.panel-left::-webkit-scrollbar-thumb, .panel-right::-webkit-scrollbar-thumb {
+  background: var(--navy-600); border-radius: 3px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em;
+  color: var(--teal-300); text-transform: uppercase;
+  margin-bottom: var(--space-3); display: flex; align-items: center; gap: 8px;
+}
+.eyebrow::before { content: ''; width: 14px; height: 1px; background: var(--teal-500); }
+
+.control { margin-bottom: var(--space-5); }
+.control .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 10px;
+}
+.control .label {
+  font-family: var(--font-display); font-size: 13px; letter-spacing: 0.06em;
+  color: var(--fg-1); text-transform: uppercase; display: flex; align-items: center; gap: 6px;
+}
+.control .label .greek {
+  font-family: 'Times New Roman', serif; font-style: italic;
+  font-size: 16px; color: var(--teal-300); text-transform: none;
+}
+.control .val {
+  font-family: var(--font-mono); font-size: 14px;
+  color: var(--electric-cyan); text-shadow: 0 0 12px rgba(62,240,226,0.4);
+}
+.control .hint {
+  font-size: 11px; color: var(--fg-3); font-family: var(--font-mono);
+  letter-spacing: 0.04em; margin-top: 6px;
+}
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: linear-gradient(90deg, var(--teal-500) 0%, var(--teal-500) var(--p, 50%), rgba(124,180,200,0.12) var(--p, 50%), rgba(124,180,200,0.12) 100%);
+  border-radius: 4px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--electric-cyan);
+  border: 2px solid var(--navy-950); box-shadow: 0 0 12px rgba(62,240,226,0.7);
+  cursor: grab; transition: transform 100ms;
+}
+input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.15); cursor: grabbing; }
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--electric-cyan); border: 2px solid var(--navy-950);
+  box-shadow: 0 0 12px rgba(62,240,226,0.7); cursor: grab;
+}
+
+.dim-buttons {
+  display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-top: 6px;
+}
+.dim-buttons button {
+  aspect-ratio: 1; appearance: none;
+  background: rgba(124,180,200,0.04);
+  border: 1px solid var(--border-line);
+  color: var(--fg-3); font-family: var(--font-mono);
+  font-size: 12px; border-radius: 6px; cursor: pointer; transition: all var(--dur-fast);
+}
+.dim-buttons button:hover { color: var(--fg-1); border-color: var(--border-accent); }
+.dim-buttons button.active {
+  background: rgba(20,184,154,0.2); border-color: var(--teal-500);
+  color: var(--electric-cyan); box-shadow: var(--glow-teal-sm);
+}
+
+.readout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: var(--space-4); }
+.readout .cell {
+  padding: 12px; background: rgba(20,41,63,0.4);
+  border: 1px solid var(--border-line); border-radius: var(--radius-sm);
+  position: relative; overflow: hidden;
+}
+.readout .cell::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--teal-500); opacity: 0.6;
+}
+.readout .cell .k {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+  color: var(--fg-3); text-transform: uppercase; margin-bottom: 4px;
+}
+.readout .cell .v {
+  font-family: var(--font-mono); font-size: 16px; color: var(--fg-1); font-weight: 500;
+}
+.readout .cell .u { font-size: 10px; color: var(--fg-3); margin-left: 3px; }
+
+/* ---------- STAGE ---------- */
+.stage { grid-area: stage; position: relative; overflow: hidden; }
+#three-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+#three-canvas:active { cursor: grabbing; }
+
+.webgl-fallback {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: linear-gradient(180deg, rgba(7,14,26,0.85) 0%, rgba(4,8,15,0.95) 100%);
+  z-index: 4; padding: var(--space-6);
+}
+.webgl-fallback[hidden] { display: none; }
+.webgl-fallback-card {
+  max-width: 480px; background: rgba(15,29,49,0.7);
+  border: 1px solid var(--border-line); border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-5); text-align: center; color: var(--fg-2);
+}
+.webgl-fallback-card svg { color: var(--electric-violet); margin-bottom: var(--space-3); }
+.webgl-fallback-card h3 {
+  margin: 0 0 var(--space-3); font-family: var(--font-display);
+  font-size: 18px; color: var(--fg-1); letter-spacing: 0.02em;
+}
+.webgl-fallback-card p { margin: 0 0 var(--space-4); font-size: 13px; line-height: 1.6; color: var(--fg-2); }
+.webgl-fallback-readout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: var(--space-4) 0; text-align: left;
+}
+.webgl-fallback-readout .cell {
+  padding: 10px 12px; background: rgba(7,14,26,0.5);
+  border: 1px solid var(--border-line); border-radius: var(--radius-sm);
+  border-left: 2px solid var(--teal-500);
+}
+.webgl-fallback-readout .k {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--fg-3); margin-bottom: 4px;
+}
+.webgl-fallback-readout .v { font-family: var(--font-mono); font-size: 14px; color: var(--electric-cyan); }
+.webgl-fallback-retry {
+  appearance: none; background: var(--grad-brand); color: var(--navy-950);
+  border: 0; font-family: var(--font-display); font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+  padding: 10px 22px; border-radius: var(--radius-pill);
+  cursor: pointer; box-shadow: var(--glow-teal-sm);
+}
+.webgl-fallback-retry:hover { box-shadow: var(--glow-teal-md); }
+
+.stage-overlay { position: absolute; pointer-events: none; z-index: 2; }
+.stage-tag {
+  top: 20px; left: 20px; display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--teal-300); text-transform: uppercase;
+}
+.stage-tag .pulse {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pulse-green); box-shadow: 0 0 8px var(--pulse-green);
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.stage-formula {
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(7,14,26,0.7); border: 1px solid var(--border-line);
+  border-radius: var(--radius-md); padding: 14px 22px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: center; gap: 22px; pointer-events: auto;
+}
+.stage-formula .label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--fg-3); text-transform: uppercase;
+}
+.stage-formula .formula { font-size: 18px; color: var(--fg-1); }
+
+.stage-axes {
+  bottom: 24px; left: 24px; display: flex; gap: 14px;
+  font-family: var(--font-mono); font-size: 11px;
+}
+.stage-axes span { display: flex; align-items: center; gap: 6px; }
+.stage-axes span::before { content: ''; width: 14px; height: 2px; }
+.ax-x::before { background: #ff5d73; }
+.ax-y::before { background: #4ade80; }
+.ax-z::before { background: #3ef0e2; }
+.ax-w::before { background: #7c4dff; }
+
+.stage-wbar {
+  top: 80px; right: 24px; width: 38px; height: 220px;
+  background: rgba(7,14,26,0.7); border: 1px solid var(--border-line);
+  border-radius: var(--radius-pill); pointer-events: none; overflow: hidden; display: none;
+}
+.stage-wbar.show { display: block; }
+.stage-wbar .label {
+  position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--electric-violet); letter-spacing: 0.2em;
+}
+.stage-wbar .track {
+  position: absolute; inset: 8px;
+  background: linear-gradient(180deg, rgba(124,77,255,0.05) 0%, rgba(124,77,255,0.25) 50%, rgba(124,77,255,0.05) 100%);
+  border-radius: var(--radius-pill);
+}
+.stage-wbar .ind {
+  position: absolute; left: 4px; right: 4px; height: 20px;
+  background: var(--electric-violet); box-shadow: 0 0 14px rgba(124,77,255,0.7);
+  border-radius: var(--radius-pill); transform: translateY(-50%); top: 50%;
+  transition: top 100ms var(--ease-out);
+}
+.stage-wbar .midline {
+  position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+  background: rgba(124,77,255,0.3);
+}
+
+/* ---------- RIGHT PANEL ---------- */
+.accordion { border-top: 1px solid var(--border-subtle); }
+.accordion details { border-bottom: 1px solid var(--border-subtle); }
+.accordion summary {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 2px; cursor: pointer; list-style: none;
+  transition: color var(--dur-fast); user-select: none;
+}
+.accordion summary::-webkit-details-marker { display: none; }
+.accordion summary:hover { color: var(--fg-1); }
+.accordion summary .title {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--fg-1); display: flex; align-items: center; gap: 10px;
+}
+.accordion summary .title .num { font-family: var(--font-mono); color: var(--teal-300); font-size: 11px; }
+.accordion summary .chev {
+  width: 20px; height: 20px; display: grid; place-items: center;
+  color: var(--teal-300); transition: transform var(--dur-base);
+}
+.accordion details[open] summary .chev { transform: rotate(90deg); }
+.accordion .body {
+  padding: 0 2px 18px; color: var(--fg-2); font-size: 13px; line-height: 1.65;
+}
+.accordion .body p { margin: 8px 0 14px; font-size: 13px; }
+.accordion .body .katex-block {
+  background: rgba(20,41,63,0.4); border: 1px solid var(--border-line);
+  border-radius: var(--radius-sm); padding: 14px 12px; margin: 10px 0;
+  text-align: center; overflow-x: auto;
+}
+.accordion .body code { font-size: 11px; }
+
+.curio {
+  margin-top: var(--space-5);
+  background: linear-gradient(135deg, rgba(124,77,255,0.08) 0%, rgba(62,240,226,0.06) 100%);
+  border: 1px solid rgba(124,77,255,0.25); border-radius: var(--radius-md);
+  padding: 16px; position: relative; overflow: hidden;
+}
+.curio::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(124,77,255,0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+.curio .tag {
+  font-family: var(--font-mono); font-size: 9px; color: var(--electric-violet);
+  letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px;
+}
+.curio h4 {
+  font-family: var(--font-display); font-size: 14px; margin: 0 0 8px;
+  color: var(--fg-1); letter-spacing: 0.04em;
+}
+.curio p { font-size: 12px; color: var(--fg-2); margin: 0; line-height: 1.6; }
+
+.dim-chart {
+  margin-top: var(--space-5); background: rgba(7,14,26,0.5);
+  border: 1px solid var(--border-line); border-radius: var(--radius-md); padding: 14px;
+}
+.dim-chart .head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.dim-chart .head .t {
+  font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--fg-1);
+}
+.dim-chart .head .leg { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 9px; }
+.dim-chart .head .leg span { display: flex; align-items: center; gap: 5px; }
+.dim-chart .head .leg .sw { width: 8px; height: 8px; border-radius: 50%; }
+.chart-vol { background: var(--teal-300); box-shadow: 0 0 6px var(--teal-300); }
+.chart-sa  { background: var(--electric-cyan); box-shadow: 0 0 6px var(--electric-cyan); }
+.dim-chart svg { width: 100%; height: 130px; display: block; }
+.dim-chart .xaxis {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 9px; color: var(--fg-3); margin-top: 4px;
+}
+
+/* MODE-AWARE VISIBILITY */
+body.mode-beginner   [data-modes]:not([data-modes*="b"]) { display: none !important; }
+body.mode-explorer   [data-modes]:not([data-modes*="e"]) { display: none !important; }
+body.mode-researcher [data-modes]:not([data-modes*="r"]) { display: none !important; }
+body.mode-beginner .accordion .body { font-size: 14px; line-height: 1.75; }
+body.mode-beginner .control .label { font-size: 14px; }
+body.mode-beginner .eyebrow { font-size: 11px; }
+body.mode-researcher .accordion .body { font-size: 12px; line-height: 1.55; }
+body.mode-researcher .accordion .body p { margin: 6px 0 10px; }
+body.mode-researcher .stage-formula { font-size: 14px; }
+
+.copy-b, .copy-e, .copy-r { display: none; }
+body.mode-beginner   .copy-b { display: inline; }
+body.mode-explorer   .copy-e { display: inline; }
+body.mode-researcher .copy-r { display: inline; }
+body.mode-beginner   .copy-b.block { display: block; }
+body.mode-explorer   .copy-e.block { display: block; }
+body.mode-researcher .copy-r.block { display: block; }
+
+/* GUIDED TOUR */
+.tour-launcher { position: relative; }
+.tour-launcher .glow-dot {
+  position: absolute; top: 6px; right: 6px; width: 6px; height: 6px;
+  background: var(--electric-violet); border-radius: 50%;
+  box-shadow: 0 0 10px var(--electric-violet); animation: pulse 2s infinite;
+}
+
+.tour-menu {
+  position: fixed; top: 70px; right: 200px; width: 320px;
+  background: rgba(7,14,26,0.96); border: 1px solid var(--border-line);
+  border-radius: var(--radius-md); padding: 10px; box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 40; opacity: 0; transform: translateY(-8px) scale(0.97);
+  pointer-events: none; transition: all 180ms var(--ease-out);
+}
+.tour-menu.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.tour-menu .head {
+  padding: 8px 10px 10px; border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--fg-3); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.tour-menu .item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 10px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: background 140ms;
+}
+.tour-menu .item:hover { background: rgba(20,184,154,0.08); }
+.tour-menu .item .ic {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: grid; place-items: center; flex-shrink: 0;
+  background: var(--grad-brand); color: var(--navy-950);
+  font-family: var(--font-display); font-weight: 800; font-size: 14px;
+}
+.tour-menu .item:nth-child(3) .ic { background: linear-gradient(135deg, #7c4dff, #3ef0e2); }
+.tour-menu .item:nth-child(4) .ic { background: linear-gradient(135deg, #f4b840, #ff5d73); }
+.tour-menu .item h5 {
+  margin: 0; font-family: var(--font-display); font-size: 13px;
+  color: var(--fg-1); letter-spacing: 0.04em;
+}
+.tour-menu .item p { margin: 2px 0 0; font-size: 11px; color: var(--fg-3); }
+
+.tour-card {
+  position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 120%);
+  width: min(560px, 92vw);
+  background: rgba(7,14,26,0.96); border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg); padding: 22px 26px;
+  box-shadow: var(--shadow-lg), 0 0 60px rgba(20,184,154,0.18);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 60; transition: transform 280ms var(--ease-out), opacity 280ms; opacity: 0;
+}
+.tour-card.open { transform: translate(-50%, 0); opacity: 1; }
+.tour-card .pre {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+.tour-card .tour-name {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--teal-300); text-transform: uppercase;
+}
+.tour-card .step-count { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); letter-spacing: 0.1em; }
+.tour-card .step-count b { color: var(--electric-cyan); font-weight: 600; }
+.tour-card h3 {
+  font-family: var(--font-display); font-size: 22px; margin: 0 0 8px;
+  color: var(--fg-1); letter-spacing: -0.01em;
+}
+.tour-card .desc {
+  font-size: 14px; line-height: 1.6; color: var(--fg-2); margin: 0 0 18px; min-height: 60px;
+}
+.tour-card .desc strong { color: var(--electric-cyan); font-weight: 600; }
+.tour-card .desc em { color: var(--teal-300); font-style: normal; }
+.tour-card .progress { display: flex; gap: 4px; margin-bottom: 16px; }
+.tour-card .progress span {
+  flex: 1; height: 3px; background: rgba(124,180,200,0.12); border-radius: 2px; transition: background 200ms;
+}
+.tour-card .progress span.done { background: var(--teal-500); }
+.tour-card .progress span.current { background: var(--electric-cyan); box-shadow: 0 0 8px var(--electric-cyan); }
+.tour-card .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tour-card button {
+  appearance: none; border: 0; font-family: var(--font-display);
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 10px 18px; border-radius: var(--radius-pill); cursor: pointer; transition: all 140ms;
+}
+.tour-card .btn-prev {
+  background: transparent; border: 1px solid var(--border-line); color: var(--fg-2);
+}
+.tour-card .btn-prev:hover { border-color: var(--border-accent); color: var(--fg-1); }
+.tour-card .btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+.tour-card .btn-next {
+  background: var(--grad-brand); color: var(--navy-950); font-weight: 700; box-shadow: var(--glow-teal-sm);
+}
+.tour-card .btn-next:hover { box-shadow: var(--glow-teal-md); }
+.tour-card .btn-exit {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; background: transparent;
+  border: 1px solid transparent; color: var(--fg-3); padding: 0;
+  border-radius: 50%; display: grid; place-items: center;
+}
+.tour-card .btn-exit:hover { color: var(--fg-1); border-color: var(--border-line); }
+
+/* TWEAKS PANEL */
+.tweaks-panel {
+  position: fixed; right: 380px; bottom: 24px; width: 280px;
+  background: rgba(7,14,26,0.97); border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 50; opacity: 0; transform: translateX(40px); pointer-events: none;
+  transition: all 220ms var(--ease-out); overflow: hidden;
+}
+.tweaks-panel.open { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.tweaks-panel header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border-subtle);
+  background: rgba(20,41,63,0.4); cursor: grab;
+}
+.tweaks-panel header h4 {
+  margin: 0; font-family: var(--font-display); font-size: 12px;
+  letter-spacing: 0.16em; color: var(--fg-1); text-transform: uppercase;
+}
+.tweaks-panel header .x {
+  width: 22px; height: 22px; display: grid; place-items: center;
+  background: transparent; border: 0; color: var(--fg-3); cursor: pointer; border-radius: 4px;
+}
+.tweaks-panel header .x:hover { color: var(--fg-1); background: rgba(255,255,255,0.05); }
+.tweaks-panel .tw-body { padding: 14px 16px 16px; max-height: 60vh; overflow-y: auto; }
+.tw-section { margin-bottom: 16px; }
+.tw-section:last-child { margin-bottom: 0; }
+.tw-section .tw-label {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em;
+  color: var(--fg-3); text-transform: uppercase; margin-bottom: 10px;
+}
+.tw-swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tw-swatches button {
+  aspect-ratio: 1; appearance: none; background: var(--g, var(--grad-brand));
+  border: 2px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+  position: relative; transition: transform 100ms, border-color 140ms;
+}
+.tw-swatches button:hover { transform: scale(1.06); }
+.tw-swatches button.active { border-color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+.tw-radio {
+  display: flex; background: rgba(20,41,63,0.4);
+  border: 1px solid var(--border-line); border-radius: var(--radius-sm); padding: 3px;
+}
+.tw-radio button {
+  flex: 1; appearance: none; background: transparent; border: 0;
+  color: var(--fg-3); font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; padding: 7px 4px;
+  border-radius: 4px; cursor: pointer; transition: all 140ms;
+}
+.tw-radio button.active { background: var(--accent-1); color: var(--navy-950); font-weight: 600; }
+.tw-toggle { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+.tw-toggle .name { font-family: var(--font-sans); font-size: 12px; color: var(--fg-2); }
+.tw-switch {
+  width: 36px; height: 20px; background: rgba(124,180,200,0.15);
+  border-radius: 999px; position: relative; cursor: pointer; transition: background 160ms;
+}
+.tw-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--fg-3); transition: all 160ms var(--ease-out);
+}
+.tw-switch.on { background: rgba(20,184,154,0.4); }
+.tw-switch.on::after { left: 18px; background: var(--electric-cyan); box-shadow: 0 0 8px var(--electric-cyan); }
+.tw-slider input[type="range"] { margin-top: 4px; }
+
+/* EXPORT MENU */
+.export-menu {
+  position: fixed; top: 70px; right: 24px; width: 280px;
+  background: rgba(7,14,26,0.97); border: 1px solid var(--border-line);
+  border-radius: var(--radius-md); padding: 8px; box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  z-index: 40; opacity: 0; transform: translateY(-8px) scale(0.97);
+  pointer-events: none; transition: all 180ms var(--ease-out);
+}
+.export-menu.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.export-menu .item {
+  display: flex; align-items: center; gap: 12px; padding: 12px;
+  border-radius: var(--radius-sm); cursor: pointer; color: var(--fg-2);
+  background: transparent; border: 0; width: 100%; text-align: left;
+  transition: background 140ms; font-family: inherit;
+}
+.export-menu .item:hover, .export-menu .item:focus-visible {
+  background: rgba(20,184,154,0.1); color: var(--fg-1); outline: none;
+}
+.export-menu .item .ic {
+  width: 32px; height: 32px; border-radius: 6px; display: grid; place-items: center;
+  background: rgba(20,184,154,0.18); color: var(--electric-cyan); flex-shrink: 0;
+}
+.export-menu .item .ic svg { width: 16px; height: 16px; }
+.export-menu .item .meta { display: flex; flex-direction: column; gap: 2px; }
+.export-menu .item .name { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.04em; color: inherit; }
+.export-menu .item .desc { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); letter-spacing: 0.04em; }
+
+/* SPOTLIGHT */
+.spotlight {
+  position: absolute; pointer-events: none; border-radius: var(--radius-sm);
+  border: 2px solid var(--electric-cyan);
+  box-shadow: 0 0 0 9999px rgba(7,14,26,0.0), 0 0 20px rgba(62,240,226,0.7);
+  z-index: 30; opacity: 0; transition: all 240ms var(--ease-out);
+}
+.spotlight.show { opacity: 1; }
+
+/* RESPONSIVE */
+@media (max-width: 1480px) {
+  .shape-switch button { padding: 8px 12px; font-size: 10px; letter-spacing: 0.1em; }
+  .mode-pill button { padding: 6px 9px; }
+  .brand small { display: none; }
+}
+@media (max-width: 1280px) {
+  .app { grid-template-columns: 280px 1fr 320px; }
+  .shape-switch button span, .shape-switch button { font-size: 9px; }
+  .shape-switch button svg { width: 12px; height: 12px; }
+  .topbar { padding: 0 var(--space-3); gap: var(--space-2); }
+  .topbar-right { gap: var(--space-2); }
+}
+@media (max-width: 1024px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 64px 42vh 1fr;
+    grid-template-areas: "topbar" "stage" "left";
+  }
+  .panel-right {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto;
+    height: 75vh; max-height: 78vh; border-left: 0;
+    border-top: 1px solid var(--border-accent);
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(180deg, rgba(15,29,49,0.96) 0%, rgba(7,14,26,0.98) 100%);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding-top: 20px; transform: translateY(100%);
+    transition: transform 320ms cubic-bezier(0.32,0.72,0,1);
+    z-index: 45; box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
+  }
+  .panel-right.open { transform: translateY(0); }
+  .panel-right::before {
+    content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 4px; background: var(--border-accent); border-radius: 2px;
+  }
+  .math-fab {
+    position: fixed; right: 18px; bottom: 18px; width: 56px; height: 56px;
+    border-radius: 50%; background: var(--grad-brand); color: var(--navy-950);
+    border: 0; display: grid; place-items: center;
+    box-shadow: 0 10px 30px rgba(20,184,154,0.45), var(--glow-teal-md);
+    cursor: pointer; z-index: 40; font-family: var(--font-display); font-weight: 800;
+    transition: transform 180ms;
+  }
+  .math-fab:hover, .math-fab:focus-visible { transform: scale(1.06); outline: none; }
+  .math-fab svg { width: 22px; height: 22px; }
+  .math-fab.hidden { opacity: 0; pointer-events: none; transform: scale(0.7); }
+  .math-sheet-backdrop {
+    position: fixed; inset: 0; background: rgba(4,8,15,0.5);
+    backdrop-filter: blur(2px); z-index: 44;
+    opacity: 0; pointer-events: none; transition: opacity 240ms;
+  }
+  .math-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+  .sheet-close {
+    position: absolute; top: 14px; right: 16px; width: 32px; height: 32px;
+    background: rgba(124,180,200,0.1); border: 1px solid var(--border-line);
+    border-radius: 50%; color: var(--fg-2); display: grid; place-items: center; cursor: pointer; z-index: 2;
+  }
+  .sheet-close:hover { color: var(--fg-1); border-color: var(--border-accent); }
+}
+@media (min-width: 1025px) {
+  .math-fab, .math-sheet-backdrop, .sheet-close { display: none !important; }
+}
+</style>
 </head>
 <body>
-<style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
-  .djc-app-bar a:hover{color:#67e8f9;}
-  .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
-</style>
-<div class="djc-app-bar">
-  <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
-    <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
-    <span style="color:#4b5563;flex-shrink:0;">|</span>
-    <span class="djc-title">Hypersphere Explorer</span>
-  </div>
-  <a href="/" class="djc-logo">DJC</a>
-</div>
-    <div class="container">
-        <div class="header">
-            <h1>🔮 Inverse Space → Hypersphere Portal</h1>
-            <p>From Denn Thought to Dimensional Truth: Cylinder-Sphere → Hypercube-Hypersphere</p>
-        </div>
-        
-        <div class="main-content">
-            <div class="visualization">
-                <div class="viz-row">
-                    <div class="viz-label">3D: Cylinder ⊃ Sphere</div>
-                    <div id="canvas3d"></div>
-                </div>
-                <div class="viz-row">
-                    <div class="viz-label">4D: Hypercube ⊃ Hypersphere</div>
-                    <div id="canvas4d"></div>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <div class="control-section">
-                    <h3>🎯 Geometric Parameters</h3>
-                    <div class="slider-container">
-                        <label>Radius (r)</label>
-                        <input type="range" class="slider" id="radius" min="0.5" max="2.5" step="0.1" value="1.5">
-                        <div class="value-display">r = <span id="radius-value">1.5</span></div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label>4D Cross-Section Depth</label>
-                        <input type="range" class="slider" id="depth4d" min="-2" max="2" step="0.1" value="0">
-                        <div class="value-display">w = <span id="depth4d-value">0.0</span></div>
-                    </div>
-                </div>
-                
-                <div class="control-section">
-                    <h3>📊 Volume Analysis</h3>
-                    
-                    <div class="dimension-indicator">3D Analysis</div>
-                    <div class="equation-panel">
-                        <div class="equation">
-                            Cylinder: V = π r² (2r) = <span class="highlight" id="cylinder-vol">14.14</span>
-                        </div>
-                        <div class="equation">
-                            Sphere: V = (4/3) π r³ = <span class="highlight" id="sphere-vol">14.14</span>
-                        </div>
-                        <div class="ratio-display">
-                            <strong>Inverse Volume:</strong> <span id="inverse-vol">0.00</span><br>
-                            <strong>Ratio:</strong> <span id="ratio-3d">1.50</span> (Archimedes' 3:2!)
-                        </div>
-                    </div>
-                    
-                    <div class="dimension-indicator">4D Analysis</div>
-                    <div class="equation-panel">
-                        <div class="equation">
-                            Hypercube: V = (2r)⁴ = <span class="highlight" id="hypercube-vol">81.00</span>
-                        </div>
-                        <div class="equation">
-                            Hypersphere: V = (π²/2) r⁴ = <span class="highlight" id="hypersphere-vol">49.35</span>
-                        </div>
-                        <div class="ratio-display">
-                            <strong>4D Inverse Volume:</strong> <span id="inverse-vol-4d">31.65</span><br>
-                            <strong>4D Ratio:</strong> <span id="ratio-4d">1.64</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="control-section">
-                    <h3>🔄 Visualization Mode</h3>
-                    <button class="button active" onclick="setMode('both')" id="btn-both">Both Views</button>
-                    <button class="button" onclick="setMode('inverse')" id="btn-inverse">Inverse Only</button>
-                    <button class="button" onclick="setMode('geometric')" id="btn-geometric">Geometric</button>
-                </div>
-                
-                <div class="insight-box">
-                    <h4>🧠 Key Insight</h4>
-                    <div id="insight-content">
-                        <p><strong>Archimedes' Discovery:</strong> The ratio of cylinder to sphere volume is exactly 3:2 in all cases!</p>
-                        <p><strong>4D Extension:</strong> What happens to this ratio in 4D? The hypercube to hypersphere ratio approaches a completely different limit...</p>
-                        <p><strong>The Pattern:</strong> As dimensions increase, hyperspheres become increasingly "lonely" in their hypercubes!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+<!-- Accessibility: skip link + live region -->
+<a href="#stage" class="skip-link">Skip to 3D view</a>
+<div class="sr-only" aria-live="polite" aria-atomic="true" id="liveRegion"></div>
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <a href="/apps/" class="back-link">← Apps</a>
+      <span class="dot"></span>
+      HYPERSPHERE <small>explorer · djc</small>
     </div>
 
-    <script>
-        // Three.js setup for both canvases
-        let scene3d, camera3d, renderer3d;
-        let scene4d, camera4d, renderer4d;
-        let sphere, cylinder, inverseSpace;
-        let hypersphere3d, hypercube3d, inverse4d;
-        let currentMode = 'both';
-        
-        function init() {
-            init3D();
-            init4D();
-            setupControls();
-            updateCalculations();
-            animate();
-        }
-        
-        function init3D() {
-            scene3d = new THREE.Scene();
-            camera3d = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            
-            const container3d = document.getElementById('canvas3d');
-            const rect3d = container3d.getBoundingClientRect();
-            renderer3d.setSize(rect3d.width, rect3d.height);
-            renderer3d.setClearColor(0x000000, 0.2);
-            container3d.appendChild(renderer3d.domElement);
-            
-            // Lighting
-            const ambientLight3d = new THREE.AmbientLight(0x404040, 0.8);
-            scene3d.add(ambientLight3d);
-            
-            const directionalLight3d = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight3d.position.set(5, 5, 5);
-            scene3d.add(directionalLight3d);
-            
-            create3DShapes();
-            
-            camera3d.position.set(4, 3, 4);
-            camera3d.lookAt(0, 0, 0);
-        }
-        
-        function init4D() {
-            scene4d = new THREE.Scene();
-            camera4d = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-            renderer4d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            
-            const container4d = document.getElementById('canvas4d');
-            const rect4d = container4d.getBoundingClientRect();
-            renderer4d.setSize(rect4d.width, rect4d.height);
-            renderer4d.setClearColor(0x000000, 0.2);
-            container4d.appendChild(renderer4d.domElement);
-            
-            // Lighting
-            const ambientLight4d = new THREE.AmbientLight(0x404040, 0.8);
-            scene4d.add(ambientLight4d);
-            
-            const directionalLight4d = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight4d.position.set(5, 5, 5);
-            scene4d.add(directionalLight4d);
-            
-            create4DShapes();
-            
-            camera4d.position.set(4, 3, 4);
-            camera4d.lookAt(0, 0, 0);
-        }
-        
-        function create3DShapes() {
-            const radius = parseFloat(document.getElementById('radius').value);
-            
-            // Clear existing shapes
-            if (sphere) scene3d.remove(sphere);
-            if (cylinder) scene3d.remove(cylinder);
-            if (inverseSpace) scene3d.remove(inverseSpace);
-            
-            // Create sphere
-            const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
-            const sphereMaterial = new THREE.MeshPhongMaterial({
-                color: 0x4ecdc4,
-                transparent: true,
-                opacity: 0.7
-            });
-            sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            scene3d.add(sphere);
-            
-            // Create cylinder
-            const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, 2 * radius, 32);
-            const cylinderMaterial = new THREE.MeshPhongMaterial({
-                color: 0xff6b6b,
-                transparent: true,
-                opacity: 0.3,
-                wireframe: true
-            });
-            cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-            scene3d.add(cylinder);
-            
-            // Create inverse space representation (wireframe difference)
-            const inverseGeometry = new THREE.SphereGeometry(radius * 1.1, 16, 16);
-            const inverseMaterial = new THREE.MeshBasicMaterial({
-                color: 0xf7b733,
-                transparent: true,
-                opacity: 0.4,
-                wireframe: true
-            });
-            inverseSpace = new THREE.Mesh(inverseGeometry, inverseMaterial);
-            scene3d.add(inverseSpace);
-        }
-        
-        function create4DShapes() {
-            const radius = parseFloat(document.getElementById('radius').value);
-            const depth = parseFloat(document.getElementById('depth4d').value);
-            
-            // Clear existing shapes
-            if (hypersphere3d) scene4d.remove(hypersphere3d);
-            if (hypercube3d) scene4d.remove(hypercube3d);
-            if (inverse4d) scene4d.remove(inverse4d);
-            
-            // Create 3D cross-section of 4D hypersphere
-            const effectiveRadius = Math.sqrt(Math.max(0, radius * radius - depth * depth));
-            
-            if (effectiveRadius > 0) {
-                const hypersphereGeometry = new THREE.SphereGeometry(effectiveRadius, 32, 32);
-                const hypersphereMaterial = new THREE.MeshPhongMaterial({
-                    color: 0x45b7d1,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                hypersphere3d = new THREE.Mesh(hypersphereGeometry, hypersphereMaterial);
-                scene4d.add(hypersphere3d);
-            }
-            
-            // Create 3D cross-section of 4D hypercube
-            const cubeSize = radius;
-            const hypercubeGeometry = new THREE.BoxGeometry(cubeSize * 2, cubeSize * 2, cubeSize * 2);
-            const hypercubeMaterial = new THREE.MeshPhongMaterial({
-                color: 0xff6b6b,
-                transparent: true,
-                opacity: 0.3,
-                wireframe: true
-            });
-            hypercube3d = new THREE.Mesh(hypercubeGeometry, hypercubeMaterial);
-            scene4d.add(hypercube3d);
-            
-            // Create 4D inverse space representation
-            if (effectiveRadius > 0) {
-                const inverse4dGeometry = new THREE.BoxGeometry(
-                    cubeSize * 1.8, 
-                    cubeSize * 1.8, 
-                    cubeSize * 1.8
-                );
-                const inverse4dMaterial = new THREE.MeshBasicMaterial({
-                    color: 0xf7b733,
-                    transparent: true,
-                    opacity: 0.2,
-                    wireframe: true
-                });
-                inverse4d = new THREE.Mesh(inverse4dGeometry, inverse4dMaterial);
-                scene4d.add(inverse4d);
-            }
-        }
-        
-        function setupControls() {
-            const radius = document.getElementById('radius');
-            const depth4d = document.getElementById('depth4d');
-            
-            radius.addEventListener('input', function() {
-                document.getElementById('radius-value').textContent = this.value;
-                create3DShapes();
-                create4DShapes();
-                updateCalculations();
-            });
-            
-            depth4d.addEventListener('input', function() {
-                document.getElementById('depth4d-value').textContent = parseFloat(this.value).toFixed(1);
-                create4DShapes();
-                updateInsight();
-            });
-        }
-        
-        function updateCalculations() {
-            const r = parseFloat(document.getElementById('radius').value);
-            
-            // 3D calculations
-            const cylinderVol = Math.PI * r * r * (2 * r);
-            const sphereVol = (4/3) * Math.PI * r * r * r;
-            const inverseVol = cylinderVol - sphereVol;
-            const ratio3d = cylinderVol / sphereVol;
-            
-            // 4D calculations
-            const hypercubeVol = Math.pow(2 * r, 4);
-            const hypersphereVol = (Math.PI * Math.PI / 2) * Math.pow(r, 4);
-            const inverseVol4d = hypercubeVol - hypersphereVol;
-            const ratio4d = hypercubeVol / hypersphereVol;
-            
-            // Update displays
-            document.getElementById('cylinder-vol').textContent = cylinderVol.toFixed(2);
-            document.getElementById('sphere-vol').textContent = sphereVol.toFixed(2);
-            document.getElementById('inverse-vol').textContent = inverseVol.toFixed(2);
-            document.getElementById('ratio-3d').textContent = ratio3d.toFixed(2);
-            
-            document.getElementById('hypercube-vol').textContent = hypercubeVol.toFixed(2);
-            document.getElementById('hypersphere-vol').textContent = hypersphereVol.toFixed(2);
-            document.getElementById('inverse-vol-4d').textContent = inverseVol4d.toFixed(2);
-            document.getElementById('ratio-4d').textContent = ratio4d.toFixed(2);
-            
-            updateInsight();
-        }
-        
-        function updateInsight() {
-            const r = parseFloat(document.getElementById('radius').value);
-            const depth = parseFloat(document.getElementById('depth4d').value);
-            const ratio3d = parseFloat(document.getElementById('ratio-3d').textContent);
-            const ratio4d = parseFloat(document.getElementById('ratio-4d').textContent);
-            
-            const effectiveRadius = Math.sqrt(Math.max(0, r * r - depth * depth));
-            
-            let content = `
-                <p><strong>Current Analysis:</strong></p>
-                <p>3D Ratio: ${ratio3d.toFixed(3)} (Always 1.5 = 3/2)</p>
-                <p>4D Ratio: ${ratio4d.toFixed(3)} (Fixed at ~1.64)</p>
-            `;
-            
-            if (Math.abs(depth) > r * 0.9) {
-                content += `<p><strong>🎯 Edge Case:</strong> Near the 4D "edge" - hypersphere cross-section shrinks dramatically!</p>`;
-            } else if (Math.abs(depth) < 0.1) {
-                content += `<p><strong>🎯 Central Slice:</strong> Maximum 4D hypersphere cross-section. This is where the 4D "equator" lives!</p>`;
-            }
-            
-            content += `
-                <p><strong>The Pattern:</strong> As dimensions increase, hyperspheres occupy less and less of their containing hypercubes. The "curse of dimensionality" strikes!</p>
-            `;
-            
-            document.getElementById('insight-content').innerHTML = content;
-        }
-        
-        function setMode(mode) {
-            currentMode = mode;
-            
-            // Update button states
-            document.querySelectorAll('.button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-' + mode).classList.add('active');
-            
-            // Update visibility based on mode
-            updateVisibility();
-        }
-        
-        function updateVisibility() {
-            switch(currentMode) {
-                case 'both':
-                    if (sphere) sphere.visible = true;
-                    if (cylinder) cylinder.visible = true;
-                    if (inverseSpace) inverseSpace.visible = false;
-                    if (hypersphere3d) hypersphere3d.visible = true;
-                    if (hypercube3d) hypercube3d.visible = true;
-                    if (inverse4d) inverse4d.visible = false;
-                    break;
-                case 'inverse':
-                    if (sphere) sphere.visible = false;
-                    if (cylinder) cylinder.visible = false;
-                    if (inverseSpace) inverseSpace.visible = true;
-                    if (hypersphere3d) hypersphere3d.visible = false;
-                    if (hypercube3d) hypercube3d.visible = false;
-                    if (inverse4d) inverse4d.visible = true;
-                    break;
-                case 'geometric':
-                    if (sphere) sphere.visible = true;
-                    if (cylinder) cylinder.visible = true;
-                    if (inverseSpace) inverseSpace.visible = true;
-                    if (hypersphere3d) hypersphere3d.visible = true;
-                    if (hypercube3d) hypercube3d.visible = true;
-                    if (inverse4d) inverse4d.visible = true;
-                    break;
-            }
-        }
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Gentle rotation
-            if (sphere) {
-                sphere.rotation.y += 0.005;
-                cylinder.rotation.y += 0.005;
-                if (inverseSpace) inverseSpace.rotation.y += 0.003;
-            }
-            
-            if (hypersphere3d) {
-                hypersphere3d.rotation.y += 0.007;
-                hypercube3d.rotation.y += 0.007;
-                if (inverse4d) inverse4d.rotation.y += 0.004;
-            }
-            
-            renderer3d.render(scene3d, camera3d);
-            renderer4d.render(scene4d, camera4d);
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            const container3d = document.getElementById('canvas3d');
-            const rect3d = container3d.getBoundingClientRect();
-            camera3d.aspect = rect3d.width / rect3d.height;
-            camera3d.updateProjectionMatrix();
-            renderer3d.setSize(rect3d.width, rect3d.height);
-            
-            const container4d = document.getElementById('canvas4d');
-            const rect4d = container4d.getBoundingClientRect();
-            camera4d.aspect = rect4d.width / rect4d.height;
-            camera4d.updateProjectionMatrix();
-            renderer4d.setSize(rect4d.width, rect4d.height);
-        });
-        
-        // Initialize when page loads
-        window.addEventListener('load', init);
-    </script>
+    <nav class="shape-switch" id="shapeSwitch" role="tablist" aria-label="Shape">
+      <button data-shape="sphere" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/></svg>
+        Sphere
+      </button>
+      <button data-shape="cylinder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v14"/><path d="M19 5v14"/><ellipse cx="12" cy="19" rx="7" ry="2.5"/></svg>
+        Cylinder
+      </button>
+      <button data-shape="hypersphere">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 3v18M3 12h18"/></svg>
+        Hypersphere
+      </button>
+    </nav>
+
+    <div class="topbar-right">
+      <div class="mode-pill" id="modePill" role="tablist">
+        <button data-mode="beginner">Beginner</button>
+        <button data-mode="explorer" class="active">Explorer</button>
+        <button data-mode="researcher">Researcher</button>
+      </div>
+      <button class="icon-btn tour-launcher" id="tourBtn" title="Guided explorations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        <span class="glow-dot"></span>
+      </button>
+      <button class="icon-btn" id="shareBtn" title="Copy shareable URL">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+      </button>
+      <button class="icon-btn" id="exportBtn" title="Export (PNG, LaTeX, JSON)" aria-label="Export" aria-haspopup="menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" title="Toggle light/dark theme" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="icon-btn" id="tweaksBtn" title="Tweaks (T)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="15" y1="6" x2="20" y2="6"/><circle cx="13" cy="6" r="2"/><line x1="4" y1="12" x2="7" y2="12"/><line x1="11" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2"/><line x1="4" y1="18" x2="14" y2="18"/><line x1="18" y1="18" x2="20" y2="18"/><circle cx="16" cy="18" r="2"/></svg>
+      </button>
+      <button class="icon-btn" id="resetBtn" title="Reset view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      </button>
+    </div>
+    <div class="share-flash" id="shareFlash">URL copied to clipboard</div>
+  </header>
+
+  <!-- LEFT PANEL: CONTROLS -->
+  <aside class="panel-left" aria-label="Parameter controls">
+
+    <div class="eyebrow">Parameters</div>
+
+    <div class="control">
+      <div class="row">
+        <div class="label">Radius <span class="greek">r</span></div>
+        <div class="val" id="rVal">2.50</div>
+      </div>
+      <input type="range" id="rSlider" min="0.2" max="5" step="0.05" value="2.5"/>
+      <div class="hint">0.2 ─────────── 5.0 units</div>
+    </div>
+
+    <div class="control" id="heightControl" style="display:none">
+      <div class="row">
+        <div class="label">Height <span class="greek">h</span></div>
+        <div class="val" id="hVal">4.00</div>
+      </div>
+      <input type="range" id="hSlider" min="0.2" max="8" step="0.05" value="4"/>
+      <div class="hint">cylinder axial length</div>
+    </div>
+
+    <div class="control" id="dimControl">
+      <div class="row">
+        <div class="label">Dimension <span class="greek">n</span></div>
+        <div class="val" id="nVal">3</div>
+      </div>
+      <div class="dim-buttons" id="dimButtons">
+        <button data-n="2">2</button>
+        <button data-n="3" class="active">3</button>
+        <button data-n="4">4</button>
+        <button data-n="5">5</button>
+        <button data-n="6">6</button>
+        <button data-n="7">7</button>
+        <button data-n="8">8</button>
+        <button data-n="9">9</button>
+        <button data-n="10">10</button>
+      </div>
+      <div class="hint" id="dimHint">3-ball — ordinary sphere in ℝ³</div>
+    </div>
+
+    <div class="control" id="wControl" style="display:none">
+      <div class="row">
+        <div class="label">W-slice <span class="greek">w</span></div>
+        <div class="val" id="wVal">0.00</div>
+      </div>
+      <input type="range" id="wSlider" min="-2.5" max="2.5" step="0.02" value="0"/>
+      <div class="hint">3D cross-section through 4-ball at w</div>
+    </div>
+
+    <div class="control">
+      <div class="row">
+        <div class="label">Auto-rotate</div>
+        <div class="val" id="rotVal">0.30</div>
+      </div>
+      <input type="range" id="rotSlider" min="0" max="2" step="0.05" value="0.3"/>
+    </div>
+
+    <div class="eyebrow" style="margin-top:24px">Live Quantities</div>
+    <div class="readout">
+      <div class="cell"><div class="k">Volume</div><div class="v"><span id="volV">65.45</span><span class="u" id="volU">u³</span></div></div>
+      <div class="cell"><div class="k">Surface</div><div class="v"><span id="saV">78.54</span><span class="u" id="saU">u²</span></div></div>
+      <div class="cell"><div class="k">Vₙ / Vₙ₋₁ · r</div><div class="v" id="ratioV">0.667</div></div>
+      <div class="cell"><div class="k">Density at center</div><div class="v" id="densV">0.524</div></div>
+    </div>
+
+    <div class="eyebrow" style="margin-top:24px">Presets</div>
+    <div style="display:grid; gap:8px;">
+      <button class="preset" data-preset="unit">Unit ball (r=1, n=3)</button>
+      <button class="preset" data-preset="kissing">4D kissing number (r=1, n=4)</button>
+      <button class="preset" data-preset="curse">Curse of dim. (r=1, n=10)</button>
+      <button class="preset" data-preset="32cyl">3:2 sphere-in-cylinder</button>
+    </div>
+
+  </aside>
+
+  <!-- CENTER STAGE -->
+  <main class="stage" id="stage" tabindex="-1" aria-label="3D visualization stage">
+    <canvas id="three-canvas" role="img" aria-label="Interactive 3D visualization. Use parameter sliders to change shape, drag to rotate."></canvas>
+
+    <div class="webgl-fallback" id="webglFallback" role="alert" hidden>
+      <div class="webgl-fallback-card">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <h3>3D view unavailable</h3>
+        <p id="webglFallbackMsg">Your browser or device doesn't support WebGL, so the live 3D view can't render. The parameter controls and computed values still work below.</p>
+        <div class="webgl-fallback-readout" id="webglFallbackReadout"></div>
+        <button class="webgl-fallback-retry" id="webglRetry" type="button">Try again</button>
+      </div>
+    </div>
+
+    <div class="stage-overlay stage-tag">
+      <span class="pulse"></span>
+      <span id="stageLabel">3-BALL · ℝ³</span>
+    </div>
+
+    <div class="stage-overlay stage-axes">
+      <span class="ax-x">X</span>
+      <span class="ax-y">Y</span>
+      <span class="ax-z">Z</span>
+      <span class="ax-w" id="axW" style="display:none">W</span>
+    </div>
+
+    <div class="stage-overlay stage-wbar" id="wbar">
+      <span class="label">W</span>
+      <div class="track">
+        <div class="midline"></div>
+        <div class="ind" id="wInd"></div>
+      </div>
+    </div>
+
+    <div class="stage-overlay stage-formula" style="pointer-events:auto">
+      <span class="label">V =</span>
+      <span class="formula" id="stageFormula"></span>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL: MATH + INSIGHTS -->
+  <aside class="panel-right" id="panelRight" aria-label="Mathematics and insights">
+    <button class="sheet-close" id="sheetClose" aria-label="Close math panel" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+
+    <div class="eyebrow">Mathematics</div>
+
+    <div class="accordion">
+
+      <details open data-modes="b e r">
+        <summary><span class="title"><span class="num">01</span> Volume Formula</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p class="copy-b block">An n-ball's volume scales with r<sup>n</sup>. In 3D you know it as <code>(4/3)πr³</code>. The general formula uses the <em>gamma function</em> — a smooth extension of factorial.</p>
+          <p class="copy-e block" id="vol-prose">The volume of an <em>n</em>-dimensional ball of radius <em>r</em> uses the gamma function:</p>
+          <p class="copy-r block">For the closed unit ball <em>B<sup>n</sup></em> ⊂ ℝ<sup>n</sup>, scaling and the gamma identity give:</p>
+          <div class="katex-block" id="vol-eq">V_n(r) = \frac{\pi^{n/2}}{\Gamma(n/2 + 1)}\, r^n</div>
+          <p class="copy-b block">For your current setting: <code id="vol-numeric-b">≈ 65.45</code></p>
+          <p class="copy-e block">For your current setting, this evaluates to <code id="vol-numeric">4/3 · π · 2.5³ ≈ 65.45</code>.</p>
+          <p class="copy-r block">Numerical value: <code id="vol-numeric-r">V = 65.450</code>. Note Γ(n/2+1) = (n/2)! when n is even; otherwise uses the half-integer extension Γ(1/2) = √π.</p>
+        </div>
+      </details>
+
+      <details data-modes="b e r">
+        <summary><span class="title"><span class="num">02</span> Surface Area</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p class="copy-b block">A ball's surface is just the boundary. As radius grows by a tiny bit dr, you add a thin shell of thickness dr — so surface = dV/dr.</p>
+          <p class="copy-e block">The (n−1)-dimensional surface — the boundary of the ball — is just the derivative of the volume with respect to <em>r</em>:</p>
+          <p class="copy-r block">The (n−1)-Hausdorff measure of ∂B<sup>n</sup>(r), equivalently ∂V<sub>n</sub>/∂r:</p>
+          <div class="katex-block" id="sa-eq">S_{n-1}(r) = \frac{dV_n}{dr} = \frac{2\pi^{n/2}}{\Gamma(n/2)}\, r^{n-1}</div>
+          <p>Right now <code id="sa-numeric">4πr² ≈ 78.54</code>.</p>
+          <p class="copy-r block">Asymptotically, S<sub>n−1</sub>/V<sub>n</sub> = n/r — so high-dim balls are almost all surface, nothing inside.</p>
+        </div>
+      </details>
+
+      <details data-modes="b e r">
+        <summary><span class="title"><span class="num">03</span> 4D Cross-Section</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p class="copy-b block">Imagine a 4D ball passing through our 3D world. We can only see one "slice" at a time. At the very middle, the slice is a full sphere — toward the edges, it shrinks to a point.</p>
+          <p class="copy-e block">Slicing a 4-ball at coordinate <em>w</em> gives a 3-ball whose radius depends on how far the slice is from the equator:</p>
+          <p class="copy-r block">Pythagoras in ℝ⁴: a hyperplane w = w₀ intersects B⁴(r) in a 3-ball of radius √(r² − w₀²). Setting w₀ = r·cos θ parameterises the slice as a function of polar angle.</p>
+          <div class="katex-block" id="slice-eq">r'(w) = \sqrt{r^2 - w^2},\quad |w| \le r</div>
+          <p class="copy-e block">As <em>w</em> sweeps from −r to +r, you watch the 3-ball appear, swell to full size at the equator, then vanish.</p>
+          <p class="copy-b block">Try moving the W slider — watch the sphere grow then shrink.</p>
+        </div>
+      </details>
+
+      <details data-modes="e r">
+        <summary><span class="title"><span class="num">04</span> Sphere ⊂ Cylinder</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p class="copy-e block">Archimedes' favourite theorem: a sphere fills exactly <strong>two-thirds</strong> of its bounding cylinder, both in volume <em>and</em> surface area.</p>
+          <p class="copy-r block">Cavalieri / shell argument: for inscribed sphere (R, H=2R), V<sub>S</sub>/V<sub>C</sub> = (4/3)πR³ / 2πR³ = 2/3. Identically for lateral surface.</p>
+          <div class="katex-block">\frac{V_{\text{sphere}}}{V_{\text{cyl}}} = \frac{\tfrac{4}{3}\pi r^3}{2\pi r^3} = \frac{2}{3}</div>
+          <p class="copy-e block">This breaks beautifully in higher dimensions — the inscribed n-ball occupies a vanishingly small fraction of the bounding n-cube as n grows.</p>
+          <p class="copy-r block">In ℝ<sup>n</sup>, V<sub>ball</sub>/V<sub>cube</sub> = π<sup>n/2</sup> / (2<sup>n</sup>·Γ(n/2+1)) → 0 as n→∞. At n=12, ball fills 0.03% of its bounding cube.</p>
+        </div>
+      </details>
+
+      <details data-modes="e r">
+        <summary><span class="title"><span class="num">05</span> Curse of Dimensionality</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p class="copy-e block">The volume of the unit n-ball <em>peaks at n ≈ 5</em>, then collapses to zero. Most of the volume migrates into a thin shell near the surface.</p>
+          <p class="copy-r block">V<sub>n</sub>(1) is maximised at n* ≈ 5.2569 where d/dn [π<sup>n/2</sup>/Γ(n/2+1)] = 0; the digamma equation ½ln π = ψ(n/2+1).</p>
+          <div class="katex-block">\lim_{n \to \infty} V_n(1) = 0</div>
+          <p class="copy-e block">This is why high-dimensional ML problems are hard — data points are nearly all at the same distance, on a thin shell, far from the centre.</p>
+          <p class="copy-r block">Concentration of measure: P(|‖X‖² − E‖X‖²| > εn) → 0 for X uniform on B<sup>n</sup>. Nearest-neighbour ratios degrade to 1; k-NN, kernel density estimation, importance sampling all collapse.</p>
+        </div>
+      </details>
+
+      <details data-modes="r">
+        <summary><span class="title"><span class="num">06</span> Integral &amp; Asymptotics</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p>Derive V<sub>n</sub> by iterated integration. Using the gaussian trick ∫<sub>ℝⁿ</sub>e<sup>−‖x‖²</sup>dx = π<sup>n/2</sup>:</p>
+          <div class="katex-block">V_n(r) \;=\; \int_{B^n(r)} 1\, dx \;=\; \frac{2 r^n}{n}\,\frac{\pi^{n/2}}{\Gamma(n/2)} \;=\; \frac{\pi^{n/2}\, r^n}{\Gamma(n/2 + 1)}</div>
+          <p>Stirling-asymptotic form for large n:</p>
+          <div class="katex-block">V_n(1) \sim \frac{1}{\sqrt{n\pi}}\left(\frac{2\pi e}{n}\right)^{n/2}</div>
+          <p>Decay is super-exponential. Surface-to-volume ratio S<sub>n−1</sub>/V<sub>n</sub> = n/r is exact, not asymptotic.</p>
+        </div>
+      </details>
+
+      <details data-modes="r">
+        <summary><span class="title"><span class="num">07</span> ML Connection</span><span class="chev">›</span></summary>
+        <div class="body">
+          <p>Two uniformly random points in B<sup>n</sup> have squared-distance concentrating near 2(1 − 1/(n+2)). In high n, almost all pairs are at distance ≈ √2 — the basis for cosine-similarity dominance in embedding spaces.</p>
+          <div class="katex-block">\mathbb{E}\|X-Y\|^2 = \frac{2n}{n+2}\,r^2</div>
+          <p>Why ℓ²-normalised embeddings live on S<sup>n−1</sup> rather than B<sup>n</sup>: the sphere is where the mass <em>is</em>, in high dimensions.</p>
+        </div>
+      </details>
+
+    </div>
+
+    <div class="curio" data-modes="b e r">
+      <div class="tag">◊ Curiosity</div>
+      <h4 id="curio-title">A 4D apple, sliced</h4>
+      <p id="curio-body">Move the W-slice. You're watching a hypothetical 4D fruit pass through your 3D kitchen — first appearing as a point, growing into a full sphere, then shrinking back to nothing. The boundary you're seeing is the equator of the hypersphere at w=0.</p>
+    </div>
+
+    <div class="dim-chart" data-modes="e r">
+      <div class="head">
+        <div class="t">Vₙ(1) &amp; Sₙ₋₁(1) by dimension</div>
+        <div class="leg">
+          <span><span class="sw chart-vol"></span>Volume</span>
+          <span><span class="sw chart-sa"></span>Surface</span>
+        </div>
+      </div>
+      <svg viewBox="0 0 320 130" preserveAspectRatio="none" id="dimChart"></svg>
+      <div class="xaxis"><span>n=1</span><span>3</span><span>5</span><span>7</span><span>9</span><span>11</span><span>13</span><span>15</span></div>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- TOUR MENU -->
+<div class="tour-menu" id="tourMenu">
+  <div class="head">Guided Explorations</div>
+  <div class="item" data-tour="archimedes">
+    <div class="ic">Ω</div>
+    <div><h5>Archimedes' 2 : 3</h5><p>How a sphere fits inside its cylinder · 5 steps</p></div>
+  </div>
+  <div class="item" data-tour="slice">
+    <div class="ic">◇</div>
+    <div><h5>Slicing the 4-ball</h5><p>Watch a hypersphere pass through 3D space · 4 steps</p></div>
+  </div>
+  <div class="item" data-tour="curse">
+    <div class="ic">↯</div>
+    <div><h5>The Curse of Dimensionality</h5><p>Why volume collapses as n grows · 4 steps</p></div>
+  </div>
+</div>
+
+<!-- TOUR CARD -->
+<div class="tour-card" id="tourCard" role="dialog" aria-live="polite">
+  <button class="btn-exit" id="tourExit" aria-label="Exit tour">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+  </button>
+  <div class="pre">
+    <span class="tour-name" id="tourName">—</span>
+    <span class="step-count">step <b id="tourStepNum">1</b>/<span id="tourStepTotal">5</span></span>
+  </div>
+  <h3 id="tourTitle">—</h3>
+  <p class="desc" id="tourDesc">—</p>
+  <div class="progress" id="tourProgress"></div>
+  <div class="row">
+    <button class="btn-prev" id="tourPrev">‹ Back</button>
+    <button class="btn-next" id="tourNext">Next ›</button>
+  </div>
+</div>
+
+<!-- TWEAKS PANEL -->
+<aside class="tweaks-panel" id="tweaksPanel" aria-label="Tweaks">
+  <header>
+    <h4>Tweaks</h4>
+    <button class="x" id="tweaksClose" aria-label="Close tweaks">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+  </header>
+  <div class="tw-body">
+    <div class="tw-section">
+      <div class="tw-label">Color palette</div>
+      <div class="tw-swatches" id="twPalette">
+        <button data-pal="teal"   style="--g: linear-gradient(135deg,#14b89a,#3ef0e2)" title="Teal"></button>
+        <button data-pal="violet" style="--g: linear-gradient(135deg,#7c4dff,#3ef0e2)" class="active" title="Violet"></button>
+        <button data-pal="amber"  style="--g: linear-gradient(135deg,#f4b840,#ff5d73)" title="Amber"></button>
+        <button data-pal="mono"   style="--g: linear-gradient(135deg,#cdd9e5,#6d89a8)" title="Mono"></button>
+      </div>
+    </div>
+    <div class="tw-section">
+      <div class="tw-label">Wireframe density</div>
+      <div class="tw-radio" id="twWire">
+        <button data-wire="sparse">Sparse</button>
+        <button data-wire="normal">Normal</button>
+        <button data-wire="dense" class="active">Dense</button>
+      </div>
+    </div>
+    <div class="tw-section tw-slider">
+      <div class="tw-label">Shell opacity · <span id="twOpVal">0.60</span></div>
+      <input type="range" id="twOpacity" min="0.05" max="0.6" step="0.01" value="0.6"/>
+    </div>
+    <div class="tw-section">
+      <div class="tw-toggle">
+        <span class="name">Starfield backdrop</span>
+        <div class="tw-switch on" id="twStars" role="switch" aria-checked="true"></div>
+      </div>
+      <div class="tw-toggle">
+        <span class="name">Floor grid</span>
+        <div class="tw-switch on" id="twGrid" role="switch" aria-checked="true"></div>
+      </div>
+      <div class="tw-toggle">
+        <span class="name">Inscribed sphere (cyl)</span>
+        <div class="tw-switch on" id="twInscribed" role="switch" aria-checked="true"></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="spotlight" id="spotlight"></div>
+
+<!-- EXPORT MENU -->
+<div class="export-menu" id="exportMenu" role="menu" aria-label="Export options">
+  <button class="item" role="menuitem" data-export="png" type="button">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+    <span class="meta"><span class="name">PNG Snapshot</span><span class="desc">High-res render of the 3D view</span></span>
+  </button>
+  <button class="item" role="menuitem" data-export="latex" type="button">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 2L13 12"/><path d="M16 17H8"/></svg></span>
+    <span class="meta"><span class="name">LaTeX Document</span><span class="desc">Compilable .tex with current values</span></span>
+  </button>
+  <button class="item" role="menuitem" data-export="json" type="button">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v3"/><path d="M16 3h2a2 2 0 0 1 2 2v3"/><path d="M8 21H6a2 2 0 0 1-2-2v-3"/><path d="M16 21h2a2 2 0 0 0 2-2v-3"/></svg></span>
+    <span class="meta"><span class="name">JSON State</span><span class="desc">Full snapshot for reproducibility</span></span>
+  </button>
+</div>
+
+<!-- MOBILE MATH FAB + BACKDROP -->
+<div class="math-sheet-backdrop" id="mathBackdrop"></div>
+<button class="math-fab" id="mathFab" aria-label="Open mathematics panel" aria-expanded="false" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14"/><path d="M5 6l3 12"/><path d="M19 6l-3 12"/><path d="M9 18h6"/><circle cx="12" cy="11" r="1.2" fill="currentColor"/></svg>
+</button>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<script>
+/* ===========================================================
+   ANALYTICS — privacy-first, no cookies, console + localStorage
+   =========================================================== */
+class MinimalAnalytics {
+  constructor(opts = {}) {
+    this.opts = Object.assign({
+      flushInterval: 30000,
+      maxQueue: 200,
+      storageKey: 'djc-sphere-analytics',
+      debug: false,
+    }, opts);
+    this.sessionId = this._uid();
+    this.startedAt = Date.now();
+    this.queue = [];
+    this._restore();
+    this._timer = setInterval(() => this.flush(), this.opts.flushInterval);
+    window.addEventListener('beforeunload', () => this.flush(true));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.flush(true);
+    });
+  }
+  _uid() {
+    return 's_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  }
+  _restore() {
+    try {
+      const raw = localStorage.getItem(this.opts.storageKey);
+      if (raw) this.queue = JSON.parse(raw) || [];
+    } catch (e) {}
+  }
+  _persist() {
+    try {
+      localStorage.setItem(this.opts.storageKey, JSON.stringify(this.queue.slice(-this.opts.maxQueue)));
+    } catch (e) {}
+  }
+  track(event, props = {}) {
+    const ev = {
+      e: event,
+      t: Date.now(),
+      sid: this.sessionId,
+      d: Math.round((Date.now() - this.startedAt) / 1000),
+      ...props,
+    };
+    this.queue.push(ev);
+    if (this.queue.length > this.opts.maxQueue) this.queue.shift();
+    this._persist();
+    if (this.opts.debug) console.log('[analytics]', event, props);
+  }
+  flush(_isUnload) {
+    if (!this.queue.length) return;
+    // Console-only sink for now — swap in fetch() / sendBeacon() to a real
+    // endpoint (PostHog, Plausible, custom) when one is available.
+    if (this.opts.debug) {
+      console.groupCollapsed(`[analytics] flush · ${this.queue.length} events`);
+      this.queue.forEach(ev => console.log(ev.t, ev.e, ev));
+      console.groupEnd();
+    }
+    // Keep persisted so dev tools can read past sessions; comment next line to drain
+    // this.queue = []; this._persist();
+  }
+  summary() {
+    const counts = {};
+    for (const ev of this.queue) counts[ev.e] = (counts[ev.e] || 0) + 1;
+    return {
+      session: this.sessionId,
+      duration_s: Math.round((Date.now() - this.startedAt) / 1000),
+      total: this.queue.length,
+      by_event: counts,
+    };
+  }
+}
+// Enable ?analytics-debug=1 to see live events
+const analyticsDebug = new URLSearchParams(location.search).has('analytics-debug');
+window.analytics = new MinimalAnalytics({ debug: analyticsDebug });
+window.analytics.track('page_view', {
+  ua: navigator.userAgent.slice(0, 80),
+  vw: window.innerWidth,
+  vh: window.innerHeight,
+  dpr: window.devicePixelRatio || 1,
+});
+
+/* ===========================================================
+   STATE
+   =========================================================== */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "palette": "violet",
+  "wireDensity": "dense",
+  "shellOpacity": 0.6,
+  "starfield": true,
+  "grid": true,
+  "inscribed": true
+}/*EDITMODE-END*/;
+
+const tweaks = Object.assign({}, TWEAK_DEFAULTS);
+
+const PALETTES = {
+  teal:   { primary: 0x14b89a, accent: 0x3ef0e2, ghost: 0x7c4dff, hex1: '#14b89a', hex2: '#3ef0e2' },
+  violet: { primary: 0x7c4dff, accent: 0x3ef0e2, ghost: 0x14b89a, hex1: '#7c4dff', hex2: '#3ef0e2' },
+  amber:  { primary: 0xf4b840, accent: 0xff5d73, ghost: 0x3ef0e2, hex1: '#f4b840', hex2: '#ff5d73' },
+  mono:   { primary: 0x9fb5ca, accent: 0xecf4fb, ghost: 0x6d89a8, hex1: '#9fb5ca', hex2: '#ecf4fb' },
+};
+const WIRE_COUNTS = { sparse: [4, 8], normal: [8, 12], dense: [14, 22] };
+
+const state = {
+  shape: 'sphere',    // sphere | cylinder | hypersphere
+  mode:  'explorer',
+  r: 2.5,
+  h: 4.0,
+  n: 3,
+  w: 0.0,
+  rot: 0.30,
+};
+
+// URL state
+function readURL() {
+  const p = new URLSearchParams(location.search);
+  if (p.has('shape')) state.shape = p.get('shape');
+  if (p.has('mode'))  state.mode  = p.get('mode');
+  if (p.has('r')) state.r = clamp(parseFloat(p.get('r')), 0.2, 5);
+  if (p.has('h')) state.h = clamp(parseFloat(p.get('h')), 0.2, 8);
+  if (p.has('n')) state.n = clamp(parseInt(p.get('n')), 2, 10);
+  if (p.has('w')) state.w = clamp(parseFloat(p.get('w')), -2.5, 2.5);
+  if (p.has('rot')) state.rot = clamp(parseFloat(p.get('rot')), 0, 2);
+}
+function writeURL() {
+  const p = new URLSearchParams();
+  p.set('shape', state.shape);
+  p.set('mode', state.mode);
+  p.set('r', state.r);
+  if (state.shape === 'cylinder') p.set('h', state.h);
+  if (state.shape === 'hypersphere') { p.set('w', state.w); p.set('n', state.n); }
+  if (state.shape === 'sphere') p.set('n', state.n);
+  history.replaceState(null, '', '?' + p.toString());
+}
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// Live region announcer (debounced) — for screen readers
+let announceTimer = null;
+function announce(msg) {
+  clearTimeout(announceTimer);
+  announceTimer = setTimeout(() => {
+    const lr = document.getElementById('liveRegion');
+    if (lr) lr.textContent = msg;
+  }, 120);
+}
+
+// Focus trap helper — used by modal dialogs (tour card, tweaks panel)
+function createFocusTrap(container) {
+  const focusables = () => Array.from(container.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter(el => el.offsetParent !== null);
+  return function onKey(e) {
+    if (e.key !== 'Tab') return;
+    const list = focusables();
+    if (!list.length) return;
+    const first = list[0], last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+}
+
+/* ===========================================================
+   MATH
+   =========================================================== */
+// gamma function (Lanczos)
+function gamma(x) {
+  const g = 7;
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+   -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+  ];
+  if (x < 0.5) return Math.PI / (Math.sin(Math.PI * x) * gamma(1 - x));
+  x -= 1;
+  let a = c[0];
+  const t = x + g + 0.5;
+  for (let i = 1; i < g + 2; i++) a += c[i] / (x + i);
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
+}
+function ballVolume(n, r) {
+  return Math.pow(Math.PI, n/2) / gamma(n/2 + 1) * Math.pow(r, n);
+}
+function ballSurface(n, r) {
+  return 2 * Math.pow(Math.PI, n/2) / gamma(n/2) * Math.pow(r, n - 1);
+}
+function cylVolume(r, h)  { return Math.PI * r * r * h; }
+function cylSurface(r, h) { return 2 * Math.PI * r * (r + h); }
+
+/* ===========================================================
+   THREE.JS scene
+   =========================================================== */
+const canvas = document.getElementById('three-canvas');
+
+// WebGL availability detection — runs before any THREE construction
+let webglOK = true;
+let contextLost = false;
+function detectWebGL() {
+  try {
+    const test = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+              (test.getContext('webgl2') || test.getContext('webgl') || test.getContext('experimental-webgl')));
+  } catch (e) { return false; }
+}
+
+function showWebGLFallback(reason) {
+  webglOK = false;
+  const fb = document.getElementById('webglFallback');
+  if (fb) {
+    fb.hidden = false;
+    if (reason) document.getElementById('webglFallbackMsg').textContent = reason;
+  }
+  canvas.style.display = 'none';
+}
+
+// Stub renderer used when WebGL is missing — keeps the rest of the boot sequence from crashing
+function makeRendererStub() {
+  return {
+    setPixelRatio() {},
+    setSize() {},
+    render() {},
+    domElement: canvas,
+    outputColorSpace: null,
+    outputEncoding: null,
+    info: { render: {} },
+    setClearColor() {},
+    dispose() {},
+  };
+}
+
+let renderer;
+if (!detectWebGL()) {
+  showWebGLFallback("Your browser or device doesn't support WebGL, so the live 3D view can't render. The parameter controls and computed values still work — you can read off volume, surface area, and explore the math without the visual.");
+  renderer = makeRendererStub();
+} else {
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    else if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+
+    // Context loss / restoration — important for long-running sessions on mobile
+    canvas.addEventListener('webglcontextlost', (ev) => {
+      ev.preventDefault();
+      contextLost = true;
+      showWebGLFallback('The 3D context was lost (this can happen if the GPU is busy or the tab was backgrounded). Press "Try again" to reload the view.');
+      try { window.analytics && window.analytics.track('webgl_context_lost'); } catch (e) {}
+    }, false);
+    canvas.addEventListener('webglcontextrestored', () => {
+      contextLost = false;
+      document.getElementById('webglFallback').hidden = true;
+      canvas.style.display = '';
+      try { rebuildShape(); } catch (e) {}
+    }, false);
+  } catch (err) {
+    console.error('WebGL renderer init failed:', err);
+    showWebGLFallback('Could not start the 3D renderer: ' + (err && err.message ? err.message : 'unknown error') + '. The math controls below still work.');
+    renderer = makeRendererStub();
+  }
+}
+
+const scene = new THREE.Scene();
+scene.background = null;
+scene.fog = new THREE.FogExp2(0x05080f, 0.02);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+camera.position.set(7, 5, 9);
+
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 3;
+controls.maxDistance = 30;
+
+// lighting
+const ambient = new THREE.AmbientLight(0x14293f, 0.6);
+scene.add(ambient);
+const key = new THREE.PointLight(0x3ef0e2, 1.6, 60, 1.4); // electric cyan
+key.position.set(8, 10, 8);
+scene.add(key);
+const fill = new THREE.PointLight(0x14b89a, 1.2, 60, 1.4); // teal
+fill.position.set(-9, -4, -6);
+scene.add(fill);
+const rim = new THREE.PointLight(0x7c4dff, 0.9, 60, 1.6);  // violet rim
+rim.position.set(-4, 8, -10);
+scene.add(rim);
+
+// background star field
+function makeStarfield() {
+  const N = 600;
+  const positions = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = 35 + Math.random() * 25;
+    const t = Math.random() * Math.PI * 2;
+    const p = Math.acos(2 * Math.random() - 1);
+    positions[i*3]   = r * Math.sin(p) * Math.cos(t);
+    positions[i*3+1] = r * Math.sin(p) * Math.sin(t);
+    positions[i*3+2] = r * Math.cos(p);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const m = new THREE.PointsMaterial({ color: 0x44d6b8, size: 0.06, transparent: true, opacity: 0.55, sizeAttenuation: true });
+  return new THREE.Points(g, m);
+}
+const starfieldGroup = makeStarfield();
+scene.add(starfieldGroup);
+
+// axes (custom, brand colors)
+function makeAxes(len = 4) {
+  const grp = new THREE.Group();
+  const mk = (dir, color) => {
+    const pts = [new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(len)];
+    const g = new THREE.BufferGeometry().setFromPoints(pts);
+    const m = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.55 });
+    return new THREE.Line(g, m);
+  };
+  grp.add(mk(new THREE.Vector3(1,0,0), 0xff5d73)); // X red
+  grp.add(mk(new THREE.Vector3(0,1,0), 0x4ade80)); // Y green
+  grp.add(mk(new THREE.Vector3(0,0,1), 0x3ef0e2)); // Z cyan
+  return grp;
+}
+const axes = makeAxes();
+scene.add(axes);
+
+// grid (floor)
+const grid = new THREE.GridHelper(24, 24, 0x14293f, 0x0f1d31);
+grid.position.y = -4;
+scene.add(grid);
+
+// ---------- main geometry holder ----------
+const shapeGroup = new THREE.Group();
+scene.add(shapeGroup);
+
+// MATERIALS
+function shellMat(color = 0x14b89a, opacity = 0.32) {
+  return new THREE.MeshPhongMaterial({
+    color, transparent: true, opacity,
+    shininess: 90,
+    specular: 0x3ef0e2,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+}
+function wireMat(color = 0x3ef0e2, opacity = 0.7) {
+  return new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+}
+
+// HYPERSPHERE 3D shadow = stack of latitude rings projected from 4D
+// For now we model the hypersphere using:
+//   (1) a translucent "equator" 3-sphere (the n=3 cross-section at w=0)
+//   (2) a stack of nested 3-balls at sampled w values to give the 4D feel
+//   (3) a separate "active slice" wire-sphere whose radius = sqrt(r^2 - w^2)
+
+let activeSliceMesh = null;
+
+function clearGroup(g) {
+  while (g.children.length) {
+    const c = g.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) {
+      if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+      else c.material.dispose();
+    }
+  }
+}
+
+function rebuildShape() {
+  clearGroup(shapeGroup);
+  activeSliceMesh = null;
+
+  const pal = (typeof tweaks !== 'undefined' && PALETTES[tweaks.palette]) || { primary: 0x14b89a, accent: 0x3ef0e2, ghost: 0x7c4dff };
+  const op  = (typeof tweaks !== 'undefined' ? tweaks.shellOpacity : 0.32);
+  const wd  = (typeof tweaks !== 'undefined' && WIRE_COUNTS[tweaks.wireDensity]) || [8, 12];
+  const showInscribed = (typeof tweaks === 'undefined') ? true : !!tweaks.inscribed;
+
+  if (state.shape === 'sphere') {
+    const r = state.r;
+    const sphereGeo = new THREE.SphereGeometry(r, 64, 48);
+    const shell = new THREE.Mesh(sphereGeo, shellMat(pal.primary, op));
+    shapeGroup.add(shell);
+
+    addLatitudes(shapeGroup, r, wd[0], pal.accent);
+    addMeridians(shapeGroup, r, wd[1], pal.accent);
+
+    const halo = new THREE.Mesh(
+      new THREE.SphereGeometry(r * 1.06, 32, 24),
+      new THREE.MeshBasicMaterial({ color: pal.accent, transparent: true, opacity: 0.05, side: THREE.BackSide })
+    );
+    shapeGroup.add(halo);
+
+  } else if (state.shape === 'cylinder') {
+    const r = state.r, h = state.h;
+    const cylGeo = new THREE.CylinderGeometry(r, r, h, 64, 1, true);
+    const side = new THREE.Mesh(cylGeo, shellMat(pal.primary, op * 0.8));
+    shapeGroup.add(side);
+
+    addRing(shapeGroup, r,  h/2, pal.accent);
+    addRing(shapeGroup, r, -h/2, pal.accent);
+    const verts = Math.max(8, wd[1]);
+    for (let i = 0; i < verts; i++) {
+      const a = (i / verts) * Math.PI * 2;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      const pts = [new THREE.Vector3(x, -h/2, z), new THREE.Vector3(x, h/2, z)];
+      const g = new THREE.BufferGeometry().setFromPoints(pts);
+      shapeGroup.add(new THREE.Line(g, wireMat(pal.accent, 0.35)));
+    }
+    if (showInscribed) {
+      const sR = Math.min(r, h/2);
+      const ghost = new THREE.Mesh(
+        new THREE.SphereGeometry(sR, 48, 36),
+        new THREE.MeshPhongMaterial({ color: pal.ghost, transparent: true, opacity: 0.18, shininess: 60, depthWrite: false })
+      );
+      shapeGroup.add(ghost);
+      addLatitudes(shapeGroup, sR, Math.max(4, wd[0]-3), pal.ghost, 0.5);
+    }
+
+  } else if (state.shape === 'hypersphere') {
+    const r = state.r;
+    const equator = new THREE.Mesh(
+      new THREE.SphereGeometry(r, 56, 40),
+      new THREE.MeshPhongMaterial({ color: pal.ghost, transparent: true, opacity: 0.10, shininess: 80, depthWrite: false, side: THREE.DoubleSide })
+    );
+    shapeGroup.add(equator);
+    addLatitudes(shapeGroup, r, Math.max(4, wd[0]-2), pal.ghost, 0.35);
+    addMeridians(shapeGroup, r, wd[1], pal.ghost, 0.3);
+
+    const samples = [-0.8, -0.55, -0.25, 0.25, 0.55, 0.8];
+    samples.forEach((s) => {
+      const rs = r * Math.sqrt(1 - s*s);
+      if (rs < 0.05) return;
+      const m = new THREE.Mesh(
+        new THREE.SphereGeometry(rs, 24, 18),
+        new THREE.MeshBasicMaterial({ color: pal.accent, transparent: true, opacity: 0.05, wireframe: true })
+      );
+      shapeGroup.add(m);
+    });
+
+    const ws = state.w / state.r;
+    const wsClamped = clamp(ws, -1, 1);
+    const rSlice = r * Math.sqrt(Math.max(0, 1 - wsClamped*wsClamped));
+    if (rSlice > 0.01) {
+      const sliceShell = new THREE.Mesh(
+        new THREE.SphereGeometry(rSlice, 64, 48),
+        shellMat(pal.primary, op + 0.10)
+      );
+      shapeGroup.add(sliceShell);
+      addLatitudes(shapeGroup, rSlice, wd[0], pal.accent, 0.85);
+      addMeridians(shapeGroup, rSlice, wd[1], pal.accent, 0.8);
+      activeSliceMesh = sliceShell;
+
+      const halo = new THREE.Mesh(
+        new THREE.SphereGeometry(rSlice * 1.05, 32, 24),
+        new THREE.MeshBasicMaterial({ color: pal.accent, transparent: true, opacity: 0.10, side: THREE.BackSide })
+      );
+      shapeGroup.add(halo);
+    }
+  }
+}
+
+function addLatitudes(grp, r, count, color, opacity = 0.7) {
+  for (let i = 1; i < count; i++) {
+    const phi = (i / count) * Math.PI;
+    const rr = Math.sin(phi) * r;
+    const y = Math.cos(phi) * r;
+    const pts = [];
+    const segs = 64;
+    for (let j = 0; j <= segs; j++) {
+      const t = (j/segs) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(t) * rr, y, Math.sin(t) * rr));
+    }
+    const g = new THREE.BufferGeometry().setFromPoints(pts);
+    grp.add(new THREE.Line(g, wireMat(color, opacity)));
+  }
+}
+function addMeridians(grp, r, count, color, opacity = 0.7) {
+  for (let i = 0; i < count; i++) {
+    const theta = (i/count) * Math.PI * 2;
+    const pts = [];
+    const segs = 64;
+    for (let j = 0; j <= segs; j++) {
+      const phi = (j/segs) * Math.PI;
+      pts.push(new THREE.Vector3(
+        Math.cos(theta) * Math.sin(phi) * r,
+        Math.cos(phi) * r,
+        Math.sin(theta) * Math.sin(phi) * r
+      ));
+    }
+    const g = new THREE.BufferGeometry().setFromPoints(pts);
+    grp.add(new THREE.Line(g, wireMat(color, opacity)));
+  }
+}
+function addRing(grp, r, y, color) {
+  const pts = [];
+  for (let j = 0; j <= 64; j++) {
+    const t = (j/64) * Math.PI * 2;
+    pts.push(new THREE.Vector3(Math.cos(t) * r, y, Math.sin(t) * r));
+  }
+  const g = new THREE.BufferGeometry().setFromPoints(pts);
+  grp.add(new THREE.Line(g, wireMat(color, 0.85)));
+}
+
+/* ===========================================================
+   RESIZE + LOOP
+   =========================================================== */
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+
+let last = performance.now();
+function animate(now) {
+  const dt = (now - last) / 1000;
+  last = now;
+  if (state.rot > 0) {
+    shapeGroup.rotation.y += dt * state.rot;
+  }
+  controls.update();
+  if (webglOK && !contextLost) {
+    try { renderer.render(scene, camera); }
+    catch (err) {
+      console.error('Render error:', err);
+      contextLost = true;
+      showWebGLFallback('A render error occurred: ' + (err && err.message ? err.message : 'unknown') + '. Press "Try again" to reload.');
+    }
+  }
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* ===========================================================
+   UI WIRING
+   =========================================================== */
+const $ = (id) => document.getElementById(id);
+const setSliderProgress = (el) => {
+  const min = +el.min, max = +el.max;
+  const p = ((+el.value - min) / (max - min)) * 100;
+  el.style.setProperty('--p', p + '%');
+};
+
+// shape switcher
+document.querySelectorAll('#shapeSwitch button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#shapeSwitch button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.shape = b.dataset.shape;
+    applyShapeUI();
+    rebuildShape();
+    updateReadouts();
+    writeURL();
+    announce(`Shape changed to ${state.shape}`);
+    try { window.analytics && window.analytics.track('shape_change', { shape: state.shape }); } catch(e) {}
+  });
+});
+document.querySelectorAll('#modePill button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#modePill button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.mode = b.dataset.mode;
+    applyMode();
+    writeURL();
+    announce(`Mode: ${state.mode}`);
+    try { window.analytics && window.analytics.track('mode_change', { mode: state.mode }); } catch(e) {}
+  });
+});
+
+function applyMode() {
+  document.body.classList.remove('mode-beginner', 'mode-explorer', 'mode-researcher');
+  document.body.classList.add('mode-' + state.mode);
+  // in beginner mode, force-collapse all but the first panel
+  if (state.mode === 'beginner') {
+    document.querySelectorAll('.accordion details').forEach((d, i) => {
+      d.open = (i === 0);
+    });
+  }
+  if (state.mode === 'researcher') {
+    document.querySelectorAll('.accordion details').forEach(d => d.open = true);
+  }
+}
+
+// dim buttons
+document.querySelectorAll('#dimButtons button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#dimButtons button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.n = parseInt(b.dataset.n);
+    updateReadouts();
+    writeURL();
+    announce(`Dimension ${state.n}`);
+    try { window.analytics && window.analytics.track('dim_change', { n: state.n }); } catch(e) {}
+  });
+});
+
+// sliders
+$('rSlider').addEventListener('input', e => {
+  state.r = +e.target.value;
+  setSliderProgress(e.target);
+  $('rVal').textContent = state.r.toFixed(2);
+  rebuildShape(); updateReadouts(); writeURL();
+});
+$('hSlider').addEventListener('input', e => {
+  state.h = +e.target.value;
+  setSliderProgress(e.target);
+  $('hVal').textContent = state.h.toFixed(2);
+  rebuildShape(); updateReadouts(); writeURL();
+});
+$('wSlider').addEventListener('input', e => {
+  state.w = +e.target.value;
+  setSliderProgress(e.target);
+  $('wVal').textContent = state.w.toFixed(2);
+  rebuildShape(); updateReadouts(); writeURL();
+});
+$('rotSlider').addEventListener('input', e => {
+  state.rot = +e.target.value;
+  setSliderProgress(e.target);
+  $('rotVal').textContent = state.rot.toFixed(2);
+  writeURL();
+});
+
+// presets
+document.querySelectorAll('.preset').forEach(b => {
+  b.addEventListener('click', () => {
+    applyPreset(b.dataset.preset);
+    announce(`Preset: ${b.textContent.trim()}`);
+    try { window.analytics && window.analytics.track('preset', { preset: b.dataset.preset }); } catch(e) {}
+  });
+});
+function applyPreset(p) {
+  if (p === 'unit')    Object.assign(state, { shape:'sphere', r:1, n:3 });
+  if (p === 'kissing') Object.assign(state, { shape:'hypersphere', r:1, n:4, w:0 });
+  if (p === 'curse')   Object.assign(state, { shape:'sphere', r:1, n:10 });
+  if (p === '32cyl')   Object.assign(state, { shape:'cylinder', r:1.8, h:3.6 });
+  syncControlsFromState();
+  rebuildShape(); updateReadouts(); writeURL();
+}
+
+// share
+$('shareBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(location.href);
+  } catch (e) {}
+  const f = $('shareFlash');
+  f.classList.add('show');
+  setTimeout(() => f.classList.remove('show'), 1600);
+});
+$('resetBtn').addEventListener('click', () => {
+  camera.position.set(7, 5, 9);
+  controls.target.set(0, 0, 0);
+  controls.update();
+});
+
+// preset buttons styling
+document.querySelectorAll('.preset').forEach(b => {
+  Object.assign(b.style, {
+    appearance: 'none',
+    background: 'rgba(20,41,63,0.4)',
+    border: '1px solid var(--border-line)',
+    color: 'var(--fg-2)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '11px',
+    padding: '10px 12px',
+    borderRadius: 'var(--radius-sm)',
+    cursor: 'pointer',
+    textAlign: 'left',
+    letterSpacing: '0.04em',
+    transition: 'all 140ms',
+  });
+  b.addEventListener('mouseenter', () => {
+    b.style.borderColor = 'var(--teal-500)';
+    b.style.color = 'var(--electric-cyan)';
+  });
+  b.addEventListener('mouseleave', () => {
+    b.style.borderColor = 'var(--border-line)';
+    b.style.color = 'var(--fg-2)';
+  });
+});
+
+/* ===========================================================
+   UI APPLY + READOUTS
+   =========================================================== */
+function applyShapeUI() {
+  const isCyl  = state.shape === 'cylinder';
+  const isHyp  = state.shape === 'hypersphere';
+  $('heightControl').style.display = isCyl ? '' : 'none';
+  $('wControl').style.display      = isHyp ? '' : 'none';
+  $('wbar').classList.toggle('show', isHyp);
+  $('axW').style.display           = isHyp ? '' : 'none';
+  // dim buttons only meaningful for sphere
+  $('dimControl').style.display    = (state.shape === 'sphere') ? '' : 'none';
+
+  // tag
+  const tag = $('stageLabel');
+  if (state.shape === 'sphere')      tag.textContent = `${state.n}-BALL · ℝ${supDigits(state.n)}`;
+  else if (state.shape === 'cylinder') tag.textContent = 'CYLINDER · ℝ³';
+  else                                tag.textContent = '4-BALL · ℝ⁴ → ℝ³ slice';
+}
+function supDigits(n) {
+  const map = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+  return String(n).split('').map(d => map[d]).join('');
+}
+
+function syncControlsFromState() {
+  // shape
+  document.querySelectorAll('#shapeSwitch button').forEach(b => {
+    b.classList.toggle('active', b.dataset.shape === state.shape);
+  });
+  // mode
+  document.querySelectorAll('#modePill button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === state.mode);
+  });
+  // dim
+  document.querySelectorAll('#dimButtons button').forEach(b => {
+    b.classList.toggle('active', +b.dataset.n === state.n);
+  });
+  // sliders
+  $('rSlider').value = state.r; setSliderProgress($('rSlider')); $('rVal').textContent = state.r.toFixed(2);
+  $('hSlider').value = state.h; setSliderProgress($('hSlider')); $('hVal').textContent = state.h.toFixed(2);
+  $('wSlider').value = state.w; setSliderProgress($('wSlider')); $('wVal').textContent = state.w.toFixed(2);
+  $('rotSlider').value = state.rot; setSliderProgress($('rotSlider')); $('rotVal').textContent = state.rot.toFixed(2);
+  $('nVal').textContent = state.n;
+  applyShapeUI();
+}
+
+function updateReadouts() {
+  let V, S, ratio, density, unitV, unitS, dimLabel;
+
+  if (state.shape === 'sphere') {
+    const n = state.n, r = state.r;
+    V = ballVolume(n, r);
+    S = ballSurface(n, r);
+    $('volU').textContent = `u${supDigits(n)}`;
+    $('saU').textContent  = `u${supDigits(n-1)}`;
+    // ratio: V_n / V_(n-1) * r — measure of "spread"
+    ratio = ballVolume(n, r) / (ballVolume(n-1, r) * r || 1);
+    density = ballVolume(n, 1);
+    $('densV').textContent = density.toFixed(3);
+    dimLabel = `${n}-ball — ${n===2?'disk':n===3?'ordinary sphere':n===4?'4D hypersphere':n+'-dimensional ball'} in ℝ${supDigits(n)}`;
+
+    // formula display + math
+    setStageFormula(buildVolFormula(n, r), `\\dfrac{\\pi^{${n}/2}}{\\Gamma(${n}/2+1)} r^{${n}}`);
+    katexRender('vol-eq', `V_{${n}}(r) = \\dfrac{\\pi^{${n}/2}}{\\Gamma(\\tfrac{${n}}{2} + 1)}\\, r^{${n}}`);
+    katexRender('sa-eq',  `S_{${n-1}}(r) = \\dfrac{2\\pi^{${n}/2}}{\\Gamma(${n}/2)}\\, r^{${n-1}}`);
+    $('vol-numeric').textContent = `V = ${V.toFixed(4)}  (n=${n}, r=${r})`;
+    $('sa-numeric').textContent  = `S = ${S.toFixed(4)}`;
+
+  } else if (state.shape === 'cylinder') {
+    V = cylVolume(state.r, state.h);
+    S = cylSurface(state.r, state.h);
+    $('volU').textContent = 'u³';
+    $('saU').textContent  = 'u²';
+    const sR = Math.min(state.r, state.h/2);
+    ratio = ballVolume(3, sR) / V;     // sphere-in-cylinder fraction (Archimedes!)
+    density = ratio;
+    $('densV').textContent = ratio.toFixed(3);
+    dimLabel = `Cylinder, r=${state.r.toFixed(2)} h=${state.h.toFixed(2)} — inscribed sphere fills ${(ratio*100).toFixed(1)}%`;
+    setStageFormula('π r² h', `\\pi r^{2} h`);
+    katexRender('vol-eq', `V_{\\text{cyl}} = \\pi r^{2} h`);
+    katexRender('sa-eq',  `S_{\\text{cyl}} = 2\\pi r (r + h)`);
+    $('vol-numeric').textContent = `V = π · ${state.r}² · ${state.h} ≈ ${V.toFixed(3)}`;
+    $('sa-numeric').textContent  = `S = ${S.toFixed(3)}`;
+
+  } else { // hypersphere
+    const r = state.r, w = state.w;
+    V = ballVolume(4, r);
+    S = ballSurface(4, r);   // surface = 2π²r³
+    $('volU').textContent = 'u⁴';
+    $('saU').textContent  = 'u³';
+    const sliceR = Math.sqrt(Math.max(0, r*r - w*w));
+    ratio = ballVolume(3, sliceR);
+    density = sliceR / r;
+    $('densV').textContent = density.toFixed(3);
+    dimLabel = `Slice at w=${w.toFixed(2)} — visible 3-ball radius ${sliceR.toFixed(3)}`;
+    setStageFormula('½ π² r⁴', `\\tfrac{1}{2}\\pi^{2} r^{4}`);
+    katexRender('vol-eq', `V_{4}(r) = \\tfrac{1}{2}\\pi^{2} r^{4}`);
+    katexRender('sa-eq',  `S_{3}(r) = 2\\pi^{2} r^{3}`);
+    katexRender('slice-eq', `r'(w) = \\sqrt{r^{2} - w^{2}} = \\sqrt{${(r*r).toFixed(2)} - ${(w*w).toFixed(2)}} \\approx ${sliceR.toFixed(3)}`);
+    $('vol-numeric').textContent = `V_4 = ½π²r⁴ ≈ ${V.toFixed(3)}`;
+    $('sa-numeric').textContent  = `S_3 = 2π²r³ ≈ ${S.toFixed(3)}`;
+
+    // update wbar indicator
+    const pct = clamp((w / state.r + 1) / 2, 0, 1); // 0..1 top→bottom
+    $('wInd').style.top = (100 - pct*100) + '%';
+
+    // curiosity update
+    if (Math.abs(w) > 0.9 * r) {
+      $('curio-title').textContent = 'Disappearing into the 4th dimension';
+      $('curio-body').textContent = 'At the poles of the 4-ball the cross-section is nearly a point. To a 3D observer, the hypersphere has almost vanished.';
+    } else if (Math.abs(w) < 0.1 * r) {
+      $('curio-title').textContent = 'You\'re at the 4D equator';
+      $('curio-body').textContent = 'This is the largest possible 3-ball that fits inside the hypersphere. Every direction in your 3D world is "level" with the 4th axis here.';
+    } else {
+      $('curio-title').textContent = 'A 4D apple, sliced';
+      $('curio-body').textContent = 'The visible 3-ball is what an observer trapped in 3D space would see as the hypersphere passes through. r\' = √(r² − w²).';
+    }
+  }
+
+  $('volV').textContent = V.toFixed(2);
+  $('saV').textContent  = S.toFixed(2);
+  $('ratioV').textContent = isFinite(ratio) ? ratio.toFixed(3) : '—';
+  $('nVal').textContent = state.n;
+  $('dimHint').textContent = dimLabel;
+
+  // re-render katex blocks we don't always touch
+  katexRender('slice-eq', `r'(w) = \\sqrt{r^{2} - w^{2}}`);
+
+  // refresh chart
+  drawDimChart();
+
+  // also reflect into WebGL fallback readout if it's shown
+  if (!webglOK || contextLost) {
+    const fbReadout = document.getElementById('webglFallbackReadout');
+    if (fbReadout) {
+      const volU = $('volU').textContent;
+      const saU = $('saU').textContent;
+      fbReadout.innerHTML =
+        `<div class="cell"><div class="k">Volume</div><div class="v">${V.toFixed(3)} ${volU}</div></div>` +
+        `<div class="cell"><div class="k">Surface</div><div class="v">${S.toFixed(3)} ${saU}</div></div>` +
+        `<div class="cell"><div class="k">Shape</div><div class="v">${state.shape}</div></div>` +
+        `<div class="cell"><div class="k">Params</div><div class="v">r=${state.r.toFixed(2)}${state.shape==='cylinder'?' h='+state.h.toFixed(2):''}${state.shape!=='cylinder'?' n='+state.n:''}</div></div>`;
+    }
+  }
+}
+
+function setStageFormula(plain, tex) {
+  const el = $('stageFormula');
+  el.innerHTML = '';
+  try {
+    katex.render(tex, el, { throwOnError: false });
+  } catch(e) {
+    el.textContent = plain;
+  }
+}
+function katexRender(id, tex) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  try { katex.render(tex, el, { throwOnError: false, displayMode: true }); }
+  catch (e) { el.textContent = tex; }
+}
+
+// One-shot pass: render every static .katex-block whose contents are raw LaTeX text.
+// The ID'd dynamic blocks (vol-eq, sa-eq, slice-eq) get refreshed by updateReadouts,
+// so we skip them here.
+function renderStaticKatexBlocks() {
+  const DYNAMIC_IDS = new Set(['vol-eq', 'sa-eq', 'slice-eq']);
+  document.querySelectorAll('.katex-block').forEach((el) => {
+    if (el.id && DYNAMIC_IDS.has(el.id)) return;
+    const tex = (el.dataset.tex || el.textContent || '').trim();
+    if (!tex) return;
+    el.dataset.tex = tex;  // remember original source for potential re-render
+    try { katex.render(tex, el, { throwOnError: false, displayMode: true }); }
+    catch (e) { /* leave raw text in place */ }
+  });
+}
+
+function buildVolFormula(n, r) {
+  if (n === 3) return '(4/3) π r³';
+  if (n === 2) return 'π r²';
+  if (n === 4) return '½ π² r⁴';
+  return `π^(n/2) / Γ(n/2+1) · r^n`;
+}
+
+/* ===========================================================
+   DIMENSION CHART
+   =========================================================== */
+function drawDimChart() {
+  const svg = $('dimChart');
+  svg.innerHTML = '';
+  const W = 320, H = 130, pad = 8;
+  const N = 15;
+  const vols = [], sas = [];
+  for (let n = 1; n <= N; n++) {
+    vols.push(ballVolume(n, 1));
+    sas.push(ballSurface(n, 1));
+  }
+  const maxV = Math.max(...vols);
+  const maxS = Math.max(...sas);
+  const max  = Math.max(maxV, maxS);
+
+  // axes baseline
+  const baseY = H - pad;
+  const line = `M${pad},${baseY} L${W-pad},${baseY}`;
+  svg.insertAdjacentHTML('beforeend', `<path d="${line}" stroke="rgba(124,180,200,0.18)" stroke-width="1"/>`);
+
+  // vertical gridlines
+  for (let n = 1; n <= N; n++) {
+    const x = pad + ((n-1)/(N-1)) * (W - 2*pad);
+    svg.insertAdjacentHTML('beforeend', `<line x1="${x}" y1="${pad}" x2="${x}" y2="${baseY}" stroke="rgba(124,180,200,0.04)" stroke-width="1"/>`);
+  }
+
+  // current-n indicator (only meaningful for sphere mode)
+  if (state.shape === 'sphere') {
+    const cx = pad + ((state.n - 1)/(N-1)) * (W - 2*pad);
+    svg.insertAdjacentHTML('beforeend',
+      `<line x1="${cx}" y1="${pad}" x2="${cx}" y2="${baseY}" stroke="rgba(62,240,226,0.5)" stroke-width="1" stroke-dasharray="3 3"/>`
+    );
+  }
+
+  const path = (arr, color) => {
+    let d = '';
+    arr.forEach((v, i) => {
+      const x = pad + (i/(N-1)) * (W - 2*pad);
+      const y = baseY - (v/max) * (H - 2*pad);
+      d += (i === 0 ? 'M' : 'L') + x + ',' + y + ' ';
+    });
+    svg.insertAdjacentHTML('beforeend', `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`);
+    // dots
+    arr.forEach((v, i) => {
+      const x = pad + (i/(N-1)) * (W - 2*pad);
+      const y = baseY - (v/max) * (H - 2*pad);
+      svg.insertAdjacentHTML('beforeend', `<circle cx="${x}" cy="${y}" r="1.6" fill="${color}"/>`);
+    });
+  };
+
+  path(vols, '#44d6b8');
+  path(sas, '#3ef0e2');
+}
+
+/* ===========================================================
+   BOOT
+   =========================================================== */
+readURL();
+syncControlsFromState();
+applyMode();
+rebuildShape();
+updateReadouts();
+renderStaticKatexBlocks();
+resize();
+
+// WebGL retry button
+const webglRetryBtn = document.getElementById('webglRetry');
+if (webglRetryBtn) {
+  webglRetryBtn.addEventListener('click', () => {
+    try { window.analytics && window.analytics.track('webgl_retry'); } catch(e) {}
+    location.reload();
+  });
+}
+
+// Mobile math-panel bottom sheet
+const mathFab = document.getElementById('mathFab');
+const mathBackdrop = document.getElementById('mathBackdrop');
+const panelRight = document.getElementById('panelRight');
+const sheetClose = document.getElementById('sheetClose');
+function openMathSheet() {
+  panelRight.classList.add('open');
+  mathBackdrop.classList.add('open');
+  mathFab.classList.add('hidden');
+  mathFab.setAttribute('aria-expanded', 'true');
+  try { window.analytics && window.analytics.track('math_sheet_open'); } catch(e) {}
+}
+function closeMathSheet() {
+  panelRight.classList.remove('open');
+  mathBackdrop.classList.remove('open');
+  mathFab.classList.remove('hidden');
+  mathFab.setAttribute('aria-expanded', 'false');
+}
+if (mathFab) mathFab.addEventListener('click', openMathSheet);
+if (mathBackdrop) mathBackdrop.addEventListener('click', closeMathSheet);
+if (sheetClose) sheetClose.addEventListener('click', closeMathSheet);
+
+// Theme toggle (light/dark) — persists to localStorage, respects prefers-color-scheme on first load
+const THEME_KEY = 'djc-sphere-theme';
+const SUN_PATH = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
+const MOON_PATH = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+function applyTheme(theme) {
+  document.body.classList.toggle('theme-light', theme === 'light');
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.innerHTML = (theme === 'light') ? SUN_PATH : MOON_PATH;
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.title = (theme === 'light') ? 'Switch to dark theme' : 'Switch to light theme';
+}
+function readSavedTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch(e) {}
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+  return 'dark';
+}
+let currentTheme = readSavedTheme();
+applyTheme(currentTheme);
+const themeBtn = document.getElementById('themeBtn');
+if (themeBtn) {
+  themeBtn.addEventListener('click', () => {
+    currentTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+    applyTheme(currentTheme);
+    try { localStorage.setItem(THEME_KEY, currentTheme); } catch(e) {}
+    announce(`Theme: ${currentTheme}`);
+    try { window.analytics && window.analytics.track('theme_change', { theme: currentTheme }); } catch(e) {}
+  });
+}
+
+/* ===========================================================
+   EXPORT MENU — PNG, LaTeX, JSON
+   =========================================================== */
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+function openExportMenu() {
+  exportMenu.classList.add('open');
+  exportBtn.setAttribute('aria-expanded', 'true');
+}
+function closeExportMenu() {
+  exportMenu.classList.remove('open');
+  exportBtn.setAttribute('aria-expanded', 'false');
+}
+function toggleExportMenu() {
+  if (exportMenu.classList.contains('open')) closeExportMenu();
+  else openExportMenu();
+}
+if (exportBtn) {
+  exportBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleExportMenu(); });
+  document.addEventListener('click', (e) => {
+    if (!exportMenu.contains(e.target) && e.target !== exportBtn && !exportBtn.contains(e.target)) closeExportMenu();
+  });
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+function exportPNG() {
+  if (!webglOK || contextLost) {
+    announce('PNG export unavailable — WebGL not running');
+    return;
+  }
+  try {
+    // Force a fresh render at current size before grabbing pixels
+    renderer.render(scene, camera);
+    canvas.toBlob((blob) => {
+      if (!blob) { announce('PNG export failed'); return; }
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      triggerDownload(blob, `hypersphere-${state.shape}-${ts}.png`);
+      announce('PNG downloaded');
+    }, 'image/png');
+  } catch (err) {
+    console.error('PNG export error:', err);
+    announce('PNG export failed: ' + err.message);
+  }
+}
+
+function exportLaTeX() {
+  const n = state.n, r = state.r, h = state.h, w = state.w;
+  let body = '';
+  if (state.shape === 'sphere') {
+    const V = ballVolume(n, r), S = ballSurface(n, r);
+    body =
+`\\section*{${n}-Ball: parameters and computed values}
+
+\\textbf{Dimension:} \\(n = ${n}\\) \\quad \\textbf{Radius:} \\(r = ${r}\\)
+
+\\subsection*{Volume}
+\\[
+V_{${n}}(r) = \\frac{\\pi^{${n}/2}}{\\Gamma\\!\\left(\\tfrac{${n}}{2}+1\\right)}\\, r^{${n}} = ${V.toFixed(6)}
+\\]
+
+\\subsection*{Surface area}
+\\[
+S_{${n-1}}(r) = \\frac{2\\pi^{${n}/2}}{\\Gamma\\!\\left(\\tfrac{${n}}{2}\\right)}\\, r^{${n-1}} = ${S.toFixed(6)}
+\\]
+`;
+  } else if (state.shape === 'cylinder') {
+    const V = cylVolume(r, h), S = cylSurface(r, h);
+    body =
+`\\section*{Cylinder: parameters and computed values}
+
+\\textbf{Radius:} \\(r = ${r}\\) \\quad \\textbf{Height:} \\(h = ${h}\\)
+
+\\subsection*{Volume}
+\\[
+V_{\\text{cyl}} = \\pi r^{2} h = ${V.toFixed(6)}
+\\]
+
+\\subsection*{Surface area}
+\\[
+S_{\\text{cyl}} = 2\\pi r (r + h) = ${S.toFixed(6)}
+\\]
+`;
+  } else { // hypersphere
+    const V = ballVolume(4, r), S = ballSurface(4, r);
+    const sliceR = Math.sqrt(Math.max(0, r*r - w*w));
+    body =
+`\\section*{4-Ball cross-section: parameters and computed values}
+
+\\textbf{Radius:} \\(r = ${r}\\) \\quad \\textbf{Slice coordinate:} \\(w = ${w}\\)
+
+\\subsection*{4-ball volume}
+\\[
+V_{4}(r) = \\tfrac{1}{2}\\pi^{2} r^{4} = ${V.toFixed(6)}
+\\]
+
+\\subsection*{3-surface volume}
+\\[
+S_{3}(r) = 2\\pi^{2} r^{3} = ${S.toFixed(6)}
+\\]
+
+\\subsection*{Slice radius}
+\\[
+r'(w) = \\sqrt{r^{2} - w^{2}} = \\sqrt{${(r*r).toFixed(4)} - ${(w*w).toFixed(4)}} = ${sliceR.toFixed(6)}
+\\]
+`;
+  }
+  const tex =
+`% Generated by Hypersphere Explorer
+% ${new Date().toISOString()}
+\\documentclass[11pt]{article}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\begin{document}
+
+${body}
+
+\\end{document}
+`;
+  triggerDownload(new Blob([tex], { type: 'application/x-tex' }), `hypersphere-${state.shape}.tex`);
+  announce('LaTeX downloaded');
+}
+
+function exportJSON() {
+  const n = state.n, r = state.r, h = state.h, w = state.w;
+  const snapshot = {
+    schema: 'djc.hypersphere-explorer/v1',
+    exported_at: new Date().toISOString(),
+    state: { shape: state.shape, mode: state.mode, r, h, n, w, rot: state.rot },
+    tweaks: { ...tweaks },
+    computed: {},
+    formulas: {},
+  };
+  if (state.shape === 'sphere') {
+    snapshot.computed.volume = ballVolume(n, r);
+    snapshot.computed.surface = ballSurface(n, r);
+    snapshot.formulas.volume = 'V_n(r) = pi^(n/2) / Gamma(n/2 + 1) * r^n';
+    snapshot.formulas.surface = 'S_(n-1)(r) = 2 pi^(n/2) / Gamma(n/2) * r^(n-1)';
+  } else if (state.shape === 'cylinder') {
+    snapshot.computed.volume = cylVolume(r, h);
+    snapshot.computed.surface = cylSurface(r, h);
+    snapshot.formulas.volume = 'V = pi r^2 h';
+    snapshot.formulas.surface = 'S = 2 pi r (r + h)';
+  } else {
+    snapshot.computed.volume_4ball = ballVolume(4, r);
+    snapshot.computed.surface_3sphere = ballSurface(4, r);
+    snapshot.computed.slice_radius = Math.sqrt(Math.max(0, r*r - w*w));
+    snapshot.formulas.volume = 'V_4(r) = (1/2) pi^2 r^4';
+    snapshot.formulas.surface = 'S_3(r) = 2 pi^2 r^3';
+    snapshot.formulas.slice = "r'(w) = sqrt(r^2 - w^2)";
+  }
+  const text = JSON.stringify(snapshot, null, 2);
+  triggerDownload(new Blob([text], { type: 'application/json' }), `hypersphere-${state.shape}.json`);
+  announce('JSON downloaded');
+}
+
+document.querySelectorAll('.export-menu .item').forEach(it => {
+  it.addEventListener('click', () => {
+    const kind = it.dataset.export;
+    closeExportMenu();
+    try { window.analytics && window.analytics.track('export', { kind }); } catch(e) {}
+    if (kind === 'png') exportPNG();
+    else if (kind === 'latex') exportLaTeX();
+    else if (kind === 'json') exportJSON();
+  });
+});
+
+// keyboard
+window.addEventListener('keydown', (e) => {
+  if (e.target.matches('input, textarea')) return;
+  if (e.key === '1') { document.querySelector('#shapeSwitch [data-shape=sphere]').click(); }
+  if (e.key === '2') { document.querySelector('#shapeSwitch [data-shape=cylinder]').click(); }
+  if (e.key === '3') { document.querySelector('#shapeSwitch [data-shape=hypersphere]').click(); }
+  if (e.key === 'r') { $('resetBtn').click(); }
+  if (e.key === 't' || e.key === 'T') { toggleTweaks(); }
+  if (e.key === 'Escape') { exitTour(); closeTweaks(); closeTourMenu(); }
+  if (e.key === 'ArrowRight' && tourActive) tourStep(+1);
+  if (e.key === 'ArrowLeft'  && tourActive) tourStep(-1);
+});
+
+/* ===========================================================
+   GUIDED EXPLORATIONS
+   =========================================================== */
+const tours = {
+  archimedes: {
+    name: 'Archimedes · 2 : 3',
+    steps: [
+      {
+        title: "Meet the cylinder",
+        desc: "A cylinder of radius <strong>r</strong> and height <strong>2r</strong> — the smallest one that fits a sphere of radius r snugly. Volume here is <em>2πr³</em>.",
+        apply: { shape: 'cylinder', r: 1.5, h: 3.0, rot: 0.3 }
+      },
+      {
+        title: "Now look at the sphere alone",
+        desc: "Same radius, no cylinder. Volume is <em>(4/3)πr³</em>. Note the value in the bottom-left readout.",
+        apply: { shape: 'sphere', r: 1.5, n: 3 }
+      },
+      {
+        title: "Compare the two",
+        desc: "Sphere: <strong>14.14</strong>. Cylinder: <strong>21.21</strong>. The ratio is exactly <em>14.14 / 21.21 = 2/3</em>.",
+        apply: { shape: 'cylinder', r: 1.5, h: 3.0 }
+      },
+      {
+        title: "And the surface area, too",
+        desc: "Sphere surface = 4πr². Cylinder <em>lateral</em> surface = 2πr · 2r = 4πr². <strong>Identical.</strong> Archimedes asked for this on his tombstone.",
+        apply: { shape: 'sphere', r: 1.5, n: 3 }
+      },
+      {
+        title: "In higher dimensions, this breaks",
+        desc: "Try the curse-of-dimensionality tour next — the inscribed n-ball fills almost <em>none</em> of its bounding n-cube as n grows.",
+        apply: { shape: 'sphere', r: 1.5, n: 10 }
+      }
+    ]
+  },
+  slice: {
+    name: 'Slicing the 4-ball',
+    steps: [
+      {
+        title: "Enter the 4-ball",
+        desc: "A hypersphere lives in ℝ⁴. We can never see it directly — only its 3D <em>shadows</em> and <em>slices</em>. The faint purple shell is the equator. Solid teal is the current 3D slice.",
+        apply: { shape: 'hypersphere', r: 2.0, w: 0, rot: 0.2 }
+      },
+      {
+        title: "Move w toward the pole",
+        desc: "Watch the purple W-bar on the right. As <strong>w</strong> moves away from zero, the visible 3-ball <em>shrinks</em>: r' = √(r² − w²).",
+        apply: { shape: 'hypersphere', r: 2.0, w: 1.2 }
+      },
+      {
+        title: "Near the pole",
+        desc: "We're almost at the top of the 4-ball. The 3D slice has nearly collapsed to a point. To a 3D observer, the hypersphere is about to <em>disappear</em>.",
+        apply: { shape: 'hypersphere', r: 2.0, w: 1.9 }
+      },
+      {
+        title: "Sweep it yourself",
+        desc: "Drag the <strong>W-slice</strong> slider on the left from −2 to +2. You're watching a 4D object pass through your 3D world — exactly how Flatlanders would experience a 3-ball passing through their plane.",
+        apply: { shape: 'hypersphere', r: 2.0, w: 0 },
+        focus: '#wControl'
+      }
+    ]
+  },
+  curse: {
+    name: 'Curse of dimensionality',
+    steps: [
+      {
+        title: "Start with a disk (n=2)",
+        desc: "The 2-ball is a flat disk. Volume V₂(1) = π ≈ 3.14. Surface (perimeter) S₁(1) = 2π.",
+        apply: { shape: 'sphere', r: 1, n: 2 }
+      },
+      {
+        title: "n=3: ordinary sphere",
+        desc: "V₃(1) = 4π/3 ≈ 4.19. Volume <em>grew</em> from 2D to 3D.",
+        apply: { shape: 'sphere', r: 1, n: 3 }
+      },
+      {
+        title: "n=5: peak volume",
+        desc: "V₅(1) ≈ 5.26 — the maximum. Look at the chart in the right panel: the curve peaks here, then turns down.",
+        apply: { shape: 'sphere', r: 1, n: 5 }
+      },
+      {
+        title: "n=10: almost empty",
+        desc: "V₁₀(1) ≈ 2.55, less than the unit cube's <strong>0.25%</strong>. By n=20, the unit ball has effectively <em>vanished</em> inside its bounding box. This is why high-dim ML is hard.",
+        apply: { shape: 'sphere', r: 1, n: 10 }
+      }
+    ]
+  }
+};
+
+let tourActive = null;   // tour key while running
+let tourIndex  = 0;
+
+function openTourMenu() { $('tourMenu').classList.add('open'); }
+function closeTourMenu() { $('tourMenu').classList.remove('open'); }
+$('tourBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if ($('tourMenu').classList.contains('open')) closeTourMenu();
+  else openTourMenu();
+});
+document.addEventListener('click', (e) => {
+  if (!$('tourMenu').contains(e.target) && e.target.id !== 'tourBtn' && !$('tourBtn').contains(e.target)) {
+    closeTourMenu();
+  }
+});
+
+document.querySelectorAll('#tourMenu .item').forEach(it => {
+  it.addEventListener('click', () => {
+    closeTourMenu();
+    startTour(it.dataset.tour);
+  });
+});
+
+let tourFocusTrap = null;
+let tourPrevFocus = null;
+function startTour(key) {
+  tourActive = key;
+  tourIndex = 0;
+  renderTourStep();
+  const card = $('tourCard');
+  card.classList.add('open');
+  tourPrevFocus = document.activeElement;
+  tourFocusTrap = createFocusTrap(card);
+  document.addEventListener('keydown', tourFocusTrap);
+  setTimeout(() => { $('tourNext').focus(); }, 100);
+  announce(`Tour started: ${tours[key].name}`);
+  try { window.analytics && window.analytics.track('tour_start', { tour: key }); } catch(e) {}
+}
+function exitTour() {
+  tourActive = null;
+  $('tourCard').classList.remove('open');
+  hideSpotlight();
+  if (tourFocusTrap) {
+    document.removeEventListener('keydown', tourFocusTrap);
+    tourFocusTrap = null;
+  }
+  if (tourPrevFocus && tourPrevFocus.focus) { tourPrevFocus.focus(); tourPrevFocus = null; }
+}
+function tourStep(delta) {
+  if (!tourActive) return;
+  const t = tours[tourActive];
+  const next = tourIndex + delta;
+  if (next < 0) return;
+  if (next >= t.steps.length) {
+    try { window.analytics && window.analytics.track('tour_complete', { tour: tourActive, steps: t.steps.length }); } catch(e) {}
+    exitTour();
+    return;
+  }
+  tourIndex = next;
+  renderTourStep();
+}
+function renderTourStep() {
+  const t = tours[tourActive];
+  const s = t.steps[tourIndex];
+  $('tourName').textContent = t.name;
+  $('tourStepNum').textContent = tourIndex + 1;
+  $('tourStepTotal').textContent = t.steps.length;
+  $('tourTitle').textContent = s.title;
+  $('tourDesc').innerHTML = s.desc;
+
+  // progress dots
+  const pb = $('tourProgress');
+  pb.innerHTML = '';
+  for (let i = 0; i < t.steps.length; i++) {
+    const sp = document.createElement('span');
+    if (i < tourIndex) sp.classList.add('done');
+    if (i === tourIndex) sp.classList.add('current');
+    pb.appendChild(sp);
+  }
+
+  $('tourPrev').disabled = tourIndex === 0;
+  $('tourNext').textContent = (tourIndex === t.steps.length - 1) ? 'Finish' : 'Next ›';
+
+  // apply state
+  if (s.apply) {
+    Object.assign(state, s.apply);
+    syncControlsFromState();
+    rebuildShape();
+    updateReadouts();
+    writeURL();
+  }
+
+  // focus spotlight
+  if (s.focus) showSpotlight(document.querySelector(s.focus));
+  else hideSpotlight();
+}
+$('tourPrev').addEventListener('click', () => tourStep(-1));
+$('tourNext').addEventListener('click', () => tourStep(+1));
+$('tourExit').addEventListener('click', exitTour);
+
+function showSpotlight(el) {
+  if (!el) { hideSpotlight(); return; }
+  const r = el.getBoundingClientRect();
+  const sp = $('spotlight');
+  sp.style.left = (r.left - 6) + 'px';
+  sp.style.top = (r.top - 6) + 'px';
+  sp.style.width = (r.width + 12) + 'px';
+  sp.style.height = (r.height + 12) + 'px';
+  sp.classList.add('show');
+}
+function hideSpotlight() { $('spotlight').classList.remove('show'); }
+
+/* ===========================================================
+   TWEAKS PANEL
+   =========================================================== */
+function applyTweaks() {
+  // shell opacity & rebuild affects geometry path
+  $('twOpVal').textContent = (+tweaks.shellOpacity).toFixed(2);
+  document.querySelectorAll('#twPalette button').forEach(b => b.classList.toggle('active', b.dataset.pal === tweaks.palette));
+  document.querySelectorAll('#twWire button').forEach(b => b.classList.toggle('active', b.dataset.wire === tweaks.wireDensity));
+  $('twStars').classList.toggle('on', !!tweaks.starfield);
+  $('twGrid').classList.toggle('on', !!tweaks.grid);
+  $('twInscribed').classList.toggle('on', !!tweaks.inscribed);
+  $('twOpacity').value = tweaks.shellOpacity;
+  setSliderProgress($('twOpacity'));
+
+  // scene toggles
+  starfieldGroup.visible = !!tweaks.starfield;
+  grid.visible = !!tweaks.grid;
+
+  // update brand accent CSS variables to match palette (purely cosmetic for chart legend etc.)
+  const p = PALETTES[tweaks.palette];
+  document.documentElement.style.setProperty('--accent-1', p.hex1);
+  document.documentElement.style.setProperty('--accent-3', p.hex2);
+
+  rebuildShape();
+}
+
+function setTweak(k, v) {
+  tweaks[k] = v;
+  applyTweaks();
+  // persist via host
+  try {
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  } catch(e) {}
+}
+
+document.querySelectorAll('#twPalette button').forEach(b => {
+  b.addEventListener('click', () => setTweak('palette', b.dataset.pal));
+});
+document.querySelectorAll('#twWire button').forEach(b => {
+  b.addEventListener('click', () => setTweak('wireDensity', b.dataset.wire));
+});
+$('twOpacity').addEventListener('input', e => {
+  setSliderProgress(e.target);
+  setTweak('shellOpacity', +e.target.value);
+});
+$('twStars').addEventListener('click', () => setTweak('starfield', !tweaks.starfield));
+$('twGrid').addEventListener('click', () => setTweak('grid', !tweaks.grid));
+$('twInscribed').addEventListener('click', () => setTweak('inscribed', !tweaks.inscribed));
+
+// host protocol — listener FIRST, then announce availability
+let tweaksOpen = false;
+function openTweaks()  {
+  $('tweaksPanel').classList.add('open');
+  $('tweaksBtn').classList.add('active');
+  tweaksOpen = true;
+}
+function closeTweaks() {
+  if (!tweaksOpen) return;
+  $('tweaksPanel').classList.remove('open');
+  $('tweaksBtn').classList.remove('active');
+  tweaksOpen = false;
+  try { window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); } catch(e) {}
+}
+function toggleTweaks() { tweaksOpen ? closeTweaks() : openTweaks(); }
+$('tweaksClose').addEventListener('click', closeTweaks);
+$('tweaksBtn').addEventListener('click', toggleTweaks);
+
+window.addEventListener('message', (ev) => {
+  const t = ev.data && ev.data.type;
+  if (t === '__activate_edit_mode') openTweaks();
+  else if (t === '__deactivate_edit_mode') closeTweaks();
+});
+try {
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+} catch(e) {}
+
+applyTweaks();
+</script>
+
 </body>
 </html>
