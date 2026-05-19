@@ -460,6 +460,113 @@
             color: var(--accent);
         }
         .piano-key.piano-active .key-label { color: var(--accent); }
+
+        /* Settings panel close button */
+        .settings-close-btn {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            margin-left: auto;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+        .settings-close-btn:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.1);
+            transform: none;
+        }
+        .drag-handle {
+            justify-content: flex-start;
+        }
+
+        /* Pattern Sidebar */
+        #pattern-sidebar {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            pointer-events: none;
+            z-index: 12;
+        }
+
+        .sidebar-body {
+            pointer-events: auto;
+            background: var(--ui-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--ui-border);
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            padding: 10px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            transform: translateX(0);
+            opacity: 1;
+            transition: transform 0.35s ease, opacity 0.25s ease;
+        }
+
+        .sidebar-label {
+            font-size: 0.58rem;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: var(--font-stack);
+        }
+
+        .sidebar-sep {
+            width: 24px;
+            height: 1px;
+            background: var(--ui-border);
+        }
+
+        #pattern-sidebar.collapsed .sidebar-body {
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar-toggle-tab {
+            pointer-events: auto;
+            background: var(--ui-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--ui-border);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            padding: 10px 7px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            min-width: 0;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar-toggle-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            border-color: var(--accent);
+            transform: none;
+        }
+
+        .sidebar-chevron {
+            display: block;
+            transition: transform 0.35s ease;
+        }
+
+        #pattern-sidebar.collapsed .sidebar-chevron {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 
@@ -525,6 +632,9 @@
             <div class="drag-handle" id="settings-drag-handle">
                 <div class="drag-handle-bar"></div>
                 <span>Settings</span>
+                <button id="settings-close" class="settings-close-btn" title="Close settings">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+                </button>
             </div>
             <div class="setting-row">
                 <span>Particle Count</span>
@@ -541,6 +651,18 @@
             <div class="setting-row">
                 <span>Turbulence  <span id="turb-val" style="color:var(--accent)">0.0</span></span>
                 <input type="range" id="turbulence-slider" min="0" max="1" step="0.01" value="0">
+            </div>
+            <div class="setting-row">
+                <span>Trail Length  <span id="trail-val" style="color:var(--accent)">Medium</span></span>
+                <input type="range" id="trail-slider" min="0.02" max="0.3" step="0.01" value="0.12">
+            </div>
+            <div class="setting-row">
+                <span>Glow  <span id="glow-val" style="color:var(--accent)">Off</span></span>
+                <input type="range" id="glow-slider" min="0" max="20" step="1" value="0">
+            </div>
+            <div class="setting-row">
+                <span>Particle Size  <span id="size-val" style="color:var(--accent)">1.0x</span></span>
+                <input type="range" id="size-slider" min="0.3" max="3" step="0.1" value="1">
             </div>
         </div>
 
@@ -570,23 +692,32 @@
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3.5" cy="4.5" r="1.5"/><circle cx="12.5" cy="11.5" r="1.5"/><circle cx="12" cy="4" r="1"/><line x1="3.5" y1="4.5" x2="12.5" y2="11.5"/><line x1="3.5" y1="4.5" x2="12" y2="4"/><line x1="12" y1="4" x2="12.5" y2="11.5"/></svg>
                 </button>
                 <button id="btn-record" title="Record Loop">● REC</button>
-                <div class="btn-divider"></div>
-                <button class="pattern-btn icon-btn" data-pattern="0" title="Firework [1]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="1" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="15"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="15" y2="8"/><line x1="2.93" y1="2.93" x2="5.05" y2="5.05"/><line x1="10.95" y1="10.95" x2="13.07" y2="13.07"/><line x1="13.07" y1="2.93" x2="10.95" y2="5.05"/><line x1="2.93" y1="13.07" x2="5.05" y2="10.95"/></svg>
-                </button>
-                <button class="pattern-btn icon-btn" data-pattern="1" title="Spiral [2]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 8.5c-1.1 0-2-.9-2-2s.9-2 2-2 2.5.9 2.5 2.5c0 2-1.5 3.5-3.5 3.5-2.5 0-4.5-2-4.5-4.5C2.5 3.1 5 1 8 1c3.9 0 7 3.1 7 7"/></svg>
-                </button>
-                <button class="pattern-btn icon-btn" data-pattern="2" title="Shockwave [3]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="4" opacity="0.7"/><circle cx="8" cy="8" r="6.5" opacity="0.35"/></svg>
-                </button>
-                <button class="pattern-btn icon-btn" data-pattern="3" title="Rain [4]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3.5" y1="2" x2="2.5" y2="6"/><line x1="8" y1="1" x2="7" y2="5"/><line x1="12.5" y1="2" x2="11.5" y2="6"/><line x1="5" y1="8" x2="4" y2="12"/><line x1="9" y1="7" x2="8" y2="11"/><line x1="13" y1="8" x2="12" y2="12"/></svg>
-                </button>
-                <button class="pattern-btn icon-btn" data-pattern="4" title="Vortex [5]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8A6 6 0 1 1 4.4 3.5"/><polyline points="4,1 4.4,3.5 7,3"/></svg>
-                </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Pattern Sidebar (right edge, collapsible) -->
+    <div id="pattern-sidebar" class="pattern-sidebar">
+        <button id="sidebar-toggle" class="sidebar-toggle-tab" title="Toggle effects panel">
+            <svg class="sidebar-chevron" width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,1 1,7 6,13"/></svg>
+        </button>
+        <div class="sidebar-body">
+            <span class="sidebar-label">FX</span>
+            <button class="pattern-btn icon-btn" data-pattern="0" title="Firework [1]">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="1" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="15"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="15" y2="8"/><line x1="2.93" y1="2.93" x2="5.05" y2="5.05"/><line x1="10.95" y1="10.95" x2="13.07" y2="13.07"/><line x1="13.07" y1="2.93" x2="10.95" y2="5.05"/><line x1="2.93" y1="13.07" x2="5.05" y2="10.95"/></svg>
+            </button>
+            <button class="pattern-btn icon-btn" data-pattern="1" title="Spiral [2]">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 8.5c-1.1 0-2-.9-2-2s.9-2 2-2 2.5.9 2.5 2.5c0 2-1.5 3.5-3.5 3.5-2.5 0-4.5-2-4.5-4.5C2.5 3.1 5 1 8 1c3.9 0 7 3.1 7 7"/></svg>
+            </button>
+            <button class="pattern-btn icon-btn" data-pattern="2" title="Shockwave [3]">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="4" opacity="0.7"/><circle cx="8" cy="8" r="6.5" opacity="0.35"/></svg>
+            </button>
+            <button class="pattern-btn icon-btn" data-pattern="3" title="Rain [4]">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3.5" y1="2" x2="2.5" y2="6"/><line x1="8" y1="1" x2="7" y2="5"/><line x1="12.5" y1="2" x2="11.5" y2="6"/><line x1="5" y1="8" x2="4" y2="12"/><line x1="9" y1="7" x2="8" y2="11"/><line x1="13" y1="8" x2="12" y2="12"/></svg>
+            </button>
+            <button class="pattern-btn icon-btn" data-pattern="4" title="Vortex [5]">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8A6 6 0 1 1 4.4 3.5"/><polyline points="4,1 4.4,3.5 7,3"/></svg>
+            </button>
         </div>
     </div>
 
@@ -601,13 +732,15 @@
             particleCount: 800,
             baseColorSpeed: 1,
             dragForce: 0.15,
-            viscosity: 0.92, // Friction
-            fadeRate: 0.08,  // Trail length (lower = longer trails)
+            viscosity: 0.92,
+            fadeRate: 0.12,
             gravity: 0,
             interactionRadius: 100,
-            mode: 'neon', // neon, cosmic, zen, plasma
+            mode: 'neon',
             turbulenceStrength: 0.0,
-            showConstellations: false
+            showConstellations: false,
+            glowStrength: 0,
+            sizeMultiplier: 1.0
         };
 
         const STATE = {
@@ -657,8 +790,8 @@
                 this.y = y || Math.random() * STATE.height;
                 this.vx = (Math.random() - 0.5) * 2;
                 this.vy = (Math.random() - 0.5) * 2;
-                this.size = Math.random() * 2 + 1;
-                this.life = 1; // 1.0 to 0.0
+                this.size = (Math.random() * 2 + 1) * CONFIG.sizeMultiplier;
+                this.life = 1;
                 this.decay = Math.random() * 0.01 + 0.005;
                 this.hueOffset = Math.random() * 60;
 
@@ -666,7 +799,7 @@
                 if (CONFIG.mode === 'zen') {
                     this.vx *= 0.2;
                     this.vy *= 0.2;
-                    this.size = Math.random() * 4 + 2;
+                    this.size = (Math.random() * 4 + 2) * CONFIG.sizeMultiplier;
                 }
             }
 
@@ -829,10 +962,10 @@
             // 1. Fade previous frame
             ctx.globalCompositeOperation = 'source-over';
 
-            let fadeColor = 'rgba(5, 5, 5, 0.1)';
-            if (CONFIG.mode === 'neon') fadeColor = 'rgba(0, 0, 0, 0.15)';
-            if (CONFIG.mode === 'zen') fadeColor = 'rgba(240, 240, 240, 0.2)'; // Light theme for Zen?? No, keep dark for now, maybe soft grey
-            if (CONFIG.mode === 'zen') fadeColor = 'rgba(20, 20, 25, 0.2)';
+            const fa = CONFIG.fadeRate;
+            let fadeColor = `rgba(5, 5, 5, ${fa})`;
+            if (CONFIG.mode === 'neon') fadeColor = `rgba(0, 0, 0, ${fa})`;
+            if (CONFIG.mode === 'zen') fadeColor = `rgba(20, 20, 25, ${fa})`;
 
             ctx.fillStyle = fadeColor;
             ctx.fillRect(0, 0, STATE.width, STATE.height);
@@ -841,7 +974,7 @@
             if (CONFIG.mode === 'zen') {
                 ctx.globalCompositeOperation = 'source-over';
             } else {
-                ctx.globalCompositeOperation = 'lighter'; // Additive blending for glow
+                ctx.globalCompositeOperation = 'lighter';
             }
 
             // 3. Update State
@@ -850,10 +983,17 @@
             const audioData = getAudioData();
 
             // 4. Update Particles
+            if (CONFIG.glowStrength > 0) {
+                ctx.shadowBlur = CONFIG.glowStrength;
+                ctx.shadowColor = `hsla(${STATE.hue}, 100%, 60%, 0.9)`;
+            } else {
+                ctx.shadowBlur = 0;
+            }
             for (let p of particles) {
                 p.update(audioData);
                 p.draw();
             }
+            ctx.shadowBlur = 0;
 
             // 5. Visualizer Ring (Optional, subtle)
             if (audioData) {
@@ -1181,10 +1321,40 @@
             if (isCollapsing) settingsPanel.classList.remove('visible');
         });
 
+        // --- Pattern Sidebar Toggle ---
+        document.getElementById('sidebar-toggle').addEventListener('click', () => {
+            document.getElementById('pattern-sidebar').classList.toggle('collapsed');
+        });
+
+        // --- Settings Close ---
+        document.getElementById('settings-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsPanel.classList.remove('visible');
+        });
+
         // --- Turbulence Slider ---
         document.getElementById('turbulence-slider').addEventListener('input', (e) => {
             CONFIG.turbulenceStrength = parseFloat(e.target.value);
             document.getElementById('turb-val').textContent = CONFIG.turbulenceStrength.toFixed(2);
+        });
+
+        // --- Trail Length ---
+        document.getElementById('trail-slider').addEventListener('input', (e) => {
+            CONFIG.fadeRate = parseFloat(e.target.value);
+            const label = CONFIG.fadeRate < 0.07 ? 'Long' : CONFIG.fadeRate < 0.18 ? 'Medium' : 'Short';
+            document.getElementById('trail-val').textContent = label;
+        });
+
+        // --- Glow ---
+        document.getElementById('glow-slider').addEventListener('input', (e) => {
+            CONFIG.glowStrength = parseInt(e.target.value);
+            document.getElementById('glow-val').textContent = CONFIG.glowStrength === 0 ? 'Off' : CONFIG.glowStrength;
+        });
+
+        // --- Particle Size ---
+        document.getElementById('size-slider').addEventListener('input', (e) => {
+            CONFIG.sizeMultiplier = parseFloat(e.target.value);
+            document.getElementById('size-val').textContent = CONFIG.sizeMultiplier.toFixed(1) + 'x';
         });
 
         // --- Choreography Patterns ---
@@ -1199,7 +1369,8 @@
                 p.decay = 0.008;
                 particles.push(p);
             }
-            while (particles.length > CONFIG.particleCount + 600) particles.shift();
+            const excess = particles.length - (CONFIG.particleCount + 600);
+            if (excess > 0) particles.splice(0, excess);
         }
 
         function triggerFirework() {
@@ -1259,7 +1430,15 @@
             showToast('Vortex!');
         }
 
-        const PATTERNS = [triggerFirework, triggerSpiral, triggerShockwave, triggerRain, triggerVortex];
+        let lastPatternTime = 0;
+        const PATTERN_COOLDOWN = 650;
+
+        const PATTERNS = [triggerFirework, triggerSpiral, triggerShockwave, triggerRain, triggerVortex].map(fn => () => {
+            const now = Date.now();
+            if (now - lastPatternTime < PATTERN_COOLDOWN) return;
+            lastPatternTime = now;
+            fn();
+        });
 
         document.querySelectorAll('.pattern-btn').forEach(btn => {
             btn.addEventListener('click', () => PATTERNS[parseInt(btn.dataset.pattern)]());
