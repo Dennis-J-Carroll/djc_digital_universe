@@ -8,53 +8,69 @@ import { motion } from "framer-motion"
 
 const SpaceBackground = lazy(() => import("../components/shared/space-background"))
 
-// Modern Futuristic Icons with enhanced styling
-
-const PenIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-    <path d="M2 2l7.586 7.586"></path>
-    <circle cx="11" cy="11" r="2"></circle>
+// App preview icons — abstract hints of each app's aesthetic
+const HypersphereIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="1.5" opacity="0.85"/>
+    <ellipse cx="16" cy="16" rx="12" ry="5" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+    <ellipse cx="16" cy="16" rx="6" ry="12" stroke="currentColor" strokeWidth="1.2" opacity="0.5"/>
+    <line x1="4" y1="16" x2="28" y2="16" stroke="currentColor" strokeWidth="0.8" opacity="0.25"/>
+    <line x1="16" y1="4" x2="16" y2="28" stroke="currentColor" strokeWidth="0.8" opacity="0.25"/>
   </svg>
 );
 
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
+const ChromaEchoIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="2.5" fill="#00f0ff" opacity="0.9"/>
+    <circle cx="7"  cy="10" r="1.5" fill="#ff4da6" opacity="0.8"/>
+    <circle cx="25" cy="9"  r="1.5" fill="#00f0ff" opacity="0.75"/>
+    <circle cx="24" cy="24" r="2"   fill="#7c4dff" opacity="0.85"/>
+    <circle cx="9"  cy="23" r="1.5" fill="#ff4da6" opacity="0.7"/>
+    <circle cx="20" cy="6"  r="1"   fill="#00f0ff" opacity="0.6"/>
+    <circle cx="5"  cy="18" r="1"   fill="#ff4da6" opacity="0.5"/>
+    <circle cx="28" cy="18" r="1.5" fill="#7c4dff" opacity="0.65"/>
+    <line x1="16" y1="16" x2="7"  y2="10" stroke="#00f0ff" strokeWidth="0.5" opacity="0.3"/>
+    <line x1="16" y1="16" x2="25" y2="9"  stroke="#ff4da6" strokeWidth="0.5" opacity="0.3"/>
+    <line x1="16" y1="16" x2="24" y2="24" stroke="#7c4dff" strokeWidth="0.5" opacity="0.3"/>
   </svg>
 );
 
-const AppsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7"></rect>
-    <rect x="14" y="3" width="7" height="7"></rect>
-    <rect x="14" y="14" width="7" height="7"></rect>
-    <rect x="3" y="14" width="7" height="7"></rect>
+const MechInterpIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {[0,1,2,3].flatMap(i => [0,1,2,3].map(j => (
+      <circle key={`${i}-${j}`}
+        cx={4 + i * 8} cy={4 + j * 8} r="1.8"
+        fill="currentColor"
+        opacity={i === j || i + j === 3 ? 0.9 : 0.18}
+      />
+    )))}
+    <line x1="4"  y1="4"  x2="12" y2="12" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
+    <line x1="28" y1="4"  x2="20" y2="12" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
+    <line x1="4"  y1="28" x2="12" y2="20" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
+    <line x1="28" y1="28" x2="20" y2="20" stroke="currentColor" strokeWidth="0.6" opacity="0.5"/>
   </svg>
 );
 
 const IndexPage = ({ location }) => {
-  // Featured work data - updated for new structure
+  // Three highest-quality standalone apps — direct launch links
   const featuredWork = [
     {
-      title: "Apps & Projects",
-      description: "Explore AI tools, interactive visualizations, data science experiments, and full-stack development projects",
-      icon: <AppsIcon />,
-      link: { url: "/apps", text: "Explore →" }
+      title: "Hypersphere Explorer",
+      description: "Live Three.js visualization of spheres, cylinders, and 4D hyperspheres with KaTeX math that updates in real time as you drag sliders. Three guided tours walk through Archimedes' 2:3 ratio, 4D slicing, and the curse of dimensionality.",
+      icon: <HypersphereIcon />,
+      link: { url: "/apps/sphere_cylinder_hypersphere.html", text: "Launch →" }
     },
     {
-      title: "Stories & More",
-      description: "Creative writing, explorations, and imaginative narratives from my digital universe",
-      icon: <PenIcon />,
-      link: { url: "/stories", text: "Read More →" }
+      title: "Chroma Echo",
+      description: "Audio-reactive particle canvas where mic input drives burst patterns and a built-in keyboard (A–K) plays synth tones that spawn particles mapped to pitch. Five choreography patterns — firework, vortex, spiral, rain, shockwave — fire from a single keystroke.",
+      icon: <ChromaEchoIcon />,
+      link: { url: "/apps/Chroma_Echo.html", text: "Launch →" }
     },
     {
-      title: "About Me",
-      description: "Learn more about my background, skills, and the technologies I work with",
-      icon: <UserIcon />,
-      link: { url: "/about", text: "Learn More →" }
+      title: "Mech Interp Viz",
+      description: "Research-grade mechanistic interpretability workspace for transformer models. Visualize attention heads and MLP blocks across every layer, annotate components with importance levels and tags, and export findings as structured data.",
+      icon: <MechInterpIcon />,
+      link: { url: "/apps/mechmap.html", text: "Launch →" }
     }
   ];
 
@@ -234,19 +250,18 @@ const IndexPage = ({ location }) => {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              What I Do
+              Live Apps
             </motion.span>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              Featured Work
+              Featured Apps
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
-              Explore my latest projects, experiments, and creative endeavors across
-              data science, web development, and digital storytelling.
+              Three standalone interactive apps — open them in any browser, no install required.
             </p>
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
             variants={containerVariants}
           >
             {featuredWork.map((item, index) => (
