@@ -1,2292 +1,1233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowWriter</title>
-    <style>
-        :root {
-            /* Light Theme */
-            --bg-primary: #fefefe;
-            --bg-secondary: #f8f9fa;
-            --bg-panel: #f8f9fa;
-            --bg-card: #ffffff;
-            --text-primary: #2c2c2c;
-            --text-secondary: #495057;
-            --text-muted: #6c757d;
-            --border-color: #e9ecef;
-            --accent-primary: #6495ed;
-            --accent-secondary: #ffd700;
-            --shadow: rgba(0, 0, 0, 0.08);
-            --shadow-heavy: rgba(0, 0, 0, 0.15);
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #242424;
-            --bg-panel: #2d2d2d;
-            --bg-card: #333333;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --text-muted: #888888;
-            --border-color: #404040;
-            --accent-primary: #7ba7ff;
-            --accent-secondary: #ffd700;
-            --shadow: rgba(0, 0, 0, 0.3);
-            --shadow-heavy: rgba(0, 0, 0, 0.5);
-        }
-
-        [data-theme="beige"] {
-            --bg-primary: #f7f5f1;
-            --bg-secondary: #f0ede6;
-            --bg-panel: #ebe7dd;
-            --bg-card: #faf8f4;
-            --text-primary: #3c3528;
-            --text-secondary: #5d5342;
-            --text-muted: #7a6f5c;
-            --border-color: #d4c9b8;
-            --accent-primary: #8b7355;
-            --accent-secondary: #c49b61;
-            --shadow: rgba(60, 53, 40, 0.08);
-            --shadow-heavy: rgba(60, 53, 40, 0.15);
-        }
-
-        [data-theme="nightblue"] {
-            --bg-primary: #0d1b2a;
-            --bg-secondary: #1b2838;
-            --bg-panel: #1b3a4b;
-            --bg-card: #1f2d3d;
-            --text-primary: #c8d6e5;
-            --text-secondary: #8da9c4;
-            --text-muted: #5c7a99;
-            --border-color: #2a4a6b;
-            --accent-primary: #48bfe3;
-            --accent-secondary: #72efdd;
-            --shadow: rgba(0, 0, 0, 0.4);
-            --shadow-heavy: rgba(0, 0, 0, 0.6);
-        }
-
-        [data-theme="warmcream"] {
-            --bg-primary: #fdf6ec;
-            --bg-secondary: #f9eed8;
-            --bg-panel: #f5e6c8;
-            --bg-card: #fffbf5;
-            --text-primary: #4a3728;
-            --text-secondary: #6b5344;
-            --text-muted: #8c7b6b;
-            --border-color: #e0cdb5;
-            --accent-primary: #c17817;
-            --accent-secondary: #e8a838;
-            --shadow: rgba(74, 55, 40, 0.1);
-            --shadow-heavy: rgba(74, 55, 40, 0.18);
-        }
-
-        [data-theme="highcontrast"] {
-            --bg-primary: #000000;
-            --bg-secondary: #0a0a0a;
-            --bg-panel: #111111;
-            --bg-card: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #e0e0e0;
-            --text-muted: #b0b0b0;
-            --border-color: #444444;
-            --accent-primary: #00ff88;
-            --accent-secondary: #ffdd00;
-            --shadow: rgba(0, 255, 136, 0.1);
-            --shadow-heavy: rgba(0, 255, 136, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Georgia', serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            height: 100vh;
-            transition: all 0.3s ease;
-        }
-
-        .app-container {
-            display: flex;
-            height: 100vh;
-            position: relative;
-        }
-
-        /* Theme Switcher */
-        .theme-switcher {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 50;
-            display: flex;
-            gap: 0.5rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem;
-            box-shadow: 0 2px 10px var(--shadow);
-        }
-
-        .theme-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1rem;
-        }
-
-        .theme-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .theme-btn.light {
-            background: #ffffff;
-            color: #333;
-        }
-
-        .theme-btn.dark {
-            background: #333333;
-            color: #fff;
-        }
-
-        .theme-btn.beige {
-            background: #f0ede6;
-            color: #3c3528;
-        }
-
-        .theme-btn.active {
-            box-shadow: 0 0 0 2px var(--accent-primary);
-        }
-
-        /* File Tree Panel */
-        .file-panel {
-            width: 350px;
-            background: var(--bg-panel);
-            border-right: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: 2px 0 10px var(--shadow);
-        }
-
-        .file-panel.collapsed {
-            width: 0;
-            border-right: none;
-            box-shadow: none;
-        }
-
-        .file-panel-content {
-            padding: 1.5rem;
-            min-width: 350px;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .panel-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        /* Version Branch Indicator */
-        .branch-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            background: var(--bg-card);
-            border-radius: 6px;
-            border-left: 3px solid var(--accent-primary);
-        }
-
-        .branch-name {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .new-branch-btn {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .new-branch-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* File Tree */
-        .file-tree {
-            list-style: none;
-        }
-
-        .tree-item {
-            margin: 0.5rem 0;
-        }
-
-        .tree-node {
-            display: flex;
-            align-items: center;
-            padding: 0.6rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .tree-node:hover {
-            background: rgba(100, 149, 237, 0.1);
-            transform: translateX(3px);
-        }
-
-        .tree-node.active {
-            background: rgba(100, 149, 237, 0.2);
-            border-left: 3px solid var(--accent-primary);
-        }
-
-        .tree-node.has-image::after {
-            content: '🖼️';
-            position: absolute;
-            right: 0.5rem;
-            font-size: 0.8rem;
-            opacity: 0.6;
-        }
-
-        .tree-icon {
-            margin-right: 0.8rem;
-            font-size: 1rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .tree-children {
-            margin-left: 1.5rem;
-            border-left: 1px dashed var(--border-color);
-            padding-left: 1rem;
-        }
-
-        /* Smart Tag System */
-        .tag-container {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .tag-section {
-            margin-bottom: 1rem;
-        }
-
-        .tag-section h5 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .tag-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.8rem;
-        }
-
-        .tag {
-            background: var(--accent-primary);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            position: relative;
-        }
-
-        .tag.auto-detected {
-            background: var(--accent-secondary);
-            color: var(--text-primary);
-        }
-
-        .tag.connected {
-            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.5);
-        }
-
-        .tag:hover {
-            transform: scale(1.05);
-        }
-
-        .tag.active {
-            background: var(--accent-secondary);
-            color: var(--text-primary);
-            transform: scale(1.05);
-        }
-
-        /* Connection Visualization */
-        .connection-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .connection-line {
-            position: absolute;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent-secondary), transparent);
-            opacity: 0.7;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 0.3;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        /* Image Preview */
-        .image-preview {
-            margin-top: 1rem;
-            border-radius: 8px;
-            overflow: hidden;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-        }
-
-        .image-preview img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-        }
-
-        .image-caption {
-            padding: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* Main Writing Area */
-        .main-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-
-        .writing-header {
-            padding: 1rem 2rem;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .app-title {
-            font-size: 1.4rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-            color: var(--text-muted);
-            opacity: 0.8;
-        }
-
-        .writing-container {
-            flex: 1;
-            padding: 2rem;
-            background: var(--bg-secondary);
-            position: relative;
-        }
-
-        .writing-area {
-            background: var(--bg-card);
-            border-radius: 12px;
-            box-shadow: 0 4px 25px var(--shadow);
-            padding: 3rem;
-            height: 100%;
-            position: relative;
-        }
-
-        .outline-hint {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: var(--bg-panel);
-            padding: 0.8rem 1.2rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--accent-primary);
-            opacity: 0;
-            transition: all 0.3s ease;
-            max-width: 350px;
-            border-left: 4px solid var(--accent-primary);
-            box-shadow: 0 2px 10px var(--shadow);
-        }
-
-        .outline-hint.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .outline-source {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-            font-style: italic;
-        }
-
-        .editor {
-            width: 100%;
-            height: calc(100% - 2rem);
-            border: none;
-            outline: none;
-            font-size: 1.15rem;
-            line-height: 1.8;
-            resize: none;
-            font-family: 'Georgia', serif;
-            background: transparent;
-            color: var(--text-primary);
-        }
-
-        .flow-suggestion {
-            position: absolute;
-            background: var(--bg-panel);
-            border-left: 4px solid var(--accent-secondary);
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: 420px;
-            z-index: 15;
-            cursor: pointer;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-
-        .flow-suggestion.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .flow-suggestion:hover {
-            background: var(--bg-card);
-            transform: translateY(-2px);
-        }
-
-        /* Format Panel */
-        .format-panel {
-            width: 280px;
-            background: var(--bg-panel);
-            border-left: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: -2px 0 10px var(--shadow);
-        }
-
-        .format-panel.collapsed {
-            width: 0;
-            border-left: none;
-            box-shadow: none;
-        }
-
-        .format-panel-content {
-            padding: 1.5rem;
-            min-width: 280px;
-        }
-
-        .format-section {
-            margin-bottom: 2rem;
-        }
-
-        .format-section h4 {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .format-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .format-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            color: var(--text-primary);
-        }
-
-        .format-btn:hover {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        .format-btn.active {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        /* Panel Toggle Controls */
-        .panel-toggle {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 80px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-            box-shadow: 2px 0 10px var(--shadow);
-        }
-
-        .panel-toggle:hover {
-            background: var(--bg-panel);
-            color: var(--accent-primary);
-            transform: translateY(-50%) translateX(3px);
-        }
-
-        .panel-toggle.left {
-            left: 0;
-        }
-
-        .panel-toggle.right {
-            right: 0;
-            border-radius: 8px 0 0 8px;
-            border-right: none;
-            border-left: 1px solid var(--border-color);
-            box-shadow: -2px 0 10px var(--shadow);
-        }
-
-        .panel-toggle.right:hover {
-            transform: translateY(-50%) translateX(-3px);
-        }
-
-        .panel-toggle.collapsed {
-            background: var(--bg-panel);
-            color: var(--accent-primary);
-        }
-
-        /* Status Bar */
-        .status-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-card);
-            padding: 0.8rem 2rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            z-index: 5;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Branch Modal */
-        .branch-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .branch-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .branch-modal-content {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 400px;
-            box-shadow: 0 10px 40px var(--shadow-heavy);
-        }
-
-        .branch-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            margin: 1rem 0;
-        }
-
-        /* Auto-detected tags highlight */
-        .auto-tag-suggestion {
-            background: rgba(255, 215, 0, 0.1);
-            padding: 0.5rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            border-left: 3px solid var(--accent-secondary);
-        }
-
-        /* Focus Mode Styles */
-        body.focus-mode .file-panel,
-        body.focus-mode .format-panel,
-        body.focus-mode .theme-switcher,
-        body.focus-mode .status-bar,
-        body.focus-mode .panel-toggle {
-            opacity: 0.15;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-
-        body.focus-mode .file-panel:hover,
-        body.focus-mode .format-panel:hover {
-            opacity: 0.6;
-            pointer-events: auto;
-        }
-
-        body.focus-mode .writing-header {
-            opacity: 0.4;
-        }
-
-        body.focus-mode .writing-area {
-            box-shadow: 0 0 80px var(--accent-primary), 0 4px 25px var(--shadow);
-        }
-
-        body.focus-mode .editor {
-            font-size: 1.3rem;
-            line-height: 2;
-        }
-
-        /* Typewriter Mode Styles */
-        body.typewriter-mode .editor {
-            padding-top: 40%;
-            padding-bottom: 40%;
-            scroll-behavior: smooth;
-        }
-
-        body.typewriter-mode .writing-container {
-            background: var(--bg-primary);
-        }
-
-        body.typewriter-mode .writing-area {
-            background: transparent;
-            box-shadow: none;
-            overflow-y: auto;
-        }
-
-        body.typewriter-mode .writing-area::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 45%;
-            background: linear-gradient(to bottom, var(--bg-primary), transparent);
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        body.typewriter-mode .writing-area::after {
-            content: '';
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 45%;
-            background: linear-gradient(to top, var(--bg-primary), transparent);
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* Combined Focus + Typewriter */
-        body.focus-mode.typewriter-mode .writing-area::before {
-            background: linear-gradient(to bottom, var(--bg-primary) 30%, transparent);
-        }
-
-        body.focus-mode.typewriter-mode .writing-area::after {
-            background: linear-gradient(to top, var(--bg-primary) 30%, transparent);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Slider Controls */
-        .slider-control {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-            width: 100%;
-            margin: 0.5rem 0;
-        }
-
-        .slider-control label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .slider-control input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border-color);
-            outline: none;
-        }
-
-        .slider-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .slider-control input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Color Picker */
-        .color-picker-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0.4rem 0;
-        }
-
-        .color-picker-row label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            flex: 1;
-        }
-
-        .color-picker-row input[type="color"] {
-            width: 32px;
-            height: 32px;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            background: none;
-            padding: 0;
-        }
-
-        /* Resize Handles */
-        .resize-handle {
-            width: 5px;
-            cursor: col-resize;
-            background: transparent;
-            transition: background 0.2s;
-            flex-shrink: 0;
-            z-index: 15;
-            position: relative;
-        }
-
-        .resize-handle:hover,
-        .resize-handle.active {
-            background: var(--accent-primary);
-        }
-
-        .resize-handle::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 3px;
-            height: 30px;
-            border-radius: 2px;
-            background: var(--text-muted);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .resize-handle:hover::after {
-            opacity: 0.5;
-        }
-
-        /* Scene Goal */
-        .scene-goal {
-            margin-top: 0.5rem;
-        }
-
-        .scene-goal textarea {
-            width: 100%;
-            min-height: 50px;
-            padding: 0.5rem;
-            border: 1px dashed var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.85rem;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .scene-goal textarea:focus {
-            border-color: var(--accent-primary);
-            outline: none;
-        }
-
-        .scene-goal-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 0.3rem;
-        }
-
-        /* Shortcuts Modal */
-        .shortcuts-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .shortcuts-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .shortcuts-modal-content {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px var(--shadow-heavy);
-        }
-
-        .shortcut-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .shortcut-key {
-            background: var(--bg-panel);
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: var(--accent-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        /* Tag Management */
-        .tag-manage-section {
-            margin-top: 1rem;
-            padding-top: 0.8rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .tag-manage-row {
-            display: flex;
-            gap: 0.3rem;
-            margin-top: 0.5rem;
-        }
-
-        .tag-manage-row input {
-            flex: 1;
-            padding: 0.4rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.8rem;
-        }
-
-        .tag-manage-btn {
-            padding: 0.4rem 0.6rem;
-            border: none;
-            border-radius: 4px;
-            background: var(--accent-primary);
-            color: white;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .tag.removable .tag-remove {
-            margin-left: 0.3rem;
-            font-weight: bold;
-            cursor: pointer;
-            opacity: 0.7;
-        }
-
-        .tag.removable .tag-remove:hover {
-            opacity: 1;
-        }
-
-        /* Export Settings */
-        .export-settings {
-            margin-top: 0.5rem;
-        }
-
-        .export-settings select,
-        .export-settings input {
-            width: 100%;
-            padding: 0.4rem;
-            margin: 0.3rem 0;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.8rem;
-        }
-
-        /* Project Selector */
-        .project-selector {
-            display: flex;
-            gap: 0.3rem;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            background: var(--bg-card);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .project-selector select {
-            flex: 1;
-            padding: 0.4rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.85rem;
-        }
-
-        .project-selector button {
-            padding: 0.4rem 0.6rem;
-            border: none;
-            border-radius: 4px;
-            background: var(--accent-primary);
-            color: white;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        /* Writing Width */
-        .writing-area {
-            max-width: var(--writing-max-width, none);
-            margin: 0 auto;
-        }
-    </style>
-</head>
-
-<body data-theme="light">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Flow Writer — DJC</title>
+<link rel="stylesheet" href="colors_and_type.css" />
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
-  .djc-app-bar a:hover{color:#67e8f9;}
-  .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
+  /* ============================================================
+     FLOW WRITER  ·  layout shell
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(ellipse 90% 60% at 15% 0%, rgba(20,184,154,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 100%, rgba(62,240,226,0.08) 0%, transparent 55%),
+      var(--bg-base);
+    color: var(--fg-2);
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+
+  .app {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 52px 1fr 36px;
+    grid-template-areas:
+      "topbar topbar topbar"
+      "left   center right"
+      "status status status";
+    gap: 0;
+    transition: grid-template-columns var(--dur-slow) var(--ease-out);
+  }
+  .app.focus-mode { grid-template-columns: 0 1fr 0; }
+  .app.focus-mode .pane { opacity: 0; pointer-events: none; transform: translateX(-8px); }
+  .app.focus-mode .pane.right { transform: translateX(8px); }
+
+  /* ============================================================
+     TOPBAR
+     ============================================================ */
+  .topbar {
+    grid-area: topbar;
+    display: flex; align-items: center; gap: var(--space-4);
+    padding: 0 var(--space-5);
+    background: rgba(7, 14, 26, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+    z-index: 30;
+  }
+  .brand {
+    display: flex; align-items: center; gap: var(--space-3);
+    color: var(--fg-1); text-decoration: none;
+  }
+  .brand-tile {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--grad-brand-deep);
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 10px; color: #fff; letter-spacing: 0.04em;
+  }
+  .brand-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 14px; letter-spacing: 0.06em;
+  }
+  .brand-title .accent { color: var(--accent-2); }
+  .back-link {
+    font-size: var(--fs-xs); color: var(--fg-3);
+    letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .back-link:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.06);
+  }
+  .topbar-center {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: var(--space-3);
+  }
+  .scene-pill {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding: 6px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: rgba(20,41,63,0.45);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .scene-pill:hover { border-color: var(--border-accent); color: var(--fg-2); }
+  .scene-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 8px var(--accent-2);
+  }
+  .topbar-right { display: flex; align-items: center; gap: var(--space-2); }
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-3);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: 14px;
+  }
+  .icon-btn:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.06);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .icon-btn.active {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.10);
+    box-shadow: var(--glow-teal-sm);
+  }
+
+  /* ============================================================
+     PANES
+     ============================================================ */
+  .pane {
+    overflow: hidden auto;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+    scrollbar-width: thin;
+    scrollbar-color: var(--navy-700) transparent;
+  }
+  .pane::-webkit-scrollbar { width: 6px; }
+  .pane::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 3px; }
+  .pane::-webkit-scrollbar-track { background: transparent; }
+
+  .pane.left  { grid-area: left;  border-right: 1px solid var(--border-subtle); padding: var(--space-5) var(--space-4); }
+  .pane.right { grid-area: right; border-left:  1px solid var(--border-subtle); padding: var(--space-5) var(--space-4); }
+
+  .section-eyebrow {
+    font-family: var(--font-display);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent-2);
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-eyebrow .count {
+    font-family: var(--font-mono);
+    color: var(--fg-4);
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+  .section-eyebrow + .section-eyebrow { margin-top: var(--space-6); }
+
+  /* Project switcher */
+  .project-switcher {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: 8px 10px;
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .project-switcher:hover { border-color: var(--border-accent); }
+  .project-switcher .label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--fg-1);
+    font-weight: 500;
+  }
+  .project-switcher .chev { color: var(--fg-4); font-size: 10px; }
+
+  .branch-row {
+    display: flex; align-items: center; gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .branch-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(20,184,154,0.10);
+    border: 1px solid var(--border-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-2);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .branch-chip .glyph { color: var(--accent-2); }
+  .branch-add {
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-line);
+    background: transparent;
+    color: var(--fg-3);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .branch-add:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+
+  /* File tree */
+  .tree { list-style: none; padding: 0; margin: 0; }
+  .tree-folder { margin-bottom: 2px; }
+  .tree-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--fg-2);
+    transition: all var(--dur-fast) var(--ease-out);
+    border: 1px solid transparent;
+    position: relative;
+  }
+  .tree-item:hover { background: rgba(20,184,154,0.06); color: var(--fg-1); }
+  .tree-item.active {
+    background: rgba(20,184,154,0.10);
+    border-color: var(--border-accent);
+    color: var(--fg-1);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .tree-item.active::before {
+    content: ""; position: absolute; left: -10px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--accent-2); border-radius: 2px;
+    box-shadow: 0 0 6px var(--accent-2);
+  }
+  .tree-icon { width: 14px; text-align: center; font-size: 11px; color: var(--accent-2); opacity: 0.8; }
+  .tree-folder > .tree-item > .tree-icon { color: var(--fg-3); }
+  .tree-folder.open > .tree-item .caret { transform: rotate(90deg); }
+  .caret {
+    color: var(--fg-4); font-size: 9px;
+    transition: transform var(--dur-fast) var(--ease-out);
+    margin-left: -4px;
+  }
+  .tree-children {
+    list-style: none; padding: 0 0 0 16px; margin: 4px 0 0 0;
+    border-left: 1px dashed var(--border-subtle);
+    overflow: hidden;
+    max-height: 1000px;
+    transition: max-height var(--dur-slow) var(--ease-out), opacity var(--dur-slow) var(--ease-out);
+  }
+  .tree-folder:not(.open) > .tree-children { max-height: 0; opacity: 0; margin-top: 0; }
+  .tree-children .tree-item { font-size: 12.5px; }
+  .file-type-doc { color: var(--accent-2); }
+  .file-type-char { color: var(--electric-violet); }
+  .file-type-map { color: var(--warn-amber); }
+
+  /* Branch graph mini */
+  .branch-graph {
+    margin-top: var(--space-5);
+    padding: var(--space-3);
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    line-height: 1.7;
+  }
+  .branch-graph .commit { display: flex; align-items: center; gap: 8px; }
+  .branch-graph .commit .node {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2);
+  }
+  .branch-graph .commit.past .node { background: var(--fg-4); box-shadow: none; }
+  .branch-graph .stem {
+    width: 1px; height: 12px; background: var(--border-line);
+    margin-left: 4px;
+  }
+  .branch-graph .commit-msg { color: var(--fg-2); }
+  .branch-graph .commit-time { color: var(--fg-4); font-size: 10px; }
+
+  /* ============================================================
+     CENTER  ·  editor
+     ============================================================ */
+  .center {
+    grid-area: center;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .scene-banner {
+    margin: var(--space-5) auto 0 auto;
+    width: min(720px, calc(100% - var(--space-7)));
+    padding: var(--space-4) var(--space-5);
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md), var(--shadow-inset);
+    position: relative;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out), max-height var(--dur-slow) var(--ease-out), padding var(--dur-slow) var(--ease-out), margin var(--dur-slow) var(--ease-out);
+    max-height: 200px;
+    overflow: hidden;
+  }
+  .scene-banner.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; opacity: 0; border-color: transparent; }
+  .scene-banner-eyebrow {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-4);
+    margin-bottom: 6px;
+  }
+  .scene-banner-eyebrow .source { color: var(--accent-2); }
+  .scene-banner .scene-goal {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--fg-1);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  .scene-banner .scene-goal em {
+    font-style: normal;
+    background: linear-gradient(180deg, transparent 65%, rgba(20,184,154,0.25) 65%, rgba(20,184,154,0.25) 100%);
+    padding: 0 2px;
+  }
+  .scene-banner-collapse {
+    position: absolute; top: 10px; right: 12px;
+    background: transparent; border: 0; color: var(--fg-4);
+    cursor: pointer; font-size: 14px; line-height: 1;
+    padding: 4px; border-radius: 4px;
+  }
+  .scene-banner-collapse:hover { color: var(--accent-2); }
+
+  .editor-wrap {
+    flex: 1; overflow: auto;
+    padding: var(--space-6) var(--space-7);
+    scrollbar-width: thin;
+    scrollbar-color: var(--navy-700) transparent;
+    position: relative;
+  }
+  .editor-wrap::-webkit-scrollbar { width: 8px; }
+  .editor-wrap::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 4px; }
+
+  .editor {
+    width: 100%;
+    max-width: var(--editor-width, 720px);
+    margin: 0 auto;
+    min-height: 100%;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--fg-1);
+    font-family: var(--font-serif, 'Iowan Old Style', 'Charter', Georgia, serif);
+    font-size: var(--editor-fs, 18px);
+    line-height: var(--editor-lh, 1.7);
+    resize: none;
+    padding: var(--space-4) 0 50vh 0;
+    caret-color: var(--accent-2);
+    letter-spacing: 0.005em;
+  }
+  .editor::placeholder { color: var(--fg-4); font-style: italic; }
+  .editor::selection { background: rgba(20,184,154,0.30); color: var(--fg-1); }
+
+  /* Family modifiers — driven by data-family on .center */
+  .center[data-family="serif"]   { --font-serif: 'Iowan Old Style', Charter, Georgia, serif; }
+  .center[data-family="georgia"] { --font-serif: Georgia, serif; }
+  .center[data-family="times"]   { --font-serif: 'Times New Roman', Times, serif; }
+  .center[data-family="garamond"]{ --font-serif: Garamond, 'EB Garamond', serif; }
+  .center[data-family="sans"]    { --font-serif: 'Space Grotesk', system-ui, sans-serif; }
+  .center[data-family="mono"]    { --font-serif: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Typewriter mode: pad top so caret line stays centered */
+  .center.typewriter .editor-wrap { padding-top: 35vh; padding-bottom: 50vh; }
+
+  /* Flow nudge */
+  .nudge {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-6);
+    transform: translateX(-50%) translateY(8px);
+    background: rgba(7,14,26,0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-accent);
+    box-shadow: var(--glow-teal-md);
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--fg-2);
+    display: flex; align-items: center; gap: 10px;
+    max-width: 520px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+    z-index: 20;
+  }
+  .nudge.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .nudge .icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(20,184,154,0.18);
+    display: grid; place-items: center;
+    font-size: 12px;
+    color: var(--accent-2);
+    flex-shrink: 0;
+  }
+  .nudge .msg { line-height: 1.4; }
+  .nudge .msg em { color: var(--accent-2); font-style: normal; }
+  .nudge button {
+    background: transparent; border: 0; color: var(--fg-4);
+    cursor: pointer; font-size: 14px;
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .nudge button:hover { color: var(--accent-2); }
+
+  /* ============================================================
+     RIGHT PANE  ·  tags + format
+     ============================================================ */
+  .tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: var(--space-3);
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--border-subtle);
+    background: rgba(20,41,63,0.45);
+    color: var(--fg-2);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .tag.auto { color: var(--accent-2); border-color: rgba(20,184,154,0.30); background: rgba(20,184,154,0.08); }
+  .tag.manual { color: var(--electric-cyan); border-color: rgba(62,240,226,0.25); }
+  .tag.suggest {
+    color: var(--fg-3);
+    border-style: dashed;
+  }
+  .tag.suggest:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+  .tag:hover { box-shadow: var(--glow-teal-sm); }
+  .tag .close { color: var(--fg-4); margin-left: 2px; }
+  .tag .close:hover { color: var(--danger-red); }
+
+  .tag-add {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px dashed var(--border-line);
+    background: transparent;
+    color: var(--fg-4);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .tag-add:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+  .tag-add input {
+    background: transparent; border: 0; outline: 0;
+    color: var(--fg-1); font-family: var(--font-mono); font-size: 11px;
+    width: 80px;
+  }
+
+  /* Format groups */
+  .fmt-group { margin-bottom: var(--space-5); }
+  .fmt-label {
+    font-size: 11px;
+    color: var(--fg-3);
+    margin-bottom: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .fmt-label .val {
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+    font-size: 11px;
+  }
+  .seg {
+    display: flex;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    gap: 2px;
+  }
+  .seg button {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: var(--fg-3);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .seg button:hover { color: var(--fg-1); }
+  .seg button.on {
+    background: var(--grad-brand-deep);
+    color: #fff;
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+  }
+
+  /* Slider */
+  input[type=range] {
+    width: 100%; height: 4px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--navy-700);
+    border-radius: 2px;
+    outline: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    border: 2px solid var(--bg-base);
+    cursor: pointer;
+    box-shadow: var(--glow-teal-sm);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent-2); border: 2px solid var(--bg-base);
+    cursor: pointer; box-shadow: var(--glow-teal-sm);
+  }
+
+  /* Mode toggle (Flow / Focus / Typewriter) */
+  .mode-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-bottom: var(--space-3);
+  }
+  .mode-btn {
+    padding: 9px 8px;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-3);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .mode-btn:hover { color: var(--fg-1); border-color: var(--border-line); }
+  .mode-btn.on {
+    background: rgba(20,184,154,0.10);
+    border-color: var(--border-accent);
+    color: var(--accent-2);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .mode-btn .kbd {
+    font-size: 9px;
+    color: var(--fg-4);
+    background: rgba(7,14,26,0.6);
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+
+  /* Export */
+  .export-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  }
+  .export-btn {
+    padding: 10px 6px;
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-2);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .export-btn:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    box-shadow: var(--glow-teal-sm);
+    transform: translateY(-2px);
+  }
+  .export-btn .ext { font-weight: 700; font-size: 12px; }
+  .export-btn .lbl { color: var(--fg-4); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  /* ============================================================
+     STATUS BAR
+     ============================================================ */
+  .status {
+    grid-area: status;
+    display: flex; align-items: center;
+    background: rgba(7,14,26,0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0 var(--space-5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+    gap: var(--space-4);
+    z-index: 30;
+  }
+  .status .item { display: flex; align-items: center; gap: 6px; }
+  .status .item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--fg-4);
+  }
+  .status .item.flow .dot { background: var(--pulse-green); box-shadow: 0 0 6px var(--pulse-green); animation: pulse 2s infinite; }
+  .status .item.idle .dot { background: var(--warn-amber); }
+  .status .item.saving .dot { background: var(--accent-2); animation: pulse 1s infinite; }
+  .status .item.saved .dot { background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); }
+  .status .item.branch { color: var(--accent-2); }
+  .status .grow { flex: 1; }
+  .status .kbd-hint {
+    color: var(--fg-4);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .status .kbd-hint kbd {
+    background: rgba(7,14,26,0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    color: var(--fg-3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  /* ============================================================
+     MODAL  ·  command palette + branch creator + shortcuts
+     ============================================================ */
+  .modal-scrim {
+    position: fixed; inset: 0;
+    background: rgba(7,14,26,0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: grid; place-items: start center;
+    padding-top: 12vh;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out);
+  }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    width: min(560px, 92vw);
+    background: var(--grad-card);
+    border: 1px solid var(--border-line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), var(--glow-teal-md);
+    overflow: hidden;
+    transform: translateY(-8px) scale(0.98);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .modal-scrim.show .modal { transform: translateY(0) scale(1); }
+  .modal-head {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .modal-head h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--fg-1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .modal-body { padding: var(--space-5); }
+  .modal-body p { margin: 0 0 var(--space-4) 0; color: var(--fg-3); font-size: 13px; line-height: 1.6; }
+  .modal-body input[type=text] {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-line);
+    border-radius: var(--radius-sm);
+    color: var(--fg-1);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: 0;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .modal-body input[type=text]:focus {
+    border-color: var(--border-accent);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .modal-foot {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--border-subtle);
+    display: flex; justify-content: flex-end; gap: var(--space-2);
+    background: rgba(7,14,26,0.4);
+  }
+  .btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-line);
+    background: transparent;
+    color: var(--fg-2);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover { color: var(--fg-1); border-color: var(--border-accent); }
+  .btn.primary {
+    background: var(--grad-brand-deep);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+  }
+  .btn.primary:hover { box-shadow: var(--glow-teal-md); }
+
+  /* Command palette list */
+  .cmd-results { max-height: 320px; overflow-y: auto; }
+  .cmd-results::-webkit-scrollbar { width: 6px; }
+  .cmd-results::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 3px; }
+  .cmd-item {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 10px 18px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .cmd-item:hover, .cmd-item.sel {
+    background: rgba(20,184,154,0.08);
+    border-left-color: var(--accent-2);
+  }
+  .cmd-item .ic {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    background: rgba(20,184,154,0.08);
+    color: var(--accent-2);
+    font-size: 12px;
+  }
+  .cmd-item .label { flex: 1; font-size: 13px; color: var(--fg-1); }
+  .cmd-item .kbd {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--fg-4);
+    background: rgba(7,14,26,0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Shortcut sheet */
+  .sc-grid {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 10px 24px;
+    font-size: 13px;
+  }
+  .sc-grid .lbl { color: var(--fg-2); }
+  .sc-grid .keys {
+    display: flex; gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .sc-grid kbd {
+    background: rgba(7,14,26,0.6);
+    border: 1px solid var(--border-subtle);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--accent-2);
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ============================================================
+     MOBILE DRAWER  ·  always in DOM, visible via JS
+     ============================================================ */
+  .mob-only    { display: none !important; }
+  .desktop-only { }
+
+  .mob-drawer-scrim {
+    position: fixed; inset: 0;
+    background: rgba(7,14,26,0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out);
+  }
+  .mob-drawer-scrim.open { opacity: 1; pointer-events: auto; }
+  .mob-drawer {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    max-height: 82dvh;
+    background: var(--bg-raised);
+    border-top: 1px solid var(--border-line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.55), var(--glow-teal-md);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .mob-drawer-scrim.open .mob-drawer { transform: translateY(0); }
+  .mob-drawer-handle {
+    width: 36px; height: 4px;
+    background: var(--border-line); border-radius: 2px;
+    margin: var(--space-3) auto var(--space-2);
+    flex-shrink: 0;
+  }
+  .mob-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+    padding: 0 var(--space-4);
+  }
+  .mob-tab {
+    flex: 1;
+    padding: 10px var(--space-2);
+    background: transparent; border: 0;
+    color: var(--fg-4);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; min-height: 40px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all var(--dur-fast) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-tab.active { color: var(--accent-2); border-bottom-color: var(--accent-2); }
+  .mob-drawer-body {
+    overflow-y: auto; padding: var(--space-4);
+    flex: 1; -webkit-overflow-scrolling: touch;
+  }
+  .mob-doc-item {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 11px var(--space-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer; font-size: 14px; color: var(--fg-2);
+    -webkit-tap-highlight-color: transparent;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .mob-doc-item.active {
+    background: rgba(20,184,154,0.10);
+    border-color: var(--border-accent); color: var(--fg-1);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .mob-open-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(20,184,154,0.10);
+    border: 1px solid var(--border-accent);
+    color: var(--accent-2);
+    font-family: var(--font-mono); font-size: 11px;
+    cursor: pointer; box-shadow: var(--glow-teal-sm);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ============================================================
+     RESPONSIVE  ·  ≤ 920px
+     ============================================================ */
+  @media (max-width: 920px) {
+    html, body { height: 100dvh; }
+    .app {
+      grid-template-columns: 0 1fr 0;
+      height: 100dvh;
+    }
+    .app .pane { display: none; }
+
+    /* safe-area: topbar */
+    .topbar {
+      padding: 0 var(--space-3);
+      padding-top: env(safe-area-inset-top, 0px);
+      height: calc(52px + env(safe-area-inset-top, 0px));
+      gap: var(--space-2);
+    }
+    .topbar-center { display: none; }
+    .back-link { padding: 7px 9px; font-size: 11px; }
+    .icon-btn  { width: 38px; height: 38px; } /* larger touch target */
+
+    /* show/hide mobile-only elements */
+    .mob-only     { display: grid !important; }
+    .desktop-only { display: none !important; }
+
+    /* editor: tighter padding, prevent iOS zoom */
+    .editor-wrap { padding: var(--space-4) var(--space-4); }
+    .editor { font-size: max(16px, var(--editor-fs, 18px)); }
+    .center.typewriter .editor-wrap { padding-top: 30vh; }
+
+    /* scene banner: compact */
+    .scene-banner {
+      width: calc(100% - var(--space-5));
+      margin: var(--space-3) auto 0;
+      padding: var(--space-3) var(--space-4);
+    }
+    .scene-banner .scene-goal { font-size: 14px; }
+
+    /* nudge: full-width, above status bar */
+    .nudge {
+      left: var(--space-3) !important;
+      right: var(--space-3);
+      max-width: none;
+      transform: translateY(8px);
+      bottom: calc(40px + env(safe-area-inset-bottom, 0px) + var(--space-3));
+    }
+    .nudge.show { transform: translateY(0); }
+
+    /* status bar: safe-area + mobile controls */
+    .status {
+      padding: 0 var(--space-3);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      height: calc(40px + env(safe-area-inset-bottom, 0px));
+      gap: var(--space-2); font-size: 10px;
+    }
+    .status .kbd-hint { display: none; }
+
+    /* sliders: bigger thumb for touch */
+    input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
+    input[type=range]::-moz-range-thumb     { width: 20px; height: 20px; }
+
+    /* drawer tag input: prevent iOS zoom */
+    .tag-add input, .mob-drawer-body input[type=text] { font-size: 16px; }
+
+    /* seg buttons: taller touch target */
+    .seg button { min-height: 36px; }
+
+    /* mode buttons: bigger */
+    .mode-btn { padding: 12px 8px; }
+  }
 </style>
-<div class="djc-app-bar">
-  <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
-    <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
-    <span style="color:#4b5563;flex-shrink:0;">|</span>
-    <span class="djc-title">Flow Writer</span>
-  </div>
-  <a href="/" class="djc-logo">DJC</a>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ====================== TOPBAR ====================== -->
+  <header class="topbar">
+    <a class="back-link" href="/apps/">← Projects</a>
+    <a class="brand" href="/apps/">
+      <div class="brand-tile">DJC</div>
+      <div class="brand-title">FLOW <span class="accent">WRITER</span></div>
+    </a>
+
+    <div class="topbar-center">
+      <div class="scene-pill" id="sceneSummaryPill">
+        <span class="dot"></span>
+        <span id="sceneSummaryLabel">Chapter 1 — Discovery · The Lost Library</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn desktop-only" id="btnCmd"      title="Command palette (⌘K)">⌘K</button>
+      <button class="icon-btn"              id="btnFocus"    title="Focus mode (⌘⇧F)">🎯</button>
+      <button class="icon-btn"              id="btnTw"       title="Typewriter mode (⌘⇧T)">⌨︎</button>
+      <button class="icon-btn desktop-only" id="btnShortcuts" title="Keyboard shortcuts (?)">?</button>
+      <button class="icon-btn mob-only"     id="btnDrawer"   title="Menu" style="font-size:18px;">≡</button>
+    </div>
+  </header>
+
+  <!-- ====================== LEFT PANE ====================== -->
+  <aside class="pane left">
+    <div class="project-switcher" id="projSwitcher">
+      <span style="color:var(--accent-2);">📦</span>
+      <span class="label">The Lost Library</span>
+      <span class="chev">▾</span>
+    </div>
+
+    <div class="branch-row">
+      <div class="branch-chip"><span class="glyph">⎇</span><span id="branchName">main</span></div>
+      <button class="branch-add" id="btnBranchNew">+ branch</button>
+    </div>
+
+    <h6 class="section-eyebrow">Story Universe <span class="count">2 folders</span></h6>
+
+    <ul class="tree" id="tree">
+      <li class="tree-folder open">
+        <div class="tree-item">
+          <span class="caret">▶</span>
+          <span class="tree-icon">📂</span>
+          <span>The Lost Library</span>
+        </div>
+        <ul class="tree-children">
+          <li><div class="tree-item active" data-doc="ch1">
+            <span class="tree-icon file-type-doc">⌐</span>
+            <span>Chapter 1 — Discovery</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="ch2">
+            <span class="tree-icon file-type-doc">⌐</span>
+            <span>Chapter 2 — Revelations</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="notes">
+            <span class="tree-icon file-type-doc">≡</span>
+            <span>Character Notes</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="sarah">
+            <span class="tree-icon file-type-char">◉</span>
+            <span>Sarah — Protagonist</span>
+          </div></li>
+        </ul>
+      </li>
+      <li class="tree-folder">
+        <div class="tree-item">
+          <span class="caret">▶</span>
+          <span class="tree-icon">📂</span>
+          <span>World Building</span>
+        </div>
+        <ul class="tree-children">
+          <li><div class="tree-item" data-doc="layout">
+            <span class="tree-icon file-type-map">▦</span>
+            <span>Library Layout</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="map">
+            <span class="tree-icon file-type-map">▲</span>
+            <span>Town Map</span>
+          </div></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h6 class="section-eyebrow" style="margin-top:var(--space-6);">Branch History <span class="count">main</span></h6>
+    <div class="branch-graph">
+      <div class="commit"><span class="node"></span><span class="commit-msg">draft scene</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">add journal motif</span><span class="commit-time">· 2h</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">outline Ch.1</span><span class="commit-time">· yest</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">init project</span><span class="commit-time">· 4d</span></div>
+    </div>
+  </aside>
+
+  <!-- ====================== CENTER ====================== -->
+  <section class="center" data-family="serif" id="center">
+
+    <div class="scene-banner" id="sceneBanner">
+      <div class="scene-banner-eyebrow">
+        <span>◇ Scene Goal · Pinned</span>
+        <span>From <span class="source">Chapter 1 Outline.md</span></span>
+      </div>
+      <div class="scene-goal">
+        Protagonist discovers a hidden journal in the library's secret compartment,
+        realizing it contains <em>details about their own past</em>.
+      </div>
+      <button class="scene-banner-collapse" id="sceneCollapse" title="Hide">×</button>
+    </div>
+
+    <div class="editor-wrap" id="editorWrap">
+      <textarea class="editor" id="editor" spellcheck="true"
+        placeholder="Begin where the air shifts. Where the next sentence wants to go…"></textarea>
+    </div>
+
+    <div class="nudge" id="nudge">
+      <div class="icon">✦</div>
+      <div class="msg" id="nudgeMsg">Consider how her <em>hands tremble</em> as the spine cracks open.</div>
+      <button id="nudgeDismiss" title="Dismiss">×</button>
+    </div>
+  </section>
+
+  <!-- ====================== RIGHT PANE ====================== -->
+  <aside class="pane right">
+
+    <h6 class="section-eyebrow">Mode</h6>
+    <div class="mode-row">
+      <button class="mode-btn" id="mFocus">🎯 Focus</button>
+      <button class="mode-btn" id="mTw">⌨︎ Typewriter</button>
+    </div>
+
+    <h6 class="section-eyebrow">Auto-Detected <span class="count" id="autoCount">3</span></h6>
+    <div class="tag-row" id="autoTags">
+      <span class="tag auto">protagonist</span>
+      <span class="tag auto">mystery</span>
+      <span class="tag auto">discovery</span>
+    </div>
+
+    <h6 class="section-eyebrow">Manual Tags <span class="count" id="manualCount">5</span></h6>
+    <div class="tag-row" id="manualTags">
+      <span class="tag manual">library<span class="close">×</span></span>
+      <span class="tag manual">backstory<span class="close">×</span></span>
+      <span class="tag manual">journal<span class="close">×</span></span>
+      <span class="tag manual">setting<span class="close">×</span></span>
+      <span class="tag manual">dialogue<span class="close">×</span></span>
+      <span class="tag-add" id="tagAdd">+ <input type="text" placeholder="add tag" id="tagInput" /></span>
+    </div>
+
+    <h6 class="section-eyebrow">Suggested <span class="count">2</span></h6>
+    <div class="tag-row" id="suggestTags">
+      <span class="tag suggest">+ flashback</span>
+      <span class="tag suggest">+ emotional_tension</span>
+    </div>
+
+    <h6 class="section-eyebrow">Typography</h6>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Family <span class="val" id="famVal">Serif</span></div>
+      <div class="seg" id="famSeg">
+        <button data-v="serif" class="on">Serif</button>
+        <button data-v="garamond">Garamond</button>
+        <button data-v="sans">Sans</button>
+        <button data-v="mono">Mono</button>
+      </div>
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Size <span class="val" id="sizeVal">18px</span></div>
+      <input type="range" id="sizeRange" min="14" max="28" value="18" step="1" />
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Line Height <span class="val" id="lhVal">Normal</span></div>
+      <div class="seg" id="lhSeg">
+        <button data-v="1.45">Compact</button>
+        <button data-v="1.7"  class="on">Normal</button>
+        <button data-v="2.0">Spacious</button>
+      </div>
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Width <span class="val" id="widthVal">Medium</span></div>
+      <div class="seg" id="widthSeg">
+        <button data-v="560">Narrow</button>
+        <button data-v="720" class="on">Medium</button>
+        <button data-v="880">Wide</button>
+        <button data-v="100%">Full</button>
+      </div>
+    </div>
+
+    <h6 class="section-eyebrow">Flow Nudges <span class="count" id="flowVal">35s</span></h6>
+    <div class="fmt-group">
+      <input type="range" id="flowRange" min="0" max="120" value="35" step="5" />
+      <div class="fmt-label" style="margin-top:6px;">
+        <span style="color:var(--fg-4);">0 = off · drift on silence</span>
+      </div>
+    </div>
+
+    <h6 class="section-eyebrow">Export</h6>
+    <div class="export-row">
+      <button class="export-btn" data-fmt="txt"><span class="ext">TXT</span><span class="lbl">Plain</span></button>
+      <button class="export-btn" data-fmt="md"><span class="ext">MD</span><span class="lbl">Markdown</span></button>
+      <button class="export-btn" data-fmt="html"><span class="ext">HTML</span><span class="lbl">Print</span></button>
+    </div>
+  </aside>
+
+  <!-- ====================== STATUS ====================== -->
+  <footer class="status">
+    <div class="item flow" id="flowState"><span class="dot"></span><span id="flowLabel">In flow</span></div>
+    <div class="item"><span style="opacity:0.6;">📝</span><span id="wcLabel">0 words · 0 min read</span></div>
+    <div class="item branch"><span style="opacity:0.7;">⎇</span><span id="branchLabel">main</span></div>
+    <div class="item" id="saveItem"><span class="dot"></span><span id="saveLabel">Saved · just now</span></div>
+    <div class="grow"></div>
+    <div class="kbd-hint desktop-only"><kbd>⌘</kbd><kbd>K</kbd> commands</div>
+    <div class="kbd-hint desktop-only"><kbd>?</kbd> shortcuts</div>
+    <button class="mob-open-btn mob-only" id="openDrawer">≡ Menu</button>
+  </footer>
 </div>
-    <!-- Theme Switcher -->
-    <div class="theme-switcher">
-        <button class="theme-btn light active" data-theme="light" title="Light">☀️</button>
-        <button class="theme-btn dark" data-theme="dark" title="Dark">🌙</button>
-        <button class="theme-btn beige" data-theme="beige" title="Autumn">🍂</button>
-        <button class="theme-btn" data-theme="nightblue" title="Night Blue"
-            style="background:#0d1b2a;color:#48bfe3;">🌊</button>
-        <button class="theme-btn" data-theme="warmcream" title="Warm Cream"
-            style="background:#fdf6ec;color:#c17817;">☕</button>
-        <button class="theme-btn" data-theme="highcontrast" title="High Contrast"
-            style="background:#000;color:#00ff88;">⚡</button>
-        <span style="width:1px;background:var(--border-color);margin:0 2px;"></span>
-        <input type="color" id="customAccentColor" title="Custom Accent" value="#6495ed"
-            style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px;">
-        <input type="color" id="customBgColor" title="Custom Background" value="#fefefe"
-            style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px;">
+
+<!-- ====================== MOBILE DRAWER ====================== -->
+<div class="mob-drawer-scrim" id="mobDrawerScrim">
+  <div class="mob-drawer" id="mobDrawer">
+    <div class="mob-drawer-handle"></div>
+    <div class="mob-tabs">
+      <button class="mob-tab active" data-tab="docs">Docs</button>
+      <button class="mob-tab" data-tab="tags">Tags</button>
+      <button class="mob-tab" data-tab="format">Format</button>
+      <button class="mob-tab" data-tab="export">Export</button>
     </div>
+    <div class="mob-drawer-body" id="mobDrawerBody"></div>
+  </div>
+</div>
 
-    <div class="app-container">
-        <!-- File Tree Panel -->
-        <div class="file-panel" id="filePanel">
-            <div class="file-panel-content">
-                <div class="panel-header">
-                    <h3 class="panel-title">Story Universe</h3>
-                    <span>📁</span>
-                </div>
-
-                <!-- Project Selector -->
-                <div class="project-selector">
-                    <span>📦</span>
-                    <select id="projectSelect">
-                        <option value="default">Default Project</option>
-                    </select>
-                    <button id="newProjectBtn" title="New Project">+</button>
-                    <button id="deleteProjectBtn" title="Delete Project" style="background:#e74c3c;">🗑</button>
-                </div>
-
-                <!-- Branch Indicator -->
-                <div class="branch-indicator">
-                    <span>🌿</span>
-                    <span class="branch-name">main</span>
-                    <button class="new-branch-btn" id="newBranchBtn">+ Branch</button>
-                </div>
-
-                <ul class="file-tree">
-                    <li class="tree-item">
-                        <div class="tree-node active has-image">
-                            <span class="tree-icon">📂</span>
-                            <span>The Lost Library</span>
-                        </div>
-                        <ul class="tree-children">
-                            <li class="tree-item">
-                                <div class="tree-node">
-                                    <span class="tree-icon">📝</span>
-                                    <span>Chapter 1 - Discovery</span>
-                                </div>
-                            </li>
-                            <li class="tree-item">
-                                <div class="tree-node">
-                                    <span class="tree-icon">📝</span>
-                                    <span>Chapter 2 - Revelations</span>
-                                </div>
-                            </li>
-                            <li class="tree-item">
-                                <div class="tree-node">
-                                    <span class="tree-icon">📋</span>
-                                    <span>Character Notes</span>
-                                </div>
-                            </li>
-                            <li class="tree-item">
-                                <div class="tree-node has-image">
-                                    <span class="tree-icon">🎭</span>
-                                    <span>Sarah - Protagonist</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="tree-item">
-                        <div class="tree-node has-image">
-                            <span class="tree-icon">📂</span>
-                            <span>World Building</span>
-                        </div>
-                        <ul class="tree-children">
-                            <li class="tree-item">
-                                <div class="tree-node has-image">
-                                    <span class="tree-icon">🏛️</span>
-                                    <span>Library Layout</span>
-                                </div>
-                            </li>
-                            <li class="tree-item">
-                                <div class="tree-node">
-                                    <span class="tree-icon">🗺️</span>
-                                    <span>Town Map</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <!-- Image Preview -->
-                <div class="image-preview">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzY0OTVlZCIgb3BhY2l0eT0iMC4xIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjQ5NWVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TGlicmFyeSBJbnNwaXJhdGlvbjwvdGV4dD48L3N2Zz4="
-                        alt="Library inspiration">
-                    <div class="image-caption">Victorian library atmosphere reference</div>
-                </div>
-
-                <!-- Smart Tag System -->
-                <div class="tag-container">
-                    <div class="tag-section">
-                        <h5>Auto-Detected</h5>
-                        <div class="tag-filter">
-                            <button class="tag auto-detected">protagonist</button>
-                            <button class="tag auto-detected">mystery</button>
-                            <button class="tag auto-detected">discovery</button>
-                        </div>
-                    </div>
-
-                    <div class="tag-section">
-                        <h5>Manual Tags</h5>
-                        <div class="tag-filter">
-                            <button class="tag active connected">library</button>
-                            <button class="tag">backstory</button>
-                            <button class="tag connected">journal</button>
-                            <button class="tag">setting</button>
-                            <button class="tag">dialogue</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Auto-tag Suggestion -->
-                <div class="auto-tag-suggestion">
-                    <small><strong>💡 Suggested:</strong> "flashback", "emotional_tension"</small>
-                </div>
-
-                <!-- Tag Management -->
-                <div class="tag-manage-section">
-                    <h5 style="font-size:0.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">
-                        Manage Custom Tags</h5>
-                    <div class="tag-manage-row">
-                        <input type="text" id="customTagName" placeholder="Tag name">
-                        <input type="text" id="customTagKeywords" placeholder="Keywords (comma sep)">
-                        <button class="tag-manage-btn" id="addCustomTagBtn">+</button>
-                    </div>
-                    <div id="customTagsList" style="margin-top:0.5rem;"></div>
-                </div>
-            </div>
-
-            <!-- Connection Overlay -->
-            <div class="connection-overlay" id="connectionOverlay"></div>
-        </div>
-
-        <!-- Left Resize Handle -->
-        <div class="resize-handle" id="leftResizeHandle"></div>
-
-        <!-- Main Writing Area -->
-        <div class="main-area" id="mainArea">
-            <div class="writing-header">
-                <h1 class="app-title">FlowWriter</h1>
-            </div>
-
-            <div class="writing-container">
-                <div class="writing-area">
-                    <div class="outline-hint" id="outlineHint">
-                        <strong>Current Scene:</strong> Protagonist discovers the hidden journal in the library's secret
-                        compartment, realizing it contains details about their own past.
-                        <div class="outline-source">From: Chapter 1 Outline.md</div>
-                    </div>
-
-                    <!-- Scene Goal -->
-                    <div class="scene-goal">
-                        <div class="scene-goal-label">🎯 Scene Goal / Notes</div>
-                        <textarea id="sceneGoalInput" placeholder="What should this scene accomplish?"></textarea>
-                    </div>
-
-                    <textarea class="editor" id="editor" placeholder="Let your thoughts flow onto the page..."
-                        spellcheck="false"></textarea>
-
-                    <div class="flow-suggestion" id="flowSuggestion">
-                        💡 Consider exploring how the protagonist's hands tremble as they open the journal...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Resize Handle -->
-        <div class="resize-handle" id="rightResizeHandle"></div>
-
-        <!-- Format Panel -->
-        <div class="format-panel" id="formatPanel">
-            <div class="format-panel-content">
-                <div class="panel-header">
-                    <h3 class="panel-title">Formatting</h3>
-                    <span>🎨</span>
-                </div>
-
-                <div class="format-section">
-                    <h4>Typography</h4>
-                    <div class="format-controls" id="typographyControls">
-                        <button class="format-btn typography-btn"
-                            data-font="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Serif</button>
-                        <button class="format-btn typography-btn active" data-font="'Georgia', serif">Georgia</button>
-                        <button class="format-btn typography-btn"
-                            data-font="'Times New Roman', Times, serif">Times</button>
-                        <button class="format-btn typography-btn"
-                            data-font="'Garamond', 'EB Garamond', serif">Garamond</button>
-                        <button class="format-btn typography-btn"
-                            data-font="Inter, 'Segoe UI', sans-serif">Inter</button>
-                        <button class="format-btn typography-btn"
-                            data-font="Arial, Helvetica, sans-serif">Arial</button>
-                        <button class="format-btn typography-btn" data-font="'Roboto', sans-serif">Roboto</button>
-                    </div>
-                    <div class="slider-control">
-                        <label>Font Size <span id="fontSizeVal">16px</span></label>
-                        <input type="range" id="fontSizeSlider" min="14" max="24" value="16" step="1">
-                    </div>
-                </div>
-
-                <div class="format-section">
-                    <h4>Line Spacing</h4>
-                    <div class="format-controls">
-                        <button class="format-btn line-spacing-btn" data-spacing="1.4">Compact</button>
-                        <button class="format-btn line-spacing-btn active" data-spacing="1.8">Normal</button>
-                        <button class="format-btn line-spacing-btn" data-spacing="2.4">Spacious</button>
-                    </div>
-                </div>
-
-                <div class="format-section">
-                    <h4>Writing Width</h4>
-                    <div class="format-controls">
-                        <button class="format-btn width-btn" data-width="600px">Narrow</button>
-                        <button class="format-btn width-btn" data-width="800px">Medium</button>
-                        <button class="format-btn width-btn" data-width="1000px">Wide</button>
-                        <button class="format-btn width-btn active" data-width="none">Full</button>
-                    </div>
-                </div>
-
-                <div class="format-section">
-                    <h4>Flow Suggestions</h4>
-                    <div class="format-controls">
-                        <button class="format-btn active" id="suggestionsToggle">💡 On</button>
-                    </div>
-                    <div class="slider-control">
-                        <label>Delay <span id="suggestDelayVal">35s</span></label>
-                        <input type="range" id="suggestDelaySlider" min="10" max="120" value="35" step="5">
-                    </div>
-                </div>
-
-                <div class="format-section">
-                    <h4>Focus Mode</h4>
-                    <div class="format-controls">
-                        <button class="format-btn" id="focusBtn">🎯 Focus</button>
-                        <button class="format-btn" id="typewriterBtn">⌨️ Typewriter</button>
-                    </div>
-                </div>
-
-                <div class="format-section">
-                    <h4>Export</h4>
-                    <div class="format-controls">
-                        <button class="format-btn" id="exportTxt">📄 TXT</button>
-                        <button class="format-btn" id="exportDoc">📑 DOC</button>
-                        <button class="format-btn" id="exportPdf">📘 PDF</button>
-                    </div>
-                    <div class="export-settings">
-                        <label style="font-size:0.8rem;color:var(--text-muted);">Export Font</label>
-                        <select id="exportFont">
-                            <option value="Georgia, serif">Georgia</option>
-                            <option value="'Times New Roman', serif">Times New Roman</option>
-                            <option value="Arial, sans-serif">Arial</option>
-                            <option value="'Courier New', monospace">Courier New</option>
-                        </select>
-                        <label style="font-size:0.8rem;color:var(--text-muted);">Export Font Size</label>
-                        <select id="exportFontSize">
-                            <option value="10pt">10pt</option>
-                            <option value="11pt">11pt</option>
-                            <option value="12pt" selected>12pt</option>
-                            <option value="14pt">14pt</option>
-                        </select>
-                        <label style="font-size:0.8rem;color:var(--text-muted);">Margins</label>
-                        <select id="exportMargins">
-                            <option value="0.5in">Narrow (0.5in)</option>
-                            <option value="1in" selected>Normal (1in)</option>
-                            <option value="1.25in">Wide (1.25in)</option>
-                            <option value="1.5in">Extra Wide (1.5in)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Panel Toggle Controls -->
-        <div class="panel-toggle left" id="leftToggle">
-            <span>📁</span>
-        </div>
-        <div class="panel-toggle right" id="rightToggle">
-            <span>🎨</span>
-        </div>
+<!-- ====================== MODALS ====================== -->
+<div class="modal-scrim" id="cmdScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">⌘</span>
+      <h3>Command Palette</h3>
+      <input id="cmdInput" type="text" placeholder="Search actions, scenes, tags…" style="flex:1; margin-left:8px; background:transparent; border:0; outline:0; color:var(--fg-1); font-family:var(--font-mono); font-size:13px;" />
     </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
 
-    <!-- Branch Modal -->
-    <div class="branch-modal" id="branchModal">
-        <div class="branch-modal-content">
-            <h3>Create New Branch</h3>
-            <p>Explore "what if" scenarios without affecting your main story.</p>
-            <input type="text" class="branch-input" id="branchInput"
-                placeholder="Branch name (e.g., 'alternative_ending')">
-            <div class="format-controls">
-                <button class="format-btn" id="createBranchBtn">Create Branch</button>
-                <button class="format-btn" id="cancelBranchBtn">Cancel</button>
-            </div>
-        </div>
+<div class="modal-scrim" id="branchScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">⎇</span>
+      <h3>Create Branch</h3>
     </div>
-
-    <!-- Shortcuts Modal -->
-    <div class="shortcuts-modal" id="shortcutsModal">
-        <div class="shortcuts-modal-content">
-            <h3 style="margin-bottom:1rem;">⌨️ Keyboard Shortcuts</h3>
-            <div class="shortcut-row"><span>New Branch</span><span class="shortcut-key">Ctrl + B</span></div>
-            <div class="shortcut-row"><span>Toggle File Panel</span><span class="shortcut-key">Ctrl + \</span></div>
-            <div class="shortcut-row"><span>Toggle Format Panel</span><span class="shortcut-key">Ctrl + /</span></div>
-            <div class="shortcut-row"><span>Focus Mode</span><span class="shortcut-key">Ctrl + Shift + F</span></div>
-            <div class="shortcut-row"><span>Typewriter Mode</span><span class="shortcut-key">Ctrl + Shift + T</span>
-            </div>
-            <div class="shortcut-row"><span>Show Shortcuts</span><span class="shortcut-key">?</span></div>
-            <div class="shortcut-row"><span>Dismiss / Exit</span><span class="shortcut-key">Escape</span></div>
-            <div style="margin-top:1.5rem;text-align:right;"><button class="format-btn"
-                    id="closeShortcutsBtn">Close</button></div>
-        </div>
+    <div class="modal-body">
+      <p>Explore a "what-if" without touching your main draft. Your current edits stay here; the branch starts as a snapshot you can diverge into.</p>
+      <input type="text" id="branchInput" placeholder="branch name (e.g. what-if-she-runs)" />
     </div>
-
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-item">
-            <span>📝</span>
-            <span id="wordCount">0 words</span>
-        </div>
-        <div class="status-item">
-            <span id="flowStatus">✍️ In flow</span>
-        </div>
-        <div class="status-item">
-            <span>🌿</span>
-            <span id="branchStatus">main</span>
-        </div>
-        <div class="status-item">
-            <span>💾</span>
-            <span id="lastSaved">Auto-saved just now</span>
-        </div>
-        <div class="status-item">
-            <button id="shortcutsBtn"
-                style="background:var(--bg-panel);border:1px solid var(--border-color);border-radius:4px;padding:0.2rem 0.5rem;cursor:pointer;color:var(--text-muted);font-size:0.85rem;"
-                title="Keyboard Shortcuts">⌨️ ?</button>
-        </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="branchCreate">Create branch</button>
     </div>
-
-    <script>
-        let inactivityTimer;
-        let lastTypingTime = Date.now();
-        let showOutline = false;
-        let filePanelOpen = true;
-        let formatPanelOpen = true;
-        let currentBranch = 'main';
-        let autoDetectedTags = new Set();
-        let suggestionsEnabled = true;
-        let suggestDelay = 35000;
-        let currentProject = 'default';
-
-        const editor = document.getElementById('editor');
-        const outlineHint = document.getElementById('outlineHint');
-        const flowSuggestion = document.getElementById('flowSuggestion');
-        const wordCount = document.getElementById('wordCount');
-        const flowStatus = document.getElementById('flowStatus');
-        const lastSaved = document.getElementById('lastSaved');
-        const branchStatus = document.getElementById('branchStatus');
-
-        // Enhanced flow suggestions
-        const suggestions = [
-            "💡 Consider exploring how the protagonist's hands tremble as they open the journal...",
-            "🌟 What scent fills the air? Old paper, dust, or something more mysterious?",
-            "🔍 This might be the perfect moment to reveal a hidden character trait...",
-            "⚡ Show the character's emotion through their actions rather than words...",
-            "🎭 Perhaps add some internal dialogue to reveal their thoughts?",
-            "🌙 What shadows are playing across the scene? How does light affect the mood?",
-            "🔥 What's the worst thing that could happen right now?",
-            "💫 Consider a flashback or memory triggered by this discovery...",
-            "🗝️ What detail could you add that will be important later?",
-            "🌊 How does this moment change everything for your character?",
-            "🎯 What is your character really afraid of in this moment?",
-            "✨ Add a sensory detail that makes this scene unforgettable..."
-        ];
-
-        // Default auto-detection keywords for smart tagging
-        const defaultTagKeywords = {
-            'protagonist': ['main character', 'hero', 'she', 'he', 'they', 'sarah'],
-            'mystery': ['secret', 'hidden', 'unknown', 'mysterious', 'enigma'],
-            'discovery': ['found', 'discovered', 'revealed', 'uncovered', 'noticed'],
-            'emotional_tension': ['trembled', 'heart racing', 'nervous', 'anxious', 'worried'],
-            'flashback': ['remembered', 'recalled', 'past', 'memory', 'years ago'],
-            'setting_atmosphere': ['dust', 'shadows', 'light', 'darkness', 'silence'],
-            'journal': ['journal', 'diary', 'book', 'pages', 'writing'],
-            'library': ['library', 'books', 'shelves', 'volumes', 'archive']
-        };
-
-        // Merge default + custom tags
-        function getTagKeywords() {
-            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
-            return { ...defaultTagKeywords, ...custom };
-        }
-
-        function updateWordCount() {
-            const text = editor.value;
-            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            wordCount.textContent = `${words} words`;
-            detectTags(text);
-            if (words > 0) { lastSaved.textContent = 'Auto-saved just now'; }
-        }
-
-        function detectTags(text) {
-            const lowerText = text.toLowerCase();
-            const newTags = new Set();
-            const tagKeywords = getTagKeywords();
-            Object.entries(tagKeywords).forEach(([tag, keywords]) => {
-                if (keywords.some(keyword => lowerText.includes(keyword))) { newTags.add(tag); }
-            });
-            newTags.forEach(tag => {
-                if (!autoDetectedTags.has(tag)) {
-                    autoDetectedTags.add(tag);
-                    addAutoDetectedTag(tag);
-                }
-            });
-        }
-
-        function addAutoDetectedTag(tagName) {
-            const autoSection = document.querySelector('.tag-section:first-child .tag-filter');
-            const newTag = document.createElement('button');
-            newTag.className = 'tag auto-detected';
-            newTag.textContent = tagName;
-            newTag.addEventListener('click', () => toggleTag(newTag));
-            autoSection.appendChild(newTag);
-            newTag.style.opacity = '0';
-            newTag.style.transform = 'scale(0.8)';
-            setTimeout(() => {
-                newTag.style.transition = 'all 0.3s ease';
-                newTag.style.opacity = '1';
-                newTag.style.transform = 'scale(1)';
-            }, 100);
-        }
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            lastTypingTime = Date.now();
-            flowStatus.textContent = '✍️ In flow';
-            flowSuggestion.classList.remove('show');
-            if (!suggestionsEnabled) return;
-            inactivityTimer = setTimeout(() => {
-                showFlowSuggestion();
-                flowStatus.textContent = '💭 Pondering...';
-            }, suggestDelay);
-        }
-
-        function showFlowSuggestion() {
-            const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-            flowSuggestion.textContent = randomSuggestion;
-
-            // Position suggestion contextually
-            const rect = editor.getBoundingClientRect();
-            const lines = editor.value.substr(0, editor.selectionStart).split('\n');
-            const lineHeight = 30;
-            const top = rect.top + (lines.length - 1) * lineHeight + 60;
-
-            flowSuggestion.style.top = `${Math.min(top, window.innerHeight - 150)}px`;
-            flowSuggestion.style.left = `${rect.left + 40}px`;
-            flowSuggestion.classList.add('show');
-        }
-
-        function toggleFilePanel() {
-            const panel = document.getElementById('filePanel');
-            const toggle = document.getElementById('leftToggle');
-
-            filePanelOpen = !filePanelOpen;
-
-            if (filePanelOpen) {
-                panel.classList.remove('collapsed');
-                toggle.classList.remove('collapsed');
-                toggle.innerHTML = '<span>📁</span>';
-            } else {
-                panel.classList.add('collapsed');
-                toggle.classList.add('collapsed');
-                toggle.innerHTML = '<span>📂</span>';
-            }
-        }
-
-        function toggleFormatPanel() {
-            const panel = document.getElementById('formatPanel');
-            const toggle = document.getElementById('rightToggle');
-
-            formatPanelOpen = !formatPanelOpen;
-
-            if (formatPanelOpen) {
-                panel.classList.remove('collapsed');
-                toggle.classList.remove('collapsed');
-                toggle.innerHTML = '<span>🎨</span>';
-            } else {
-                panel.classList.add('collapsed');
-                toggle.classList.add('collapsed');
-                toggle.innerHTML = '<span>✨</span>';
-            }
-        }
-
-        function toggleTag(tagElement) {
-            tagElement.classList.toggle('active');
-
-            // Show connections when tag is active
-            if (tagElement.classList.contains('active')) {
-                showTagConnections(tagElement.textContent);
-            } else {
-                hideTagConnections();
-            }
-        }
-
-        function showTagConnections(tagName) {
-            // Remove existing connections
-            hideTagConnections();
-
-            // Find all files with this tag (simulated)
-            const connectedFiles = document.querySelectorAll('.tree-node');
-            connectedFiles.forEach((file, index) => {
-                if (Math.random() > 0.6) { // Simulate some files having the tag
-                    file.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
-                    file.style.borderLeft = '3px solid #ffd700';
-                }
-            });
-        }
-
-        function hideTagConnections() {
-            const files = document.querySelectorAll('.tree-node');
-            files.forEach(file => {
-                file.style.backgroundColor = '';
-                file.style.borderLeft = '';
-            });
-        }
-
-        function createNewBranch() {
-            const modal = document.getElementById('branchModal');
-            modal.classList.add('show');
-        }
-
-        function hideBranchModal() {
-            const modal = document.getElementById('branchModal');
-            const input = document.getElementById('branchInput');
-            modal.classList.remove('show');
-            input.value = '';
-        }
-
-        function switchBranch(branchName) {
-            currentBranch = branchName;
-            branchStatus.textContent = branchName;
-
-            // Update branch indicator
-            document.querySelector('.branch-name').textContent = branchName;
-
-            // Show branch switch notification
-            showNotification(`Switched to branch: ${branchName}`);
-        }
-
-        function showNotification(message) {
-            // Create temporary notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 5rem;
-                right: 1rem;
-                background: var(--accent-primary);
-                color: white;
-                padding: 1rem;
-                border-radius: 8px;
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        function switchTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-
-            // Update active theme button
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
-
-            // Save theme preference
-            localStorage.setItem('flowwriter-theme', theme);
-        }
-
-        // Export Functions
-        function getDocumentTitle() {
-            // Try to get title from active tree node or use default
-            const activeNode = document.querySelector('.tree-node.active');
-            if (activeNode) {
-                return activeNode.textContent.trim().replace(/[^a-zA-Z0-9\s-]/g, '');
-            }
-            return 'FlowWriter-Document';
-        }
-
-        function exportToTxt() {
-            const content = editor.value;
-            if (!content.trim()) {
-                showNotification('Nothing to export - start writing first!');
-                return;
-            }
-
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${getDocumentTitle()}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            showNotification('Exported as TXT file');
-        }
-
-        function exportToDoc() {
-            const content = editor.value;
-            if (!content.trim()) { showNotification('Nothing to export - start writing first!'); return; }
-            const expFont = document.getElementById('exportFont').value;
-            const expSize = document.getElementById('exportFontSize').value;
-            const expMargin = document.getElementById('exportMargins').value;
-            const htmlContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
-            const docContent = `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><title>${getDocumentTitle()}</title>
-<style>body{font-family:${expFont};font-size:${expSize};line-height:1.6;margin:${expMargin};}p{margin-bottom:1em;text-indent:0.5in;}p:first-child{text-indent:0;}</style>
-</head><body>${htmlContent}</body></html>`;
-            const blob = new Blob([docContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url; link.download = `${getDocumentTitle()}.doc`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showNotification('Exported as DOC file');
-        }
-
-        function exportToPdf() {
-            const content = editor.value;
-            if (!content.trim()) { showNotification('Nothing to export - start writing first!'); return; }
-            const expFont = document.getElementById('exportFont').value;
-            const expSize = document.getElementById('exportFontSize').value;
-            const expMargin = document.getElementById('exportMargins').value;
-            const printWindow = window.open('', '_blank');
-            const htmlContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
-            const printContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${getDocumentTitle()}</title>
-<style>@media print{@page{margin:${expMargin};size:letter;}}
-body{font-family:${expFont};font-size:${expSize};line-height:1.8;color:#333;max-width:6.5in;margin:0 auto;padding:${expMargin};}
-p{margin-bottom:1em;text-indent:0.5in;}p:first-child{text-indent:0;}h1{font-size:18pt;margin-bottom:2em;text-align:center;}</style>
-</head><body><h1>${getDocumentTitle()}</h1>${htmlContent}
-<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};};<\/script>
-</body></html>`;
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            showNotification('PDF print dialog opened');
-        }
-
-        // Typography Functions
-        let currentFont = "'Georgia', serif";
-
-        function setTypography(fontFamily, buttonElement) {
-            currentFont = fontFamily;
-            editor.style.fontFamily = fontFamily;
-
-            // Update active button state
-            document.querySelectorAll('.typography-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            buttonElement.classList.add('active');
-
-            // Save preference
-            localStorage.setItem('flowwriter-typography', fontFamily);
-
-            showNotification(`Font changed to ${buttonElement.textContent}`);
-        }
-
-        // Focus Mode Functions
-        let focusModeActive = false;
-
-        function toggleFocusMode() {
-            focusModeActive = !focusModeActive;
-            const focusBtn = document.getElementById('focusBtn');
-
-            if (focusModeActive) {
-                document.body.classList.add('focus-mode');
-                focusBtn.classList.add('active');
-                focusBtn.innerHTML = '🎯 Focus ON';
-
-                // Auto-collapse panels in focus mode
-                if (filePanelOpen) toggleFilePanel();
-                if (formatPanelOpen) toggleFormatPanel();
-
-                showNotification('Focus mode activated - distractions minimized');
-            } else {
-                document.body.classList.remove('focus-mode');
-                focusBtn.classList.remove('active');
-                focusBtn.innerHTML = '🎯 Focus';
-
-                showNotification('Focus mode deactivated');
-            }
-
-            // Save preference
-            localStorage.setItem('flowwriter-focus-mode', focusModeActive);
-        }
-
-        // Typewriter Mode Functions
-        let typewriterModeActive = false;
-
-        function toggleTypewriterMode() {
-            typewriterModeActive = !typewriterModeActive;
-            const typewriterBtn = document.getElementById('typewriterBtn');
-
-            if (typewriterModeActive) {
-                document.body.classList.add('typewriter-mode');
-                typewriterBtn.classList.add('active');
-                typewriterBtn.innerHTML = '⌨️ Typewriter ON';
-
-                // Enable scroll tracking
-                editor.addEventListener('input', scrollToCurrentLine);
-                editor.addEventListener('keydown', handleTypewriterKeydown);
-
-                showNotification('Typewriter mode activated - current line stays centered');
-            } else {
-                document.body.classList.remove('typewriter-mode');
-                typewriterBtn.classList.remove('active');
-                typewriterBtn.innerHTML = '⌨️ Typewriter';
-
-                // Remove scroll tracking
-                editor.removeEventListener('input', scrollToCurrentLine);
-                editor.removeEventListener('keydown', handleTypewriterKeydown);
-
-                showNotification('Typewriter mode deactivated');
-            }
-
-            // Save preference
-            localStorage.setItem('flowwriter-typewriter-mode', typewriterModeActive);
-        }
-
-        function scrollToCurrentLine() {
-            if (!typewriterModeActive) return;
-
-            const cursorPosition = editor.selectionStart;
-            const textBeforeCursor = editor.value.substring(0, cursorPosition);
-            const lines = textBeforeCursor.split('\n');
-            const lineNumber = lines.length;
-
-            // Calculate approximate line height and scroll position
-            const lineHeight = parseFloat(getComputedStyle(editor).lineHeight) || 30;
-            const editorRect = editor.getBoundingClientRect();
-            const centerOffset = editorRect.height / 2;
-
-            // Scroll so current line is in center
-            const scrollTarget = (lineNumber * lineHeight) - centerOffset;
-            editor.scrollTop = Math.max(0, scrollTarget);
-        }
-
-        function handleTypewriterKeydown(e) {
-            if (e.key === 'Enter') {
-                // Delay scroll to after the new line is added
-                setTimeout(scrollToCurrentLine, 10);
-            }
-        }
-
-        // ========== EVENT LISTENERS ==========
-        editor.addEventListener('input', () => { updateWordCount(); resetInactivityTimer(); });
-        editor.addEventListener('keydown', resetInactivityTimer);
-        flowSuggestion.addEventListener('click', () => { flowSuggestion.classList.remove('show'); resetInactivityTimer(); });
-
-        // Panel toggles
-        document.getElementById('leftToggle').addEventListener('click', toggleFilePanel);
-        document.getElementById('rightToggle').addEventListener('click', toggleFormatPanel);
-
-        // Branch management
-        document.getElementById('newBranchBtn').addEventListener('click', createNewBranch);
-        document.getElementById('cancelBranchBtn').addEventListener('click', hideBranchModal);
-        document.getElementById('createBranchBtn').addEventListener('click', () => {
-            const branchName = document.getElementById('branchInput').value.trim();
-            if (branchName) { switchBranch(branchName); hideBranchModal(); }
-        });
-
-        // Theme switching
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.addEventListener('click', () => switchTheme(btn.getAttribute('data-theme')));
-        });
-
-        // Custom color pickers
-        document.getElementById('customAccentColor').addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--accent-primary', e.target.value);
-            localStorage.setItem('flowwriter-custom-accent', e.target.value);
-        });
-        document.getElementById('customBgColor').addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--bg-primary', e.target.value);
-            localStorage.setItem('flowwriter-custom-bg', e.target.value);
-        });
-
-        // Export buttons
-        document.getElementById('exportTxt').addEventListener('click', exportToTxt);
-        document.getElementById('exportDoc').addEventListener('click', exportToDoc);
-        document.getElementById('exportPdf').addEventListener('click', exportToPdf);
-
-        // Typography buttons
-        document.querySelectorAll('.typography-btn').forEach(btn => {
-            btn.addEventListener('click', () => setTypography(btn.getAttribute('data-font'), btn));
-        });
-
-        // Font size slider
-        document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
-            const size = e.target.value + 'px';
-            editor.style.fontSize = size;
-            document.getElementById('fontSizeVal').textContent = size;
-            saveSetting('flowwriter-font-size', e.target.value);
-        });
-
-        // Line spacing buttons
-        document.querySelectorAll('.line-spacing-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.line-spacing-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                editor.style.lineHeight = btn.dataset.spacing;
-                saveSetting('flowwriter-line-spacing', btn.dataset.spacing);
-            });
-        });
-
-        // Writing width buttons
-        document.querySelectorAll('.width-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.width-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelector('.writing-area').style.maxWidth = btn.dataset.width;
-                saveSetting('flowwriter-writing-width', btn.dataset.width);
-            });
-        });
-
-        // Suggestions toggle
-        document.getElementById('suggestionsToggle').addEventListener('click', () => {
-            suggestionsEnabled = !suggestionsEnabled;
-            const btn = document.getElementById('suggestionsToggle');
-            btn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
-            btn.classList.toggle('active', suggestionsEnabled);
-            if (!suggestionsEnabled) { clearTimeout(inactivityTimer); flowSuggestion.classList.remove('show'); }
-            saveSetting('flowwriter-suggestions', suggestionsEnabled);
-        });
-
-        // Suggestions delay slider
-        document.getElementById('suggestDelaySlider').addEventListener('input', (e) => {
-            suggestDelay = parseInt(e.target.value) * 1000;
-            document.getElementById('suggestDelayVal').textContent = e.target.value + 's';
-            saveSetting('flowwriter-suggest-delay', e.target.value);
-        });
-
-        // Focus Mode button
-        document.getElementById('focusBtn').addEventListener('click', toggleFocusMode);
-        // Typewriter Mode button
-        document.getElementById('typewriterBtn').addEventListener('click', toggleTypewriterMode);
-
-        // Shortcuts modal
-        document.getElementById('shortcutsBtn').addEventListener('click', () => {
-            document.getElementById('shortcutsModal').classList.add('show');
-        });
-        document.getElementById('closeShortcutsBtn').addEventListener('click', () => {
-            document.getElementById('shortcutsModal').classList.remove('show');
-        });
-
-        // Tree node clicks
-        document.querySelectorAll('.tree-node').forEach(node => {
-            node.addEventListener('click', () => {
-                document.querySelectorAll('.tree-node').forEach(n => n.classList.remove('active'));
-                node.classList.add('active');
-                const nodeText = node.textContent.trim();
-                if (nodeText.includes('Chapter 1')) {
-                    outlineHint.innerHTML = `<strong>Current Scene:</strong> Opening scene - protagonist arrives at the library for research, notices something unusual.<div class="outline-source">From: Chapter 1 Outline.md</div>`;
-                } else if (nodeText.includes('Character Notes')) {
-                    outlineHint.innerHTML = `<strong>Character Focus:</strong> Sarah Chen, 28, historian with photographic memory. Estranged from family.<div class="outline-source">From: Character Notes.md</div>`;
-                }
-                outlineHint.classList.add('show');
-                // Load scene goal for this node
-                loadSceneGoal(nodeText);
-            });
-        });
-
-        // Scene goal auto-save
-        document.getElementById('sceneGoalInput').addEventListener('input', (e) => {
-            const activeNode = document.querySelector('.tree-node.active');
-            if (activeNode) {
-                const key = 'flowwriter-goal-' + activeNode.textContent.trim().replace(/\s+/g, '_');
-                localStorage.setItem(key, e.target.value);
-            }
-        });
-
-        function loadSceneGoal(nodeText) {
-            const key = 'flowwriter-goal-' + nodeText.replace(/\s+/g, '_');
-            document.getElementById('sceneGoalInput').value = localStorage.getItem(key) || '';
-        }
-
-        // Tag filtering
-        document.querySelectorAll('.tag').forEach(tag => {
-            tag.addEventListener('click', () => toggleTag(tag));
-        });
-
-        // Custom tag management
-        document.getElementById('addCustomTagBtn').addEventListener('click', () => {
-            const name = document.getElementById('customTagName').value.trim();
-            const kw = document.getElementById('customTagKeywords').value.trim();
-            if (!name || !kw) return;
-            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
-            custom[name] = kw.split(',').map(k => k.trim().toLowerCase());
-            localStorage.setItem('flowwriter-custom-tags', JSON.stringify(custom));
-            document.getElementById('customTagName').value = '';
-            document.getElementById('customTagKeywords').value = '';
-            renderCustomTags();
-            showNotification(`Custom tag "${name}" added`);
-        });
-
-        function renderCustomTags() {
-            const container = document.getElementById('customTagsList');
-            container.innerHTML = '';
-            const custom = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
-            Object.keys(custom).forEach(name => {
-                const tag = document.createElement('span');
-                tag.className = 'tag removable';
-                tag.innerHTML = `${name} <span class="tag-remove" data-tag="${name}">&times;</span>`;
-                tag.querySelector('.tag-remove').addEventListener('click', () => {
-                    const c = JSON.parse(localStorage.getItem('flowwriter-custom-tags') || '{}');
-                    delete c[name];
-                    localStorage.setItem('flowwriter-custom-tags', JSON.stringify(c));
-                    renderCustomTags();
-                    showNotification(`Removed custom tag "${name}"`);
-                });
-                container.appendChild(tag);
-            });
-        }
-
-        // Resize handles
-        function setupResize(handleId, panelId, side) {
-            const handle = document.getElementById(handleId);
-            const panel = document.getElementById(panelId);
-            let startX, startWidth;
-            handle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                startX = e.clientX;
-                startWidth = panel.offsetWidth;
-                handle.classList.add('active');
-                const onMove = (ev) => {
-                    const diff = side === 'left' ? ev.clientX - startX : startX - ev.clientX;
-                    panel.style.width = Math.max(200, Math.min(600, startWidth + diff)) + 'px';
-                    panel.querySelector(':scope > div').style.minWidth = panel.style.width;
-                };
-                const onUp = () => {
-                    handle.classList.remove('active');
-                    document.removeEventListener('mousemove', onMove);
-                    document.removeEventListener('mouseup', onUp);
-                };
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onUp);
-            });
-        }
-        setupResize('leftResizeHandle', 'filePanel', 'left');
-        setupResize('rightResizeHandle', 'formatPanel', 'right');
-
-        // Project management
-        function getProjectKey(key) { return `flowwriter-proj-${currentProject}-${key}`; }
-        function saveSetting(key, value) {
-            localStorage.setItem(key, value);
-            // Also save per-project
-            localStorage.setItem(getProjectKey(key), value);
-        }
-
-        function loadProjectSettings() {
-            const prefix = `flowwriter-proj-${currentProject}-`;
-            const fontSize = localStorage.getItem(prefix + 'flowwriter-font-size');
-            if (fontSize) {
-                document.getElementById('fontSizeSlider').value = fontSize;
-                document.getElementById('fontSizeVal').textContent = fontSize + 'px';
-                editor.style.fontSize = fontSize + 'px';
-            }
-            const lineSpacing = localStorage.getItem(prefix + 'flowwriter-line-spacing');
-            if (lineSpacing) {
-                editor.style.lineHeight = lineSpacing;
-                document.querySelectorAll('.line-spacing-btn').forEach(b => {
-                    b.classList.toggle('active', b.dataset.spacing === lineSpacing);
-                });
-            }
-            const writingWidth = localStorage.getItem(prefix + 'flowwriter-writing-width');
-            if (writingWidth) {
-                document.querySelector('.writing-area').style.maxWidth = writingWidth;
-                document.querySelectorAll('.width-btn').forEach(b => {
-                    b.classList.toggle('active', b.dataset.width === writingWidth);
-                });
-            }
-            const suggestOn = localStorage.getItem(prefix + 'flowwriter-suggestions');
-            if (suggestOn !== null) {
-                suggestionsEnabled = suggestOn === 'true';
-                const btn = document.getElementById('suggestionsToggle');
-                btn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
-                btn.classList.toggle('active', suggestionsEnabled);
-            }
-            const delay = localStorage.getItem(prefix + 'flowwriter-suggest-delay');
-            if (delay) {
-                suggestDelay = parseInt(delay) * 1000;
-                document.getElementById('suggestDelaySlider').value = delay;
-                document.getElementById('suggestDelayVal').textContent = delay + 's';
-            }
-        }
-
-        function loadProjects() {
-            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
-            const sel = document.getElementById('projectSelect');
-            sel.innerHTML = '';
-            projects.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p; opt.textContent = p.charAt(0).toUpperCase() + p.slice(1);
-                sel.appendChild(opt);
-            });
-            sel.value = currentProject;
-        }
-
-        document.getElementById('projectSelect').addEventListener('change', (e) => {
-            currentProject = e.target.value;
-            localStorage.setItem('flowwriter-current-project', currentProject);
-            loadProjectSettings();
-            showNotification(`Switched to project: ${currentProject}`);
-        });
-
-        document.getElementById('newProjectBtn').addEventListener('click', () => {
-            const name = prompt('New project name:');
-            if (!name) return;
-            const slug = name.toLowerCase().replace(/\s+/g, '_');
-            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
-            if (!projects.includes(slug)) { projects.push(slug); localStorage.setItem('flowwriter-projects', JSON.stringify(projects)); }
-            currentProject = slug;
-            localStorage.setItem('flowwriter-current-project', currentProject);
-            loadProjects();
-            document.getElementById('projectSelect').value = slug;
-            showNotification(`Created project: ${name}`);
-        });
-
-        document.getElementById('deleteProjectBtn').addEventListener('click', () => {
-            if (currentProject === 'default') { showNotification('Cannot delete default project'); return; }
-            if (!confirm(`Delete project "${currentProject}"?`)) return;
-            const projects = JSON.parse(localStorage.getItem('flowwriter-projects') || '["default"]');
-            const idx = projects.indexOf(currentProject);
-            if (idx > -1) projects.splice(idx, 1);
-            localStorage.setItem('flowwriter-projects', JSON.stringify(projects));
-            currentProject = 'default';
-            localStorage.setItem('flowwriter-current-project', 'default');
-            loadProjects();
-            loadProjectSettings();
-            showNotification('Project deleted');
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Don't trigger shortcuts when typing in inputs
-            const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT';
-            if (e.ctrlKey || e.metaKey) {
-                switch (e.key) {
-                    case 'b': e.preventDefault(); createNewBranch(); break;
-                    case '\\': e.preventDefault(); toggleFilePanel(); break;
-                    case '/': e.preventDefault(); toggleFormatPanel(); break;
-                }
-                if (e.shiftKey) {
-                    switch (e.key.toLowerCase()) {
-                        case 'f': e.preventDefault(); toggleFocusMode(); break;
-                        case 't': e.preventDefault(); toggleTypewriterMode(); break;
-                    }
-                }
-            }
-            if (e.key === 'Escape') {
-                hideBranchModal();
-                document.getElementById('shortcutsModal').classList.remove('show');
-                flowSuggestion.classList.remove('show');
-                if (focusModeActive) toggleFocusMode();
-            }
-            // ? key for shortcuts (only when not in text input/editor)
-            if (e.key === '?' && !isInput && e.target !== editor) {
-                document.getElementById('shortcutsModal').classList.add('show');
-            }
-        });
-
-        // ========== INITIALIZATION ==========
-        resetInactivityTimer();
-        updateWordCount();
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('flowwriter-theme') || 'light';
-        switchTheme(savedTheme);
-
-        // Load saved custom accent/bg colors
-        const savedAccent = localStorage.getItem('flowwriter-custom-accent');
-        if (savedAccent) {
-            document.documentElement.style.setProperty('--accent-primary', savedAccent);
-            document.getElementById('customAccentColor').value = savedAccent;
-        }
-        const savedBg = localStorage.getItem('flowwriter-custom-bg');
-        if (savedBg) {
-            document.documentElement.style.setProperty('--bg-primary', savedBg);
-            document.getElementById('customBgColor').value = savedBg;
-        }
-
-        // Load saved typography preference
-        const savedTypography = localStorage.getItem('flowwriter-typography');
-        if (savedTypography) {
-            const matchingBtn = document.querySelector(`.typography-btn[data-font="${savedTypography}"]`);
-            if (matchingBtn) setTypography(savedTypography, matchingBtn);
-        }
-
-        // Load font size
-        const savedFontSize = localStorage.getItem('flowwriter-font-size');
-        if (savedFontSize) {
-            document.getElementById('fontSizeSlider').value = savedFontSize;
-            document.getElementById('fontSizeVal').textContent = savedFontSize + 'px';
-            editor.style.fontSize = savedFontSize + 'px';
-        }
-
-        // Load line spacing
-        const savedSpacing = localStorage.getItem('flowwriter-line-spacing');
-        if (savedSpacing) {
-            editor.style.lineHeight = savedSpacing;
-            document.querySelectorAll('.line-spacing-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.spacing === savedSpacing);
-            });
-        }
-
-        // Load writing width
-        const savedWidth = localStorage.getItem('flowwriter-writing-width');
-        if (savedWidth) {
-            document.querySelector('.writing-area').style.maxWidth = savedWidth;
-            document.querySelectorAll('.width-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.width === savedWidth);
-            });
-        }
-
-        // Load suggestions preference
-        const savedSuggestions = localStorage.getItem('flowwriter-suggestions');
-        if (savedSuggestions !== null) {
-            suggestionsEnabled = savedSuggestions === 'true';
-            const sBtn = document.getElementById('suggestionsToggle');
-            sBtn.textContent = suggestionsEnabled ? '💡 On' : '💡 Off';
-            sBtn.classList.toggle('active', suggestionsEnabled);
-        }
-        const savedDelay = localStorage.getItem('flowwriter-suggest-delay');
-        if (savedDelay) {
-            suggestDelay = parseInt(savedDelay) * 1000;
-            document.getElementById('suggestDelaySlider').value = savedDelay;
-            document.getElementById('suggestDelayVal').textContent = savedDelay + 's';
-        }
-
-        // Load saved focus mode preference
-        const savedFocusMode = localStorage.getItem('flowwriter-focus-mode');
-        if (savedFocusMode === 'true') {
-            setTimeout(() => {
-                focusModeActive = true;
-                document.body.classList.add('focus-mode');
-                document.getElementById('focusBtn').classList.add('active');
-                document.getElementById('focusBtn').innerHTML = '🎯 Focus ON';
-            }, 100);
-        }
-
-        // Load saved typewriter mode preference
-        const savedTypewriterMode = localStorage.getItem('flowwriter-typewriter-mode');
-        if (savedTypewriterMode === 'true') {
-            setTimeout(() => {
-                typewriterModeActive = true;
-                document.body.classList.add('typewriter-mode');
-                document.getElementById('typewriterBtn').classList.add('active');
-                document.getElementById('typewriterBtn').innerHTML = '⌨️ Typewriter ON';
-                editor.addEventListener('input', scrollToCurrentLine);
-                editor.addEventListener('keydown', handleTypewriterKeydown);
-            }, 100);
-        }
-
-        // Load projects
-        currentProject = localStorage.getItem('flowwriter-current-project') || 'default';
-        loadProjects();
-        loadProjectSettings();
-        renderCustomTags();
-
-        // Load scene goal for initial active node
-        const initActiveNode = document.querySelector('.tree-node.active');
-        if (initActiveNode) loadSceneGoal(initActiveNode.textContent.trim());
-
-        // Sample content for demo
-        setTimeout(() => {
-            editor.value = "The old library stood silent, its dust-covered shelves holding secrets that had been forgotten for decades. Sarah stepped carefully across the creaking floorboards, her flashlight cutting through the darkness like a blade through velvet.\n\nSomething glinted in the far corner—a leather-bound journal that seemed impossibly out of place among the deteriorating books. As she reached for it, her heart began to race with anticipation and dread. This wasn't just any journal... the cover bore her grandmother's initials.\n\nHer hands trembled as she opened it to the first page, where elegant script revealed words that would change everything she thought she knew about her family's past.\n\n";
-            updateWordCount();
-            setTimeout(() => { outlineHint.classList.add('show'); }, 2000);
-        }, 1000);
-
-        // Auto-hide panels on small screens
-        function handleResize() {
-            if (window.innerWidth < 768) {
-                if (filePanelOpen) toggleFilePanel();
-                if (formatPanelOpen) toggleFormatPanel();
-            }
-        }
-        window.addEventListener('resize', handleResize);
-        handleResize();
-    </script>
+  </div>
+</div>
+
+<div class="modal-scrim" id="scScrim">
+  <div class="modal">
+    <div class="modal-head"><span style="color:var(--accent-2);">⌨︎</span><h3>Keyboard Shortcuts</h3></div>
+    <div class="modal-body">
+      <div class="sc-grid">
+        <div class="lbl">Command palette</div><div class="keys"><kbd>⌘</kbd><kbd>K</kbd></div>
+        <div class="lbl">Focus mode</div>      <div class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd></div>
+        <div class="lbl">Typewriter mode</div> <div class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>T</kbd></div>
+        <div class="lbl">New branch</div>      <div class="keys"><kbd>⌘</kbd><kbd>B</kbd></div>
+        <div class="lbl">Toggle sidebars</div> <div class="keys"><kbd>⌘</kbd><kbd>\</kbd></div>
+        <div class="lbl">Save snapshot</div>   <div class="keys"><kbd>⌘</kbd><kbd>S</kbd></div>
+        <div class="lbl">Hide scene goal</div> <div class="keys"><kbd>⌘</kbd><kbd>/</kbd></div>
+        <div class="lbl">Dismiss / Exit</div>  <div class="keys"><kbd>Esc</kbd></div>
+        <div class="lbl">Show this sheet</div> <div class="keys"><kbd>?</kbd></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-close>Got it</button></div>
+  </div>
+</div>
+
+<script src="flow_writer.js"></script>
 </body>
-
 </html>
