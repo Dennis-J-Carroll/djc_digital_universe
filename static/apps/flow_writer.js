@@ -606,6 +606,81 @@ $('#openDrawer')?.addEventListener('click', openMobDrawer);
 mobScrim?.addEventListener('click', e => { if (e.target === mobScrim) closeMobDrawer(); });
 $$('.mob-tab').forEach(b => b.addEventListener('click', () => switchMobTab(b.dataset.tab)));
 
+// ---------- voice to text ----------
+const hasSpeech = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+const micFab     = $('#micFab');
+const micPreview = $('#micPreview');
+
+let isRecording  = false;
+let voiceRecog   = null;
+let voiceInsertPos = 0;
+let voiceInserted  = 0;
+
+if (hasSpeech) {
+  const SR   = window.SpeechRecognition || window.webkitSpeechRecognition;
+  voiceRecog = new SR();
+  voiceRecog.continuous      = true;
+  voiceRecog.interimResults  = true;
+  voiceRecog.lang            = 'en-US';
+
+  voiceRecog.onstart = () => {
+    voiceInsertPos = editor.selectionStart;
+    voiceInserted  = 0;
+    micFab.classList.add('recording');
+    micPreview.style.display = 'block';
+    micPreview.innerHTML = '<span class="listening">●</span> Listening…';
+  };
+
+  voiceRecog.onresult = (event) => {
+    let finalText = '', interimText = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      event.results[i].isFinal ? (finalText += t) : (interimText += t);
+    }
+    if (finalText) {
+      const at     = voiceInsertPos + voiceInserted;
+      const insert = finalText.trimEnd() + ' ';
+      editor.value = editor.value.slice(0, at) + insert + editor.value.slice(at);
+      voiceInserted += insert.length;
+      editor.selectionStart = editor.selectionEnd = voiceInsertPos + voiceInserted;
+      updateWordCount(); refreshAutoTags(); markDirty(); scheduleNudge();
+    }
+    micPreview.innerHTML = interimText
+      ? `<span class="listening">●</span> <span class="interim">${interimText}</span>`
+      : '<span class="listening">●</span> Listening…';
+  };
+
+  voiceRecog.onerror = (e) => {
+    if (e.error !== 'aborted' && e.error !== 'no-speech') stopVoice();
+  };
+
+  // iOS Safari stops after silence even with continuous:true — restart to simulate
+  voiceRecog.onend = () => {
+    if (isRecording) {
+      try { voiceRecog.start(); } catch(e) { stopVoice(); }
+    } else {
+      micFab?.classList.remove('recording');
+      if (micPreview) micPreview.style.display = 'none';
+    }
+  };
+} else if (micFab) {
+  micFab.style.display = 'none'; // hide FAB if browser lacks support
+}
+
+function startVoice() {
+  if (!hasSpeech || isRecording) return;
+  isRecording = true;
+  try { voiceRecog.start(); } catch(e) {}
+}
+function stopVoice() {
+  isRecording = false;
+  try { voiceRecog?.stop(); } catch(e) {}
+  micFab?.classList.remove('recording');
+  if (micPreview) micPreview.style.display = 'none';
+}
+
+micFab?.addEventListener('click', () => { isRecording ? stopVoice() : startVoice(); });
+
 // ---------- boot ----------
 function updateAll() {
   updateWordCount();

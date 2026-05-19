@@ -869,6 +869,54 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* ─── Voice FAB ─── */
+  .mic-fab {
+    position: fixed;
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px) + 14px);
+    right: 16px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--grad-brand-deep);
+    border: 1px solid var(--border-accent);
+    box-shadow: var(--glow-teal-sm);
+    color: #fff; font-size: 22px;
+    display: none; /* shown only on mobile */
+    place-items: center;
+    cursor: pointer; z-index: 15;
+    -webkit-tap-highlight-color: transparent;
+    transition: box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  }
+  .mic-fab.recording {
+    background: linear-gradient(135deg, #c0392b 0%, var(--danger-red) 100%);
+    border-color: rgba(255,93,115,0.55);
+    box-shadow: 0 0 12px rgba(255,61,61,0.55), 0 0 28px rgba(255,93,115,0.30);
+    animation: mic-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes mic-pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.10); }
+  }
+
+  /* Transcription preview pill */
+  .mic-preview {
+    position: fixed;
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px) + 80px);
+    left: 14px; right: 80px;
+    background: rgba(7,14,26,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-accent);
+    box-shadow: var(--glow-teal-md);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-family: var(--font-mono); font-size: 12px;
+    line-height: 1.5; color: var(--fg-3);
+    display: none; z-index: 15;
+    max-height: 90px; overflow: hidden;
+  }
+  .mic-preview .listening { color: var(--accent-2); animation: pulse 1.5s infinite; }
+  .mic-preview .interim   { color: var(--fg-4); font-style: italic; }
+
   /* ============================================================
      RESPONSIVE  ·  ≤ 920px
      ============================================================ */
@@ -930,6 +978,9 @@
     /* sliders: bigger thumb for touch */
     input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
     input[type=range]::-moz-range-thumb     { width: 20px; height: 20px; }
+
+    /* voice FAB: visible on mobile */
+    .mic-fab { display: grid; }
 
     /* drawer tag input: prevent iOS zoom */
     .tag-add input, .mob-drawer-body input[type=text] { font-size: 16px; }
@@ -1164,6 +1215,10 @@
     <button class="mob-open-btn mob-only" id="openDrawer">≡ Menu</button>
   </footer>
 </div>
+
+<!-- ====================== VOICE FAB ====================== -->
+<button class="mic-fab" id="micFab" title="Voice to text">🎤</button>
+<div class="mic-preview" id="micPreview"></div>
 
 <!-- ====================== MOBILE DRAWER ====================== -->
 <div class="mob-drawer-scrim" id="mobDrawerScrim">
