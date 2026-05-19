@@ -220,6 +220,10 @@ function applyFmt() {
   $('#flowVal').textContent = state.fmt.flowDelay === 0 ? 'off' : state.fmt.flowDelay + 's';
 }
 
+$$('#themeSeg button').forEach(b => b.addEventListener('click', () => {
+  applyTheme(b.dataset.v);
+  $$('#themeSeg button').forEach(x => x.classList.toggle('on', x.dataset.v === currentTheme));
+}));
 $$('#famSeg button').forEach(b => b.addEventListener('click', () => { state.fmt.family = b.dataset.v; applyFmt(); save(); }));
 $$('#lhSeg button').forEach(b => b.addEventListener('click', () => { state.fmt.lh = parseFloat(b.dataset.v); applyFmt(); save(); }));
 $$('#widthSeg button').forEach(b => b.addEventListener('click', () => { state.fmt.width = b.dataset.v; applyFmt(); save(); }));
@@ -417,6 +421,7 @@ function applyTheme(t) {
   localStorage.setItem('djc-fw-theme', t);
   const btn = $('#btnTheme');
   if (btn) btn.innerHTML = t === 'dark' ? SVG_SUN : SVG_MOON;
+  $$('#themeSeg button').forEach(x => x.classList.toggle('on', x.dataset.v === t));
 }
 function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
 
