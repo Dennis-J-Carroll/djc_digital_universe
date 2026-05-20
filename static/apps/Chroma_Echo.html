@@ -567,6 +567,101 @@
         #pattern-sidebar.collapsed .sidebar-chevron {
             transform: rotate(180deg);
         }
+
+        /* Bass + drum hint bars */
+        #bass-hints, #drum-hints {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            background: rgba(0,0,0,0.78);
+            padding: 8px 10px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 15;
+        }
+        #bass-hints  { bottom: 185px; border: 1px solid rgba(124,77,255,0.3); }
+        #drum-hints  { bottom: 130px; border: 1px solid rgba(255,120,40,0.3); }
+
+        .bass-key, .drum-key {
+            min-width: 38px;
+            height: 46px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 2px 4px;
+            font-size: 7.5px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-align: center;
+            font-family: var(--font-stack);
+            transition: background 0.12s, box-shadow 0.12s;
+        }
+        .bass-key .key-label, .drum-key .key-label { font-size: 11px; color: var(--text-main); font-weight: 600; }
+        .bass-key.key-active  { background: rgba(124,77,255,0.25); border-color: #7c4dff; box-shadow: 0 0 14px rgba(124,77,255,0.55); color: #7c4dff; }
+        .bass-key.key-active .key-label  { color: #7c4dff; }
+        .drum-key.key-active  { background: rgba(255,120,40,0.25); border-color: #ff7828; box-shadow: 0 0 14px rgba(255,120,40,0.55); color: #ff7828; }
+        .drum-key.key-active .key-label  { color: #ff7828; }
+
+        /* Legend panel */
+        #legend-panel {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 520px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            cursor: default;
+            max-height: 75vh;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+        #legend-panel.visible { display: flex; }
+        #legend-panel .drag-handle { cursor: default; }
+        .legend-section { display: flex; flex-direction: column; gap: 6px; }
+        .legend-title { font-size: 0.6rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-stack); }
+        .legend-keys { display: flex; gap: 4px; flex-wrap: wrap; }
+        .legend-key {
+            min-width: 38px;
+            height: 42px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 3px;
+            font-size: 7.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+            font-family: var(--font-stack);
+        }
+        .legend-key .key-label { font-size: 11px; color: var(--text-main); font-weight: 600; }
+        .legend-other { display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-stack); }
+        .legend-other span { display: flex; align-items: center; gap: 8px; }
+        kbd {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-family: var(--font-stack);
+            font-size: 0.7rem;
+            color: var(--text-main);
+        }
     </style>
 </head>
 
@@ -609,6 +704,24 @@
         <div class="piano-key" data-key="h"><span class="key-label">H</span>A</div>
         <div class="piano-key" data-key="j"><span class="key-label">J</span>B</div>
         <div class="piano-key" data-key="k"><span class="key-label">K</span>C5</div>
+    </div>
+
+    <!-- Bass Hint Bar (Q-T) -->
+    <div id="bass-hints">
+        <div class="bass-key" data-key="q"><span class="key-label">Q</span>C3</div>
+        <div class="bass-key" data-key="w"><span class="key-label">W</span>D3</div>
+        <div class="bass-key" data-key="e"><span class="key-label">E</span>E3</div>
+        <div class="bass-key" data-key="r"><span class="key-label">R</span>F3</div>
+        <div class="bass-key" data-key="t"><span class="key-label">T</span>G3</div>
+    </div>
+
+    <!-- Drum Hint Bar (Z-B) -->
+    <div id="drum-hints">
+        <div class="drum-key" data-key="z"><span class="key-label">Z</span>KICK</div>
+        <div class="drum-key" data-key="x"><span class="key-label">X</span>SNARE</div>
+        <div class="drum-key" data-key="c"><span class="key-label">C</span>HH</div>
+        <div class="drum-key" data-key="v"><span class="key-label">V</span>OPEN</div>
+        <div class="drum-key" data-key="b"><span class="key-label">B</span>CLAP</div>
     </div>
 
     <!-- UI Overlay -->
@@ -666,6 +779,66 @@
             </div>
         </div>
 
+        <!-- Keyboard Legend Panel -->
+        <div id="legend-panel" class="ui-element">
+            <div class="drag-handle" id="legend-drag-handle">
+                <div class="drag-handle-bar"></div>
+                <span>Keyboard Guide</span>
+                <button id="legend-close" class="settings-close-btn" title="Close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+                </button>
+            </div>
+            <div class="legend-section">
+                <div class="legend-title">Bass  (Q – T)</div>
+                <div class="legend-keys">
+                    <div class="legend-key"><span class="key-label">Q</span>C3</div>
+                    <div class="legend-key"><span class="key-label">W</span>D3</div>
+                    <div class="legend-key"><span class="key-label">E</span>E3</div>
+                    <div class="legend-key"><span class="key-label">R</span>F3</div>
+                    <div class="legend-key"><span class="key-label">T</span>G3</div>
+                </div>
+            </div>
+            <div class="legend-section">
+                <div class="legend-title">Melody  (A – K)</div>
+                <div class="legend-keys">
+                    <div class="legend-key"><span class="key-label">A</span>C4</div>
+                    <div class="legend-key"><span class="key-label">S</span>D4</div>
+                    <div class="legend-key"><span class="key-label">D</span>E4</div>
+                    <div class="legend-key"><span class="key-label">F</span>F4</div>
+                    <div class="legend-key"><span class="key-label">G</span>G4</div>
+                    <div class="legend-key"><span class="key-label">H</span>A4</div>
+                    <div class="legend-key"><span class="key-label">J</span>B4</div>
+                    <div class="legend-key"><span class="key-label">K</span>C5</div>
+                </div>
+            </div>
+            <div class="legend-section">
+                <div class="legend-title">Drums  (Z – B)</div>
+                <div class="legend-keys">
+                    <div class="legend-key"><span class="key-label">Z</span>KICK</div>
+                    <div class="legend-key"><span class="key-label">X</span>SNARE</div>
+                    <div class="legend-key"><span class="key-label">C</span>HH</div>
+                    <div class="legend-key"><span class="key-label">V</span>OPEN</div>
+                    <div class="legend-key"><span class="key-label">B</span>CLAP</div>
+                </div>
+            </div>
+            <div class="legend-section">
+                <div class="legend-title">Effects  (1 – 5)</div>
+                <div class="legend-keys">
+                    <div class="legend-key"><span class="key-label">1</span>FIRE</div>
+                    <div class="legend-key"><span class="key-label">2</span>SPIRL</div>
+                    <div class="legend-key"><span class="key-label">3</span>SHCK</div>
+                    <div class="legend-key"><span class="key-label">4</span>RAIN</div>
+                    <div class="legend-key"><span class="key-label">5</span>VRTX</div>
+                </div>
+            </div>
+            <div class="legend-other">
+                <span><kbd>P</kbd> Screenshot</span>
+                <span><kbd>L</kbd> Constellation lines</span>
+                <span><kbd>?</kbd> This guide</span>
+                <span>Touch &amp; drag → draw particles</span>
+            </div>
+        </div>
+
         <div class="controls-container ui-element">
             <button id="menu-toggle" class="controls-toggle" title="Toggle controls">
                 <svg class="chevron-icon" width="14" height="9" viewBox="0 0 14 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,7 7,2 13,7"/></svg>
@@ -690,6 +863,9 @@
                 </button>
                 <button id="btn-connect" class="icon-btn" title="Constellation Lines [L]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="3.5" cy="4.5" r="1.5"/><circle cx="12.5" cy="11.5" r="1.5"/><circle cx="12" cy="4" r="1"/><line x1="3.5" y1="4.5" x2="12.5" y2="11.5"/><line x1="3.5" y1="4.5" x2="12" y2="4"/><line x1="12" y1="4" x2="12.5" y2="11.5"/></svg>
+                </button>
+                <button id="btn-legend" class="icon-btn" title="Keyboard Guide [?]">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M6 6.5C6 5.4 6.9 4.5 8 4.5c1.1 0 2 .9 2 2 0 1-1 1.5-2 2"/><circle cx="8" cy="12" r=".6" fill="currentColor" stroke="none"/></svg>
                 </button>
                 <button id="btn-record" title="Record Loop">● REC</button>
             </div>
@@ -1450,8 +1626,22 @@
             g: 392.00, h: 440.00, j: 493.88, k: 523.25
         };
         const NOTE_KEYS = Object.keys(NOTE_MAP);
+
+        // Bass keys (Q-T = C3-G3, one octave below)
+        const BASS_MAP = {
+            q: 130.81, w: 146.83, e: 164.81, r: 174.61, t: 196.00
+        };
+        const BASS_KEYS = Object.keys(BASS_MAP);
+
+        // Percussion (Z-B)
+        const PERC_MAP = { z: 'kick', x: 'snare', c: 'hihat', v: 'openhat', b: 'clap' };
+
         const pianoHints = document.getElementById('piano-hints');
+        const bassHints  = document.getElementById('bass-hints');
+        const drumHints  = document.getElementById('drum-hints');
         let pianoFadeTimer = null;
+        let bassFadeTimer  = null;
+        let drumFadeTimer  = null;
 
         function ensureAudioCtx() {
             if (!STATE.audioContext) {
@@ -1475,6 +1665,100 @@
             osc.stop(ac.currentTime + 0.6);
         }
 
+        function playBassNote(freq) {
+            const ac = ensureAudioCtx();
+            const osc = ac.createOscillator();
+            const filter = ac.createBiquadFilter();
+            const gain = ac.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.value = freq;
+            filter.type = 'lowpass';
+            filter.frequency.value = 700;
+            filter.Q.value = 2.5;
+            gain.gain.setValueAtTime(0.22, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 1.1);
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ac.destination);
+            osc.start();
+            osc.stop(ac.currentTime + 1.2);
+        }
+
+        function _noiseBuffer(ac, dur) {
+            const buf = ac.createBuffer(1, Math.ceil(ac.sampleRate * dur), ac.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            return buf;
+        }
+
+        function playKick() {
+            const ac = ensureAudioCtx();
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(160, ac.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.45);
+            gain.gain.setValueAtTime(1.0, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.45);
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            osc.start();
+            osc.stop(ac.currentTime + 0.5);
+        }
+
+        function playSnare() {
+            const ac = ensureAudioCtx();
+            const dur = 0.18;
+            const noise = ac.createBufferSource();
+            noise.buffer = _noiseBuffer(ac, dur);
+            const filter = ac.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 900;
+            const gain = ac.createGain();
+            gain.gain.setValueAtTime(0.55, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+            noise.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+            noise.start(); noise.stop(ac.currentTime + dur);
+            // tone snap
+            const snap = ac.createOscillator();
+            const sg = ac.createGain();
+            snap.type = 'triangle'; snap.frequency.value = 220;
+            sg.gain.setValueAtTime(0.3, ac.currentTime);
+            sg.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.08);
+            snap.connect(sg); sg.connect(ac.destination);
+            snap.start(); snap.stop(ac.currentTime + 0.1);
+        }
+
+        function playHihat(open) {
+            const ac = ensureAudioCtx();
+            const dur = open ? 0.35 : 0.07;
+            const src = ac.createBufferSource();
+            src.buffer = _noiseBuffer(ac, dur);
+            const filter = ac.createBiquadFilter();
+            filter.type = 'bandpass'; filter.frequency.value = 9000; filter.Q.value = 0.4;
+            const gain = ac.createGain();
+            gain.gain.setValueAtTime(0.22, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+            src.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+            src.start(); src.stop(ac.currentTime + dur);
+        }
+
+        function playClap() {
+            const ac = ensureAudioCtx();
+            [0, 0.018, 0.036].forEach(offset => {
+                const dur = 0.06;
+                const src = ac.createBufferSource();
+                src.buffer = _noiseBuffer(ac, dur);
+                const filter = ac.createBiquadFilter();
+                filter.type = 'bandpass'; filter.frequency.value = 1400; filter.Q.value = 0.7;
+                const gain = ac.createGain();
+                gain.gain.setValueAtTime(0.45, ac.currentTime + offset);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + offset + dur);
+                src.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+                src.start(ac.currentTime + offset); src.stop(ac.currentTime + offset + dur);
+            });
+        }
+
         function spawnNoteParticles(key) {
             const idx = NOTE_KEYS.indexOf(key);
             const x = (idx + 0.5) / NOTE_KEYS.length * STATE.width;
@@ -1493,6 +1777,72 @@
             while (particles.length > CONFIG.particleCount + 300) particles.shift();
         }
 
+        function spawnBassParticles(key) {
+            const idx = BASS_KEYS.indexOf(key);
+            const x = (idx + 0.5) / BASS_KEYS.length * STATE.width;
+            const y = STATE.height * 0.72;
+            for (let i = 0; i < 18; i++) {
+                const p = new Particle(x + (Math.random()-0.5)*30, y);
+                const angle = -Math.PI/2 + (Math.random()-0.5)*Math.PI*0.7;
+                const speed = 1.5 + Math.random() * 4.5;
+                p.vx = Math.cos(angle) * speed;
+                p.vy = Math.sin(angle) * speed;
+                p.size = (2.5 + Math.random() * 4) * CONFIG.sizeMultiplier;
+                p.decay = 0.005;
+                p.hueOffset = 230 + (idx / BASS_KEYS.length) * 70;
+                particles.push(p);
+            }
+            const excess = particles.length - (CONFIG.particleCount + 400);
+            if (excess > 0) particles.splice(0, excess);
+        }
+
+        function spawnDrumParticles(type) {
+            const cx = STATE.width / 2;
+            if (type === 'kick') {
+                for (let i = 0; i < 55; i++) {
+                    const angle = -Math.PI + (Math.random()-0.5)*Math.PI;
+                    const speed = 3 + Math.random() * 9;
+                    const p = new Particle(cx + (Math.random()-0.5)*50, STATE.height * 0.88);
+                    p.vx = Math.cos(angle) * speed; p.vy = Math.sin(angle) * speed - 2;
+                    p.size = (2.5 + Math.random() * 4.5) * CONFIG.sizeMultiplier;
+                    p.hueOffset = 15 + Math.random() * 25; p.decay = 0.01;
+                    particles.push(p);
+                }
+            } else if (type === 'snare') {
+                for (let i = 0; i < 40; i++) {
+                    const x = Math.random() * STATE.width;
+                    const p = new Particle(x, STATE.height * 0.5 + (Math.random()-0.5)*60);
+                    p.vx = (Math.random()-0.5)*9; p.vy = (Math.random()-0.5)*4;
+                    p.size = (1 + Math.random() * 2) * CONFIG.sizeMultiplier;
+                    p.hueOffset = Math.random() * 20; p.decay = 0.016;
+                    particles.push(p);
+                }
+            } else if (type === 'hihat' || type === 'openhat') {
+                const count = type === 'openhat' ? 22 : 10;
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * (type === 'openhat' ? 5 : 2.5);
+                    const p = new Particle(STATE.width * 0.78 + (Math.random()-0.5)*20, STATE.height * 0.22);
+                    p.vx = Math.cos(angle)*speed; p.vy = Math.sin(angle)*speed;
+                    p.size = (0.8 + Math.random()*1.8) * CONFIG.sizeMultiplier;
+                    p.hueOffset = 175 + Math.random()*50;
+                    p.decay = type === 'openhat' ? 0.007 : 0.022;
+                    particles.push(p);
+                }
+            } else if (type === 'clap') {
+                for (let i = 0; i < 45; i++) {
+                    const x = STATE.width * 0.1 + Math.random() * STATE.width * 0.8;
+                    const p = new Particle(x, STATE.height * 0.45 + (Math.random()-0.5)*30);
+                    p.vx = (Math.random()-0.5)*11; p.vy = (Math.random()-0.5)*2 - 1;
+                    p.size = (1 + Math.random()*2) * CONFIG.sizeMultiplier;
+                    p.hueOffset = 280 + Math.random()*55; p.decay = 0.014;
+                    particles.push(p);
+                }
+            }
+            const excess = particles.length - (CONFIG.particleCount + 600);
+            if (excess > 0) particles.splice(0, excess);
+        }
+
         function flashPianoKey(key) {
             if (!pianoHints) return;
             pianoHints.style.opacity = '1';
@@ -1505,30 +1855,86 @@
             pianoFadeTimer = setTimeout(() => { pianoHints.style.opacity = '0'; }, 3500);
         }
 
+        function flashBassKey(key) {
+            if (!bassHints) return;
+            bassHints.style.opacity = '1';
+            const keyEl = bassHints.querySelector(`[data-key="${key}"]`);
+            if (keyEl) {
+                keyEl.classList.add('key-active');
+                setTimeout(() => keyEl.classList.remove('key-active'), 280);
+            }
+            clearTimeout(bassFadeTimer);
+            bassFadeTimer = setTimeout(() => { bassHints.style.opacity = '0'; }, 3500);
+        }
+
+        function flashDrumKey(key) {
+            if (!drumHints) return;
+            drumHints.style.opacity = '1';
+            const keyEl = drumHints.querySelector(`[data-key="${key}"]`);
+            if (keyEl) {
+                keyEl.classList.add('key-active');
+                setTimeout(() => keyEl.classList.remove('key-active'), 180);
+            }
+            clearTimeout(drumFadeTimer);
+            drumFadeTimer = setTimeout(() => { drumHints.style.opacity = '0'; }, 3500);
+        }
+
         // --- Global Keyboard Handler ---
         window.addEventListener('keydown', (e) => {
             if (e.repeat || e.target.tagName === 'INPUT') return;
+            const key = e.key.toLowerCase();
 
             // 1-5: choreography
             const patIdx = parseInt(e.key) - 1;
             if (patIdx >= 0 && patIdx < PATTERNS.length) { PATTERNS[patIdx](); return; }
 
             // P: screenshot
-            if (e.key.toLowerCase() === 'p') { takeScreenshot(); return; }
+            if (key === 'p') { takeScreenshot(); return; }
 
             // L: constellation lines toggle
-            if (e.key.toLowerCase() === 'l') {
-                document.getElementById('btn-connect').click();
+            if (key === 'l') { document.getElementById('btn-connect').click(); return; }
+
+            // ?: legend toggle
+            if (e.key === '?' || e.key === '/') { document.getElementById('btn-legend').click(); return; }
+
+            // Q-T: bass notes
+            const bassFreq = BASS_MAP[key];
+            if (bassFreq) {
+                playBassNote(bassFreq);
+                spawnBassParticles(key);
+                flashBassKey(key);
                 return;
             }
 
-            // A-K: musical notes
-            const note = NOTE_MAP[e.key.toLowerCase()];
+            // A-K: melody notes
+            const note = NOTE_MAP[key];
             if (note) {
                 playNote(note);
-                spawnNoteParticles(e.key.toLowerCase());
-                flashPianoKey(e.key.toLowerCase());
+                spawnNoteParticles(key);
+                flashPianoKey(key);
+                return;
             }
+
+            // Z-B: percussion
+            const drumType = PERC_MAP[key];
+            if (drumType) {
+                ensureAudioCtx();
+                if (drumType === 'kick')    playKick();
+                else if (drumType === 'snare')   playSnare();
+                else if (drumType === 'hihat')   playHihat(false);
+                else if (drumType === 'openhat') playHihat(true);
+                else if (drumType === 'clap')    playClap();
+                spawnDrumParticles(drumType);
+                flashDrumKey(key);
+            }
+        });
+
+        document.getElementById('btn-legend').addEventListener('click', () => {
+            document.getElementById('legend-panel').classList.toggle('visible');
+        });
+        document.getElementById('legend-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('legend-panel').classList.remove('visible');
         });
 
         // --- Initialization ---
