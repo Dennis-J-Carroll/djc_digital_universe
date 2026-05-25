@@ -18,6 +18,17 @@
   status = 200
   force = true
 
+# Fix legacy /apps-projects/ → /apps/ (301 permanent)
+[[redirects]]
+  from = "/apps-projects"
+  to = "/apps"
+  status = 301
+
+[[redirects]]
+  from = "/apps-projects/*"
+  to = "/apps/:splat"
+  status = 301
+
 # Basic headers without compression
 [[headers]]
   for = "/*"

@@ -9,10 +9,11 @@ const HeroText = ({ title, description }) => {
     <div className="hero-text-container">
       <div className="hero-name-container">
         <div className="hero-name-wrapper">
-          <span className="hero-name-text">
+          <h1 className="hero-name-text" aria-label="Dennis J. Carroll">
             {fullName.split("").map((char, index) => (
               <span
                 key={index}
+                aria-hidden="true"
                 className={`hero-letter ${
                   char === " " ? "space" : char === "J" || char === "." ? "accent" : "primary"
                 }`}
@@ -21,7 +22,7 @@ const HeroText = ({ title, description }) => {
                 {char}
               </span>
             ))}
-          </span>
+          </h1>
         </div>
 
         <div className="name-underline" />

@@ -102,6 +102,7 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
           '@context': 'https://schema.org',
           '@type': 'Person',
           name: 'Dennis J. Carroll',
+          alternateName: 'Dennis Carroll',
           url: site.siteMetadata.siteUrl,
           image: ogImage,
           sameAs: [
@@ -109,13 +110,59 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
             'https://www.linkedin.com/in/dennisjcarroll/',
             'https://x.com/denniscarrollj'
           ],
-          jobTitle: 'Data Scientist & Developer',
+          jobTitle: 'Data Scientist & Machine Learning Engineer',
           description: metaDescription,
-          knowsAbout: ['Data Science', 'Web Development', 'AI', 'Python', 'JavaScript', 'React']
+          knowsAbout: [
+            'Data Science',
+            'Machine Learning',
+            'Deep Learning',
+            'Bayesian Inference',
+            'Mechanistic Interpretability',
+            'TensorFlow',
+            'PyTorch',
+            'Python',
+            'JavaScript',
+            'React',
+            'Gatsby',
+            'Interactive Data Visualization',
+            'Neural Networks',
+            'Statistical Modeling',
+            'Reinforcement Learning',
+            'Graph Neural Networks'
+          ],
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': site.siteMetadata.siteUrl
+          }
         };
 
+      case 'website':
       default:
-        return baseSchema;
+        // Homepage: WebSite + Person as array for dual-schema coverage
+        return [
+          baseSchema,
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name: 'Dennis J. Carroll',
+            alternateName: 'Dennis Carroll',
+            url: site.siteMetadata.siteUrl,
+            image: ogImage,
+            sameAs: [
+              'https://github.com/Dennis-J-Carroll',
+              'https://www.linkedin.com/in/dennisjcarroll/',
+              'https://x.com/denniscarrollj'
+            ],
+            jobTitle: 'Data Scientist & Machine Learning Engineer',
+            description: metaDescription,
+            knowsAbout: [
+              'Data Science', 'Machine Learning', 'Deep Learning',
+              'Bayesian Inference', 'Mechanistic Interpretability',
+              'TensorFlow', 'PyTorch', 'Python', 'React', 'Gatsby',
+              'Interactive Data Visualization'
+            ]
+          }
+        ];
     }
   };
 
@@ -194,6 +241,10 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
         {
           name: `twitter:image:alt`,
           content: metaDescription,
+        },
+        {
+          name: `keywords`,
+          content: `Dennis Carroll, Dennis J. Carroll, data scientist, machine learning engineer, Python, TensorFlow, PyTorch, Bayesian inference, deep learning, mechanistic interpretability, interactive visualization, React, Gatsby, portfolio`,
         },
       ].concat(meta)}
     >

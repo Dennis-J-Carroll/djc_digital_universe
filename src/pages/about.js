@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 import StatsCounter from "../components/shared/stats-counter"
+import SkillsGrid from "../components/shared/skills-grid"
 import "../styles/about.css"
 
 // Minimalist SVG Icons (gray fill with black outline style)
@@ -59,9 +60,9 @@ const MotionIcon = () => (
 const AboutPage = ({ location }) => {
   // Stats data
   const stats = [
-    { value: 15, suffix: "+", label: "Projects Completed", icon: null },
+    { value: 25, suffix: "+", label: "Projects Completed", icon: null },
     { value: 5, suffix: "+", label: "Years Experience", icon: null },
-    { value: 10, suffix: "+", label: "Technologies", icon: null },
+    { value: 20, suffix: "+", label: "Technologies", icon: null },
     { value: 24, suffix: "+", label: "Interactive Apps Built", icon: null }
   ]
 
@@ -179,6 +180,19 @@ const AboutPage = ({ location }) => {
             By the Numbers
           </motion.h2>
           <StatsCounter stats={stats} />
+        </motion.section>
+
+        {/* Skills & Technologies Section */}
+        <motion.section
+          className="about-section"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.div variants={itemVariants}>
+            <SkillsGrid />
+          </motion.div>
         </motion.section>
 
         {/* Background Section */}
