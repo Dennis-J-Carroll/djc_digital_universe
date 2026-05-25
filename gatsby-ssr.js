@@ -9,8 +9,31 @@ const React = require("react")
 /**
  * @type {import('gatsby').GatsbySSR['onRenderBody']}
  */
-exports.onRenderBody = ({ setHtmlAttributes, setPostBodyComponents }) => {
+exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyComponents }) => {
   setHtmlAttributes({ lang: `en` })
+
+  // Async font loader — injected as a script so it does NOT block the load event.
+  // display=swap: text renders immediately in fallback; Orbitron swaps in when ready.
+  // hero-text.js gates its animation on document.fonts.load() so no FOUT on the name.
+  setHeadComponents([
+    React.createElement("link", {
+      key: "font-preconnect-1",
+      rel: "preconnect",
+      href: "https://fonts.googleapis.com",
+    }),
+    React.createElement("link", {
+      key: "font-preconnect-2",
+      rel: "preconnect",
+      href: "https://fonts.gstatic.com",
+      crossOrigin: "anonymous",
+    }),
+    React.createElement("script", {
+      key: "async-font-loader",
+      dangerouslySetInnerHTML: {
+        __html: `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap';document.head.appendChild(l);})();`,
+      },
+    }),
+  ])
 
   // Hidden static forms for Netlify Forms detection at build time.
   // These are never shown — they just let Netlify know the form structure.

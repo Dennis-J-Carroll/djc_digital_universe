@@ -63,10 +63,17 @@ const Header = ({ siteTitle }) => {
     const scrollY = window.scrollY;
     if (scrollY > 50) {
       setIsScrolled(true);
+      const scrolledBg =
+        currentTheme === 'light'          ? "rgba(240, 240, 245, 0.92)" :
+        currentTheme === 'tokyo-afternoon'? "rgba(232, 220, 204, 0.95)" :
+        currentTheme === 'retro-80s'      ? "rgba(26, 10, 40, 0.92)"   :
+                                            "rgba(10, 14, 20, 0.9)";
+      const scrolledBorder =
+        isLightBg ? "1px solid rgba(100, 90, 70, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)";
       gsap.to(headerRef.current, {
-        backgroundColor: currentTheme === 'light' ? "rgba(240, 240, 245, 0.9)" : "rgba(10, 14, 20, 0.9)",
+        backgroundColor: scrolledBg,
         backdropFilter: "blur(12px)",
-        borderBottom: currentTheme === 'light' ? "1px solid rgba(100, 100, 150, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)",
+        borderBottom: scrolledBorder,
         padding: "0.5rem 2rem",
         duration: 0.3
       });
@@ -114,8 +121,10 @@ const Header = ({ siteTitle }) => {
     }
   };
 
+  const isLightBg = currentTheme === 'light' || currentTheme === 'tokyo-afternoon';
+
   const iconStyle = {
-    color: currentTheme === 'light' && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
+    color: isLightBg && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
     transition: "all 0.2s ease",
     display: "flex",
     alignItems: "center",
@@ -123,15 +132,15 @@ const Header = ({ siteTitle }) => {
     width: "2rem",
     height: "2rem",
     borderRadius: "50%",
-    background: "rgba(15, 20, 30, 0.5)",
+    background: isLightBg ? "rgba(200, 195, 185, 0.45)" : "rgba(15, 20, 30, 0.5)",
     backdropFilter: "blur(8px)",
-    border: "1px solid rgba(120, 180, 255, 0.1)",
+    border: isLightBg ? "1px solid rgba(100, 90, 70, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)",
   };
 
   const themeSelectStyle = {
-    background: "rgba(15, 20, 30, 0.6)",
+    background: isLightBg ? "rgba(230, 220, 205, 0.8)" : "rgba(15, 20, 30, 0.6)",
     backdropFilter: "blur(8px)",
-    border: "1px solid rgba(120, 180, 255, 0.2)",
+    border: isLightBg ? "1px solid rgba(100, 90, 70, 0.25)" : "1px solid rgba(120, 180, 255, 0.2)",
     borderRadius: "8px",
     color: "var(--text-secondary)",
     fontSize: "0.8rem",
@@ -306,8 +315,8 @@ const Header = ({ siteTitle }) => {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             style={{
-              background: "rgba(15, 20, 30, 0.5)",
-              border: "1px solid rgba(120, 180, 255, 0.2)",
+              background: isLightBg ? "rgba(200, 195, 185, 0.5)" : "rgba(15, 20, 30, 0.5)",
+              border: isLightBg ? "1px solid rgba(100, 90, 70, 0.25)" : "1px solid rgba(120, 180, 255, 0.2)",
               borderRadius: "8px",
               padding: "0.4rem 0.5rem",
               cursor: "pointer",
@@ -357,7 +366,11 @@ const Header = ({ siteTitle }) => {
             left: 0,
             width: "100%",
             zIndex: 199,
-            background: currentTheme === 'light' ? "rgba(240, 240, 245, 0.97)" : "rgba(10, 14, 20, 0.97)",
+            background:
+              currentTheme === 'light'           ? "rgba(240, 240, 245, 0.97)" :
+              currentTheme === 'tokyo-afternoon' ? "rgba(232, 220, 204, 0.98)" :
+              currentTheme === 'retro-80s'       ? "rgba(26, 10, 40, 0.97)"   :
+                                                   "rgba(10, 14, 20, 0.97)",
             backdropFilter: "blur(16px)",
             borderBottom: "1px solid rgba(120, 180, 255, 0.15)",
             padding: "1.5rem",

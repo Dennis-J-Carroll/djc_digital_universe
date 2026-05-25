@@ -66,12 +66,7 @@ const Layout = ({ children, pageContext, location }) => {
       <Helmet>
         <title>{siteTitle}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        {/* display=block: browser holds text invisible (up to 3s) until Orbitron loads.
-            Hero letters start opacity:0 already, so user sees nothing until font+animation both ready.
-            Eliminates the fallback-font flash entirely. */}
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=block" rel="stylesheet" />
+        {/* Fonts injected via async script in gatsby-ssr.js — no blocking link here */}
       </Helmet>
 
       {/* Interactive Cursor Effect */}

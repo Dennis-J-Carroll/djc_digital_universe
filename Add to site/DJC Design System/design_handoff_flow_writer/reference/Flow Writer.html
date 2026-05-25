@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Flow Writer — DJC</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  /* ============================================================
+     FLOW WRITER  ·  layout shell
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(ellipse 90% 60% at 15% 0%, rgba(20,184,154,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 100%, rgba(62,240,226,0.08) 0%, transparent 55%),
+      var(--bg-base);
+    color: var(--fg-2);
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+
+  .app {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 52px 1fr 36px;
+    grid-template-areas:
+      "topbar topbar topbar"
+      "left   center right"
+      "status status status";
+    gap: 0;
+    transition: grid-template-columns var(--dur-slow) var(--ease-out);
+  }
+  .app.focus-mode { grid-template-columns: 0 1fr 0; }
+  .app.focus-mode .pane { opacity: 0; pointer-events: none; transform: translateX(-8px); }
+  .app.focus-mode .pane.right { transform: translateX(8px); }
+
+  /* ============================================================
+     TOPBAR
+     ============================================================ */
+  .topbar {
+    grid-area: topbar;
+    display: flex; align-items: center; gap: var(--space-4);
+    padding: 0 var(--space-5);
+    background: rgba(7, 14, 26, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+    z-index: 30;
+  }
+  .brand {
+    display: flex; align-items: center; gap: var(--space-3);
+    color: var(--fg-1); text-decoration: none;
+  }
+  .brand-tile {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--grad-brand-deep);
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 10px; color: #fff; letter-spacing: 0.04em;
+  }
+  .brand-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 14px; letter-spacing: 0.06em;
+  }
+  .brand-title .accent { color: var(--accent-2); }
+  .back-link {
+    font-size: var(--fs-xs); color: var(--fg-3);
+    letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .back-link:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.06);
+  }
+  .topbar-center {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: var(--space-3);
+  }
+  .scene-pill {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding: 6px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: rgba(20,41,63,0.45);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .scene-pill:hover { border-color: var(--border-accent); color: var(--fg-2); }
+  .scene-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 8px var(--accent-2);
+  }
+  .topbar-right { display: flex; align-items: center; gap: var(--space-2); }
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-3);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    font-size: 14px;
+  }
+  .icon-btn:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.06);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .icon-btn.active {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    background: rgba(20,184,154,0.10);
+    box-shadow: var(--glow-teal-sm);
+  }
+
+  /* ============================================================
+     PANES
+     ============================================================ */
+  .pane {
+    overflow: hidden auto;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+    scrollbar-width: thin;
+    scrollbar-color: var(--navy-700) transparent;
+  }
+  .pane::-webkit-scrollbar { width: 6px; }
+  .pane::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 3px; }
+  .pane::-webkit-scrollbar-track { background: transparent; }
+
+  .pane.left  { grid-area: left;  border-right: 1px solid var(--border-subtle); padding: var(--space-5) var(--space-4); }
+  .pane.right { grid-area: right; border-left:  1px solid var(--border-subtle); padding: var(--space-5) var(--space-4); }
+
+  .section-eyebrow {
+    font-family: var(--font-display);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent-2);
+    font-weight: 600;
+    margin: 0 0 var(--space-3) 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-eyebrow .count {
+    font-family: var(--font-mono);
+    color: var(--fg-4);
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+  .section-eyebrow + .section-eyebrow { margin-top: var(--space-6); }
+
+  /* Project switcher */
+  .project-switcher {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: 8px 10px;
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .project-switcher:hover { border-color: var(--border-accent); }
+  .project-switcher .label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--fg-1);
+    font-weight: 500;
+  }
+  .project-switcher .chev { color: var(--fg-4); font-size: 10px; }
+
+  .branch-row {
+    display: flex; align-items: center; gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .branch-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(20,184,154,0.10);
+    border: 1px solid var(--border-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-2);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .branch-chip .glyph { color: var(--accent-2); }
+  .branch-add {
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-line);
+    background: transparent;
+    color: var(--fg-3);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .branch-add:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+
+  /* File tree */
+  .tree { list-style: none; padding: 0; margin: 0; }
+  .tree-folder { margin-bottom: 2px; }
+  .tree-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--fg-2);
+    transition: all var(--dur-fast) var(--ease-out);
+    border: 1px solid transparent;
+    position: relative;
+  }
+  .tree-item:hover { background: rgba(20,184,154,0.06); color: var(--fg-1); }
+  .tree-item.active {
+    background: rgba(20,184,154,0.10);
+    border-color: var(--border-accent);
+    color: var(--fg-1);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .tree-item.active::before {
+    content: ""; position: absolute; left: -10px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--accent-2); border-radius: 2px;
+    box-shadow: 0 0 6px var(--accent-2);
+  }
+  .tree-icon { width: 14px; text-align: center; font-size: 11px; color: var(--accent-2); opacity: 0.8; }
+  .tree-folder > .tree-item > .tree-icon { color: var(--fg-3); }
+  .tree-folder.open > .tree-item .caret { transform: rotate(90deg); }
+  .caret {
+    color: var(--fg-4); font-size: 9px;
+    transition: transform var(--dur-fast) var(--ease-out);
+    margin-left: -4px;
+  }
+  .tree-children {
+    list-style: none; padding: 0 0 0 16px; margin: 4px 0 0 0;
+    border-left: 1px dashed var(--border-subtle);
+    overflow: hidden;
+    max-height: 1000px;
+    transition: max-height var(--dur-slow) var(--ease-out), opacity var(--dur-slow) var(--ease-out);
+  }
+  .tree-folder:not(.open) > .tree-children { max-height: 0; opacity: 0; margin-top: 0; }
+  .tree-children .tree-item { font-size: 12.5px; }
+  .file-type-doc { color: var(--accent-2); }
+  .file-type-char { color: var(--electric-violet); }
+  .file-type-map { color: var(--warn-amber); }
+
+  /* Branch graph mini */
+  .branch-graph {
+    margin-top: var(--space-5);
+    padding: var(--space-3);
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    line-height: 1.7;
+  }
+  .branch-graph .commit { display: flex; align-items: center; gap: 8px; }
+  .branch-graph .commit .node {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2);
+  }
+  .branch-graph .commit.past .node { background: var(--fg-4); box-shadow: none; }
+  .branch-graph .stem {
+    width: 1px; height: 12px; background: var(--border-line);
+    margin-left: 4px;
+  }
+  .branch-graph .commit-msg { color: var(--fg-2); }
+  .branch-graph .commit-time { color: var(--fg-4); font-size: 10px; }
+
+  /* ============================================================
+     CENTER  ·  editor
+     ============================================================ */
+  .center {
+    grid-area: center;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .scene-banner {
+    margin: var(--space-5) auto 0 auto;
+    width: min(720px, calc(100% - var(--space-7)));
+    padding: var(--space-4) var(--space-5);
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md), var(--shadow-inset);
+    position: relative;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out), max-height var(--dur-slow) var(--ease-out), padding var(--dur-slow) var(--ease-out), margin var(--dur-slow) var(--ease-out);
+    max-height: 200px;
+    overflow: hidden;
+  }
+  .scene-banner.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; opacity: 0; border-color: transparent; }
+  .scene-banner-eyebrow {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-4);
+    margin-bottom: 6px;
+  }
+  .scene-banner-eyebrow .source { color: var(--accent-2); }
+  .scene-banner .scene-goal {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--fg-1);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  .scene-banner .scene-goal em {
+    font-style: normal;
+    background: linear-gradient(180deg, transparent 65%, rgba(20,184,154,0.25) 65%, rgba(20,184,154,0.25) 100%);
+    padding: 0 2px;
+  }
+  .scene-banner-collapse {
+    position: absolute; top: 10px; right: 12px;
+    background: transparent; border: 0; color: var(--fg-4);
+    cursor: pointer; font-size: 14px; line-height: 1;
+    padding: 4px; border-radius: 4px;
+  }
+  .scene-banner-collapse:hover { color: var(--accent-2); }
+
+  .editor-wrap {
+    flex: 1; overflow: auto;
+    padding: var(--space-6) var(--space-7);
+    scrollbar-width: thin;
+    scrollbar-color: var(--navy-700) transparent;
+    position: relative;
+  }
+  .editor-wrap::-webkit-scrollbar { width: 8px; }
+  .editor-wrap::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 4px; }
+
+  .editor {
+    width: 100%;
+    max-width: var(--editor-width, 720px);
+    margin: 0 auto;
+    min-height: 100%;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--fg-1);
+    font-family: var(--font-serif, 'Iowan Old Style', 'Charter', Georgia, serif);
+    font-size: var(--editor-fs, 18px);
+    line-height: var(--editor-lh, 1.7);
+    resize: none;
+    padding: var(--space-4) 0 50vh 0;
+    caret-color: var(--accent-2);
+    letter-spacing: 0.005em;
+  }
+  .editor::placeholder { color: var(--fg-4); font-style: italic; }
+  .editor::selection { background: rgba(20,184,154,0.30); color: var(--fg-1); }
+
+  /* Family modifiers — driven by data-family on .center */
+  .center[data-family="serif"]   { --font-serif: 'Iowan Old Style', Charter, Georgia, serif; }
+  .center[data-family="georgia"] { --font-serif: Georgia, serif; }
+  .center[data-family="times"]   { --font-serif: 'Times New Roman', Times, serif; }
+  .center[data-family="garamond"]{ --font-serif: Garamond, 'EB Garamond', serif; }
+  .center[data-family="sans"]    { --font-serif: 'Space Grotesk', system-ui, sans-serif; }
+  .center[data-family="mono"]    { --font-serif: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Typewriter mode: pad top so caret line stays centered */
+  .center.typewriter .editor-wrap { padding-top: 35vh; padding-bottom: 50vh; }
+
+  /* Flow nudge */
+  .nudge {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-6);
+    transform: translateX(-50%) translateY(8px);
+    background: rgba(7,14,26,0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-accent);
+    box-shadow: var(--glow-teal-md);
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--fg-2);
+    display: flex; align-items: center; gap: 10px;
+    max-width: 520px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+    z-index: 20;
+  }
+  .nudge.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .nudge .icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(20,184,154,0.18);
+    display: grid; place-items: center;
+    font-size: 12px;
+    color: var(--accent-2);
+    flex-shrink: 0;
+  }
+  .nudge .msg { line-height: 1.4; }
+  .nudge .msg em { color: var(--accent-2); font-style: normal; }
+  .nudge button {
+    background: transparent; border: 0; color: var(--fg-4);
+    cursor: pointer; font-size: 14px;
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .nudge button:hover { color: var(--accent-2); }
+
+  /* ============================================================
+     RIGHT PANE  ·  tags + format
+     ============================================================ */
+  .tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: var(--space-3);
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--border-subtle);
+    background: rgba(20,41,63,0.45);
+    color: var(--fg-2);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .tag.auto { color: var(--accent-2); border-color: rgba(20,184,154,0.30); background: rgba(20,184,154,0.08); }
+  .tag.manual { color: var(--electric-cyan); border-color: rgba(62,240,226,0.25); }
+  .tag.suggest {
+    color: var(--fg-3);
+    border-style: dashed;
+  }
+  .tag.suggest:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+  .tag:hover { box-shadow: var(--glow-teal-sm); }
+  .tag .close { color: var(--fg-4); margin-left: 2px; }
+  .tag .close:hover { color: var(--danger-red); }
+
+  .tag-add {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px dashed var(--border-line);
+    background: transparent;
+    color: var(--fg-4);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .tag-add:hover { color: var(--accent-2); border-color: var(--border-accent); border-style: solid; }
+  .tag-add input {
+    background: transparent; border: 0; outline: 0;
+    color: var(--fg-1); font-family: var(--font-mono); font-size: 11px;
+    width: 80px;
+  }
+
+  /* Format groups */
+  .fmt-group { margin-bottom: var(--space-5); }
+  .fmt-label {
+    font-size: 11px;
+    color: var(--fg-3);
+    margin-bottom: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .fmt-label .val {
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+    font-size: 11px;
+  }
+  .seg {
+    display: flex;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    gap: 2px;
+  }
+  .seg button {
+    flex: 1;
+    padding: 6px 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: var(--fg-3);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .seg button:hover { color: var(--fg-1); }
+  .seg button.on {
+    background: var(--grad-brand-deep);
+    color: #fff;
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+  }
+
+  /* Slider */
+  input[type=range] {
+    width: 100%; height: 4px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--navy-700);
+    border-radius: 2px;
+    outline: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    border: 2px solid var(--bg-base);
+    cursor: pointer;
+    box-shadow: var(--glow-teal-sm);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent-2); border: 2px solid var(--bg-base);
+    cursor: pointer; box-shadow: var(--glow-teal-sm);
+  }
+
+  /* Mode toggle (Flow / Focus / Typewriter) */
+  .mode-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-bottom: var(--space-3);
+  }
+  .mode-btn {
+    padding: 9px 8px;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-3);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .mode-btn:hover { color: var(--fg-1); border-color: var(--border-line); }
+  .mode-btn.on {
+    background: rgba(20,184,154,0.10);
+    border-color: var(--border-accent);
+    color: var(--accent-2);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .mode-btn .kbd {
+    font-size: 9px;
+    color: var(--fg-4);
+    background: rgba(7,14,26,0.6);
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+
+  /* Export */
+  .export-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  }
+  .export-btn {
+    padding: 10px 6px;
+    background: var(--grad-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-2);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .export-btn:hover {
+    color: var(--accent-2);
+    border-color: var(--border-accent);
+    box-shadow: var(--glow-teal-sm);
+    transform: translateY(-2px);
+  }
+  .export-btn .ext { font-weight: 700; font-size: 12px; }
+  .export-btn .lbl { color: var(--fg-4); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  /* ============================================================
+     STATUS BAR
+     ============================================================ */
+  .status {
+    grid-area: status;
+    display: flex; align-items: center;
+    background: rgba(7,14,26,0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0 var(--space-5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-3);
+    letter-spacing: 0.04em;
+    gap: var(--space-4);
+    z-index: 30;
+  }
+  .status .item { display: flex; align-items: center; gap: 6px; }
+  .status .item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--fg-4);
+  }
+  .status .item.flow .dot { background: var(--pulse-green); box-shadow: 0 0 6px var(--pulse-green); animation: pulse 2s infinite; }
+  .status .item.idle .dot { background: var(--warn-amber); }
+  .status .item.saving .dot { background: var(--accent-2); animation: pulse 1s infinite; }
+  .status .item.saved .dot { background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); }
+  .status .item.branch { color: var(--accent-2); }
+  .status .grow { flex: 1; }
+  .status .kbd-hint {
+    color: var(--fg-4);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .status .kbd-hint kbd {
+    background: rgba(7,14,26,0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    color: var(--fg-3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  /* ============================================================
+     MODAL  ·  command palette + branch creator + shortcuts
+     ============================================================ */
+  .modal-scrim {
+    position: fixed; inset: 0;
+    background: rgba(7,14,26,0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: grid; place-items: start center;
+    padding-top: 12vh;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out);
+  }
+  .modal-scrim.show { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    width: min(560px, 92vw);
+    background: var(--grad-card);
+    border: 1px solid var(--border-line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), var(--glow-teal-md);
+    overflow: hidden;
+    transform: translateY(-8px) scale(0.98);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .modal-scrim.show .modal { transform: translateY(0) scale(1); }
+  .modal-head {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .modal-head h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--fg-1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .modal-body { padding: var(--space-5); }
+  .modal-body p { margin: 0 0 var(--space-4) 0; color: var(--fg-3); font-size: 13px; line-height: 1.6; }
+  .modal-body input[type=text] {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(7,14,26,0.5);
+    border: 1px solid var(--border-line);
+    border-radius: var(--radius-sm);
+    color: var(--fg-1);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: 0;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .modal-body input[type=text]:focus {
+    border-color: var(--border-accent);
+    box-shadow: var(--glow-teal-sm);
+  }
+  .modal-foot {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--border-subtle);
+    display: flex; justify-content: flex-end; gap: var(--space-2);
+    background: rgba(7,14,26,0.4);
+  }
+  .btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-line);
+    background: transparent;
+    color: var(--fg-2);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover { color: var(--fg-1); border-color: var(--border-accent); }
+  .btn.primary {
+    background: var(--grad-brand-deep);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: var(--glow-teal-sm), var(--shadow-inset);
+  }
+  .btn.primary:hover { box-shadow: var(--glow-teal-md); }
+
+  /* Command palette list */
+  .cmd-results { max-height: 320px; overflow-y: auto; }
+  .cmd-results::-webkit-scrollbar { width: 6px; }
+  .cmd-results::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 3px; }
+  .cmd-item {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 10px 18px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .cmd-item:hover, .cmd-item.sel {
+    background: rgba(20,184,154,0.08);
+    border-left-color: var(--accent-2);
+  }
+  .cmd-item .ic {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    background: rgba(20,184,154,0.08);
+    color: var(--accent-2);
+    font-size: 12px;
+  }
+  .cmd-item .label { flex: 1; font-size: 13px; color: var(--fg-1); }
+  .cmd-item .kbd {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--fg-4);
+    background: rgba(7,14,26,0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Shortcut sheet */
+  .sc-grid {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 10px 24px;
+    font-size: 13px;
+  }
+  .sc-grid .lbl { color: var(--fg-2); }
+  .sc-grid .keys {
+    display: flex; gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .sc-grid kbd {
+    background: rgba(7,14,26,0.6);
+    border: 1px solid var(--border-subtle);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--accent-2);
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* Mobile graceful */
+  @media (max-width: 920px) {
+    .app { grid-template-columns: 0 1fr 0; }
+    .app .pane { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ====================== TOPBAR ====================== -->
+  <header class="topbar">
+    <a class="back-link" href="../">← Projects</a>
+    <a class="brand" href="../">
+      <div class="brand-tile">DJC</div>
+      <div class="brand-title">FLOW <span class="accent">WRITER</span></div>
+    </a>
+
+    <div class="topbar-center">
+      <div class="scene-pill" id="sceneSummaryPill">
+        <span class="dot"></span>
+        <span id="sceneSummaryLabel">Chapter 1 — Discovery · The Lost Library</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn" id="btnCmd"      title="Command palette (⌘K)">⌘K</button>
+      <button class="icon-btn" id="btnFocus"    title="Focus mode (⌘⇧F)">🎯</button>
+      <button class="icon-btn" id="btnTw"       title="Typewriter mode (⌘⇧T)">⌨︎</button>
+      <button class="icon-btn" id="btnShortcuts" title="Keyboard shortcuts (?)">?</button>
+    </div>
+  </header>
+
+  <!-- ====================== LEFT PANE ====================== -->
+  <aside class="pane left">
+    <div class="project-switcher" id="projSwitcher">
+      <span style="color:var(--accent-2);">📦</span>
+      <span class="label">The Lost Library</span>
+      <span class="chev">▾</span>
+    </div>
+
+    <div class="branch-row">
+      <div class="branch-chip"><span class="glyph">⎇</span><span id="branchName">main</span></div>
+      <button class="branch-add" id="btnBranchNew">+ branch</button>
+    </div>
+
+    <h6 class="section-eyebrow">Story Universe <span class="count">2 folders</span></h6>
+
+    <ul class="tree" id="tree">
+      <li class="tree-folder open">
+        <div class="tree-item">
+          <span class="caret">▶</span>
+          <span class="tree-icon">📂</span>
+          <span>The Lost Library</span>
+        </div>
+        <ul class="tree-children">
+          <li><div class="tree-item active" data-doc="ch1">
+            <span class="tree-icon file-type-doc">⌐</span>
+            <span>Chapter 1 — Discovery</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="ch2">
+            <span class="tree-icon file-type-doc">⌐</span>
+            <span>Chapter 2 — Revelations</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="notes">
+            <span class="tree-icon file-type-doc">≡</span>
+            <span>Character Notes</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="sarah">
+            <span class="tree-icon file-type-char">◉</span>
+            <span>Sarah — Protagonist</span>
+          </div></li>
+        </ul>
+      </li>
+      <li class="tree-folder">
+        <div class="tree-item">
+          <span class="caret">▶</span>
+          <span class="tree-icon">📂</span>
+          <span>World Building</span>
+        </div>
+        <ul class="tree-children">
+          <li><div class="tree-item" data-doc="layout">
+            <span class="tree-icon file-type-map">▦</span>
+            <span>Library Layout</span>
+          </div></li>
+          <li><div class="tree-item" data-doc="map">
+            <span class="tree-icon file-type-map">▲</span>
+            <span>Town Map</span>
+          </div></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h6 class="section-eyebrow" style="margin-top:var(--space-6);">Branch History <span class="count">main</span></h6>
+    <div class="branch-graph">
+      <div class="commit"><span class="node"></span><span class="commit-msg">draft scene</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">add journal motif</span><span class="commit-time">· 2h</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">outline Ch.1</span><span class="commit-time">· yest</span></div>
+      <div class="stem"></div>
+      <div class="commit past"><span class="node"></span><span class="commit-msg">init project</span><span class="commit-time">· 4d</span></div>
+    </div>
+  </aside>
+
+  <!-- ====================== CENTER ====================== -->
+  <section class="center" data-family="serif" id="center">
+
+    <div class="scene-banner" id="sceneBanner">
+      <div class="scene-banner-eyebrow">
+        <span>◇ Scene Goal · Pinned</span>
+        <span>From <span class="source">Chapter 1 Outline.md</span></span>
+      </div>
+      <div class="scene-goal">
+        Protagonist discovers a hidden journal in the library's secret compartment,
+        realizing it contains <em>details about their own past</em>.
+      </div>
+      <button class="scene-banner-collapse" id="sceneCollapse" title="Hide">×</button>
+    </div>
+
+    <div class="editor-wrap" id="editorWrap">
+      <textarea class="editor" id="editor" spellcheck="true"
+        placeholder="Begin where the air shifts. Where the next sentence wants to go…"></textarea>
+    </div>
+
+    <div class="nudge" id="nudge">
+      <div class="icon">✦</div>
+      <div class="msg" id="nudgeMsg">Consider how her <em>hands tremble</em> as the spine cracks open.</div>
+      <button id="nudgeDismiss" title="Dismiss">×</button>
+    </div>
+  </section>
+
+  <!-- ====================== RIGHT PANE ====================== -->
+  <aside class="pane right">
+
+    <h6 class="section-eyebrow">Mode</h6>
+    <div class="mode-row">
+      <button class="mode-btn" id="mFocus">🎯 Focus</button>
+      <button class="mode-btn" id="mTw">⌨︎ Typewriter</button>
+    </div>
+
+    <h6 class="section-eyebrow">Auto-Detected <span class="count" id="autoCount">3</span></h6>
+    <div class="tag-row" id="autoTags">
+      <span class="tag auto">protagonist</span>
+      <span class="tag auto">mystery</span>
+      <span class="tag auto">discovery</span>
+    </div>
+
+    <h6 class="section-eyebrow">Manual Tags <span class="count" id="manualCount">5</span></h6>
+    <div class="tag-row" id="manualTags">
+      <span class="tag manual">library<span class="close">×</span></span>
+      <span class="tag manual">backstory<span class="close">×</span></span>
+      <span class="tag manual">journal<span class="close">×</span></span>
+      <span class="tag manual">setting<span class="close">×</span></span>
+      <span class="tag manual">dialogue<span class="close">×</span></span>
+      <span class="tag-add" id="tagAdd">+ <input type="text" placeholder="add tag" id="tagInput" /></span>
+    </div>
+
+    <h6 class="section-eyebrow">Suggested <span class="count">2</span></h6>
+    <div class="tag-row" id="suggestTags">
+      <span class="tag suggest">+ flashback</span>
+      <span class="tag suggest">+ emotional_tension</span>
+    </div>
+
+    <h6 class="section-eyebrow">Typography</h6>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Family <span class="val" id="famVal">Serif</span></div>
+      <div class="seg" id="famSeg">
+        <button data-v="serif" class="on">Serif</button>
+        <button data-v="garamond">Garamond</button>
+        <button data-v="sans">Sans</button>
+        <button data-v="mono">Mono</button>
+      </div>
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Size <span class="val" id="sizeVal">18px</span></div>
+      <input type="range" id="sizeRange" min="14" max="28" value="18" step="1" />
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Line Height <span class="val" id="lhVal">Normal</span></div>
+      <div class="seg" id="lhSeg">
+        <button data-v="1.45">Compact</button>
+        <button data-v="1.7"  class="on">Normal</button>
+        <button data-v="2.0">Spacious</button>
+      </div>
+    </div>
+
+    <div class="fmt-group">
+      <div class="fmt-label">Width <span class="val" id="widthVal">Medium</span></div>
+      <div class="seg" id="widthSeg">
+        <button data-v="560">Narrow</button>
+        <button data-v="720" class="on">Medium</button>
+        <button data-v="880">Wide</button>
+        <button data-v="100%">Full</button>
+      </div>
+    </div>
+
+    <h6 class="section-eyebrow">Flow Nudges <span class="count" id="flowVal">35s</span></h6>
+    <div class="fmt-group">
+      <input type="range" id="flowRange" min="0" max="120" value="35" step="5" />
+      <div class="fmt-label" style="margin-top:6px;">
+        <span style="color:var(--fg-4);">0 = off · drift on silence</span>
+      </div>
+    </div>
+
+    <h6 class="section-eyebrow">Export</h6>
+    <div class="export-row">
+      <button class="export-btn" data-fmt="txt"><span class="ext">TXT</span><span class="lbl">Plain</span></button>
+      <button class="export-btn" data-fmt="md"><span class="ext">MD</span><span class="lbl">Markdown</span></button>
+      <button class="export-btn" data-fmt="html"><span class="ext">HTML</span><span class="lbl">Print</span></button>
+    </div>
+  </aside>
+
+  <!-- ====================== STATUS ====================== -->
+  <footer class="status">
+    <div class="item flow" id="flowState"><span class="dot"></span><span id="flowLabel">In flow</span></div>
+    <div class="item"><span style="opacity:0.6;">📝</span><span id="wcLabel">0 words · 0 min read</span></div>
+    <div class="item branch"><span style="opacity:0.7;">⎇</span><span id="branchLabel">main</span></div>
+    <div class="item" id="saveItem"><span class="dot"></span><span id="saveLabel">Saved · just now</span></div>
+    <div class="grow"></div>
+    <div class="kbd-hint"><kbd>⌘</kbd><kbd>K</kbd> commands</div>
+    <div class="kbd-hint"><kbd>?</kbd> shortcuts</div>
+  </footer>
+</div>
+
+<!-- ====================== MODALS ====================== -->
+<div class="modal-scrim" id="cmdScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">⌘</span>
+      <h3>Command Palette</h3>
+      <input id="cmdInput" type="text" placeholder="Search actions, scenes, tags…" style="flex:1; margin-left:8px; background:transparent; border:0; outline:0; color:var(--fg-1); font-family:var(--font-mono); font-size:13px;" />
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<div class="modal-scrim" id="branchScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">⎇</span>
+      <h3>Create Branch</h3>
+    </div>
+    <div class="modal-body">
+      <p>Explore a "what-if" without touching your main draft. Your current edits stay here; the branch starts as a snapshot you can diverge into.</p>
+      <input type="text" id="branchInput" placeholder="branch name (e.g. what-if-she-runs)" />
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="branchCreate">Create branch</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-scrim" id="scScrim">
+  <div class="modal">
+    <div class="modal-head"><span style="color:var(--accent-2);">⌨︎</span><h3>Keyboard Shortcuts</h3></div>
+    <div class="modal-body">
+      <div class="sc-grid">
+        <div class="lbl">Command palette</div><div class="keys"><kbd>⌘</kbd><kbd>K</kbd></div>
+        <div class="lbl">Focus mode</div>      <div class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd></div>
+        <div class="lbl">Typewriter mode</div> <div class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>T</kbd></div>
+        <div class="lbl">New branch</div>      <div class="keys"><kbd>⌘</kbd><kbd>B</kbd></div>
+        <div class="lbl">Toggle sidebars</div> <div class="keys"><kbd>⌘</kbd><kbd>\</kbd></div>
+        <div class="lbl">Save snapshot</div>   <div class="keys"><kbd>⌘</kbd><kbd>S</kbd></div>
+        <div class="lbl">Hide scene goal</div> <div class="keys"><kbd>⌘</kbd><kbd>/</kbd></div>
+        <div class="lbl">Dismiss / Exit</div>  <div class="keys"><kbd>Esc</kbd></div>
+        <div class="lbl">Show this sheet</div> <div class="keys"><kbd>?</kbd></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-close>Got it</button></div>
+  </div>
+</div>
+
+<script src="Flow Writer.js"></script>
+</body>
+</html>

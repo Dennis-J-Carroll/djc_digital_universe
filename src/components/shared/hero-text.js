@@ -1,15 +1,29 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./shared.css";
 
 const fullName = "Dennis J. Carroll";
 
 const HeroText = ({ title, description }) => {
+  const [fontReady, setFontReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') { setFontReady(true); return; }
+    if (!document.fonts?.load) { setFontReady(true); return; }
+    // Load the exact weight used by .hero-letter (800) — waits for Orbitron to be ready
+    document.fonts.load('800 1em Orbitron').then(() => {
+      setFontReady(true);
+    }).catch(() => {
+      // Font failed or timed out — show anyway so name isn't invisible forever
+      setFontReady(true);
+    });
+  }, []);
+
   return (
     <div className="hero-text-container">
       <div className="hero-name-container">
         <div className="hero-name-wrapper">
-          <h1 className="hero-name-text" aria-label="Dennis J. Carroll">
+          <h1 className="hero-name-text" aria-label="Dennis J. Carroll" data-ready={fontReady ? "true" : "false"}>
             {fullName.split("").map((char, index) => (
               <span
                 key={index}
@@ -17,7 +31,7 @@ const HeroText = ({ title, description }) => {
                 className={`hero-letter ${
                   char === " " ? "space" : char === "J" || char === "." ? "accent" : "primary"
                 }`}
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={fontReady ? { animationDelay: `${index * 0.05}s` } : { animation: 'none', opacity: 0 }}
               >
                 {char}
               </span>
