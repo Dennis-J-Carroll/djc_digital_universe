@@ -948,10 +948,24 @@ body.tokyo-afternoon .blog-post-card p {
   margin-top: 1rem;
 }
 
-/* Light theme adjustments */
+/* ── Contact section: section-level background per theme ── */
+body.light-theme .contact-section {
+  background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
+}
+
+body.tokyo-afternoon-theme .contact-section {
+  background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
+}
+
+body.retro-80s-theme .contact-section {
+  background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
+}
+
+/* ── Light theme: contact card + inputs ── */
 body.light-theme .contact-form-card {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 111, 174, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 111, 174, 0.08);
 }
 
 body.light-theme .form-input,
@@ -967,22 +981,57 @@ body.light-theme .form-textarea:focus {
   box-shadow: 0 0 0 2px rgba(0, 111, 174, 0.2);
 }
 
-/* Tokyo afternoon theme adjustments */
-body.tokyo-afternoon .contact-form-card {
-  background: rgba(255, 255, 255, 0.98);
-  border-color: rgba(123, 31, 162, 0.2);
-  box-shadow: 0 4px 20px rgba(123, 31, 162, 0.1);
+body.light-theme .form-input::placeholder,
+body.light-theme .form-textarea::placeholder {
+  color: #888888;
 }
 
-body.tokyo-afternoon .form-input,
-body.tokyo-afternoon .form-textarea {
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #4a148c;
-  border-color: rgba(123, 31, 162, 0.2);
+body.light-theme .footer-newsletter-input {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0, 111, 174, 0.25) !important;
 }
 
-body.tokyo-afternoon .form-label {
-  color: #5e35b1;
+/* ── Tokyo afternoon theme: contact card + inputs ── */
+body.tokyo-afternoon-theme .contact-form-card {
+  background: rgba(232, 223, 210, 0.97);
+  border-color: rgba(184, 155, 124, 0.3);
+  box-shadow: 0 4px 20px rgba(184, 155, 124, 0.15);
+}
+
+body.tokyo-afternoon-theme .form-input,
+body.tokyo-afternoon-theme .form-textarea {
+  background-color: rgba(255, 252, 247, 0.95);
+  color: var(--text-primary);
+  border-color: rgba(184, 155, 124, 0.3);
+}
+
+body.tokyo-afternoon-theme .form-input:focus,
+body.tokyo-afternoon-theme .form-textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(184, 155, 124, 0.25);
+}
+
+body.tokyo-afternoon-theme .form-input::placeholder,
+body.tokyo-afternoon-theme .form-textarea::placeholder {
+  color: #9d8c7e;
+}
+
+body.tokyo-afternoon-theme .form-label {
+  color: var(--text-secondary);
+}
+
+body.tokyo-afternoon-theme .footer-newsletter-input {
+  background: rgba(255, 252, 247, 0.9) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(184, 155, 124, 0.35) !important;
+}
+
+/* ── Retro 80s theme: contact card + inputs ── */
+body.retro-80s-theme .contact-form-card {
+  background: rgba(30, 30, 30, 0.95);
+  border-color: rgba(255, 55, 95, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 55, 95, 0.1);
 }
 
 /* Responsive adjustments */

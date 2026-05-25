@@ -5,6 +5,7 @@ import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 import StatsCounter from "../components/shared/stats-counter"
 import SkillsGrid from "../components/shared/skills-grid"
+import ExperienceTimeline from "../components/shared/experience-timeline"
 import "../styles/about.css"
 
 // Minimalist SVG Icons (gray fill with black outline style)
@@ -192,6 +193,19 @@ const AboutPage = ({ location }) => {
         >
           <motion.div variants={itemVariants}>
             <SkillsGrid />
+          </motion.div>
+        </motion.section>
+
+        {/* Experience Section */}
+        <motion.section
+          className="about-section"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.div variants={itemVariants}>
+            <ExperienceTimeline />
           </motion.div>
         </motion.section>
 

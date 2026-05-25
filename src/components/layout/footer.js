@@ -501,6 +501,7 @@ const Footer = ({ siteTitle }) => {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 aria-describedby="newsletter-description"
+                className="footer-newsletter-input"
                 style={{
                   padding: "0.75rem 1rem",
                   borderRadius: "8px",
@@ -508,7 +509,8 @@ const Footer = ({ siteTitle }) => {
                   background: "rgba(15, 20, 30, 0.6)",
                   color: "var(--text-primary)",
                   width: "100%",
-                  fontSize: "0.9rem"
+                  fontSize: "0.9rem",
+                  outline: "none"
                 }}
               />
               <span id="newsletter-description" className="sr-only">
