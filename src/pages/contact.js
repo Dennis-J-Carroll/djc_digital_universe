@@ -21,31 +21,28 @@ export default function ContactPage({ location }) {
     setFormState({ ...formState, [e.target.name]: e.target.value })
   }
 
+  const encode = (data) =>
+    Object.keys(data)
+      .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(data[k]))
+      .join("&")
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      const endpoint = process.env.GATSBY_API_URL || '/api/contact'
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formState, subject: 'Contact Page', honeypot: '' }),
+      const response = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encode({ "form-name": "contact", ...formState }),
       })
-      let data
-      try {
-        data = await response.json()
-      } catch {
-        data = { message: 'Unexpected server error. Please try again later.' }
-      }
-      if (!response.ok) {
-        const errorMsg = data.message || (data.errors && data.errors.map(e => e.message).join('. ')) || 'Error submitting form.'
-        setFormStatus({ submitted: true, success: false, message: errorMsg })
-      } else {
+      if (response.ok) {
         setFormStatus({ submitted: true, success: true, message: "Thanks! I'll get back to you soon." })
         setFormState({ name: "", email: "", message: "" })
+      } else {
+        setFormStatus({ submitted: true, success: false, message: "Something went wrong. Try again or email denniscarrollj@gmail.com directly." })
       }
     } catch {
-      setFormStatus({ submitted: true, success: false, message: 'Connection error. Please try again.' })
+      setFormStatus({ submitted: true, success: false, message: "Connection error. Please try again." })
     }
     setIsSubmitting(false)
   }

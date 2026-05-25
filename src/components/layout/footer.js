@@ -101,14 +101,13 @@ const Footer = ({ siteTitle }) => {
   return (
     <footer
       ref={footerRef}
+      className="site-footer"
       style={{
-        background: "linear-gradient(0deg, rgba(10, 14, 20, 0.9) 0%, rgba(10, 14, 20, 0.7) 50%, rgba(10, 14, 20, 0) 100%)",
         backdropFilter: "blur(10px)",
         padding: "5rem 2rem 2rem",
         position: "relative",
         zIndex: 10,
         marginTop: "4rem",
-        borderTop: "1px solid rgba(120, 180, 255, 0.1)"
       }}
     >
       {/* Circuit decoration */}

@@ -23,8 +23,8 @@ body.light-theme {
   --accent-color: #798996;
   --bg-primary: #f0f0f5;
   --bg-secondary: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #333333;
+  --text-primary: #0d0d0d;
+  --text-secondary: #1a1a1a;
   --border-color: rgba(0, 111, 174, 0.2);
   --card-bg: rgba(255, 255, 255, 0.96);
   --card-border: rgba(0, 111, 174, 0.4);
@@ -32,20 +32,61 @@ body.light-theme {
   --accent-glow: 0 0 10px var(--accent-color), 0 0 20px rgba(121, 137, 150, 0.3);
 }
 
-/* Light theme - ensure gray text is readable */
+/* Light theme — sharpen all gray Tailwind classes */
+body.light-theme .text-gray-200,
 body.light-theme .text-gray-300,
 body.light-theme .text-gray-400,
-body.light-theme .text-gray-500 {
-  color: #444444 !important;
+body.light-theme .text-gray-500,
+body.light-theme .text-gray-600 {
+  color: #1a1a1a !important;
 }
 
-body.light-theme .text-gray-200 {
-  color: #333333 !important;
+/* Light theme — bump font weight so text reads crisper on light bg */
+body.light-theme p,
+body.light-theme li,
+body.light-theme span:not(.hero-letter):not(.section-badge),
+body.light-theme div > p {
+  font-weight: 450;
 }
 
-body.light-theme footer[data-component-name="Footer"] {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
+/* Tokyo theme — same weight boost */
+body.tokyo-afternoon-theme p,
+body.tokyo-afternoon-theme li,
+body.tokyo-afternoon-theme span:not(.hero-letter):not(.section-badge) {
+  font-weight: 450;
+}
+
+/* Tokyo — fix Tailwind gray classes too */
+body.tokyo-afternoon-theme .text-gray-200,
+body.tokyo-afternoon-theme .text-gray-300,
+body.tokyo-afternoon-theme .text-gray-400,
+body.tokyo-afternoon-theme .text-gray-500,
+body.tokyo-afternoon-theme .text-gray-600 {
+  color: #3a2e24 !important;
+}
+
+/* ── Footer base (dark/default) ── */
+footer.site-footer {
+  background: linear-gradient(0deg, rgba(10,14,20,0.92) 0%, rgba(10,14,20,0.7) 60%, rgba(10,14,20,0) 100%);
+  border-top: 1px solid rgba(120,180,255,0.1);
+}
+
+/* ── Footer light theme ── */
+body.light-theme footer.site-footer {
+  background: linear-gradient(0deg, #f0f0f5 0%, #f8f8fc 60%, rgba(240,240,245,0) 100%);
+  border-top: 1px solid rgba(0,111,174,0.15);
+}
+
+/* ── Footer tokyo theme ── */
+body.tokyo-afternoon-theme footer.site-footer {
+  background: linear-gradient(0deg, #e8dfd2 0%, #ede6dc 60%, rgba(232,223,210,0) 100%);
+  border-top: 1px solid rgba(184,155,124,0.2);
+}
+
+/* ── Footer retro theme ── */
+body.retro-80s-theme footer.site-footer {
+  background: linear-gradient(0deg, rgba(26,26,26,0.95) 0%, rgba(26,26,26,0.7) 60%, rgba(26,26,26,0) 100%);
+  border-top: 1px solid rgba(255,55,95,0.2);
 }
 
 /* Dark Theme is default */
@@ -71,10 +112,10 @@ body.tokyo-afternoon-theme {
   /* Warm off-white/paper */
   --bg-secondary: #e8dfd2;
   /* Light beige for cards */
-  --text-primary: #4a3f35;
-  /* Deep warm brown */
-  --text-secondary: #7d6d5d;
-  /* Lighter brown */
+  --text-primary: #1e150d;
+  /* Very dark brown — sharp on warm bg */
+  --text-secondary: #3a2e24;
+  /* Dark brown — was #7d6d5d, much more readable */
   --primary-color: #b89b7c;
   /* Warm muted wood tone */
   --secondary-color: #8a9b6e;
