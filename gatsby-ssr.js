@@ -30,7 +30,10 @@ exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyCompo
     React.createElement("script", {
       key: "async-font-loader",
       dangerouslySetInnerHTML: {
-        __html: `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap';document.head.appendChild(l);})();`,
+        // Fire AFTER window load so the font request never blocks Safari's progress bar.
+        // hero-text.js waits on document.fonts.load('800 1em Orbitron') before animating,
+        // so the hero name still renders in Orbitron — just after load, not during.
+        __html: `(function(){function f(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap';document.head.appendChild(l);}if(document.readyState==='complete'){f();}else{window.addEventListener('load',f,{once:true});}})();`,
       },
     }),
   ])
