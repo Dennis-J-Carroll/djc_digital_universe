@@ -29,10 +29,40 @@
   to = "/apps/:splat"
   status = 301
 
-# Basic headers without compression
+# ─── Security + default cache (HTML pages always revalidate) ───────────────────
 [[headers]]
   for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
+
+# ─── Hashed Gatsby JS bundles — immutable, never revalidate ────────────────────
+# Gatsby content-hashes every JS filename; a changed file = a changed URL.
+# Caching these avoids 10+ conditional GET round-trips that stall the load event.
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js.map"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ─── Hashed CSS bundles ─────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ─── Icons / images (versioned via ?v= query param by manifest plugin) ──────────
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
