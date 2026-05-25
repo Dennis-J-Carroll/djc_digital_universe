@@ -5,6 +5,38 @@
  */
 
 const React = require("react")
+const fs = require("fs")
+const path = require("path")
+
+// Read chunk map at build time to generate preload hints for core bundles.
+// These 3 files block the load event — preloading them lets the browser
+// start downloading before it parses to the <script> tags at end of <body>.
+function getCorePreloads() {
+  try {
+    const chunkMapPath = path.join(process.cwd(), "public", "chunk-map.json")
+    const chunkMap = JSON.parse(fs.readFileSync(chunkMapPath, "utf8"))
+    const appChunk = chunkMap["app"]?.[0]
+
+    // webpack-runtime and framework have predictable glob patterns
+    const publicDir = path.join(process.cwd(), "public")
+    const files = fs.readdirSync(publicDir)
+    const runtime = files.find(f => f.startsWith("webpack-runtime-") && f.endsWith(".js"))
+    const framework = files.find(f => f.startsWith("framework-") && f.endsWith(".js"))
+
+    return [runtime && `/${runtime}`, framework && `/${framework}`, appChunk]
+      .filter(Boolean)
+      .map((href, i) =>
+        React.createElement("link", {
+          key: `preload-core-${i}`,
+          rel: "preload",
+          as: "script",
+          href,
+        })
+      )
+  } catch {
+    return []
+  }
+}
 
 /**
  * @type {import('gatsby').GatsbySSR['onRenderBody']}
@@ -16,6 +48,7 @@ exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyCompo
   // display=swap: text renders immediately in fallback; Orbitron swaps in when ready.
   // hero-text.js gates its animation on document.fonts.load() so no FOUT on the name.
   setHeadComponents([
+    ...getCorePreloads(),
     React.createElement("link", {
       key: "font-preconnect-1",
       rel: "preconnect",
