@@ -77,7 +77,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: 'Email sent' };
   } catch (err) {
     console.error('nodemailer error:', err.message);
-    return { statusCode: 500, body: 'Email failed' };
+    return { statusCode: 500, body: `Email failed: ${err.message}` };
   }
 };
 
