@@ -52,21 +52,24 @@
   box-shadow: 0 0 25px var(--secondary-color, #7c4dff);
 }
 
-body.tokyo-afternoon .cursor-ring {
+body.tokyo-afternoon .cursor-ring,
+body.tokyo-afternoon-theme .cursor-ring {
   border-color: var(--primary-color, #e85d75);
   box-shadow:
     0 0 10px rgba(232, 93, 117, 0.3),
     inset 0 0 10px rgba(232, 93, 117, 0.1);
 }
 
-body.tokyo-afternoon .cursor-ring.hovering {
+body.tokyo-afternoon .cursor-ring.hovering,
+body.tokyo-afternoon-theme .cursor-ring.hovering {
   border-color: var(--secondary-color, #ff9a56);
   box-shadow:
     0 0 20px rgba(255, 154, 86, 0.4),
     inset 0 0 15px rgba(255, 154, 86, 0.2);
 }
 
-body.tokyo-afternoon .cursor-dot {
+body.tokyo-afternoon .cursor-dot,
+body.tokyo-afternoon-theme .cursor-dot {
   background: linear-gradient(135deg, var(--primary-color, #e85d75), var(--secondary-color, #ff9a56));
   box-shadow: 0 0 15px var(--primary-color, #e85d75);
 }

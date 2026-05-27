@@ -231,7 +231,8 @@ body.light-theme .feature-card-title {
 }
 
 /* Tokyo Afternoon theme adjustments */
-body.tokyo-afternoon .feature-card {
+body.tokyo-afternoon .feature-card,
+body.tokyo-afternoon-theme .feature-card {
   background: linear-gradient(135deg, 
     rgba(255, 255, 255, 0.98) 0%, 
     rgba(254, 246, 228, 0.95) 100%
@@ -239,14 +240,16 @@ body.tokyo-afternoon .feature-card {
   border-color: rgba(123, 31, 162, 0.15);
 }
 
-body.tokyo-afternoon .feature-card:hover {
+body.tokyo-afternoon .feature-card:hover,
+body.tokyo-afternoon-theme .feature-card:hover {
   border-color: rgba(123, 31, 162, 0.4);
   box-shadow: 
     0 20px 50px rgba(0, 0, 0, 0.1),
     0 0 30px rgba(123, 31, 162, 0.15);
 }
 
-body.tokyo-afternoon .feature-card-icon {
+body.tokyo-afternoon .feature-card-icon,
+body.tokyo-afternoon-theme .feature-card-icon {
   background: linear-gradient(135deg, 
     rgba(123, 31, 162, 0.08) 0%, 
     rgba(0, 172, 193, 0.05) 100%

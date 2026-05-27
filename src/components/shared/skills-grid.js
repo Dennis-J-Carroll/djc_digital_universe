@@ -158,17 +158,17 @@ const SkillTag = ({ skill, index }) => (
       gap: "0.5rem",
       padding: "0.45rem 0.75rem",
       borderRadius: "8px",
-      background: "rgba(0,0,0,0.35)",
-      border: "1px solid rgba(0,188,212,0.12)",
+      background: "var(--tag-bg, rgba(0,0,0,0.35))",
+      border: "1px solid var(--tag-border, rgba(0,188,212,0.12))",
       transition: "border-color 0.2s ease, background 0.2s ease",
     }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = "rgba(0,188,212,0.4)";
-      e.currentTarget.style.background = "rgba(0,188,212,0.06)";
+      e.currentTarget.style.borderColor = "var(--tag-border-hover, rgba(0,188,212,0.4))";
+      e.currentTarget.style.background = "var(--tag-bg-hover, rgba(0,188,212,0.06))";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = "rgba(0,188,212,0.12)";
-      e.currentTarget.style.background = "rgba(0,0,0,0.35)";
+      e.currentTarget.style.borderColor = "var(--tag-border, rgba(0,188,212,0.12))";
+      e.currentTarget.style.background = "var(--tag-bg, rgba(0,0,0,0.35))";
     }}
   >
     <span style={{ color: "var(--primary-color)", flexShrink: 0 }}>{skill.icon}</span>
