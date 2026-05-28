@@ -29,6 +29,13 @@
   to = "/apps/:splat"
   status = 301
 
+# Mech Interp Viz — redirect to standalone Next.js app on Railway
+[[redirects]]
+  from = "/apps/mechmap.html"
+  to = "https://mechmap.dennisjcarroll.com"
+  status = 302
+  force = true
+
 # ─── Security + default cache (HTML pages always revalidate) ───────────────────
 [[headers]]
   for = "/*"
