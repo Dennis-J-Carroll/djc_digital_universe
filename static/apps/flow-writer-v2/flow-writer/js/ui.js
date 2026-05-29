@@ -3698,6 +3698,46 @@ export function initMobileNav() {
     if (callbacks.onOpenCommandPalette) callbacks.onOpenCommandPalette();
   });
 
+  // Voice: delegate to the topbar button so voice-to-text.js handles state
+  const mobileVoiceBtn = $('#mobileNavVoice');
+  if (mobileVoiceBtn) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      mobileVoiceBtn.style.display = 'none';
+    } else {
+      mobileVoiceBtn.addEventListener('click', () => {
+        hapticFeedback('light');
+        document.getElementById('btnVoice')?.click();
+        // Mirror listening state on mobile button
+        setTimeout(() => {
+          const listening = document.getElementById('btnVoice')?.classList.contains('listening');
+          mobileVoiceBtn.classList.toggle('active', !!listening);
+        }, 100);
+      });
+    }
+  }
+
+  // Theme toggle: call global handler, update mobile icon
+  const mobileThemeBtn = $('#mobileNavTheme');
+  const mobileThemeIcon = document.getElementById('mobileNavThemeIcon');
+  const updateMobileThemeIcon = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    if (mobileThemeIcon) {
+      mobileThemeIcon.innerHTML = isDark
+        ? '<circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/>'
+        : '<path d="M13.5 9.5a6 6 0 11-7-7 4.5 4.5 0 007 7z"/>';
+    }
+    if (mobileThemeBtn) mobileThemeBtn.setAttribute('title', isDark ? 'Light mode' : 'Dark mode');
+  };
+  if (mobileThemeBtn) {
+    updateMobileThemeIcon();
+    mobileThemeBtn.addEventListener('click', () => {
+      hapticFeedback('light');
+      if (window._toggleTheme) window._toggleTheme();
+      updateMobileThemeIcon();
+    });
+  }
+
   // Mobile Universe Dashboard button
   $('#mobileNavDashboard')?.addEventListener('click', () => {
     hapticFeedback('light');
