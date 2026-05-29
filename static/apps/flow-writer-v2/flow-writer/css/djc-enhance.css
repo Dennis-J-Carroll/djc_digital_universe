@@ -339,7 +339,8 @@
   pointer-events: none;
   transition: opacity var(--dur-base) var(--ease-out);
 }
-.left-pane-overlay.open {
+.left-pane-overlay.open,
+.left-pane-overlay.show {
   opacity: 1;
   pointer-events: auto;
 }

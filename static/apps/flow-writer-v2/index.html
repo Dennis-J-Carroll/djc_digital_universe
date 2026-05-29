@@ -140,7 +140,7 @@
       height: 100vh;
       display: grid;
       grid-template-columns: 0 1fr 0;
-      grid-template-rows: 48px 0 1fr 48px;
+      grid-template-rows: 48px 0 1fr 0;
       grid-template-areas:
         "topbar topbar topbar"
         "timeline timeline timeline"
@@ -149,10 +149,26 @@
       gap: 0;
     }
     .app.has-timeline:not(.timeline-collapsed) {
-      grid-template-rows: 48px 44px 1fr 48px;
+      grid-template-rows: 48px 44px 1fr 0;
     }
-    .pane.left, .pane.right { display: none !important; }
-    .status { font-size: 10px; padding: 0 8px; }
+    /* Right pane hidden; left pane becomes a fixed slide-in drawer */
+    .pane.right { display: none !important; }
+    .pane.left {
+      position: fixed !important;
+      top: 0; left: 0; bottom: 0;
+      width: 280px;
+      z-index: 45;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex !important;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .pane.left.open { transform: translateX(0); }
+    /* Status bar replaced by fixed mobile-nav */
+    .status { display: none; }
+    /* Clearance for fixed 52px mobile-nav */
+    .editor-wrap { padding-bottom: 60px; }
     .timeline-bar { height: 44px; }
     .timeline-node-label { display: none; }
     .topbar { padding: 0 8px; }
