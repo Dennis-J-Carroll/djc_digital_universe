@@ -1,0 +1,528 @@
+/* ============================================================
+   SVG Branch Graph Styles
+   Flow Writer — Phase 1
+   Matches the DJC design system (teal / deep navy aesthetic)
+   ============================================================ */
+
+/* ---------- SVG Container ---------- */
+.branch-graph-svg {
+  width: 100%;
+  min-height: 120px;
+  background: rgba(10, 20, 35, 0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  overflow: hidden;
+  display: block;
+}
+
+.branch-graph-svg:active {
+  cursor: grabbing;
+}
+
+/* ---------- Viewport Transform Group ---------- */
+.branch-graph-svg .viewport,
+.branch-graph-svg .graph-viewport {
+  transform-origin: 0 0;
+}
+
+/* ---------- Placeholder (empty state) ---------- */
+.branch-graph-svg .graph-placeholder {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: var(--fg-4);
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Edges (commit connection lines) ---------- */
+.branch-graph-svg .edge {
+  stroke: var(--teal-700);
+  stroke-width: 1.5;
+  fill: none;
+  pointer-events: none;
+}
+
+/* ---------- Fork paths (branch divergence) ---------- */
+.branch-graph-svg .fork-path {
+  stroke: var(--accent-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  fill: none;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------- Commit Nodes ---------- */
+.branch-graph-svg .commit-node {
+  fill: var(--accent-2);
+  cursor: pointer;
+  transition: filter var(--dur-fast) var(--ease-out);
+}
+
+.branch-graph-svg .commit-node.head {
+  r: 6px;
+  filter: drop-shadow(0 0 4px var(--accent-2));
+}
+
+.branch-graph-svg .commit-node:hover {
+  filter: drop-shadow(0 0 8px var(--accent-2));
+}
+
+.branch-graph-svg .commit-node.active-commit {
+  stroke: var(--pulse-green);
+  stroke-width: 2;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .branch-graph-svg .commit-node,
+  .branch-graph-svg .commit-node.head,
+  .branch-graph-svg .commit-node:hover {
+    transition: none;
+    filter: none;
+  }
+}
+
+/* ---------- Branch Labels ---------- */
+.branch-graph-svg .branch-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--fg-3);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.branch-graph-svg .branch-label.active {
+  fill: var(--accent-2);
+}
+
+/* ---------- Active Branch Indicator ---------- */
+.branch-graph-svg .active-indicator {
+  stroke: var(--pulse-green);
+  stroke-width: 2;
+  fill: none;
+  filter: drop-shadow(0 0 4px var(--pulse-green));
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-graph-svg .active-indicator {
+    filter: none;
+  }
+}
+
+/* ============================================================
+   COMMIT LIST (scrollable list below the SVG graph)
+   ============================================================ */
+
+.commit-list {
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: rgba(7, 14, 26, 0.45);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  scrollbar-width: thin;
+  scrollbar-color: var(--navy-700) transparent;
+}
+
+.commit-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.commit-list::-webkit-scrollbar-thumb {
+  background: var(--navy-700);
+  border-radius: 3px;
+}
+
+.commit-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.commit-list-empty {
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-4);
+  letter-spacing: 0.02em;
+}
+
+/* Individual commit row */
+.commit-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  transition: all var(--dur-fast) var(--ease-out);
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.commit-item:hover {
+  background: rgba(20, 184, 154, 0.08);
+  color: var(--fg-1);
+}
+
+.commit-item.active {
+  background: rgba(20, 184, 154, 0.12);
+  border-color: var(--border-accent);
+  box-shadow: var(--glow-teal-sm);
+}
+
+.commit-item.active::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--accent-2);
+  border-radius: 2px;
+  box-shadow: 0 0 4px var(--accent-2);
+}
+
+/* Commit message text */
+.commit-item .message {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Relative timestamp */
+.commit-item .time {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--fg-4);
+  letter-spacing: 0.02em;
+}
+
+/* Word count delta */
+.commit-item .delta {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--fg-4);
+  min-width: 28px;
+  text-align: right;
+}
+
+.commit-item .delta.positive {
+  color: var(--pulse-green);
+}
+
+.commit-item .delta.negative {
+  color: var(--danger-red);
+}
+
+/* ============================================================
+   GRAPH TOOLTIP
+   ============================================================ */
+
+.graph-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(7,14,26,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-2);
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.graph-tooltip.visible {
+  opacity: 1;
+}
+
+.graph-tooltip .msg {
+  color: var(--fg-1);
+  margin-bottom: 4px;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.graph-tooltip .meta {
+  color: var(--fg-4);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   GRAPH ZOOM CONTROLS
+   ============================================================ */
+
+.graph-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0;
+  margin-top: 4px;
+}
+
+.graph-control-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: rgba(7,14,26,0.5);
+  border: 1px solid var(--border-subtle);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.graph-control-btn:hover {
+  color: var(--accent-2);
+  border-color: var(--border-accent);
+  background: rgba(20,184,154,0.08);
+}
+
+/* ============================================================
+   ENHANCED COMMIT HISTORY
+   ============================================================ */
+
+.commit-group-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-4);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 8px 4px 4px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 4px;
+}
+
+.commit-group-header:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+.commit-item {
+  position: relative;
+}
+
+.commit-item .branch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.commit-item .restore-btn {
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+  font-size: 10px;
+  color: var(--accent-2);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+.commit-item .restore-btn:hover {
+  background: rgba(20,184,154,0.08);
+}
+
+.commit-item:hover .restore-btn {
+  opacity: 1;
+}
+
+.commit-item .commit-msg {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.commit-item .commit-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-graph-svg,
+  .branch-graph-svg .commit-node,
+  .branch-graph-svg .active-indicator,
+  .commit-item,
+  .commit-item.active,
+  .graph-tooltip,
+  .graph-control-btn {
+    transition: none;
+    filter: none;
+    animation: none;
+  }
+}
+
+/* ============================================================
+   LIGHT THEME OVERRIDES
+   Toggle via: document.documentElement.setAttribute('data-theme', 'light')
+   ============================================================ */
+
+/* -- SVG Container -- */
+html[data-theme="light"] .branch-graph-svg {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--border-subtle);
+}
+
+/* -- Placeholder text (empty state) -- */
+html[data-theme="light"] .branch-graph-svg .graph-placeholder {
+  fill: var(--fg-3);
+}
+
+/* -- Edges (commit connection lines) -- */
+html[data-theme="light"] .branch-graph-svg .edge {
+  stroke: rgba(20, 184, 154, 0.35);
+}
+
+/* -- Fork paths (branch divergence curves) -- */
+html[data-theme="light"] .branch-graph-svg .fork-path {
+  stroke: var(--accent-1);
+  opacity: 0.35;
+}
+
+/* -- Commit Nodes -- */
+html[data-theme="light"] .branch-graph-svg .commit-node {
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 0.5;
+}
+
+html[data-theme="light"] .branch-graph-svg .commit-node.head {
+  filter: drop-shadow(0 0 3px rgba(20, 184, 154, 0.35));
+}
+
+html[data-theme="light"] .branch-graph-svg .commit-node:hover {
+  filter: drop-shadow(0 0 6px rgba(20, 184, 154, 0.45));
+}
+
+/* -- Branch Labels -- */
+html[data-theme="light"] .branch-graph-svg .branch-label {
+  fill: var(--fg-3);
+}
+
+html[data-theme="light"] .branch-graph-svg .branch-label.active {
+  fill: var(--accent-1);
+}
+
+/* -- Active Branch Indicator -- */
+html[data-theme="light"] .branch-graph-svg .active-indicator {
+  stroke: var(--pulse-green);
+  filter: drop-shadow(0 0 3px rgba(74, 222, 128, 0.45));
+}
+
+/* ============================================================
+   LIGHT THEME — Commit List
+   ============================================================ */
+
+html[data-theme="light"] .commit-list {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: var(--border-subtle);
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+html[data-theme="light"] .commit-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+html[data-theme="light"] .commit-list-empty {
+  color: var(--fg-3);
+}
+
+html[data-theme="light"] .commit-item {
+  color: var(--fg-2);
+  border-color: transparent;
+}
+
+html[data-theme="light"] .commit-item:hover {
+  background: rgba(20, 184, 154, 0.06);
+  border-left-color: var(--accent-1);
+  color: var(--fg-1);
+}
+
+html[data-theme="light"] .commit-item.active {
+  background: rgba(20, 184, 154, 0.08);
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 1px rgba(20, 184, 154, 0.12);
+}
+
+html[data-theme="light"] .commit-item .time {
+  color: var(--fg-3);
+}
+
+html[data-theme="light"] .commit-item .delta {
+  color: var(--fg-3);
+}
+
+html[data-theme="light"] .commit-group-header {
+  color: var(--fg-3);
+  border-color: var(--border-subtle);
+}
+
+/* ============================================================
+   LIGHT THEME — Graph Tooltip
+   ============================================================ */
+
+html[data-theme="light"] .graph-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--border-subtle);
+  color: var(--fg-2);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme="light"] .graph-tooltip .msg {
+  color: var(--fg-1);
+}
+
+html[data-theme="light"] .graph-tooltip .meta {
+  color: var(--fg-3);
+}
+
+/* ============================================================
+   LIGHT THEME — Graph Controls
+   ============================================================ */
+
+html[data-theme="light"] .graph-controls {
+  /* Inherits from dark — no override needed */
+}
+
+html[data-theme="light"] .graph-control-btn {
+  background: rgba(240, 244, 248, 0.7);
+  border-color: var(--border-subtle);
+  color: var(--fg-3);
+}
+
+html[data-theme="light"] .graph-control-btn:hover {
+  color: var(--accent-1);
+  border-color: var(--border-accent);
+  background: rgba(20, 184, 154, 0.06);
+}
