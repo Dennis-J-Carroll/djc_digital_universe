@@ -3653,30 +3653,40 @@ export function analyzeSentiment(text) {
 
 export function initMobileNav() {
   const hamburger = $('#hamburgerBtn');
-  const leftPane = $('.pane.left');
-  const overlay = $('#leftPaneOverlay');
+  const leftPane  = $('.pane.left');
+  const rightPane = $('.pane.right');
+  const overlay   = $('#leftPaneOverlay');
 
-  if (hamburger) {
-    hamburger.addEventListener('click', () => {
-      hapticFeedback('light');
-      leftPane?.classList.toggle('open');
-      overlay?.classList.toggle('show');
-    });
-  }
+  const closeAll = () => {
+    leftPane?.classList.remove('open');
+    rightPane?.classList.remove('open');
+    overlay?.classList.remove('show');
+  };
 
-  if (overlay) {
-    overlay.addEventListener('click', () => {
-      leftPane?.classList.remove('open');
-      overlay.classList.remove('show');
-    });
-  }
+  const toggleLeft = () => {
+    const opening = !leftPane?.classList.contains('open');
+    closeAll();
+    if (opening) {
+      leftPane?.classList.add('open');
+      overlay?.classList.add('show');
+    }
+  };
+
+  const toggleRight = () => {
+    const opening = !rightPane?.classList.contains('open');
+    closeAll();
+    if (opening) {
+      rightPane?.classList.add('open');
+      overlay?.classList.add('show');
+    }
+  };
+
+  if (hamburger) hamburger.addEventListener('click', () => { hapticFeedback('light'); toggleLeft(); });
+  if (overlay)   overlay.addEventListener('click', closeAll);
 
   // Mobile nav buttons
-  $('#mobileNavTree')?.addEventListener('click', () => {
-    hapticFeedback('light');
-    leftPane?.classList.toggle('open');
-    overlay?.classList.toggle('show');
-  });
+  $('#mobileNavTree')?.addEventListener('click',    () => { hapticFeedback('light'); toggleLeft(); });
+  $('#mobileNavTools')?.addEventListener('click',   () => { hapticFeedback('light'); toggleRight(); });
 
   $('#mobileNavFocus')?.addEventListener('click', () => {
     hapticFeedback('light');
@@ -3686,12 +3696,6 @@ export function initMobileNav() {
   $('#mobileNavPalette')?.addEventListener('click', () => {
     hapticFeedback('light');
     if (callbacks.onOpenCommandPalette) callbacks.onOpenCommandPalette();
-  });
-
-  $('#mobileNavTools')?.addEventListener('click', () => {
-    hapticFeedback('light');
-    const rightPane = $('.pane.right');
-    rightPane?.classList.toggle('open');
   });
 
   // Mobile Universe Dashboard button
