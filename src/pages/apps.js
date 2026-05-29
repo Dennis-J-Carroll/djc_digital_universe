@@ -197,7 +197,7 @@ const interactiveApps = [
     { title: 'Voltic Pile Simulator', path: '/apps/voltic_pile.html', description: 'Interactive electrochemistry simulation exploring early battery design and electrical theory.', category: 'Math' },
     { title: 'Algebraic Flow', path: '/apps/algebraic-flow/', description: 'Interactive equation solver with Play-Doh math manipulatives, proof logging, and constellation backgrounds.', category: 'Math', featured: true },
     { title: 'Prose Trainer', path: '/apps/prose-trainer-app.html', description: 'Genre-optimized writing practice with real-time analysis of readability, sensory balance, and kinetic density. Level up your prose with targeted feedback.', category: 'Tools', featured: true },
-    { title: 'Flow Writer', path: '/apps/flow_writer.html', description: 'Creative writing tool with flow state optimization and distraction-free interface.', category: 'Tools' },
+    { title: 'Flow Writer', path: '/apps/flow-writer-v2/', description: 'Narrative writing tool with story branching, timeline visualization, sprint engine, voice-to-text, AI assistant, and universe dashboard.', category: 'Tools' },
     { title: 'Write Paradigm', path: '/apps/write_paradigm.html', description: 'Advanced writing assistant and content organization tool with structured composition features.', category: 'Tools' },
     { title: 'Chroma Echo Visualizer', path: '/apps/Chroma_Echo.html', description: 'Audio-reactive visual experience with chromatic wave patterns and dynamic color synthesis.', category: 'Creative' },
     { title: 'Sphere Chat Interface', path: '/apps/sphere-chat-interface.html', description: '3D spherical chat interface with immersive user experience.', category: 'Creative' },
