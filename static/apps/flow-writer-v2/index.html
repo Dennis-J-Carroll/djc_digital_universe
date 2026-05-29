@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Flow Writer — DJC</title>
+<script>
+// Theme init — runs before any modules, immune to JS caching
+(function() {
+  var saved = localStorage.getItem('flow-writer-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  window._theme = saved;
+  window._toggleTheme = function() {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('flow-writer-theme', next);
+    window._theme = next;
+    // Update icon
+    var btn = document.getElementById('btnTheme');
+    if (btn) {
+      var isDark = next === 'dark';
+      var icon = isDark
+        ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 9.5a6 6 0 11-7-7 4.5 4.5 0 007 7z"/></svg>';
+      btn.innerHTML = icon;
+      btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+      btn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+  };
+  // Wire the button immediately
+  document.addEventListener('DOMContentLoaded', function() {
+    // Theme button
+    var btn = document.getElementById('btnTheme');
+    if (btn) {
+      btn.addEventListener('click', window._toggleTheme);
+      var isDark = window._theme === 'dark';
+      var icon = isDark
+        ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 9.5a6 6 0 11-7-7 4.5 4.5 0 007 7z"/></svg>';
+      btn.innerHTML = icon;
+    }
+
+    // Right pane tab switching (inline fallback)
+    var tabContainer = document.getElementById('rightPaneTabs');
+    if (tabContainer) {
+      tabContainer.addEventListener('click', function(e) {
+        var tab = e.target.closest('.right-pane-tab');
+        if (!tab) return;
+        var tabId = tab.dataset.tab;
+        // Update tab buttons
+        document.querySelectorAll('.right-pane-tab').forEach(function(t) {
+          t.classList.toggle('active', t === tab);
+        });
+        // Update sections
+        document.querySelectorAll('.right-pane-section').forEach(function(s) {
+          s.classList.toggle('active', s.dataset.section === tabId);
+        });
+        localStorage.setItem('fw-right-tab', tabId);
+      });
+    }
+
+    // Voice-to-text inline fallback
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var voiceBtn = document.getElementById('btnVoice');
+    if (!SpeechRecognition && voiceBtn) {
+      voiceBtn.style.display = 'none';
+    }
+  });
+})();
+</script>
+<link rel="stylesheet" href="flow-writer/css/colors_and_type.css?v=3" />
+<link rel="stylesheet" href="flow-writer/css/app.css?v=3" />
+<link rel="stylesheet" href="flow-writer/css/branch-graph.css?v=3" />
+<link rel="stylesheet" href="flow-writer/css/djc-enhance.css" />
+<style>
+  /* ============================================================
+     CRITICAL LAYOUT — Desktop (> 920px)
+     ============================================================ */
+  @media (min-width: 921px) {
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 52px 1fr 36px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "left   center right"
+        "status status status";
+      gap: 0;
+    }
+    .app.has-timeline {
+      grid-template-areas:
+        "topbar topbar topbar"
+        "timeline timeline timeline"
+        "left   center right"
+        "status status status";
+      grid-template-rows: 52px 64px 1fr 36px;
+    }
+    .app.has-timeline.timeline-collapsed {
+      grid-template-rows: 52px 0 1fr 36px;
+    }
+    .app.focus-mode { grid-template-columns: 0 1fr 0; }
+  }
+
+  /* ============================================================
+     CRITICAL LAYOUT — Tablet (769px - 920px)
+     ============================================================ */
+  @media (min-width: 769px) and (max-width: 920px) {
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 220px 1fr 0;
+      grid-template-rows: 52px 1fr 36px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "left   center center"
+        "status status status";
+      gap: 0;
+    }
+    .app.has-timeline {
+      grid-template-rows: 52px 48px 1fr 36px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "timeline timeline timeline"
+        "left   center center"
+        "status status status";
+    }
+    .app.has-timeline.timeline-collapsed {
+      grid-template-rows: 52px 0 1fr 36px;
+    }
+    .pane.right { display: none !important; }
+  }
+
+  /* ============================================================
+     CRITICAL LAYOUT — Mobile (<= 768px)
+     ============================================================ */
+  @media (max-width: 768px) {
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 0 1fr 0;
+      grid-template-rows: 48px 0 1fr 48px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "timeline timeline timeline"
+        "left   center center"
+        "status status status";
+      gap: 0;
+    }
+    .app.has-timeline:not(.timeline-collapsed) {
+      grid-template-rows: 48px 44px 1fr 48px;
+    }
+    .pane.left, .pane.right { display: none !important; }
+    .status { font-size: 10px; padding: 0 8px; }
+    .timeline-bar { height: 44px; }
+    .timeline-node-label { display: none; }
+    .topbar { padding: 0 8px; }
+    .topbar .brand { font-size: 10px; }
+    .topbar .scene-pill { font-size: 10px; padding: 4px 8px; max-width: 140px; }
+  }
+
+  .topbar { grid-area: topbar; }
+  .timeline-bar { grid-area: timeline; }
+  .pane.left { grid-area: left; }
+  .pane.center { grid-area: center; }
+  .pane.right { grid-area: right; }
+  .status { grid-area: status; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- DOCX export library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- PDF export library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<div class="app has-timeline" id="app">
+
+  <!-- ====================== TOPBAR ====================== -->
+  <header class="topbar">
+    <button class="hamburger" id="hamburgerBtn" title="Menu"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button>
+    <a class="back-link" href="../../">← Projects</a>
+    <a class="brand" href="../">
+      <div class="brand-tile">DJC</div>
+      <div class="brand-title">FLOW <span class="accent">WRITER</span></div>
+    </a>
+
+    <div class="topbar-center">
+      <div class="scene-pill" id="sceneSummaryPill">
+        <span class="dot"></span>
+        <span id="sceneSummaryLabel">Chapter 1 — Discovery · The Lost Library</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn" id="btnCmd" title="Command palette (⌘K)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5h3M4 8h8M4 11h5"/></svg>
+      </button>
+      <button class="icon-btn" id="btnFocus" title="Focus mode (⌘⇧F)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><circle cx="8" cy="8" r="4.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></button>
+      <button class="icon-btn" id="btnTheme" title="Toggle theme" aria-label="Switch to light mode">
+        <svg id="themeIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/></svg>
+      </button>
+      <button class="icon-btn" id="btnVoice" title="Voice dictation" aria-label="Voice dictation">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1v10M5 4v4a3 3 0 006 0V4M3 8v2a5 5 0 0010 0V8M8 15v-2"/><circle cx="8" cy="4" r="2.5"/></svg>
+      </button>
+      <button class="icon-btn" id="btnShortcuts" title="Keyboard shortcuts (?)">?</button>
+      <button class="icon-btn" id="btnTimeline" title="Story timeline"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 3"/></svg></button>
+    </div>
+  </header>
+
+  <!-- ====================== TIMELINE BAR ====================== -->
+  <div class="timeline-bar" id="timelineBar">
+    <svg class="timeline-svg" id="timelineSvg" preserveAspectRatio="none"></svg>
+    <button class="timeline-toggle" id="timelineToggle" title="Toggle timeline">⏷</button>
+    <div class="timeline-popup" id="timelinePopup">
+      <div class="timeline-popup-title" id="timelinePopupTitle"></div>
+      <div class="timeline-popup-chapter" id="timelinePopupChapter"></div>
+      <div class="timeline-popup-desc" id="timelinePopupDesc"></div>
+      <div class="timeline-popup-status" id="timelinePopupStatus"></div>
+    </div>
+  </div>
+
+  <!-- ====================== LEFT PANE ====================== -->
+  <aside class="pane left">
+    <div class="project-switcher" id="projSwitcher">
+      <span style="color:var(--accent-2);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5l-6-3-6 3v6l6 3 6-3V5z"/><path d="M2 5l6 3 6-3M8 8v6"/></svg></span>
+      <span class="label">The Lost Library</span>
+      <span class="chev">▾</span>
+    </div>
+
+    <div class="branch-row">
+      <div class="branch-chip" id="branchChip">
+        <span class="glyph"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v4a2 2 0 002 2h4a2 2 0 002 2v4"/><path d="M12 8h-4a2 2 0 00-2 2v4"/></svg></span>
+        <span class="branch-name" id="branchName">main</span>
+        <!-- Branch dropdown rendered here by ui.js -->
+      </div>
+      <button class="branch-add" id="btnBranchNew">+ branch</button>
+    </div>
+
+    <h6 class="section-eyebrow">Story Universe <span class="count" id="folderCount">2 folders</span></h6>
+
+    <!-- Dynamic tree rendered here by ui.js -->
+    <ul class="tree" id="tree"></ul>
+
+    <button class="dashboard-trigger" id="btnUniverseDashboard" title="Universe Dashboard">
+      <span><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L1 8l7 7 7-7-7-7z"/><path d="M4 5h8M4 8h8M4 11h8"/></svg></span> Universe
+    </button>
+
+    <button class="mobile-import-btn" id="mobileImportBtn" title="Import files">
+      <span>&#128196;</span> Import .txt / .md
+    </button>
+    <input type="file" id="mobileFileInput" accept=".txt,.md" multiple style="display:none;" />
+
+    <h6 class="section-eyebrow" style="margin-top:var(--space-6);">Branch History <span class="count" id="branchHistoryLabel">main</span></h6>
+
+    <!-- SVG branch graph (replaces hardcoded .branch-graph div) -->
+    <svg id="branchGraphSvg" class="branch-graph-svg"></svg>
+
+    <!-- Commit history list below SVG -->
+    <div id="commitList" class="commit-list"></div>
+  </aside>
+
+  <!-- Pane divider: left / center -->
+  <!-- Pane divider: left/center -->
+  <div class="pane-divider left" id="dividerLeft" title="Drag to resize"></div>
+
+  <!-- ====================== CENTER ====================== -->
+  <section class="center" data-family="serif" id="center">
+
+    <div class="scene-banner" id="sceneBanner">
+      <div class="scene-banner-eyebrow">
+        <span><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M8 1C5.2 1 3 3.2 3 6c0 3.8 5 9 5 9s5-5.2 5-9c0-2.8-2.2-5-5-5z"/><circle cx="8" cy="6" r="1.5"/></svg> Scene Goal · Pinned</span>
+        <span>From <span class="source">Chapter 1 Outline.md</span></span>
+      </div>
+      <div class="scene-goal" id="sceneGoalContainer">
+        Protagonist discovers a hidden journal in the library's secret compartment,
+        realizing it contains <em>details about their own past</em>.
+      </div>
+      <button class="scene-banner-collapse" id="sceneCollapse" title="Hide"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+
+    <div class="editor-wrap" id="editorWrap">
+      <textarea class="editor" id="editor" spellcheck="true"
+        placeholder="Begin where the air shifts. Where the next sentence wants to go…"></textarea>
+    </div>
+
+    <!-- Focus Mode Word Count Ring -->
+    <div class="focus-word-ring" id="focusWordRing">
+      <svg viewBox="0 0 80 80" width="80" height="80">
+        <circle class="track" cx="40" cy="40" r="34" fill="none" stroke="rgba(20,41,63,0.8)" stroke-width="4"/>
+        <circle class="progress" id="wordRingProgress" cx="40" cy="40" r="34" fill="none" stroke="#14b89a" stroke-width="4" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+      </svg>
+      <div class="ring-label" id="wordRingLabel">0</div>
+    </div>
+
+    <div class="nudge" id="nudge">
+      <div class="icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 0v4M8 12v4M0 8h4M12 8h4M2.3 2.3l2.8 2.8M11 11l2.8 2.8M2.3 13.7l2.8-2.8M11 5l2.8-2.8"/></svg></div>
+      <div class="msg" id="nudgeMsg">Consider how her <em>hands tremble</em> as the spine cracks open.</div>
+      <button id="nudgeDismiss" title="Dismiss"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+
+
+  </section>
+
+  <!-- Pane divider: center / right -->
+  <div class="pane-divider right" id="dividerRight" title="Drag to resize"></div>
+
+  <!-- ====================== RIGHT PANE (Tabbed) ====================== -->
+  <aside class="pane right" id="rightPane">
+
+    <div class="right-pane-tabs" id="rightPaneTabs">
+      <button class="right-pane-tab active" data-tab="format">Format</button>
+      <button class="right-pane-tab" data-tab="sprint">Sprint</button>
+      <button class="right-pane-tab" data-tab="export">Export</button>
+      <button class="right-pane-tab" data-tab="ai">AI</button>
+    </div>
+
+    <!-- Format tab -->
+    <!-- FORMAT TAB -->
+    <div class="right-pane-section active" data-section="format">
+      <h6 class="section-eyebrow">Mode</h6>
+      <div class="mode-row">
+        <button class="mode-btn" id="mFocus"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><circle cx="8" cy="8" r="4.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg> Focus</button>
+      </div>
+
+      <h6 class="section-eyebrow">Auto-Detected <span class="count" id="autoCount">3</span></h6>
+      <div class="tag-row" id="autoTags">
+        <span class="tag auto">protagonist</span>
+        <span class="tag auto">mystery</span>
+        <span class="tag auto">discovery</span>
+      </div>
+
+      <h6 class="section-eyebrow">Manual Tags <span class="count" id="manualCount">5</span></h6>
+      <div class="tag-row" id="manualTags">
+        <span class="tag manual">library<span class="close" data-rm="library"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+        <span class="tag manual">backstory<span class="close" data-rm="backstory"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+        <span class="tag manual">journal<span class="close" data-rm="journal"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+        <span class="tag manual">setting<span class="close" data-rm="setting"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+        <span class="tag manual">dialogue<span class="close" data-rm="dialogue"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3L3 13"/></svg></span></span>
+        <span class="tag-add" id="tagAdd">+ <input type="text" placeholder="add tag" id="tagInput" /></span>
+      </div>
+
+      <h6 class="section-eyebrow">Suggested <span class="count" id="suggestCount">2</span></h6>
+      <div class="tag-row" id="suggestTags">
+        <span class="tag suggest">+ flashback</span>
+        <span class="tag suggest">+ emotional_tension</span>
+      </div>
+
+      <h6 class="section-eyebrow">Typography</h6>
+
+      <div class="fmt-group">
+        <div class="fmt-label">Family <span class="val" id="famVal">Serif</span></div>
+        <div class="seg" id="famSeg">
+          <button data-v="serif" class="on">Serif</button>
+          <button data-v="garamond">Garamond</button>
+          <button data-v="sans">Sans</button>
+          <button data-v="mono">Mono</button>
+        </div>
+      </div>
+
+      <div class="fmt-group">
+        <div class="fmt-label">Size <span class="val" id="sizeVal">18px</span></div>
+        <input type="range" id="sizeRange" min="14" max="28" value="18" step="1" />
+      </div>
+
+      <div class="fmt-group">
+        <div class="fmt-label">Line Height <span class="val" id="lhVal">Normal</span></div>
+        <div class="seg" id="lhSeg">
+          <button data-v="1.45">Compact</button>
+          <button data-v="1.7"  class="on">Normal</button>
+          <button data-v="2.0">Spacious</button>
+        </div>
+      </div>
+
+      <div class="fmt-group">
+        <div class="fmt-label">Width <span class="val" id="widthVal">Medium</span></div>
+        <div class="seg" id="widthSeg">
+          <button data-v="560">Narrow</button>
+          <button data-v="720" class="on">Medium</button>
+          <button data-v="880">Wide</button>
+          <button data-v="100%">Full</button>
+        </div>
+      </div>
+
+      <h6 class="section-eyebrow">Flow Nudges <span class="count" id="flowVal">35s</span></h6>
+      <div class="fmt-group">
+        <input type="range" id="flowRange" min="0" max="120" value="35" step="5" />
+        <div class="fmt-label" style="margin-top:6px;">
+          <span style="color:var(--fg-4);">0 = off · drift on silence</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sprint tab -->
+    <!-- SPRINT TAB -->
+    <div class="right-pane-section" data-section="sprint">
+      <div id="sprintSectionHost">
+        <!-- Sprint section rendered here by JS -->
+        <h6 class="section-eyebrow">Writing Sprint</h6>
+        <div class="sprint-card idle">
+          <div class="sprint-time-display">25:00</div>
+          <div class="sprint-duration-select">
+            <button class="sprint-dur-btn" data-dur="15">15m</button>
+            <button class="sprint-dur-btn on" data-dur="25">25m</button>
+            <button class="sprint-dur-btn" data-dur="45">45m</button>
+          </div>
+          <div class="sprint-controls-row">
+            <button class="sprint-btn primary" id="sprintStartBtn">Start Sprint</button>
+          </div>
+          <div class="sprint-stats-row">Sprints today: 0</div>
+        </div>
+      </div>
+
+      <div id="dailyTargetSectionHost" style="margin-top:var(--space-5);">
+        <!-- Daily target rendered here by JS -->
+        <h6 class="section-eyebrow">Daily Target</h6>
+        <div class="daily-target-bar">
+          <div class="daily-target-fill" style="width:0%"></div>
+        </div>
+        <div class="daily-target-label">0 / 500 words · 0%</div>
+      </div>
+    </div>
+
+    <!-- EXPORT TAB -->
+    <div class="right-pane-section" data-section="export">
+      <h6 class="section-eyebrow">Export</h6>
+      <div class="export-row">
+        <button class="export-btn" data-fmt="txt" title="Plain text"><span class="ext">TXT</span><span class="lbl">Plain</span></button>
+        <button class="export-btn" data-fmt="md" title="Markdown"><span class="ext">MD</span><span class="lbl">Markdown</span></button>
+        <button class="export-btn" data-fmt="html" title="Printable HTML"><span class="ext">HTML</span><span class="lbl">Print</span></button>
+        <button class="export-btn" data-fmt="docx" title="Word document"><span class="ext">DOCX</span><span class="lbl">Word</span></button>
+        <button class="export-btn" data-fmt="pdf" title="PDF document"><span class="ext">PDF</span><span class="lbl">PDF</span></button>
+      </div>
+    </div>
+
+    <!-- AI TAB -->
+    <div class="right-pane-section" data-section="ai">
+      <h6 class="section-eyebrow">AI Assistant</h6>
+      <div class="ai-panel" style="margin-bottom:var(--space-4);">
+        <div class="section-title" style="margin-bottom:8px;">Inline Suggestions</div>
+        <div style="font-size:11px;color:var(--fg-3);line-height:1.5;margin-bottom:8px;">
+          Tab to accept · Esc to dismiss<br>
+          Suggestions appear after 2s of idle typing.
+        </div>
+        <button class="ai-suggestion-btn" id="aiQuickConfig">Configure endpoint…</button>
+      </div>
+      <div class="ai-panel">
+        <div class="section-title" style="margin-bottom:8px;">Quick Rewrite</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="ai-suggestion-btn" id="aiQuickConcise" style="flex:1;">Concise</button>
+          <button class="ai-suggestion-btn" id="aiQuickVivid" style="flex:1;">Vivid</button>
+          <button class="ai-suggestion-btn" id="aiQuickGrammar" style="flex:1;">Fix</button>
+          <button class="ai-suggestion-btn" id="aiQuickExpand" style="flex:1;">Expand</button>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-4);text-align:center;">
+        <button class="btn" id="aiOpenModalBtn" style="width:100%;">Open AI Assistant…</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====================== STATUS ====================== -->
+  <footer class="status">
+    <div class="item flow" id="flowState"><span class="dot"></span><span id="flowLabel">In flow</span></div>
+    <div class="item"><span style="opacity:0.6;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1H3a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V5l-4-4z"/><path d="M10 1v4h4M5 7h6M5 10h4"/></svg></span><span id="wcLabel">0 words · 0 min read</span></div>
+    <div class="item branch"><span style="opacity:0.7;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v4a2 2 0 002 2h4a2 2 0 002 2v4"/><path d="M12 8h-4a2 2 0 00-2 2v4"/></svg></span><span id="branchLabel">main</span></div>
+    <div class="item save-indicator" id="saveItem"><span class="dot"></span><span id="saveLabel">Saved · just now</span></div>
+    <div class="grow"></div>
+    <div class="kbd-hint"><kbd>⌘</kbd><kbd>K</kbd> commands</div>
+    <div class="kbd-hint"><kbd>?</kbd> shortcuts</div>
+  </footer>
+</div>
+
+<!-- Mobile navigation -->
+<nav class="mobile-nav">
+  <button id="mobileNavTree" title="Documents"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button>
+  <button id="mobileNavDashboard" title="Universe Dashboard"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L1 8l7 7 7-7-7-7z"/><path d="M4 5h8M4 8h8M4 11h8"/></svg></button>
+  <button id="mobileNavFocus" title="Focus mode"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><circle cx="8" cy="8" r="4.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></button>
+  <button id="mobileNavPalette" title="Command palette"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5h3M4 8h8M4 11h5"/></svg></button>
+  <button id="mobileNavTools" title="Tools"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15M3.05 3.05l1.77 1.77M11.18 11.18l1.77 1.77M3.05 12.95l1.77-1.77M11.18 4.82l1.77-1.77"/></svg></button>
+</nav>
+
+<!-- Left pane overlay for mobile -->
+<div id="leftPaneOverlay" class="left-pane-overlay"></div>
+
+<!-- Pull-to-Refresh / Sync Indicator -->
+<div class="ptr-indicator" id="ptrIndicator">
+  <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="20" stroke-dashoffset="5"/></svg>
+  Syncing...
+</div>
+
+<!-- Onboarding Tutorial -->
+<div class="onboarding-overlay" id="onboardingOverlay" style="display:none;">
+  <div class="onboarding-card" id="onboardingCard">
+    <button class="tutorial-dismiss" id="tutorialDismiss" title="Dismiss">&times;</button>
+    <h4 id="onboardingTitle">The Editor</h4>
+    <p id="onboardingText">Your writing space. Tap to start typing.</p>
+    <div class="onboarding-progress" id="onboardingDots"></div>
+  </div>
+</div>
+
+<!-- ====================== MODALS ====================== -->
+
+<!-- Command Palette -->
+<div class="modal-scrim" id="cmdScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">⌘</span>
+      <h3>Command Palette</h3>
+      <input id="cmdInput" type="text" placeholder="Search actions, scenes, tags…" style="flex:1; margin-left:8px; background:transparent; border:0; outline:0; color:var(--fg-1); font-family:var(--font-mono); font-size:13px;" />
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- Create Branch (enhanced) -->
+<div class="modal-scrim" id="branchScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v4a2 2 0 002 2h4a2 2 0 002 2v4"/><path d="M12 8h-4a2 2 0 00-2 2v4"/></svg></span>
+      <h3>Create Branch</h3>
+    </div>
+    <div class="modal-body">
+      <p>Explore a "what-if" without touching your main draft. Your current edits stay here; the branch starts as a snapshot you can diverge into.</p>
+      <div class="parent-info" id="createBranchParentInfo">Parent: main</div>
+      <input type="text" id="branchInput" placeholder="branch name (e.g. what-if-she-runs)" />
+      <label class="checkbox-label">
+        <input type="checkbox" id="branchEmptyCheck" />
+        Start empty (no documents from parent)
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="branchCreate">Create branch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Commit Snapshot (new) -->
+<div class="modal-scrim" id="commitSnapshotScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></span>
+      <h3>Save Snapshot</h3>
+    </div>
+    <div class="modal-body">
+      <p>Create a named commit to mark this point in your writing journey. You can return to it later.</p>
+      <input type="text" id="commitSnapshotInput" placeholder="Snapshot description…" />
+      <div class="word-delta" id="commitSnapshotDelta">Current word count: —</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="commitSnapshotSubmit">Save snapshot</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restore Commit (new) -->
+<div class="modal-scrim" id="restoreCommitScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></span>
+      <h3>Restore Version</h3>
+    </div>
+    <div class="modal-body">
+      <p>Restore your document to this commit's version?</p>
+      <div id="restoreCommitDetails"></div>
+      <div class="commit-preview" id="restoreCommitPreview"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="restoreCommitSubmit">Restore this version</button>
+    </div>
+  </div>
+</div>
+
+<!-- Branch Comparison -->
+<div class="modal-scrim" id="compareBranchScrim">
+  <div class="modal" style="width:min(800px,96vw);">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg></span>
+      <h3>Branch Comparison</h3>
+    </div>
+    <div class="modal-body">
+      <div class="compare-selectors">
+        <div class="compare-select-row">
+          <label>Compare:</label>
+          <select id="compareBranchA" class="branch-select"></select>
+        </div>
+        <div class="compare-select-row">
+          <label>With:</label>
+          <select id="compareBranchB" class="branch-select"></select>
+        </div>
+        <div class="compare-select-row">
+          <label>Document:</label>
+          <select id="compareDocSelect" class="doc-select"></select>
+        </div>
+      </div>
+      <div class="compare-diff-summary" id="compareDiffSummary"></div>
+      <div class="compare-panes" id="comparePanes">
+        <div class="compare-pane" id="comparePaneA">
+          <div class="compare-pane-header" id="comparePaneHeaderA"></div>
+          <div class="compare-pane-content" id="comparePaneContentA"></div>
+        </div>
+        <div class="compare-pane" id="comparePaneB">
+          <div class="compare-pane-header" id="comparePaneHeaderB"></div>
+          <div class="compare-pane-content" id="comparePaneContentB"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="compareCopyBtn">Copy from other branch</button>
+      <button class="btn" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard Shortcuts (legacy — kept for command palette compat) -->
+<div class="modal-scrim" id="scScrim">
+  <div class="modal">
+    <div class="modal-head"><span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M4 8h1.5M7 8h1.5M10 8h1.5M4 6h.5M7 6h.5M10 6h.5M4 10h.5M7 10h.5M10 10h.5"/></svg></span><h3>Keyboard Shortcuts</h3></div>
+    <div class="modal-body">
+      <div class="sc-grid">
+        <div class="lbl">Command palette</div><div class="keys"><kbd>⌘</kbd><kbd>K</kbd></div>
+        <div class="lbl">Focus mode</div>      <div class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd></div>
+        <div class="lbl">New branch</div>      <div class="keys"><kbd>⌘</kbd><kbd>B</kbd></div>
+        <div class="lbl">Save snapshot</div>   <div class="keys"><kbd>⌘</kbd><kbd>S</kbd></div>
+        <div class="lbl">Toggle sidebars</div> <div class="keys"><kbd>⌘</kbd><kbd>\</kbd></div>
+        <div class="lbl">Hide scene goal</div> <div class="keys"><kbd>⌘</kbd><kbd>/</kbd></div>
+        <div class="lbl">Dismiss / Exit</div>  <div class="keys"><kbd>Esc</kbd></div>
+        <div class="lbl">Show this sheet</div> <div class="keys"><kbd>?</kbd></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn primary" data-close>Got it</button></div>
+  </div>
+</div>
+
+<!-- Keyboard Shortcuts Cheat Sheet (new tabbed design) -->
+<!-- Keyboard Shortcuts Cheat Sheet (new — Phase 5a) -->
+<div class="modal-scrim" id="shortcutsScrim">
+  <div class="modal" style="width:min(560px,92vw);">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M4 8h1.5M7 8h1.5M10 8h1.5M4 6h.5M7 6h.5M10 6h.5M4 10h.5M7 10h.5M10 10h.5"/></svg></span>
+      <h3>Keyboard Shortcuts</h3>
+    </div>
+    <div class="modal-body shortcuts-body" id="shortcutsBody">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scene Goal Modal -->
+<div class="modal-scrim" id="sceneGoalScrim">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1C5.2 1 3 3.2 3 6c0 3.8 5 9 5 9s5-5.2 5-9c0-2.8-2.2-5-5-5z"/><circle cx="8" cy="6" r="1.5"/></svg></span>
+      <h3>Scene Goal</h3>
+    </div>
+    <div class="modal-body">
+      <select id="sceneGoalTemplate" class="template-select">
+        <option value="">Custom...</option>
+        <option value="Establish tension through an unexpected detail">Establish tension</option>
+        <option value="Reveal backstory that shifts the reader's understanding">Reveal backstory</option>
+        <option value="Introduce a new character through action, not description">Introduce character</option>
+        <option value="Show the setting as a mirror of the protagonist's mood">Mirror setting to mood</option>
+        <option value="End on a question that propels the reader forward">End with a question</option>
+      </select>
+      <textarea id="sceneGoalText" placeholder="What does this scene need to accomplish?"></textarea>
+      <input type="text" id="sceneGoalSource" placeholder="Source (e.g., Chapter 1 Outline)" />
+      <label class="checkbox-label">
+        <input type="checkbox" id="sceneGoalPinned" />
+        Pin this goal
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger" id="sceneGoalDelete" style="margin-right:auto;">Delete</button>
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn primary" id="sceneGoalSave">Save goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Writing Statistics Dashboard -->
+<div class="modal-scrim" id="statsScrim">
+  <div class="modal" style="width:min(600px,92vw);">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14V9M6 14V5M10 14V7M14 14V3"/></svg></span>
+      <h3>Writing Statistics</h3>
+    </div>
+    <div class="modal-body" id="statsModalBody">
+      <div style="color:var(--fg-4);text-align:center;padding:20px;">Loading stats...</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cross-Branch Search Modal -->
+<div class="modal-scrim" id="searchScrim">
+  <div class="modal" style="width:min(560px,92vw);">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M11 11l4 4"/></svg></span>
+      <h3>Search Across Branches</h3>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search in all branches..." autocomplete="off" />
+      <div id="searchResults" class="search-results"></div>
+    </div>
+    <div class="modal-foot">
+      <span style="color:var(--fg-4);font-family:var(--font-mono);font-size:10px;" id="searchMeta"></span>
+      <button class="btn" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Assistant Modal -->
+<div class="modal-scrim" id="aiAssistantScrim">
+  <div class="modal" style="width:min(560px,92vw);">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 0v4M8 12v4M0 8h4M12 8h4M2.3 2.3l2.8 2.8M11 11l2.8 2.8M2.3 13.7l2.8-2.8M11 5l2.8-2.8"/></svg></span>
+      <h3>AI Assistant</h3>
+    </div>
+    <div class="modal-body">
+      <!-- AI Config Panel -->
+      <div id="aiConfigPanel" class="ai-panel" style="margin-bottom:16px;">
+        <div class="section-title" style="margin-bottom:8px;">Configuration</div>
+        <input type="text" id="aiEndpoint" class="ai-config-input" placeholder="API endpoint (OpenAI-compatible)" />
+        <input type="password" id="aiApiKey" class="ai-config-input" placeholder="API key (not saved)" style="margin-top:6px;" />
+        <input type="text" id="aiModel" class="ai-config-input" placeholder="Model (e.g. gpt-4o-mini)" value="gpt-4o-mini" style="margin-top:6px;" />
+        <button class="ai-suggestion-btn" id="aiSaveConfig" style="margin-top:6px;">Save config</button>
+        <div id="aiConfigStatus" style="font-family:var(--font-mono);font-size:10px;color:var(--fg-4);margin-top:4px;"></div>
+      </div>
+
+      <!-- Rewrite Section -->
+      <div class="section-title" style="margin-bottom:8px;">Rewrite</div>
+      <textarea id="aiSelectedText" placeholder="Select text in the editor or paste here..." style="width:100%;min-height:60px;background:rgba(7,14,26,0.5);border:1px solid var(--border-line);border-radius:var(--radius-sm);color:var(--fg-1);padding:8px;font-family:var(--font-sans);font-size:13px;resize:vertical;"></textarea>
+      <div style="display:flex;gap:8px;margin:8px 0;">
+        <select id="aiStyle" class="ai-config-input" style="flex:1;">
+          <option value="more concise">More concise</option>
+          <option value="more vivid">More vivid</option>
+          <option value="fix grammar">Fix grammar</option>
+          <option value="expand">Expand</option>
+        </select>
+        <select id="aiTone" class="ai-config-input" style="flex:1;">
+          <option value="dramatic">Dramatic</option>
+          <option value="casual">Casual</option>
+          <option value="formal">Formal</option>
+          <option value="poetic">Poetic</option>
+        </select>
+      </div>
+      <button class="ai-suggestion-btn" id="aiRewriteBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13L1 15M5 11l-2 2M1 11l2 2M8 1l1.5 3L13 5.5l-3 1.5L8 10l-1.5-3L3 5.5l3-1.5z"/></svg> Rewrite</button>
+      <div id="aiRewriteResult" style="margin-top:12px;padding:10px;background:rgba(20,184,154,0.04);border-radius:var(--radius-sm);display:none;">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent-2);margin-bottom:4px;">Result:</div>
+        <div id="aiRewriteResultText" style="font-size:13px;color:var(--fg-2);line-height:1.6;"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="ai-suggestion-btn" id="aiReplaceBtn">Replace</button>
+          <button class="ai-suggestion-btn" id="aiInsertBtn">Insert below</button>
+          <button class="btn" data-close style="font-size:10px;">Discard</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span style="color:var(--fg-4);font-family:var(--font-mono);font-size:10px;">Tab to accept inline suggestions</span>
+      <span style="color:var(--fg-4);font-family:var(--font-mono);font-size:10px;">Tab to accept inline suggestions</span>
+      <button class="btn" data-close>Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Map Modal -->
+<div class="modal-scrim" id="mapScrim">
+  <div class="modal map-modal" id="mapModal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);" id="mapIcon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L1 8l7 7 7-7-7-7z"/><path d="M4 5h8M4 8h8M4 11h8"/></svg></span>
+      <h3 id="mapTitle">Map</h3>
+      <div class="map-toolbar">
+        <button class="graph-control-btn" id="mapPlacePinBtn" title="Place pin"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1C5.2 1 3 3.2 3 6c0 3.8 5 9 5 9s5-5.2 5-9c0-2.8-2.2-5-5-5z" fill="currentColor" opacity="0.2"/><circle cx="8" cy="6" r="1.5"/></svg></button>
+        <button class="graph-control-btn" id="mapZoomOut" title="Zoom out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10"/></svg></button>
+        <button class="graph-control-btn" id="mapZoomReset" title="Reset">⌂</button>
+        <button class="graph-control-btn" id="mapZoomIn" title="Zoom in">+</button>
+      </div>
+      <button class="scene-banner-collapse" data-close title="Close">&times;</button>
+    </div>
+    <div class="modal-body map-body">
+      <canvas id="interactiveMapCanvas" class="interactive-map-canvas"></canvas>
+      <div class="map-pin-popup" id="mapPinPopup">
+        <input type="text" id="mapPinInput" placeholder="Add a note..." />
+        <div class="map-pin-actions">
+          <button id="mapPinSave">Save</button>
+          <button id="mapPinDelete" class="btn danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Universe Dashboard Modal -->
+<div class="modal-scrim" id="universeDashboardScrim">
+  <div class="modal dashboard-modal" id="universeDashboardModal">
+    <div class="modal-head">
+      <span style="color:var(--accent-2);">&#x25C8;</span>
+      <h3>Universe Dashboard</h3>
+      <button class="scene-banner-collapse" data-close title="Close">&times;</button>
+    </div>
+    <div class="modal-body dashboard-body" id="dashboardBody">
+      <!-- Characters column -->
+      <div class="dashboard-column" id="characterColumn">
+        <h4 class="dashboard-col-title">Characters</h4>
+        <div class="dashboard-grid" id="characterGrid"></div>
+      </div>
+      <!-- Story Beats column -->
+      <div class="dashboard-column" id="beatsColumn">
+        <h4 class="dashboard-col-title">Story Beats</h4>
+        <div class="dashboard-grid" id="beatsGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Inline handlers for dashboard and map modals + dashboard rendering
+(function() {
+  function openModal(id) { var el = document.getElementById(id); if (el) el.classList.add('show'); }
+  function closeModal(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
+
+  // Seed data for Universe Dashboard
+  var CHARS = [
+    { id:'c1', name:'Sarah', type:'protagonist', desc:'A curious young archivist who stumbles upon secrets hidden within the library\'s oldest collection. Her determination drives the narrative forward.', traits:['curious','determined','intuitive'] },
+    { id:'c2', name:'The Librarian', type:'antagonist', desc:'An ancient, mysterious figure who has guarded the library for centuries. Knows far more than they reveal.', traits:['mysterious','ancient','cryptic'] },
+    { id:'c3', name:'Detective Rowe', type:'supporting', desc:'A skeptical investigator who provides grounding logic to Sarah\'s wild theories. Has a hidden connection to the library.', traits:['skeptical','logical','secretive'] }
+  ];
+  var BEATS = [
+    { id:'b1', title:'Discovery of hidden door', act:'Act 1', chapter:'Ch.1', status:'drafted', desc:'Sarah notices an anomaly in the floor plan — a door that shouldn\'t exist, hidden behind a bookshelf that hasn\'t been moved in decades.' },
+    { id:'b2', title:'Sarah finds the journal', act:'Act 2a', chapter:'Ch.1', status:'drafted', desc:'Behind the hidden door, Sarah discovers a journal belonging to the library\'s original architect — filled with cryptic warnings and a map.' },
+    { id:'b3', title:'The truth revealed', act:'Act 2b', chapter:'Ch.2', status:'planned', desc:'The Librarian confronts Sarah, revealing the true purpose of the library — it\'s not a repository of books, but a prison for something ancient.' },
+    { id:'b4', title:'Resolution', act:'Act 3', chapter:'Ch.2', status:'planned', desc:'Sarah must choose: seal the library forever, or become its next guardian.' }
+  ];
+  var ACT_COLORS = { 'Act 1':'#14b89a', 'Act 2a':'#3ef0e2', 'Act 2b':'#8b5cf6', 'Act 3':'#4ade80' };
+
+  function renderCharCard(c) {
+    var typeColors = { protagonist:'#14b89a', antagonist:'#ef4444', supporting:'#f59e0b' };
+    var typeIcons = { protagonist:'◆', antagonist:'◈', supporting:'●' };
+    var traits = (c.traits || []).map(function(t){ return '<span class="trait-pill">' + t + '</span>'; }).join('');
+    return '<div class="char-window ' + c.type + '" data-char="' + c.id + '" style="border-top-color:' + (typeColors[c.type]||'#666') + '">' +
+      '<div class="char-window-chrome"><div class="char-window-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>' +
+      '<span class="char-window-title-text">' + (typeIcons[c.type]||'●') + ' ' + c.name + '</span></div>' +
+      '<div class="char-window-body"><div class="char-type" style="color:' + (typeColors[c.type]||'#666') + '">' + c.type + '</div>' +
+      '<p class="char-desc">' + c.desc + '</p><div class="char-traits">' + traits + '</div></div></div>';
+  }
+  function renderBeatCard(b) {
+    var color = ACT_COLORS[b.act] || '#666';
+    var statusClass = b.status || 'planned';
+    return '<div class="beat-card" data-beat="' + b.id + '" style="border-left-color:' + color + '">' +
+      '<div class="beat-header"><div class="beat-title">' + b.title + '</div>' +
+      '<span class="beat-status ' + statusClass + '">' + b.status + '</span></div>' +
+      '<div class="beat-meta">' + b.act + ' · ' + b.chapter + '</div>' +
+      '<p class="beat-desc">' + b.desc + '</p></div>';
+  }
+  function renderDashboard() {
+    var cg = document.getElementById('characterGrid');
+    var bg = document.getElementById('beatsGrid');
+    if (cg) cg.innerHTML = CHARS.map(renderCharCard).join('');
+    if (bg) bg.innerHTML = BEATS.map(renderBeatCard).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    renderDashboard();
+
+    // Universe Dashboard button
+    var dbBtn = document.getElementById('btnUniverseDashboard');
+    var dbScrim = document.getElementById('universeDashboardScrim');
+    if (dbBtn && dbScrim) {
+      dbBtn.addEventListener('click', function() { openModal('universeDashboardScrim'); });
+      dbScrim.addEventListener('click', function(e) { if (e.target === dbScrim) closeModal('universeDashboardScrim'); });
+      var dbClose = dbScrim.querySelector('[data-close]');
+      if (dbClose) dbClose.addEventListener('click', function() { closeModal('universeDashboardScrim'); });
+    }
+
+    // Map modal
+    var mapScrim = document.getElementById('mapScrim');
+    if (mapScrim) {
+      mapScrim.addEventListener('click', function(e) { if (e.target === mapScrim) closeModal('mapScrim'); });
+      var mapClose = mapScrim.querySelector('[data-close]');
+      if (mapClose) mapClose.addEventListener('click', function() { closeModal('mapScrim'); });
+    }
+
+    // Mobile: collapse timeline by default on small screens
+    if (window.innerWidth <= 768) {
+      var appEl = document.getElementById('app');
+      var tBar = document.getElementById('timelineBar');
+      if (appEl) { appEl.classList.add('timeline-collapsed'); }
+      if (tBar) { tBar.classList.add('collapsed'); }
+    }
+
+    // Swipe-to-close for dashboard on mobile
+    var dbModal = document.getElementById('universeDashboardModal');
+    if (dbModal && window.innerWidth <= 768) {
+      var touchStartY = 0;
+      dbModal.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      dbModal.addEventListener('touchmove', function(e) {
+        var diff = e.touches[0].clientY - touchStartY;
+        if (diff > 50) { // swiped down more than 50px
+          closeModal('universeDashboardScrim');
+        }
+      }, { passive: true });
+    }
+  });
+})();
+</script>
+<script type="module" src="flow-writer/js/app.js?v=3"></script>
+
+<!-- ═══════════════════════════════════════════════════════
+     TWEAKS PANEL — Atmosphere · Writing Feel · Neural Glow
+     ═══════════════════════════════════════════════════════ -->
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="flow-writer/tweaks-panel.jsx"></script>
+<script type="text/babel">
+// ── Flow Writer Tweaks ──
+const { useTweaks, TweaksPanel, TweakSection, TweakSlider, TweakColor } = window;
+
+// Hex → rgba helper
+function hex2rgba(hex, a) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a.toFixed(3)})`;
+}
+function darkHex(hex, f=0.55) {
+  const h = hex.replace('#','');
+  const r = Math.round(parseInt(h.slice(0,2),16)*f);
+  const g = Math.round(parseInt(h.slice(2,4),16)*f);
+  const b = Math.round(parseInt(h.slice(4,6),16)*f);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// Four atmospheres — each is [accent1, accent2, electricCyan]
+const ATMOSPHERES = [
+  ['#14b89a','#44d6b8','#3ef0e2'],  // Neural Teal (default)
+  ['#8b5cf6','#a78bfa','#c4b5fd'],  // Violet Pulse
+  ['#f59e0b','#fbbf24','#fde68a'],  // Amber Noir
+  ['#38bdf8','#7dd3fc','#bae6fd'],  // Ice Blue
+];
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "atmosphere": [
+    "#14b89a",
+    "#44d6b8",
+    "#3ef0e2"
+  ],
+  "density": 40,
+  "glow": 50
+}/*EDITMODE-END*/;
+
+function applyTweaks(t) {
+  const R = document.documentElement.style;
+  const pal = Array.isArray(t.atmosphere) ? t.atmosphere : ATMOSPHERES[0];
+  const [a1, a2, cy] = pal;
+  const gf = t.glow / 70; // 70 = "standard" → factor 1.0
+
+  // ── Accent colours ──
+  R.setProperty('--accent-1', a1);
+  R.setProperty('--accent-2', a2);
+  R.setProperty('--electric-cyan', cy);
+  R.setProperty('--accent-3', cy);
+  R.setProperty('--teal-500', a1);
+  R.setProperty('--teal-300', a2);
+  R.setProperty('--link', a2);
+  R.setProperty('--link-hover', cy);
+  R.setProperty('--border-accent', hex2rgba(a1, Math.max(0.08, 0.45*gf)));
+  R.setProperty('--grad-brand',     `linear-gradient(135deg, ${a1} 0%, ${a2} 60%, ${cy} 100%)`);
+  R.setProperty('--grad-brand-deep',`linear-gradient(135deg, ${darkHex(a1)} 0%, ${a1} 100%)`);
+  R.setProperty('--grad-divider',   `linear-gradient(90deg, transparent 0%, ${a1} 50%, transparent 100%)`);
+
+  // ── Glow intensity ──
+  if (t.glow < 4) {
+    ['--glow-teal-sm','--glow-teal-md','--glow-teal-lg','--glow-cyan']
+      .forEach(v => R.setProperty(v,'none'));
+  } else {
+    R.setProperty('--glow-teal-sm', `0 0 12px ${hex2rgba(a1, Math.min(0.65, 0.35*gf))}`);
+    R.setProperty('--glow-teal-md', `0 0 22px ${hex2rgba(a1, Math.min(0.65, 0.45*gf))}, 0 0 42px ${hex2rgba(cy, Math.min(0.32, 0.18*gf))}`);
+    R.setProperty('--glow-teal-lg', `0 0 32px ${hex2rgba(a1, Math.min(0.75, 0.55*gf))}, 0 0 72px ${hex2rgba(cy, Math.min(0.38, 0.25*gf))}`);
+    R.setProperty('--glow-cyan',    `0 0 18px ${hex2rgba(cy, Math.min(0.75, 0.55*gf))}`);
+  }
+
+  // ── Writing density  (0 = dense · 100 = airy) ──
+  const d  = t.density / 100;
+  const fs = Math.round(15 + d * 7);           // 15–22 px
+  const lh = +(1.48 + d * 0.47).toFixed(2);   // 1.48–1.95
+  const mw = Math.round(840 - d * 260) + 'px'; // 840–580 px
+  R.setProperty('--editor-fs',    fs + 'px');
+  R.setProperty('--editor-lh',    String(lh));
+  R.setProperty('--editor-width', mw);
+  const ed = document.getElementById('editor');
+  if (ed) { ed.style.fontSize = fs+'px'; ed.style.lineHeight = String(lh); ed.style.maxWidth = mw; }
+}
+
+// Apply saved tweaks immediately (no flash on load)
+(function() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('tweaks') || '{}');
+    applyTweaks({ ...TWEAK_DEFAULTS, ...saved });
+  } catch(e) { applyTweaks(TWEAK_DEFAULTS); }
+})();
+
+const ATMO_LABELS = ['Teal','Violet','Amber','Ice'];
+
+function FlowWriterTweaks() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  React.useEffect(() => { applyTweaks(t); }, [t.atmosphere, t.density, t.glow]);
+
+  const atmoIdx = ATMOSPHERES.findIndex(p => Array.isArray(t.atmosphere) && p[0] === t.atmosphere[0]);
+  const atmoLabel = ATMO_LABELS[atmoIdx] ?? '';
+
+  return (
+    <TweaksPanel title="Flow Writer">
+      <TweakSection label="Atmosphere" />
+      <TweakColor
+        label={`Accent${atmoLabel ? ' · ' + atmoLabel : ''}`}
+        value={t.atmosphere}
+        options={ATMOSPHERES}
+        onChange={v => setTweak('atmosphere', v)}
+      />
+
+      <TweakSection label="Writing Feel" />
+      <TweakSlider
+        label="Density"
+        value={t.density}
+        min={0} max={100} step={5}
+        onChange={v => setTweak('density', v)}
+      />
+
+      <TweakSection label="Neural Glow" />
+      <TweakSlider
+        label="Intensity"
+        value={t.glow}
+        min={0} max={120} step={5}
+        onChange={v => setTweak('glow', v)}
+      />
+    </TweaksPanel>
+  );
+}
+
+// Babel runs after DOM is parsed — all symbols above are defined, mount directly
+(function() {
+  const root = document.getElementById('tweaks-root');
+  if (root && root.children.length === 0) {
+    ReactDOM.createRoot(root).render(React.createElement(FlowWriterTweaks));
+  }
+})();
+</script>
+</body>
+</html>
