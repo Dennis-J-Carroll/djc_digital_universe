@@ -44,6 +44,12 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
 
+# ─── Allow same-origin iframe embedding for /apps/* (Writing Studio shell) ─────
+[[headers]]
+  for = "/apps/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+
 # ─── Hashed Gatsby JS bundles — immutable, never revalidate ────────────────────
 # Gatsby content-hashes every JS filename; a changed file = a changed URL.
 # Caching these avoids 10+ conditional GET round-trips that stall the load event.
