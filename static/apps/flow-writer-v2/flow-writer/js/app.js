@@ -655,6 +655,155 @@ async function onSwitchBranch(branchId) {
   flashSave('Switched to \u00b7 ' + branch.name);
 }
 
+const MEDIA_TYPES = new Set(['location', 'map', 'image', 'asset']);
+
+function mediaKey(nodeId) { return `fw-media-${nodeId}`; }
+
+function saveMediaItem(nodeId, dataUrl, fileName) {
+  try {
+    const items = JSON.parse(localStorage.getItem(mediaKey(nodeId)) || '[]');
+    items.push({ dataUrl, fileName, added: Date.now() });
+    localStorage.setItem(mediaKey(nodeId), JSON.stringify(items));
+  } catch(e) { console.warn('[Media] Save failed:', e); }
+}
+
+function deleteMediaItem(nodeId, index) {
+  try {
+    const items = JSON.parse(localStorage.getItem(mediaKey(nodeId)) || '[]');
+    items.splice(index, 1);
+    localStorage.setItem(mediaKey(nodeId), JSON.stringify(items));
+  } catch(e) {}
+}
+
+function renderMediaGrid(nodeId) {
+  const grid = document.getElementById('mediaPreviewGrid');
+  const drop = document.getElementById('mediaDropZone');
+  if (!grid) return;
+  const items = JSON.parse(localStorage.getItem(mediaKey(nodeId)) || '[]');
+  drop.style.display = items.length ? 'none' : '';
+  grid.innerHTML = items.map((item, i) => {
+    const isPdf = item.fileName?.toLowerCase().endsWith('.pdf') || item.dataUrl?.startsWith('data:application/pdf');
+    const thumb = isPdf
+      ? `<div class="media-pdf-thumb">
+           <svg width="28" height="28" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="1" width="12" height="14" rx="1"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>
+           PDF
+         </div>`
+      : `<img src="${item.dataUrl}" alt="${item.fileName || ''}" loading="lazy" onclick="window.open('${item.dataUrl}','_blank')" />`;
+    return `<div class="media-thumb" title="${item.fileName || ''}">
+      ${thumb}
+      <div class="media-thumb-label">${item.fileName || 'Attachment'}</div>
+      <button class="media-thumb-del" data-node="${nodeId}" data-idx="${i}" title="Remove">\u00d7</button>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.media-thumb-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteMediaItem(btn.dataset.node, parseInt(btn.dataset.idx));
+      renderMediaGrid(btn.dataset.node);
+    });
+  });
+}
+
+function initMapMediaInput() {
+  const mapInput = document.getElementById('mapMediaInput');
+  if (!mapInput) return;
+
+  const MAP_NODE_IDS = { town: 'map', library: 'layout' };
+
+  // When map modal opens, sync media strip
+  const scrim = document.getElementById('mapScrim');
+  if (scrim) {
+    new MutationObserver(() => {
+      if (scrim.classList.contains('show')) {
+        const titleEl = document.getElementById('mapTitle');
+        const mapType = titleEl?.textContent === 'Town Map' ? 'town' : 'library';
+        const nodeId = MAP_NODE_IDS[mapType];
+        mapInput.dataset.mapType = mapType;
+        renderMapMediaStrip(nodeId);
+      }
+    }).observe(scrim, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  mapInput.addEventListener('change', () => {
+    const mapType = mapInput.dataset.mapType;
+    const nodeId  = MAP_NODE_IDS[mapType] || mapType;
+    [...mapInput.files].forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        saveMediaItem(nodeId, ev.target.result, file.name);
+        renderMapMediaStrip(nodeId);
+      };
+      reader.readAsDataURL(file);
+    });
+    mapInput.value = '';
+  });
+}
+
+function renderMapMediaStrip(nodeId) {
+  const strip = document.getElementById('mapMediaStrip');
+  if (!strip) return;
+  const items = JSON.parse(localStorage.getItem(mediaKey(nodeId)) || '[]');
+  if (!items.length) { strip.style.display = 'none'; return; }
+  strip.style.display = 'flex';
+  strip.innerHTML = items.map((item, i) => {
+    const isPdf = item.fileName?.toLowerCase().endsWith('.pdf');
+    const thumb = isPdf
+      ? `<div class="map-media-pdf">PDF</div>`
+      : `<img src="${item.dataUrl}" alt="${item.fileName||''}" onclick="window.open('${item.dataUrl}','_blank')" />`;
+    return `<div class="map-media-item" title="${item.fileName||''}">
+      ${thumb}
+      <button class="media-thumb-del map-del" data-node="${nodeId}" data-idx="${i}" title="Remove">×</button>
+    </div>`;
+  }).join('');
+  strip.querySelectorAll('.map-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteMediaItem(btn.dataset.node, parseInt(btn.dataset.idx));
+      renderMapMediaStrip(btn.dataset.node);
+    });
+  });
+}
+
+function initMediaZone() {
+  const input = document.getElementById('mediaFileInput');
+  const drop  = document.getElementById('mediaDropZone');
+  if (!input) return;
+
+  input.addEventListener('change', () => {
+    const nodeId = input.dataset.nodeId;
+    if (!nodeId) return;
+    [...input.files].forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        saveMediaItem(nodeId, ev.target.result, file.name);
+        renderMediaGrid(nodeId);
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  });
+
+  // Drag-and-drop
+  drop?.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop?.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop?.addEventListener('drop', e => {
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    const nodeId = input.dataset.nodeId;
+    if (!nodeId) return;
+    [...e.dataTransfer.files].forEach(file => {
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        saveMediaItem(nodeId, ev.target.result, file.name);
+        renderMediaGrid(nodeId);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
 async function onSwitchDoc(docId) {
   // Save current doc content
   await saveCurrentDoc();
@@ -662,22 +811,40 @@ async function onSwitchDoc(docId) {
   // Switch doc in engine
   const content = await switchDoc(docId);
 
-  // Update UI
+  // Detect node type
+  const branch = getActiveBranch();
+  const treeNodes = flattenTree(branch?.tree || []);
+  const node = treeNodes.find(n => n.id === docId);
+  const isMedia = MEDIA_TYPES.has(node?.type);
+
+  // Toggle center view: editor vs media zone
+  const editorWrap = document.getElementById('editorWrap');
+  const mediaZone  = document.getElementById('mediaZone');
+  const mediaInput = document.getElementById('mediaFileInput');
+  if (editorWrap) editorWrap.style.display = isMedia ? 'none' : '';
+  if (mediaZone) {
+    mediaZone.style.display = isMedia ? 'flex' : 'none';
+    if (isMedia) {
+      if (mediaInput) mediaInput.dataset.nodeId = docId;
+      const title = document.getElementById('mediaZoneTitle');
+      if (title) title.textContent = (node?.label || 'World Building') + ' \u00b7 Attachments';
+      renderMediaGrid(docId);
+    }
+  }
+
+  // Update editor
   editor.value = content ?? '';
 
   // Update active highlight in tree
   $$('.tree-item').forEach(el => el.classList.toggle('active', el.dataset.doc === docId));
 
   // Update scene summary pill
-  const branch = getActiveBranch();
-  const treeNodes = flattenTree(branch?.tree || []);
-  const node = treeNodes.find(n => n.id === docId);
   const label = node?.label ?? '';
   $('#sceneSummaryLabel').textContent = label + ' \u00b7 The Lost Library';
 
   renderSceneBanner();
   updateAll();
-  editor.focus();
+  if (!isMedia) editor.focus();
 }
 
 async function refreshBranchGraph() {
@@ -838,6 +1005,8 @@ async function boot() {
     initInteractiveMaps();
     initVoiceToText();
     initTimeline();
+    initMediaZone();
+    initMapMediaInput();
     wireEditorEvents();
     wireKeyboardShortcuts();
     initAIInlineSuggestions(editor);

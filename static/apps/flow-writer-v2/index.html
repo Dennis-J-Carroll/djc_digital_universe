@@ -315,6 +315,24 @@
         placeholder="Begin where the air shifts. Where the next sentence wants to go…"></textarea>
     </div>
 
+    <!-- Media zone: shown when a worldbuilding/location node is active -->
+    <div id="mediaZone" class="media-zone" style="display:none;">
+      <div class="media-zone-header">
+        <span class="media-zone-title" id="mediaZoneTitle">World Building · Attachments</span>
+        <label class="media-add-btn" for="mediaFileInput" title="Attach image or PDF">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M2 8h12"/></svg>
+          Add
+        </label>
+        <input type="file" id="mediaFileInput" accept="image/*,.pdf" multiple style="display:none;" />
+      </div>
+      <label class="media-drop-zone" id="mediaDropZone" for="mediaFileInput">
+        <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 6l4 3 3-2 4 3 3-2"/><circle cx="4.5" cy="5.5" r="1"/></svg>
+        <span>Drop images, PDFs, PNG, JPG here</span>
+        <span class="media-drop-hint">or click Add above</span>
+      </label>
+      <div id="mediaPreviewGrid" class="media-preview-grid"></div>
+    </div>
+
     <!-- Focus Mode Word Count Ring -->
     <div class="focus-word-ring" id="focusWordRing">
       <svg viewBox="0 0 80 80" width="80" height="80">
@@ -815,6 +833,11 @@
         <button class="graph-control-btn" id="mapZoomOut" title="Zoom out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10"/></svg></button>
         <button class="graph-control-btn" id="mapZoomReset" title="Reset">⌂</button>
         <button class="graph-control-btn" id="mapZoomIn" title="Zoom in">+</button>
+        <label class="graph-control-btn media-add-btn" for="mapMediaInput" title="Attach image or PDF" style="cursor:pointer;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 9l4-3 3 2 3-3 4 3"/><circle cx="4.5" cy="6" r="1"/></svg>
+          Images
+        </label>
+        <input type="file" id="mapMediaInput" accept="image/*,.pdf" multiple style="display:none;" />
       </div>
       <button class="scene-banner-collapse" data-close title="Close">&times;</button>
     </div>
@@ -827,6 +850,8 @@
           <button id="mapPinDelete" class="btn danger">Delete</button>
         </div>
       </div>
+      <!-- Image attachments strip for this map -->
+      <div class="map-media-strip" id="mapMediaStrip" style="display:none;"></div>
     </div>
   </div>
 </div>
