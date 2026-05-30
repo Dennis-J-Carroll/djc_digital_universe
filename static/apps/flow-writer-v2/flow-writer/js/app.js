@@ -44,6 +44,8 @@ import {
   initMobileViewportFix,
 } from './mobile-viewport-fix.js?v=4';
 
+import { initStudioAdapter } from './studio-adapter.js?v=1';
+
 import {
   initInteractiveMaps,
   setMapBackground,
@@ -1078,6 +1080,9 @@ async function boot() {
     scheduleNudge();
     bumpFlow();
     editor.focus();
+
+    // Writing Studio: activate cross-app handoff when hosted in the shell
+    initStudioAdapter(editor);
 
     console.log('[Flow Writer] Boot complete');
   } catch (err) {

@@ -1,0 +1,235 @@
+/* ============================================================
+   Writing Studio — Shell Styles
+   Dark chrome, split panes, draggable divider.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-base:      #070e1a;
+  --bg-surface:   #0d1829;
+  --border:       rgba(255,255,255,0.07);
+  --accent:       #14b89a;
+  --accent-dim:   rgba(20,184,154,0.18);
+  --fg-1:         #e8f0f8;
+  --fg-3:         #8899aa;
+  --font-sans:    'Space Grotesk', system-ui, sans-serif;
+  --topbar-h:     48px;
+  --tab-bar-h:    0px; /* shown only on mobile */
+  --divider-w:    6px;
+  --radius:       6px;
+  --dur:          160ms;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+/* ── Topbar ───────────────────────────────────────────────── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.topbar-back {
+  font-size: 12px;
+  color: var(--fg-3);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  transition: color var(--dur);
+  white-space: nowrap;
+}
+.topbar-back:hover { color: var(--fg-1); }
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-1);
+}
+.brand-tile {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--bg-base);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.brand-accent { color: var(--accent); }
+
+.topbar-pane-labels {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  pointer-events: none;
+}
+.pane-label {
+  font-size: 11px;
+  color: var(--fg-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: calc(50% - var(--divider-w) / 2);
+  text-align: center;
+}
+.pane-label span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: var(--accent-dim);
+  border-radius: 20px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.topbar-hint {
+  font-size: 11px;
+  color: var(--fg-3);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar-hint .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:0.4; transform:scale(1); }
+  50%      { opacity:1;   transform:scale(1.3); }
+}
+
+/* ── Tab bar (mobile only) ────────────────────────────────── */
+.tab-bar {
+  display: none;
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0;
+  height: 40px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 90;
+}
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg-3);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur);
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Pane container ───────────────────────────────────────── */
+#pane-container {
+  position: fixed;
+  top: calc(var(--topbar-h) + var(--tab-bar-h));
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Panes ────────────────────────────────────────────────── */
+.pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: flex var(--dur);
+}
+
+#pane-left  { flex: 0 0 50%; }
+#pane-right { flex: 0 0 50%; }
+
+.pane iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+  display: block;
+  background: #fff;
+}
+#flow-frame  { background: #070e1a; }
+#prose-frame { background: #fff; }
+
+.hidden-pane { flex: 0 0 0% !important; overflow: hidden; }
+
+/* ── Divider ──────────────────────────────────────────────── */
+#divider {
+  flex: 0 0 var(--divider-w);
+  background: var(--border);
+  cursor: col-resize;
+  position: relative;
+  transition: background var(--dur);
+  z-index: 10;
+}
+#divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  border-radius: 1px;
+  background: var(--fg-3);
+  opacity: 0.35;
+  transition: opacity var(--dur), background var(--dur);
+}
+#divider:hover,
+#divider.dragging {
+  background: var(--accent-dim);
+}
+#divider:hover::after,
+#divider.dragging::after {
+  opacity: 0.85;
+  background: var(--accent);
+}
+#divider.hidden { display: none; }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --tab-bar-h: 40px; }
+  .tab-bar    { display: flex; }
+  .topbar-pane-labels { display: none; }
+  #divider    { display: none; }
+  #pane-left  { flex: 1; }
+  #pane-right { flex: 1; }
+}

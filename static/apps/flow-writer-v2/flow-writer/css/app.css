@@ -650,6 +650,7 @@ body {
 .editor-wrap::-webkit-scrollbar-thumb { background: var(--navy-700); border-radius: 4px; }
 
 .editor {
+  display: block;
   width: 100%;
   max-width: var(--editor-width, 720px);
   margin: 0 auto;

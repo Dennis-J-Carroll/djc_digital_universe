@@ -1391,5 +1391,117 @@
             document.getElementById('badges-modal').classList.add('hidden');
         }
     </script>
+
+    <!-- ── Writing Studio adapter ─────────────────────────────────────────────
+         Inert when the app is opened standalone.
+         Active only when hosted inside the Writing Studio shell iframe.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <script>
+    (function () {
+      if (window.parent === window) return; // standalone — do nothing
+
+      const ORIGIN = location.origin;
+
+      // ── Receive: analyze action from Flow Writer (via shell router) ──────
+      window.addEventListener('message', function (e) {
+        if (e.origin !== ORIGIN) return;
+        var msg = e.data;
+        if (!msg || typeof msg !== 'object' || msg.v !== 1) return;
+
+        if (msg.action === 'analyze') {
+          var text = (msg.payload && msg.payload.text) || '';
+          if (!text.trim()) return;
+
+          // Switch to writing screen (skip genre/difficulty selection)
+          var ss = document.getElementById('selection-screen');
+          var ws = document.getElementById('writing-screen');
+          if (ss) ss.classList.add('hidden');
+          if (ws) ws.classList.remove('hidden');
+
+          // Ensure currentPrompt exists so analyzeText() won't throw
+          if (typeof appState !== 'undefined' && !appState.currentPrompt) {
+            appState.currentPrompt = { minSentences: 1, title: 'Draft analysis', focus: '' };
+          }
+
+          var input = document.getElementById('prose-input');
+          if (input) {
+            input.value = text;
+            if (typeof analyzeText === 'function') analyzeText();
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+
+      // ── Inject "Send to Draft" button next to "Clear" ────────────────────
+      function injectSendButton() {
+        if (document.getElementById('studio-send-btn')) return;
+        var clearBtn = document.querySelector('button[onclick="clearText()"]');
+        if (!clearBtn) return;
+
+        var btn = document.createElement('button');
+        btn.id = 'studio-send-btn';
+        btn.type = 'button';
+        btn.title = 'Send this passage to Flow Writer at the current cursor position';
+        btn.style.cssText = [
+          'display:inline-flex',
+          'align-items:center',
+          'gap:5px',
+          'padding:6px 14px',
+          'background:#0d9488',
+          'color:#fff',
+          'border:none',
+          'border-radius:6px',
+          'font-family:inherit',
+          'font-size:13px',
+          'font-weight:600',
+          'cursor:pointer',
+          'transition:background 120ms',
+          'white-space:nowrap',
+        ].join(';');
+        btn.onmouseenter = function () { btn.style.background = '#0f766e'; };
+        btn.onmouseleave = function () { btn.style.background = '#0d9488'; };
+        btn.innerHTML =
+          '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M2 8h10M8 4l4 4-4 4"/></svg>' +
+          'Send to Flow Writer';
+
+        btn.onclick = function () {
+          var text = (document.getElementById('prose-input') || {}).value || '';
+          if (!text.trim()) return;
+          window.parent.postMessage({
+            v: 1, id: Date.now(), ts: Date.now(),
+            type: 'text', action: 'insert',
+            payload: { text: text, meta: { source: 'prose-trainer' } }
+          }, ORIGIN);
+
+          // Brief visual confirm
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3 3 7-7"/></svg>Sent!';
+          btn.style.background = '#059669';
+          setTimeout(function () {
+            btn.innerHTML =
+              '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M2 8h10M8 4l4 4-4 4"/></svg>' +
+              'Send to Flow Writer';
+            btn.style.background = '#0d9488';
+          }, 1500);
+        };
+
+        clearBtn.parentElement.insertBefore(btn, clearBtn.nextSibling);
+      }
+
+      // Writing screen may not be in DOM yet on load; observe for it
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectSendButton);
+      } else {
+        injectSendButton();
+      }
+      // Also retry after Start Training is clicked (screen switches dynamically)
+      document.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'start-btn') {
+          setTimeout(injectSendButton, 100);
+        }
+      });
+    })();
+    </script>
 </body>
 </html>

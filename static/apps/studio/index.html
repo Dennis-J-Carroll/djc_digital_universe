@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Writing Studio — DJC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="studio.css">
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <a class="topbar-back" href="../../">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 3L5 8l5 5"/>
+      </svg>
+      Projects
+    </a>
+
+    <div class="topbar-brand">
+      <div class="brand-tile">DJC</div>
+      WRITING <span class="brand-accent">STUDIO</span>
+    </div>
+
+    <div class="topbar-pane-labels">
+      <div class="pane-label">
+        <span>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12M2 8h9M2 12h6"/></svg>
+          Prose Trainer
+        </span>
+      </div>
+      <div class="pane-label">
+        <span>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+          Flow Writer
+        </span>
+      </div>
+    </div>
+
+    <div class="topbar-hint">
+      <span class="dot"></span>
+      Practice → Draft · Draft → Analyze
+    </div>
+  </header>
+
+  <!-- Tab bar (mobile) -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-pane="prose">Prose Trainer</button>
+    <button class="tab-btn"        data-pane="flow">Flow Writer</button>
+  </div>
+
+  <!-- Split pane container -->
+  <div id="pane-container">
+    <div class="pane" id="pane-left">
+      <iframe
+        id="prose-frame"
+        src="../prose-trainer-app.html"
+        title="Prose Trainer"
+        allow="microphone"
+      ></iframe>
+    </div>
+
+    <div id="divider" title="Drag to resize"></div>
+
+    <div class="pane" id="pane-right">
+      <iframe
+        id="flow-frame"
+        src="../flow-writer-v2/"
+        title="Flow Writer"
+        allow="microphone"
+      ></iframe>
+    </div>
+  </div>
+
+  <script src="studio-router.js"></script>
+</body>
+</html>
