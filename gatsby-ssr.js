@@ -5,38 +5,6 @@
  */
 
 const React = require("react")
-const fs = require("fs")
-const path = require("path")
-
-// Read chunk map at build time to generate preload hints for core bundles.
-// These 3 files block the load event — preloading them lets the browser
-// start downloading before it parses to the <script> tags at end of <body>.
-function getCorePreloads() {
-  try {
-    const chunkMapPath = path.join(process.cwd(), "public", "chunk-map.json")
-    const chunkMap = JSON.parse(fs.readFileSync(chunkMapPath, "utf8"))
-    const appChunk = chunkMap["app"]?.[0]
-
-    // webpack-runtime and framework have predictable glob patterns
-    const publicDir = path.join(process.cwd(), "public")
-    const files = fs.readdirSync(publicDir)
-    const runtime = files.find(f => f.startsWith("webpack-runtime-") && f.endsWith(".js"))
-    const framework = files.find(f => f.startsWith("framework-") && f.endsWith(".js"))
-
-    return [runtime && `/${runtime}`, framework && `/${framework}`, appChunk]
-      .filter(Boolean)
-      .map((href, i) =>
-        React.createElement("link", {
-          key: `preload-core-${i}`,
-          rel: "preload",
-          as: "script",
-          href,
-        })
-      )
-  } catch {
-    return []
-  }
-}
 
 /**
  * @type {import('gatsby').GatsbySSR['onRenderBody']}
@@ -44,11 +12,12 @@ function getCorePreloads() {
 exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyComponents }) => {
   setHtmlAttributes({ lang: `en` })
 
-  // Async font loader — injected as a script so it does NOT block the load event.
-  // display=swap: text renders immediately in fallback; Orbitron swaps in when ready.
-  // hero-text.js gates its animation on document.fonts.load() so no FOUT on the name.
+  // Font loading: media="print" + onload pattern (Filament Group loadCSS).
+  // Browser downloads font CSS during the initial load cycle (progress bar tracks it)
+  // but the print media type means it never blocks rendering or first paint.
+  // onload switches media to "all" so styles apply once the download completes.
+  // noscript fallback covers JS-disabled browsers.
   setHeadComponents([
-    ...getCorePreloads(),
     React.createElement("link", {
       key: "font-preconnect-1",
       rel: "preconnect",
@@ -60,15 +29,27 @@ exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyCompo
       href: "https://fonts.gstatic.com",
       crossOrigin: "anonymous",
     }),
+    React.createElement("link", {
+      key: "google-fonts",
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap",
+      media: "print",
+    }),
+    // Inline script runs synchronously during HTML parse and attaches the onload
+    // handler that switches media from "print" to "all" once the font CSS downloads.
+    // React SSR strips onLoad event props from static HTML, so this script is required.
     React.createElement("script", {
-      key: "async-font-loader",
+      key: "font-media-switch",
       dangerouslySetInnerHTML: {
-        // Fire AFTER window load so the font request never blocks Safari's progress bar.
-        // hero-text.js waits on document.fonts.load('800 1em Orbitron') before animating,
-        // so the hero name still renders in Orbitron — just after load, not during.
-        __html: `(function(){function f(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap';document.head.appendChild(l);}if(document.readyState==='complete'){f();}else{window.addEventListener('load',f,{once:true});}})();`,
+        __html: `(function(){var l=document.currentScript.previousElementSibling;if(l&&l.tagName==='LINK'){if(l.sheet){l.media='all';}else{l.addEventListener('load',function(){l.media='all';});}}})();`,
       },
     }),
+    React.createElement("noscript", {
+      key: "google-fonts-noscript",
+    }, React.createElement("link", {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap",
+    })),
   ])
 
   // Hidden static forms for Netlify Forms detection at build time.
