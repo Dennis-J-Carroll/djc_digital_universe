@@ -24,6 +24,9 @@ let placingPin = false; // click-to-place mode
 let activePinId = null; // currently selected pin
 let hoveredPinId = null;
 
+// Background images per map type (uploaded by user)
+const bgImages = { town: null, library: null };
+
 // Canvas size (internal resolution)
 let W = 0, H = 0;
 
@@ -443,6 +446,33 @@ function drawPins(cx) {
   });
 }
 
+// ── Background image helpers ─────────────────────────────────
+function bgKey(mapType) { return `fw-map-bg-${mapType}`; }
+
+export function setMapBackground(mapType, dataUrl) {
+  localStorage.setItem(bgKey(mapType), dataUrl);
+  const img = new Image();
+  img.onload = () => { bgImages[mapType] = img; };
+  img.src = dataUrl;
+}
+
+export function clearMapBackground(mapType) {
+  localStorage.removeItem(bgKey(mapType));
+  bgImages[mapType] = null;
+}
+
+export function hasMapBackground(mapType) {
+  return !!bgImages[mapType];
+}
+
+function loadBgImage(mapType) {
+  const stored = localStorage.getItem(bgKey(mapType));
+  if (!stored) { bgImages[mapType] = null; return; }
+  const img = new Image();
+  img.onload = () => { bgImages[mapType] = img; };
+  img.src = stored;
+}
+
 // ── Grid background ──────────────────────────────────────────
 function drawGrid(cx) {
   const theme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -486,8 +516,26 @@ function render() {
   // Clear canvas
   ctx.clearRect(0, 0, W, H);
 
-  // Draw grid
-  drawGrid(ctx);
+  const bgImg = currentMapType ? bgImages[currentMapType] : null;
+
+  if (bgImg) {
+    // User-uploaded background: draw image fitted to canvas, then draw grid on top at low opacity
+    const scale = Math.min(W / bgImg.width, H / bgImg.height);
+    const iw = bgImg.width * scale, ih = bgImg.height * scale;
+    const ix = (W - iw) / 2, iy = (H - ih) / 2;
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(camera.zoom, camera.zoom);
+    ctx.translate(camera.x, camera.y);
+    ctx.drawImage(bgImg, ix - W / 2, iy - H / 2, iw, ih);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    drawGrid(ctx);
+    ctx.restore();
+  } else {
+    drawGrid(ctx);
+  }
 
   // Save context for camera transform
   ctx.save();
@@ -497,11 +545,13 @@ function render() {
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(camera.x, camera.y);
 
-  // Draw the map
-  if (currentMapType === 'town') {
-    drawTownMap(ctx);
-  } else if (currentMapType === 'library') {
-    drawLibraryMap(ctx);
+  // Draw the procedural map only when no custom background
+  if (!bgImg) {
+    if (currentMapType === 'town') {
+      drawTownMap(ctx);
+    } else if (currentMapType === 'library') {
+      drawLibraryMap(ctx);
+    }
   }
 
   // Draw pins (in world space)
@@ -1034,7 +1084,8 @@ export function openMap(mapType) {
   currentMapType = mapType;
   isOpen = true;
 
-  // Load pins
+  // Load background image + pins
+  loadBgImage(mapType);
   loadPinsFromStorage();
 
   // Load camera

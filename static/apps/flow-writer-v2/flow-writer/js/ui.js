@@ -1212,6 +1212,7 @@ function showTreeContextMenu(e, node) {
   if (node.type === 'folder') {
     actions.unshift(
       { label: 'New Document', action: () => promptAddTreeNode(node.id, 'doc') },
+      { label: 'New Location', action: () => promptAddTreeNode(node.id, 'location') },
       { label: 'New Folder', action: () => promptAddTreeNode(node.id, 'folder') }
     );
   } else {

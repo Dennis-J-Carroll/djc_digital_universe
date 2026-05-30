@@ -9,7 +9,7 @@ import {
   migrateFromV1,
   getAllBranches,
   getSettings,
-} from './db.js?v=3';
+} from './db.js?v=4';
 
 import {
   initEngine,
@@ -30,7 +30,7 @@ import {
   toggleFolderExpanded,
   getCommitHistory,
   countWords,
-} from './branch-engine.js?v=3';
+} from './branch-engine.js?v=4';
 
 import {
   renderBranchGraph,
@@ -38,20 +38,23 @@ import {
   setupGraphTooltip,
   renderGraphControls,
   panToBranch,
-} from './branch-graph.js?v=3';
+} from './branch-graph.js?v=4';
 
 import {
   initMobileViewportFix,
-} from './mobile-viewport-fix.js?v=3';
+} from './mobile-viewport-fix.js?v=4';
 
 import {
   initInteractiveMaps,
-} from './interactive-maps.js?v=3';
+  setMapBackground,
+  clearMapBackground,
+  hasMapBackground,
+} from './interactive-maps.js?v=4';
 
 import {
   initTimeline,
   renderTimeline,
-} from './timeline.js?v=3';
+} from './timeline.js?v=4';
 
 import {
   renderTree,
@@ -96,7 +99,7 @@ import {
   initOnboarding,
   initTheme,
   icon,
-} from './ui.js?v=3';
+} from './ui.js?v=4';
 
 import {
   initSprintEngine,
@@ -107,21 +110,21 @@ import {
   getSprintState,
   onTick as onSprintTick,
   onEditorInput as onSprintEditorInput,
-} from './sprint-engine.js?v=3';
+} from './sprint-engine.js?v=4';
 
 import {
   initStatsEngine,
   getDailyTarget,
   onEditorInput as onStatsEditorInput,
-} from './stats-engine.js?v=3';
+} from './stats-engine.js?v=4';
 
 import {
   initUniverseDashboard,
-} from './universe-dashboard.js?v=3';
+} from './universe-dashboard.js?v=4';
 
 import {
   initVoiceToText,
-} from './voice-to-text.js?v=3';
+} from './voice-to-text.js?v=4';
 
 // ---------- DOM helpers ----------
 const $  = (s, r = document) => r.querySelector(s);
@@ -744,22 +747,61 @@ function renderMapMediaStrip(nodeId) {
   const strip = document.getElementById('mapMediaStrip');
   if (!strip) return;
   const items = JSON.parse(localStorage.getItem(mediaKey(nodeId)) || '[]');
-  if (!items.length) { strip.style.display = 'none'; return; }
+  // Determine which mapType this nodeId corresponds to
+  const mapType = nodeId === 'map' ? 'town' : 'library';
+
+  if (!items.length) {
+    strip.style.display = 'none';
+    return;
+  }
   strip.style.display = 'flex';
+
+  const bgActive = hasMapBackground(mapType);
   strip.innerHTML = items.map((item, i) => {
     const isPdf = item.fileName?.toLowerCase().endsWith('.pdf');
-    const thumb = isPdf
-      ? `<div class="map-media-pdf">PDF</div>`
-      : `<img src="${item.dataUrl}" alt="${item.fileName||''}" onclick="window.open('${item.dataUrl}','_blank')" />`;
-    return `<div class="map-media-item" title="${item.fileName||''}">
-      ${thumb}
+    if (isPdf) {
+      return `<div class="map-media-item" title="${item.fileName||''}">
+        <div class="map-media-pdf">PDF</div>
+        <button class="media-thumb-del map-del" data-node="${nodeId}" data-idx="${i}" title="Remove">×</button>
+      </div>`;
+    }
+    const isBg = bgActive && localStorage.getItem(`fw-map-bg-${mapType}`) === item.dataUrl;
+    return `<div class="map-media-item${isBg ? ' is-bg' : ''}" title="${item.fileName||''}">
+      <img src="${item.dataUrl}" alt="${item.fileName||''}" onclick="window.open('${item.dataUrl}','_blank')" />
+      <button class="map-set-bg" data-node="${nodeId}" data-idx="${i}" data-map="${mapType}" title="${isBg ? 'Clear map background' : 'Use as map background'}">${isBg ? '✕ bg' : '↑ map'}</button>
       <button class="media-thumb-del map-del" data-node="${nodeId}" data-idx="${i}" title="Remove">×</button>
     </div>`;
   }).join('');
+
   strip.querySelectorAll('.map-del').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      deleteMediaItem(btn.dataset.node, parseInt(btn.dataset.idx));
+      const idx = parseInt(btn.dataset.idx);
+      const items2 = JSON.parse(localStorage.getItem(mediaKey(btn.dataset.node)) || '[]');
+      const removing = items2[idx];
+      // If this image is the current background, clear it
+      if (removing && localStorage.getItem(`fw-map-bg-${mapType}`) === removing.dataUrl) {
+        clearMapBackground(mapType);
+      }
+      deleteMediaItem(btn.dataset.node, idx);
+      renderMapMediaStrip(btn.dataset.node);
+    });
+  });
+
+  strip.querySelectorAll('.map-set-bg').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      const mt = btn.dataset.map;
+      const items2 = JSON.parse(localStorage.getItem(mediaKey(btn.dataset.node)) || '[]');
+      const item = items2[idx];
+      if (!item) return;
+      const isBg = localStorage.getItem(`fw-map-bg-${mt}`) === item.dataUrl;
+      if (isBg) {
+        clearMapBackground(mt);
+      } else {
+        setMapBackground(mt, item.dataUrl);
+      }
       renderMapMediaStrip(btn.dataset.node);
     });
   });

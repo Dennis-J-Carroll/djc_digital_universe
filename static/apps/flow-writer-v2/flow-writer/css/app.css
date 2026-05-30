@@ -4172,3 +4172,15 @@ html[data-theme="light"] .media-thumb { background: var(--navy-100); }
   opacity: 0; transition: opacity var(--dur-fast);
 }
 .map-media-item:hover .map-del { opacity: 1; }
+.map-set-bg {
+  position: absolute; bottom: 2px; left: 2px;
+  height: 16px; padding: 0 4px;
+  font-size: 9px; font-family: var(--font-mono, monospace);
+  background: rgba(4,8,16,0.75); color: var(--accent-2);
+  border: 1px solid rgba(20,184,154,0.35); border-radius: 3px;
+  cursor: pointer; opacity: 0; transition: opacity var(--dur-fast);
+  white-space: nowrap;
+}
+.map-media-item:hover .map-set-bg { opacity: 1; }
+.map-media-item.is-bg { border-color: var(--accent-2); box-shadow: 0 0 0 1px var(--accent-2); }
+.map-media-item.is-bg .map-set-bg { opacity: 1; color: var(--warn-amber); border-color: rgba(251,191,36,0.4); }
