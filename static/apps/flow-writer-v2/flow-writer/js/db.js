@@ -5,10 +5,11 @@
    ============================================================ */
 
 const DB_NAME = 'djc-flow-writer-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_BRANCHES = 'branches';
 const STORE_COMMITS = 'commits';
 const STORE_SETTINGS = 'settings';
+const STORE_IMAGES = 'images';
 
 let _db = null;
 
@@ -74,6 +75,13 @@ async function initDB() {
 
       if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
         db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+      }
+
+      // v2: character image blobs (avatar + gallery), keyed by image id,
+      // indexed by owning character so deletes can cascade.
+      if (!db.objectStoreNames.contains(STORE_IMAGES)) {
+        const imageStore = db.createObjectStore(STORE_IMAGES, { keyPath: 'id' });
+        imageStore.createIndex('charId', 'charId', { unique: false });
       }
     };
   });
@@ -419,4 +427,5 @@ export {
   DEFAULT_TREE,
   SEED_DOCS,
   deepClone,
+  STORE_IMAGES,
 };

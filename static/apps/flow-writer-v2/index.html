@@ -73,6 +73,7 @@
 <link rel="stylesheet" href="flow-writer/css/app.css?v=4" />
 <link rel="stylesheet" href="flow-writer/css/branch-graph.css?v=4" />
 <link rel="stylesheet" href="flow-writer/css/djc-enhance.css" />
+<link rel="stylesheet" href="flow-writer/css/character-cards.css?v=1" />
 <style>
   /* ============================================================
      CRITICAL LAYOUT — Desktop (> 920px)
@@ -883,61 +884,18 @@
 // Inline handlers for dashboard and map modals + dashboard rendering
 (function() {
   function openModal(id) { var el = document.getElementById(id); if (el) el.classList.add('show'); }
-  function closeModal(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+    // Universe Dashboard owns body-overflow; clear it here too for swipe-close.
+    if (id === 'universeDashboardScrim') document.body.style.overflow = '';
+  }
 
-  // Seed data for Universe Dashboard
-  var CHARS = [
-    { id:'c1', name:'Sarah', type:'protagonist', desc:'A curious young archivist who stumbles upon secrets hidden within the library\'s oldest collection. Her determination drives the narrative forward.', traits:['curious','determined','intuitive'] },
-    { id:'c2', name:'The Librarian', type:'antagonist', desc:'An ancient, mysterious figure who has guarded the library for centuries. Knows far more than they reveal.', traits:['mysterious','ancient','cryptic'] },
-    { id:'c3', name:'Detective Rowe', type:'supporting', desc:'A skeptical investigator who provides grounding logic to Sarah\'s wild theories. Has a hidden connection to the library.', traits:['skeptical','logical','secretive'] }
-  ];
-  var BEATS = [
-    { id:'b1', title:'Discovery of hidden door', act:'Act 1', chapter:'Ch.1', status:'drafted', desc:'Sarah notices an anomaly in the floor plan — a door that shouldn\'t exist, hidden behind a bookshelf that hasn\'t been moved in decades.' },
-    { id:'b2', title:'Sarah finds the journal', act:'Act 2a', chapter:'Ch.1', status:'drafted', desc:'Behind the hidden door, Sarah discovers a journal belonging to the library\'s original architect — filled with cryptic warnings and a map.' },
-    { id:'b3', title:'The truth revealed', act:'Act 2b', chapter:'Ch.2', status:'planned', desc:'The Librarian confronts Sarah, revealing the true purpose of the library — it\'s not a repository of books, but a prison for something ancient.' },
-    { id:'b4', title:'Resolution', act:'Act 3', chapter:'Ch.2', status:'planned', desc:'Sarah must choose: seal the library forever, or become its next guardian.' }
-  ];
-  var ACT_COLORS = { 'Act 1':'#14b89a', 'Act 2a':'#3ef0e2', 'Act 2b':'#8b5cf6', 'Act 3':'#4ade80' };
-
-  function renderCharCard(c) {
-    var typeColors = { protagonist:'#14b89a', antagonist:'#ef4444', supporting:'#f59e0b' };
-    var typeIcons = { protagonist:'◆', antagonist:'◈', supporting:'●' };
-    var traits = (c.traits || []).map(function(t){ return '<span class="trait-pill">' + t + '</span>'; }).join('');
-    return '<div class="char-window ' + c.type + '" data-char="' + c.id + '" style="border-top-color:' + (typeColors[c.type]||'#666') + '">' +
-      '<div class="char-window-chrome"><div class="char-window-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>' +
-      '<span class="char-window-title-text">' + (typeIcons[c.type]||'●') + ' ' + c.name + '</span></div>' +
-      '<div class="char-window-body"><div class="char-type" style="color:' + (typeColors[c.type]||'#666') + '">' + c.type + '</div>' +
-      '<p class="char-desc">' + c.desc + '</p><div class="char-traits">' + traits + '</div></div></div>';
-  }
-  function renderBeatCard(b) {
-    var color = ACT_COLORS[b.act] || '#666';
-    var statusClass = b.status || 'planned';
-    return '<div class="beat-card" data-beat="' + b.id + '" style="border-left-color:' + color + '">' +
-      '<div class="beat-header"><div class="beat-title">' + b.title + '</div>' +
-      '<span class="beat-status ' + statusClass + '">' + b.status + '</span></div>' +
-      '<div class="beat-meta">' + b.act + ' · ' + b.chapter + '</div>' +
-      '<p class="beat-desc">' + b.desc + '</p></div>';
-  }
-  function renderDashboard() {
-    var cg = document.getElementById('characterGrid');
-    var bg = document.getElementById('beatsGrid');
-    if (cg) cg.innerHTML = CHARS.map(renderCharCard).join('');
-    if (bg) bg.innerHTML = BEATS.map(renderBeatCard).join('');
-  }
+  // NOTE: Character/Story-Beat data, rendering, and the Universe Dashboard
+  // button are owned by flow-writer/js/universe-dashboard.js (single source
+  // of truth). This inline script only wires the Map modal + mobile behaviors.
 
   document.addEventListener('DOMContentLoaded', function() {
-    renderDashboard();
-
-    // Universe Dashboard button
-    var dbBtn = document.getElementById('btnUniverseDashboard');
-    var dbScrim = document.getElementById('universeDashboardScrim');
-    if (dbBtn && dbScrim) {
-      dbBtn.addEventListener('click', function() { openModal('universeDashboardScrim'); });
-      dbScrim.addEventListener('click', function(e) { if (e.target === dbScrim) closeModal('universeDashboardScrim'); });
-      var dbClose = dbScrim.querySelector('[data-close]');
-      if (dbClose) dbClose.addEventListener('click', function() { closeModal('universeDashboardScrim'); });
-    }
-
     // Map modal
     var mapScrim = document.getElementById('mapScrim');
     if (mapScrim) {
@@ -971,7 +929,7 @@
   });
 })();
 </script>
-<script type="module" src="flow-writer/js/app.js?v=4"></script>
+<script type="module" src="flow-writer/js/app.js?v=5"></script>
 
 <!-- ═══════════════════════════════════════════════════════
      TWEAKS PANEL — Atmosphere · Writing Feel · Neural Glow

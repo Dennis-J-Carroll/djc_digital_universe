@@ -9,7 +9,7 @@ import {
   migrateFromV1,
   getAllBranches,
   getSettings,
-} from './db.js?v=4';
+} from './db.js?v=5';
 
 import {
   initEngine,
@@ -122,7 +122,7 @@ import {
 
 import {
   initUniverseDashboard,
-} from './universe-dashboard.js?v=4';
+} from './universe-dashboard.js?v=5';
 
 import {
   initVoiceToText,
