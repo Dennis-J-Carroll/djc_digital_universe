@@ -487,6 +487,293 @@
             color: var(--misty-text);
             margin-top: 2px;
         }
+
+        /* ── Scroll-spy active nav state ───────────────────────────── */
+        nav a.nav-active {
+            color: var(--accent-medium);
+            font-weight: 600;
+            position: relative;
+        }
+        nav a.nav-active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -6px;
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent-medium), var(--accent-soft));
+        }
+
+        /* ── Back-to-top floating button ───────────────────────────── */
+        .back-to-top {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 60;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(245, 248, 250, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--misty-border);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            color: var(--accent-medium);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .back-to-top:hover {
+            box-shadow: 0 10px 22px rgba(91, 141, 184, 0.3);
+            border-color: var(--accent-medium);
+        }
+
+        /* ── Equation hover tooltip (Interactive Lab) ──────────────── */
+        .math-equation {
+            position: relative;
+        }
+        .eq-note-btn {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid var(--accent-amber);
+            color: #b7791f;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 16px;
+            text-align: center;
+            cursor: help;
+            background: rgba(251, 191, 36, 0.15);
+            font-family: 'Inter', sans-serif;
+        }
+        .eq-note-btn:hover + .eq-note-pop,
+        .eq-note-btn:focus + .eq-note-pop {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .eq-note-pop {
+            position: absolute;
+            top: 28px;
+            right: 8px;
+            width: min(320px, 80vw);
+            background: var(--misty-heading);
+            color: #f5f8fa;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: all 0.2s ease;
+            z-index: 40;
+        }
+
+        /* ── Concept glossary inline terms + tooltip ───────────────── */
+        .glossary-term {
+            border-bottom: 1px dotted var(--accent-medium);
+            cursor: help;
+            position: relative;
+        }
+        .glossary-pop {
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            width: min(300px, 78vw);
+            background: var(--misty-heading);
+            color: #f5f8fa;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            font-weight: 400;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 80;
+            text-align: left;
+        }
+        .glossary-term:hover .glossary-pop,
+        .glossary-term:focus .glossary-pop {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        #glossary-grid .glossary-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--misty-border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.25s ease;
+        }
+        #glossary-grid .glossary-card:hover {
+            border-color: var(--accent-soft);
+            transform: translateY(-2px);
+        }
+
+        /* ── Architecture detail modal (Explore) ───────────────────── */
+        .arch-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(45, 55, 72, 0.45);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 4vh 1rem;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .arch-modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .arch-modal {
+            background: var(--misty-card);
+            border: 1px solid var(--misty-border);
+            border-radius: 18px;
+            max-width: 860px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+            transform: translateY(16px) scale(0.98);
+            transition: transform 0.3s ease;
+            margin: auto 0;
+        }
+        .arch-modal-overlay.open .arch-modal {
+            transform: translateY(0) scale(1);
+        }
+        .arch-modal-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, rgba(91,141,184,0.12), rgba(124,156,191,0.08));
+            border-bottom: 1px solid var(--misty-border);
+            border-radius: 18px 18px 0 0;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .arch-modal-body {
+            padding: 1.5rem;
+        }
+        .arch-modal-close {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--misty-border);
+            background: rgba(255,255,255,0.6);
+            color: var(--misty-heading);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .arch-modal-close:hover {
+            background: #fff;
+            border-color: var(--accent-medium);
+        }
+        .arch-detail-section h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            color: var(--accent-medium);
+            margin-bottom: 0.5rem;
+        }
+        .arch-detail-section {
+            margin-bottom: 1.5rem;
+        }
+        .arch-detail-section p {
+            color: var(--misty-text);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .arch-eq-row {
+            background: rgba(251, 191, 36, 0.08);
+            border-left: 3px solid var(--accent-amber);
+            border-radius: 0 8px 8px 0;
+            padding: 0.6rem 0.9rem;
+            margin-bottom: 0.6rem;
+        }
+        .arch-eq-row .arch-eq-note {
+            font-size: 0.82rem;
+            color: var(--misty-text);
+            margin-top: 0.3rem;
+            line-height: 1.45;
+        }
+        .arch-pitfall {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+            font-size: 0.9rem;
+            color: var(--misty-text);
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        .arch-pitfall::before {
+            content: '';
+            flex-shrink: 0;
+            width: 7px;
+            height: 7px;
+            margin-top: 7px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+        }
+        .arch-variant-chip {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            margin: 0 0.4rem 0.4rem 0;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            background: rgba(124, 156, 191, 0.15);
+            border: 1px solid var(--misty-border);
+            color: var(--misty-heading);
+        }
+        .arch-app-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .arch-app-table th,
+        .arch-app-table td {
+            text-align: left;
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid var(--misty-border);
+            vertical-align: top;
+        }
+        .arch-app-table th {
+            color: var(--accent-medium);
+            font-weight: 600;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .back-to-top, .arch-modal-overlay, .arch-modal,
+            .glossary-pop, .eq-note-pop { transition: none !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -518,6 +805,7 @@
                     <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
                     <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
                     <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
+                    <a href="#glossary" class="text-sm hover:text-gray-900 transition">Glossary</a>
                 </div>
             </div>
         </div>
@@ -582,13 +870,13 @@
                             </h3>
                             <div class="flex space-x-2">
                                 <button id="play-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" disabled>
-                                    ▶ Train
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg> Train</span>
                                 </button>
                                 <button id="pause-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors" disabled>
-                                    ⏸ Pause
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> Pause</span>
                                 </button>
                                 <button id="reset-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" disabled>
-                                    🔄 Reset
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg> Reset</span>
                                 </button>
                             </div>
                         </div>
@@ -613,7 +901,7 @@
                         <!-- Paper References -->
                         <div id="paper-references" class="paper-references" style="display: none;">
                             <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                <span>📄</span> Seminal Papers
+                                <span class="inline-flex items-center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span> Seminal Papers
                             </h4>
                             <div id="paper-list">
                                 <!-- Papers will be populated by JavaScript -->
@@ -778,43 +1066,43 @@
                         <h4 class="text-lg font-semibold text-gray-800 mb-4">Layer Palette</h4>
                         <div class="builder-palette" id="builder-palette">
                             <div class="palette-item" draggable="true" data-layer-type="input">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">📥</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg></div>
                                 <span>Input</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="dense">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🔗</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></div>
                                 <span>Dense</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="conv2d">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">🔲</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg></div>
                                 <span>Conv2D</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="maxpool">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">⬇️</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></svg></div>
                                 <span>MaxPool</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="lstm">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🔁</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></div>
                                 <span>LSTM</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="attention">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">👁️</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
                                 <span>Attention</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="dropout">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #6b7280, #4b5563);">💧</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #6b7280, #4b5563);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div>
                                 <span>Dropout</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="batchnorm">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #10b981, #059669);">📊</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div>
                                 <span>BatchNorm</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="flatten">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);">📐</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg></div>
                                 <span>Flatten</span>
                             </div>
                             <div class="palette-item" draggable="true" data-layer-type="output">
-                                <div class="layer-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">📤</div>
+                                <div class="layer-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></div>
                                 <span>Output</span>
                             </div>
                         </div>
@@ -826,10 +1114,10 @@
                             <h4 class="text-lg font-semibold text-gray-800">Network Architecture</h4>
                             <div class="flex gap-2">
                                 <button id="builder-clear-btn" onclick="clearBuilder()" class="bg-gray-400 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-gray-500 transition">
-                                    🗑️ Clear
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Clear</span>
                                 </button>
                                 <button id="builder-train-btn" onclick="trainBuilderNetwork()" class="bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition" disabled>
-                                    ▶ Train Network
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg> Train Network</span>
                                 </button>
                             </div>
                         </div>
@@ -1202,8 +1490,9 @@
             Object.entries(networkTypes).forEach(([key, network]) => {
                 const card = document.createElement('div');
                 card.className = 'neural-card p-6 cursor-pointer';
+                card.dataset.key = key;
                 card.onclick = () => selectNetwork(key);
-                
+
                 card.innerHTML = `
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-lg font-semibold text-gray-800">${network.name}</h4>
@@ -1212,10 +1501,17 @@
                     <p class="text-sm text-gray-600 mb-4">${network.description}</p>
                     <div class="flex justify-between items-center text-xs text-gray-500">
                         <span>Complexity: ${network.complexity}</span>
-                        <span class="text-blue-600 font-medium">Explore →</span>
+                        <button type="button" class="explore-link text-blue-600 font-medium hover:text-blue-800 transition" data-key="${key}" aria-label="Explore ${network.name} in depth">Explore →</button>
                     </div>
                 `;
-                
+
+                // "Explore" opens the rich detail panel without re-triggering card-select
+                card.querySelector('.explore-link').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectNetwork(key);
+                    if (typeof openArchDetail === 'function') openArchDetail(key);
+                });
+
                 selector.appendChild(card);
             });
         }
@@ -1552,6 +1848,10 @@
             
             if (!currentNetwork) return;
             
+            const notes = (typeof architectureDetails !== 'undefined'
+                && architectureDetails[currentNetworkKey])
+                ? architectureDetails[currentNetworkKey].eqNotes : null;
+
             currentNetwork.equations.forEach((latex, index) => {
                 const equationDiv = document.createElement('div');
                 equationDiv.className = 'math-equation mb-4';
@@ -1571,6 +1871,22 @@
                 }
 
                 equationDiv.appendChild(katexContainer);
+
+                // Hover annotation explaining what the equation means
+                if (notes && notes[index]) {
+                    const noteBtn = document.createElement('span');
+                    noteBtn.className = 'eq-note-btn';
+                    noteBtn.setAttribute('tabindex', '0');
+                    noteBtn.setAttribute('role', 'button');
+                    noteBtn.setAttribute('aria-label', 'Explain this equation');
+                    noteBtn.textContent = 'i';
+                    const notePop = document.createElement('div');
+                    notePop.className = 'eq-note-pop';
+                    notePop.textContent = notes[index];
+                    equationDiv.appendChild(noteBtn);
+                    equationDiv.appendChild(notePop);
+                }
+
                 equationContent.appendChild(equationDiv);
                 
                 // Animate equation appearance
@@ -1779,8 +2095,8 @@
                 if (currentEpoch >= epochs) {
                     clearInterval(trainingInterval);
                     trainingInProgress = false;
-                    document.getElementById('play-btn').textContent = '🔄 Retrain';
-                    if (animStatus) animStatus.textContent = 'Training Complete ✅';
+                    document.getElementById('play-btn').textContent = 'Retrain';
+                    if (animStatus) animStatus.textContent = 'Training Complete';
                 }
             }, 100);
         }
@@ -1794,7 +2110,7 @@
             document.getElementById('progress-bar').style.width = '0%';
             document.getElementById('current-epoch').textContent = '0';
             document.getElementById('current-loss').textContent = '0.000';
-            document.getElementById('play-btn').textContent = '▶ Train';
+            document.getElementById('play-btn').textContent = 'Train';
             
             if (lossChart) {
                 lossChart.setOption({
@@ -2054,7 +2370,7 @@
                 link.rel = 'noopener noreferrer';
                 link.className = 'paper-link';
                 link.innerHTML = `
-                    <span class="paper-icon">📑</span>
+                    <span class="paper-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
                     <div class="paper-info">
                         <div class="paper-title">${paper.title}</div>
                         <div class="paper-meta">${paper.authors} · ${paper.year}</div>
@@ -2466,7 +2782,7 @@
                     }
                     if (verdict) {
                         const confusion = 1 - progress;
-                        verdict.textContent = progress < 0.3 ? 'FAKE ❌' : progress < 0.7 ? 'Unsure 🤔' : 'Real? 🤯';
+                        verdict.textContent = progress < 0.3 ? 'FAKE' : progress < 0.7 ? 'Unsure' : 'Real?';
                     }
                     if (gScore) gScore.textContent = `G loss: ${(loss * 0.8).toFixed(3)}`;
                     if (dScore) dScore.textContent = `D loss: ${(loss * 1.2 * (1 + Math.sin(epoch*0.1)*0.3)).toFixed(3)}`;
@@ -2482,16 +2798,16 @@
         let builderTraining = false;
 
         const layerDefinitions = {
-            input:     { name: 'Input Layer',   icon: '📥', color: '#3b82f6', units: 784, hasUnits: true, activation: false },
-            dense:     { name: 'Dense Layer',   icon: '🔗', color: '#8b5cf6', units: 128, hasUnits: true, activation: true },
-            conv2d:    { name: 'Conv2D Layer',  icon: '🔲', color: '#06b6d4', units: 32,  hasUnits: true, unitLabel: 'filters', activation: true },
-            maxpool:   { name: 'MaxPool2D',     icon: '⬇️', color: '#14b8a6', units: 0,   hasUnits: false, activation: false },
-            lstm:      { name: 'LSTM Layer',    icon: '🔁', color: '#f59e0b', units: 64,  hasUnits: true, activation: false },
-            attention: { name: 'Attention',     icon: '👁️', color: '#ec4899', units: 8,   hasUnits: true, unitLabel: 'heads', activation: false },
-            dropout:   { name: 'Dropout',       icon: '💧', color: '#6b7280', units: 0,   hasUnits: false, activation: false, rate: 0.2 },
-            batchnorm: { name: 'BatchNorm',     icon: '📊', color: '#10b981', units: 0,   hasUnits: false, activation: false },
-            flatten:   { name: 'Flatten',       icon: '📐', color: '#f97316', units: 0,   hasUnits: false, activation: false },
-            output:    { name: 'Output Layer',  icon: '📤', color: '#ef4444', units: 10,  hasUnits: true, activation: true }
+            input:     { name: 'Input Layer',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>', color: '#3b82f6', units: 784, hasUnits: true, activation: false },
+            dense:     { name: 'Dense Layer',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>', color: '#8b5cf6', units: 128, hasUnits: true, activation: true },
+            conv2d:    { name: 'Conv2D Layer',  icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>', color: '#06b6d4', units: 32,  hasUnits: true, unitLabel: 'filters', activation: true },
+            maxpool:   { name: 'MaxPool2D',     icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></svg>', color: '#14b8a6', units: 0,   hasUnits: false, activation: false },
+            lstm:      { name: 'LSTM Layer',    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>', color: '#f59e0b', units: 64,  hasUnits: true, activation: false },
+            attention: { name: 'Attention',     icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>', color: '#ec4899', units: 8,   hasUnits: true, unitLabel: 'heads', activation: false },
+            dropout:   { name: 'Dropout',       icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>', color: '#6b7280', units: 0,   hasUnits: false, activation: false, rate: 0.2 },
+            batchnorm: { name: 'BatchNorm',     icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>', color: '#10b981', units: 0,   hasUnits: false, activation: false },
+            flatten:   { name: 'Flatten',       icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg>', color: '#f97316', units: 0,   hasUnits: false, activation: false },
+            output:    { name: 'Output Layer',  icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>', color: '#ef4444', units: 10,  hasUnits: true, activation: true }
         };
 
         function initializeBuilder() {
@@ -2600,7 +2916,7 @@
                         <div class="layer-config">${def.hasUnits ? (def.unitLabel || 'units') + ': ' + layer.units : ''} ${layer.activation ? '· ' + layer.activation : ''} ${layer.rate != null ? '· rate: ' + layer.rate : ''}</div>
                     </div>
                     <div class="layer-controls">${controlsHTML}</div>
-                    <button class="remove-layer" onclick="removeBuilderLayer('${layer.id}')" title="Remove layer">✕</button>
+                    <button class="remove-layer" onclick="removeBuilderLayer('${layer.id}')" title="Remove layer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
                 `;
 
                 // Reorder drag events
@@ -2755,7 +3071,7 @@
                 statusEl.className = 'font-medium text-amber-600';
                 trainBtn.disabled = false;
             } else {
-                statusEl.textContent = 'Ready to train ✓';
+                statusEl.textContent = 'Ready to train';
                 statusEl.className = 'font-medium text-green-600';
                 trainBtn.disabled = false;
             }
@@ -2830,7 +3146,7 @@
                 if (epoch >= totalEpochs) {
                     clearInterval(interval);
                     builderTraining = false;
-                    lossEl.textContent = baseLoss.toFixed(4) + ' ✅';
+                    lossEl.textContent = baseLoss.toFixed(4);
                 }
             }, 120);
         }
@@ -2844,6 +3160,749 @@
         window.removeBuilderLayer = removeBuilderLayer;
         window.updateBuilderLayerUnits = updateBuilderLayerUnits;
         window.updateBuilderLayerActivation = updateBuilderLayerActivation;
+    </script>
+
+    <!-- ════════ Concepts Glossary (report §5.4) ════════ -->
+    <section id="glossary" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/40">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Concepts Glossary</h3>
+            <p class="text-sm text-gray-600 text-center mb-8 max-w-2xl mx-auto">Plain-language definitions for the core terms used across the lab. Hover a dotted term anywhere on the page for a quick definition.</p>
+            <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+    </section>
+
+    <!-- ════════ Architecture detail modal (Explore — report §2.1 / §6.2) ════════ -->
+    <div id="arch-modal-overlay" class="arch-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="arch-modal-title" aria-hidden="true">
+        <div class="arch-modal" role="document">
+            <div class="arch-modal-header">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500 mb-1"><span id="arch-modal-year"></span> &middot; <span id="arch-modal-complexity"></span></div>
+                    <h3 id="arch-modal-title" class="text-2xl font-bold text-gray-800"></h3>
+                </div>
+                <button type="button" class="arch-modal-close" id="arch-modal-close" aria-label="Close detail panel">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="arch-modal-body" id="arch-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ════════ Back-to-top (report §6.1) ════════ -->
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+    </button>
+
+    <script>
+    // ════════════════════════════════════════════════════════════════
+    //  Enhancement layer — Explore detail panels, equation annotations,
+    //  concepts glossary, scroll-spy, back-to-top. (report §2.1, §5.4, §6.1)
+    //  Kept isolated from the original monolith for low-risk maintenance.
+    // ════════════════════════════════════════════════════════════════
+
+    // ── Rich per-architecture educational content ───────────────────
+    const architectureDetails = {
+        perceptron: {
+            theory: "The perceptron (Rosenblatt, 1958) is the simplest trainable unit: a single linear threshold neuron. It computes a weighted sum of its inputs, adds a bias, and passes the result through an activation to produce a decision. Training nudges the weights toward inputs that were misclassified, which geometrically rotates and shifts a single hyperplane until it separates the two classes. The perceptron convergence theorem guarantees this terminates in finitely many steps — but only when the data is linearly separable. Minsky and Papert (1969) showed it cannot represent XOR, a result that froze neural-network research for over a decade and motivated the move to multi-layer networks.",
+            eqNotes: [
+                "Forward pass: the dot product w·x scores how strongly the input aligns with the learned weight vector; the bias b shifts the decision threshold; σ squashes the score into a class probability.",
+                "The logistic (sigmoid) activation maps any real number to (0,1). Its S-shape saturates for large |z|, which is exactly where gradients vanish.",
+                "The perceptron update rule: when prediction is wrong, move the weight vector toward (or away from) the input by a step proportional to the error and learning rate α.",
+                "The bias follows the same error-driven update, letting the decision boundary translate without changing its orientation."
+            ],
+            variants: ["ADALINE (continuous error)", "Multi-class perceptron", "Kernel perceptron", "Averaged / voted perceptron"],
+            applications: [
+                { task: "Linear binary classification", data: "Linearly separable, low-dim", note: "Spam vs. not-spam on bag-of-words" },
+                { task: "Online learning", data: "Streaming features", note: "Updates per-sample, no batch needed" },
+                { task: "Building block", data: "—", note: "One neuron of every modern network" }
+            ],
+            pitfalls: [
+                "Cannot solve non-linearly-separable problems (XOR) — needs hidden layers.",
+                "Non-convergence loops forever if data is not separable; cap the epochs.",
+                "Sensitive to feature scaling — standardize inputs first.",
+                "Hard threshold gives no probability calibration; use logistic regression for that."
+            ]
+        },
+        mlp: {
+            theory: "The multi-layer perceptron stacks layers of neurons with non-linear activations, turning the linear perceptron into a universal function approximator (Cybenko, 1989): with one sufficiently wide hidden layer it can approximate any continuous function on a compact domain. The breakthrough that made it trainable was backpropagation (Rumelhart, Hinton & Williams, 1986), which applies the chain rule to propagate error gradients backward through every layer. Depth lets the network compose simple features into complex ones, but naïve deep stacks suffer vanishing gradients through repeated sigmoid saturation — which is why ReLU activations and careful weight initialization (Xavier, He) became standard.",
+            eqNotes: [
+                "First hidden layer: a linear map W₁x+b₁ followed by a non-linearity σ. Without σ the whole network would collapse to a single linear map.",
+                "Second hidden layer composes on top of the first, letting the network build hierarchical features.",
+                "Output layer is typically linear (logits) before a final softmax/sigmoid; W₃ projects features to class scores.",
+                "Cross-entropy loss penalizes confident wrong predictions heavily; minimizing it is equivalent to maximizing the log-likelihood of the correct labels."
+            ],
+            variants: ["Deep MLP", "ResNet-style skip connections", "Highway networks", "Mixture-of-Experts MLP", "MLP-Mixer"],
+            applications: [
+                { task: "Tabular prediction", data: "Structured rows", note: "Credit scoring, churn" },
+                { task: "Function approximation", data: "Continuous", note: "Surrogate models, control" },
+                { task: "Embeddings head", data: "Any features", note: "Final layers of larger nets" }
+            ],
+            pitfalls: [
+                "Vanishing/exploding gradients in deep stacks — prefer ReLU and residual connections.",
+                "Overfits small datasets fast; use dropout, weight decay, early stopping.",
+                "Poor weight init stalls training — use He init for ReLU, Xavier for tanh.",
+                "Fully-connected layers ignore spatial/temporal structure — use CNN/RNN there."
+            ]
+        },
+        cnn: {
+            theory: "Convolutional networks exploit the structure of grid data (images, audio spectrograms) through three ideas: local receptive fields, parameter sharing, and translation equivariance. A small learnable kernel slides across the input, computing the same dot product everywhere — so a feature detector learned in one location works everywhere, slashing parameter count versus a dense layer. Stacking conv + pooling layers builds a hierarchy: edges → textures → parts → objects. LeNet (1998) proved the concept on digits; AlexNet (2012) scaled it to ImageNet and ignited the deep-learning era; ResNet (2015) added skip connections so networks could go 100+ layers deep.",
+            eqNotes: [
+                "2D convolution: slide kernel K over input I, summing element-wise products at each position. Shared weights make it parameter-efficient and translation-equivariant.",
+                "Max pooling downsamples by keeping the strongest activation in each window — adds small translation invariance and shrinks the feature map.",
+                "Flatten reshapes the final 3D feature map into a 1D vector so dense layers can consume it.",
+                "A dense classifier head turns the flattened features into class scores via a final activation."
+            ],
+            variants: ["LeNet", "AlexNet", "VGGNet", "ResNet", "Inception/GoogLeNet", "EfficientNet", "U-Net", "ConvNeXt"],
+            applications: [
+                { task: "Image classification", data: "ImageNet (1.2M imgs)", note: "ResNet-50 ~76% top-1" },
+                { task: "Object detection", data: "COCO", note: "Backbone for YOLO, Faster R-CNN" },
+                { task: "Segmentation", data: "Medical / satellite", note: "U-Net encoder-decoder" }
+            ],
+            pitfalls: [
+                "Without skip connections, very deep CNNs degrade — accuracy drops, not just overfits (ResNet's motivation).",
+                "Sensitive to input resolution and aspect ratio; mismatched test resolution hurts.",
+                "Small kernels need depth to grow receptive field — track effective receptive field.",
+                "Pooling discards spatial precision — bad for dense prediction without skip/upsampling."
+            ]
+        },
+        rnn: {
+            theory: "Recurrent networks process sequences one step at a time, carrying a hidden state that acts as memory of everything seen so far. The same weights are reused at every timestep, so an RNN is effectively a very deep network unrolled through time, trained with Backpropagation Through Time (BPTT). This weight reuse is also its weakness: gradients must flow through a long product of Jacobians, so they shrink toward zero (vanishing) or blow up (exploding) exponentially with sequence length. Bengio et al. (1994) formalized why plain RNNs struggle to learn dependencies more than ~10 steps apart, motivating gated architectures like LSTM and GRU.",
+            eqNotes: [
+                "State update: the new hidden state blends the previous state (W_h h_{t-1}) with the current input (W_x x_t), squashed by tanh to keep values bounded.",
+                "Output is read off the hidden state through V — one prediction per timestep (or only at the end for classification).",
+                "BPTT: the total gradient is the sum of per-timestep gradients, since the same weights contribute at every step.",
+                "The vanishing-gradient core: the state-to-state gradient is a product of Jacobians over time. If their norms are <1 it decays exponentially; if >1 it explodes."
+            ],
+            variants: ["LSTM", "GRU", "Bidirectional RNN", "Deep/stacked RNN", "Echo State Networks"],
+            applications: [
+                { task: "Sequence labeling", data: "Text, POS tags", note: "Now mostly superseded by Transformers" },
+                { task: "Time-series forecasting", data: "Sensor / finance", note: "Still competitive when cheap" },
+                { task: "Streaming inference", data: "Online signals", note: "Constant memory per step" }
+            ],
+            pitfalls: [
+                "Vanishing gradients limit long-range memory — use LSTM/GRU or attention.",
+                "Exploding gradients destabilize training — clip gradient norm (typically 1–5).",
+                "Strictly sequential — cannot parallelize across time, slow on long sequences.",
+                "BPTT memory grows with sequence length; use truncated BPTT for long streams."
+            ]
+        },
+        lstm: {
+            theory: "The LSTM (Hochreiter & Schmidhuber, 1997) solves the vanishing-gradient problem with a gated cell state — a memory highway that gradients can traverse almost unchanged. Three sigmoid gates regulate it: the forget gate decides what to erase, the input gate decides what to write, and the output gate decides what to expose as the hidden state. The key trick is the additive cell-state update: because new memory is added rather than repeatedly multiplied, gradients flow through the 'constant error carousel' without the exponential decay that cripples plain RNNs. This let networks learn dependencies hundreds of steps long and powered a decade of sequence modeling before Transformers.",
+            eqNotes: [
+                "Forget gate: a sigmoid over [previous hidden state, current input] outputs values in (0,1) that scale how much of each cell-state component to keep.",
+                "Input gate: decides how much of the candidate memory to write into the cell state this step.",
+                "Cell-state update: old memory scaled by the forget gate PLUS new candidate scaled by the input gate. The additive form is what preserves gradients.",
+                "Output gate: filters the (tanh-squashed) cell state into the hidden state that downstream layers and the next step see."
+            ],
+            variants: ["GRU (merged gates)", "Bidirectional LSTM", "Peephole LSTM", "Coupled forget-input LSTM", "ConvLSTM"],
+            applications: [
+                { task: "Language modeling", data: "Penn Treebank, text", note: "Pre-Transformer SOTA" },
+                { task: "Speech recognition", data: "Audio frames", note: "Acoustic models" },
+                { task: "Seq2seq translation", data: "Parallel corpora", note: "Encoder-decoder + attention" }
+            ],
+            pitfalls: [
+                "~4× the parameters and compute of a plain RNN of the same width.",
+                "Still sequential — no within-sequence parallelism like Transformers.",
+                "Long sequences can still saturate gates; monitor gate activations.",
+                "Easy to over-parameterize on small data — regularize the recurrent weights."
+            ]
+        },
+        transformer: {
+            theory: "The Transformer (Vaswani et al., 2017) replaced recurrence entirely with self-attention, letting every token directly attend to every other token in one parallel operation. Self-attention computes, for each position, a weighted average of all positions where the weights come from query-key similarity — so long-range dependencies cost the same as short-range ones. Multiple attention 'heads' learn different relation types in parallel. Because attention is order-agnostic, positional encodings inject sequence order. The architecture's parallelism made it trainable at massive scale, leading to BERT, the GPT family, and Vision Transformers. Its cost is the quadratic O(n²) attention matrix in sequence length, which spawned efficient variants like FlashAttention and sparse attention.",
+            eqNotes: [
+                "Scaled dot-product attention: QKᵀ scores token-to-token relevance; dividing by √d_k keeps scores from saturating softmax; softmax normalizes to weights; multiplying by V returns a weighted blend of values.",
+                "Multi-head attention runs h attention operations in parallel subspaces, concatenates them, and projects with Wᴼ — capturing several relation types at once.",
+                "The position-wise feed-forward network (two linear layers with a ReLU/GELU between) processes each token independently, adding capacity.",
+                "Residual + LayerNorm wrap each sublayer: the skip connection preserves gradient flow, LayerNorm stabilizes activation scale."
+            ],
+            variants: ["BERT (encoder)", "GPT (decoder)", "T5 (enc-dec)", "ViT (vision)", "FlashAttention", "Sparse/Longformer", "Mixture-of-Experts"],
+            applications: [
+                { task: "Language modeling", data: "Web-scale text", note: "GPT, Llama, Claude" },
+                { task: "NLP understanding", data: "GLUE/SuperGLUE", note: "BERT fine-tuning" },
+                { task: "Vision", data: "ImageNet patches", note: "ViT matches/beats CNNs at scale" }
+            ],
+            pitfalls: [
+                "Quadratic memory/compute in sequence length — limits context; use FlashAttention / sparsity.",
+                "Data- and compute-hungry; underperforms CNNs/LSTMs on small datasets without pretraining.",
+                "Needs positional encodings — order is invisible to raw attention.",
+                "Attention can collapse onto a few tokens; watch for attention entropy / rank collapse."
+            ]
+        },
+        gan: {
+            theory: "A GAN (Goodfellow et al., 2014) frames generation as a two-player minimax game: a generator turns noise into fake samples while a discriminator learns to tell real from fake. They train adversarially — the discriminator's loss is the generator's gain — and at the theoretical equilibrium the generator's distribution matches the data and the discriminator is reduced to guessing. In practice this equilibrium is hard to reach: training is a moving target where both networks change simultaneously. GANs produced the sharpest image synthesis of their era (DCGAN, StyleGAN) but were notoriously unstable, motivating reformulations like the Wasserstein GAN, which replaces the original divergence with a smoother distance that gives more reliable gradients.",
+            eqNotes: [
+                "The minimax value function: the discriminator maximizes correct real/fake log-probabilities while the generator minimizes the chance its fakes are caught.",
+                "Generator: maps a noise vector z through a network to a sample; tanh bounds outputs to the data's normalized range.",
+                "Discriminator: a binary classifier outputting the probability that its input is real via a sigmoid.",
+                "Non-saturating generator loss: instead of minimizing log(1−D(G(z))), maximize log D(G(z)) — stronger gradients early when fakes are obviously fake."
+            ],
+            variants: ["DCGAN", "WGAN / WGAN-GP", "Conditional GAN", "CycleGAN", "StyleGAN", "Pix2Pix"],
+            applications: [
+                { task: "Image synthesis", data: "Faces, art", note: "StyleGAN photorealism" },
+                { task: "Image-to-image", data: "Paired/unpaired", note: "CycleGAN, super-resolution" },
+                { task: "Data augmentation", data: "Scarce domains", note: "Synthetic training samples" }
+            ],
+            pitfalls: [
+                "Mode collapse: generator emits a few samples that fool D — use minibatch discrimination, WGAN, spectral norm.",
+                "Training instability / non-convergence — balance G and D learning rates carefully.",
+                "Vanishing generator gradients when D wins early — use the non-saturating loss.",
+                "Hard to evaluate; loss values are not comparable — use FID/Inception Score."
+            ]
+        }
+    };
+
+    // ── Concepts glossary (report §5.4) ─────────────────────────────
+    const glossary = {
+        "Activation function": "A non-linear function applied to a neuron's output (ReLU, sigmoid, tanh) that lets networks model non-linear relationships. Without it a deep network collapses to a single linear map.",
+        "Backpropagation": "The algorithm that computes loss gradients for every weight by applying the chain rule backward through the network, enabling gradient-based training.",
+        "Batch normalization": "Normalizes layer inputs per mini-batch to zero mean and unit variance, then rescales. Stabilizes and speeds up training by reducing internal covariate shift.",
+        "Bias-variance tradeoff": "The balance between underfitting (high bias, model too simple) and overfitting (high variance, model memorizes noise). Generalization is best between the two.",
+        "Convolution": "Sliding a small learnable kernel across grid data, computing dot products to detect local patterns with shared weights and translation equivariance.",
+        "Cross-entropy": "A loss measuring the gap between predicted and true probability distributions; minimizing it maximizes the likelihood of correct labels.",
+        "Decision boundary": "The surface in input space where a classifier switches its predicted class. Linear models give hyperplanes; deep nets carve curved boundaries.",
+        "Dropout": "Randomly zeroing a fraction of activations during training to prevent co-adaptation; approximates training an ensemble of sub-networks.",
+        "Epoch": "One full pass over the entire training dataset. Training usually runs many epochs.",
+        "Feature map": "The output of a convolutional layer — a grid of activations showing where a learned feature is present in the input.",
+        "Gradient descent": "Iteratively updating parameters in the direction that most reduces the loss, scaled by the learning rate.",
+        "Kernel": "In CNNs, the small weight matrix that slides over the input to detect a feature. (Also: a similarity function in kernel methods.)",
+        "Learning rate": "The step size for each gradient-descent update. Too large oscillates or diverges; too small trains slowly. Typical range 0.0001–1.0.",
+        "Loss function": "The scalar objective measuring prediction error that training minimizes (e.g. cross-entropy, MSE).",
+        "Overfitting": "When a model fits training data too closely — including noise — and generalizes poorly to new data.",
+        "Parameter": "A learnable value (weight or bias) adjusted during training. Model size is often measured in parameter count.",
+        "Pooling": "Downsampling a feature map (e.g. max or average over windows) to reduce size and add small translation invariance.",
+        "Regularization": "Any technique that constrains a model to improve generalization — weight decay, dropout, early stopping.",
+        "Residual connection": "A skip path that adds a layer's input to its output, letting gradients flow directly and enabling very deep networks (ResNet).",
+        "Softmax": "Converts a vector of scores into a probability distribution that sums to 1; standard for multi-class output layers.",
+        "Stride": "How far a convolution or pooling kernel moves each step. Larger strides downsample more aggressively.",
+        "Transfer learning": "Reusing a model pretrained on a large dataset as a starting point for a related task with less data.",
+        "Underfitting": "When a model is too simple to capture the underlying pattern, giving high error on both training and test data.",
+        "Weight initialization": "The starting values of weights before training. Schemes like Xavier and He initialization keep activation/gradient scales stable across layers."
+    };
+
+    // ── Open / close the Explore detail panel ───────────────────────
+    function buildArchDetailHTML(key) {
+        const net = networkTypes[key];
+        const d = architectureDetails[key];
+        if (!net || !d) return '<p>Details coming soon.</p>';
+
+        const eqRows = net.equations.map((latex, i) => {
+            const noteId = `arch-eq-${key}-${i}`;
+            return `<div class="arch-eq-row"><div id="${noteId}"></div>` +
+                (d.eqNotes[i] ? `<div class="arch-eq-note">${d.eqNotes[i]}</div>` : '') +
+                `</div>`;
+        }).join('');
+
+        const variants = d.variants.map(v => `<span class="arch-variant-chip">${v}</span>`).join('');
+
+        const appRows = d.applications.map(a =>
+            `<tr><td><strong>${a.task}</strong></td><td>${a.data}</td><td>${a.note}</td></tr>`).join('');
+
+        const pitfalls = d.pitfalls.map(p => `<div class="arch-pitfall">${p}</div>`).join('');
+
+        const papers = (net.papers || []).map(p =>
+            `<li class="mb-1"><a href="${p.url}" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800">${p.title}</a> <span class="text-gray-500">— ${p.authors}, ${p.year}</span></li>`).join('');
+
+        return `
+            <div class="arch-detail-section">
+                <h4>How it works</h4>
+                <p>${d.theory}</p>
+            </div>
+            <div class="arch-detail-section">
+                <h4>Mathematical foundation</h4>
+                ${eqRows}
+            </div>
+            <div class="arch-detail-section">
+                <h4>Key variants &amp; evolution</h4>
+                <div>${variants}</div>
+            </div>
+            <div class="arch-detail-section">
+                <h4>Practical applications</h4>
+                <table class="arch-app-table"><thead><tr><th>Task</th><th>Typical data</th><th>Notes</th></tr></thead><tbody>${appRows}</tbody></table>
+            </div>
+            <div class="arch-detail-section">
+                <h4>Common pitfalls &amp; training tips</h4>
+                ${pitfalls}
+            </div>
+            <div class="arch-detail-section">
+                <h4>Seminal papers</h4>
+                <ul class="text-sm">${papers}</ul>
+            </div>
+        `;
+    }
+
+    let archModalLastFocus = null;
+    function openArchDetail(key) {
+        const net = networkTypes[key];
+        if (!net) return;
+        const overlay = document.getElementById('arch-modal-overlay');
+        document.getElementById('arch-modal-title').textContent = net.name;
+        document.getElementById('arch-modal-year').textContent = net.invented;
+        document.getElementById('arch-modal-complexity').textContent = 'Complexity ' + net.complexity;
+        document.getElementById('arch-modal-body').innerHTML = buildArchDetailHTML(key);
+
+        // Render KaTeX equations into their placeholders
+        net.equations.forEach((latex, i) => {
+            const el = document.getElementById(`arch-eq-${key}-${i}`);
+            if (el) {
+                try { katex.render(latex, el, { displayMode: true, throwOnError: false, output: 'html' }); }
+                catch (e) { el.textContent = latex; }
+            }
+        });
+
+        archModalLastFocus = document.activeElement;
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('arch-modal-close').focus();
+    }
+    function closeArchDetail() {
+        const overlay = document.getElementById('arch-modal-overlay');
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (archModalLastFocus) archModalLastFocus.focus();
+    }
+    window.openArchDetail = openArchDetail;
+    window.closeArchDetail = closeArchDetail;
+
+    // ── Render glossary grid + auto-wire inline hover terms ──────────
+    function renderGlossary() {
+        const grid = document.getElementById('glossary-grid');
+        if (!grid) return;
+        const terms = Object.keys(glossary).sort();
+        grid.innerHTML = terms.map(t =>
+            `<div class="glossary-card"><div class="font-semibold text-gray-800 mb-1">${t}</div><div class="text-sm text-gray-600 leading-relaxed">${glossary[t]}</div></div>`
+        ).join('');
+    }
+
+    // ── Init everything once the original DOM is ready ───────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        renderGlossary();
+
+        const overlay = document.getElementById('arch-modal-overlay');
+        document.getElementById('arch-modal-close').addEventListener('click', closeArchDetail);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeArchDetail(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && overlay.classList.contains('open')) closeArchDetail();
+        });
+
+        // Back-to-top visibility + action
+        const btt = document.getElementById('back-to-top');
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const onScroll = () => {
+            if (window.scrollY > 600) btt.classList.add('visible');
+            else btt.classList.remove('visible');
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        btt.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+        });
+
+        // Scroll-spy: highlight the nav link of the section in view
+        const navLinks = Array.from(document.querySelectorAll('nav a[href^="#"]'));
+        const sections = navLinks
+            .map(a => document.getElementById(a.getAttribute('href').slice(1)))
+            .filter(Boolean);
+        if (sections.length && 'IntersectionObserver' in window) {
+            const spy = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+                        navLinks.forEach(a => a.classList.toggle('nav-active', a.getAttribute('href') === '#' + id));
+                    }
+                });
+            }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+            sections.forEach(s => spy.observe(s));
+        }
+    });
+    </script>
+
+    <!-- ════════ Real Training Engine + Decision Boundary (report §3.1) ════════ -->
+    <script>
+    // ── Tiny MLP: real forward + backward pass for 2D classification ─────────
+    // Supports arbitrary depth [inSize, ...hiddenSizes, 1].
+    // He weight init, ReLU hidden activations, sigmoid output, SGD.
+    class TinyMLP {
+        constructor(layerSizes) {
+            this.layers = [];
+            for (let i = 0; i < layerSizes.length - 1; i++) {
+                const inSz = layerSizes[i], outSz = layerSizes[i + 1];
+                const isOutput = i === layerSizes.length - 2;
+                const scale = Math.sqrt(2 / inSz);
+                this.layers.push({
+                    W: Array.from({length: outSz}, () =>
+                        Array.from({length: inSz}, () => (Math.random() * 2 - 1) * scale)),
+                    b: new Array(outSz).fill(0),
+                    act: isOutput ? 'sigmoid' : 'relu'
+                });
+            }
+            this._acts = [];
+            this._preacts = [];
+        }
+
+        forward(x) {
+            this._acts = [x.slice()];
+            this._preacts = [];
+            let a = x;
+            for (const layer of this.layers) {
+                const z = layer.W.map((row, i) =>
+                    row.reduce((s, w, j) => s + w * a[j], 0) + layer.b[i]);
+                this._preacts.push(z);
+                a = layer.act === 'relu'
+                    ? z.map(v => Math.max(0, v))
+                    : z.map(v => 1 / (1 + Math.exp(-Math.max(-60, Math.min(60, v)))));
+                this._acts.push(a);
+            }
+            return a[0];
+        }
+
+        // Returns cross-entropy loss, updates weights in-place (SGD).
+        backward(yTrue, lr) {
+            const p = this._acts[this._acts.length - 1][0];
+            const eps = 1e-7;
+            const loss = -(yTrue * Math.log(p + eps) + (1 - yTrue) * Math.log(1 - p + eps));
+
+            // CE + sigmoid shortcut: dL/dz_out = p - y
+            let dA = [p - yTrue];
+
+            for (let l = this.layers.length - 1; l >= 0; l--) {
+                const layer = this.layers[l];
+                const aIn  = this._acts[l];
+                const z    = this._preacts[l];
+
+                // Chain through activation
+                const dZ = layer.act === 'sigmoid'
+                    ? dA.slice()
+                    : dA.map((da, i) => da * (z[i] > 0 ? 1 : 0));
+
+                // Weight + bias update
+                for (let i = 0; i < layer.W.length; i++) {
+                    for (let j = 0; j < layer.W[i].length; j++) {
+                        layer.W[i][j] -= lr * dZ[i] * aIn[j];
+                    }
+                    layer.b[i] -= lr * dZ[i];
+                }
+
+                // Gradient for previous layer
+                if (l > 0) {
+                    const dAPrev = new Array(aIn.length).fill(0);
+                    for (let j = 0; j < aIn.length; j++) {
+                        for (let i = 0; i < layer.W.length; i++) {
+                            dAPrev[j] += layer.W[i][j] * dZ[i];
+                        }
+                    }
+                    dA = dAPrev;
+                }
+            }
+            return loss;
+        }
+
+        predict(x) { return this.forward(x); }
+    }
+
+    // ── Architecture → MLP config for 2D classification ──────────────────────
+    // Perceptron gets no hidden layer (linear classifier) — cannot solve XOR:
+    // this is an intentional teaching moment the report requests.
+    function mlpConfigForNetwork(key) {
+        return {
+            perceptron: { arch: [2, 1],      lr: 0.5,  epochs: null },
+            mlp:        { arch: [2, 16, 16, 1], lr: 0.08, epochs: null },
+            cnn:        { arch: [2, 32, 1],  lr: 0.05, epochs: null }
+        }[key] || null;
+    }
+
+    // ── Decision boundary renderer ────────────────────────────────────────────
+    // Draws a colored background grid over the dataset SVG showing class
+    // probabilities from the trained (or mid-training) network.
+    const BOUNDARY_COLS = 40, BOUNDARY_ROWS = 25;
+
+    function renderDecisionBoundary(mlp, svgEl, svgW, svgH) {
+        let g = svgEl.getElementById('boundary-layer');
+        if (!g) {
+            g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('id', 'boundary-layer');
+            svgEl.insertBefore(g, svgEl.firstChild);
+        }
+        g.innerHTML = '';
+
+        const cellW = svgW / BOUNDARY_COLS, cellH = svgH / BOUNDARY_ROWS;
+
+        for (let col = 0; col < BOUNDARY_COLS; col++) {
+            for (let row = 0; row < BOUNDARY_ROWS; row++) {
+                const cx = (col + 0.5) * cellW;
+                const cy = (row + 0.5) * cellH;
+                const xn = cx / svgW * 2 - 1;
+                const yn = cy / svgH * 2 - 1;
+                const p  = mlp.predict([xn, yn]);
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', col * cellW);
+                rect.setAttribute('y', row * cellH);
+                rect.setAttribute('width', cellW + 0.5);
+                rect.setAttribute('height', cellH + 0.5);
+
+                // Confidence-scaled opacity (max 35%) so data points stay visible
+                const conf   = Math.abs(p - 0.5) * 2;
+                const alpha  = (conf * 0.35).toFixed(3);
+
+                if (p > 0.5) {
+                    rect.setAttribute('fill', `rgba(59,130,246,${alpha})`);   // blue = class A
+                } else {
+                    rect.setAttribute('fill', `rgba(239,68,68,${alpha})`);    // red  = class B
+                }
+                g.appendChild(rect);
+            }
+        }
+    }
+
+    // ── Clear decision boundary ───────────────────────────────────────────────
+    function clearDecisionBoundary() {
+        const g = document.getElementById('boundary-layer');
+        if (g) g.innerHTML = '';
+    }
+
+    // ── Authentic loss dynamics for non-supervised / no-dataset sessions ──────
+    // Phases: warmup plateau → rapid descent → settling → floor noise.
+    // Architecture-specific quirks: Transformer warmup, RNN gradient spike, GAN oscillation.
+    function authenticTrainLoss(epoch, total, netKey) {
+        const t = epoch / total;
+        const cfg = {
+            perceptron:  { start: 0.693, end: 0.06,  warmup: 0,    spike: false, osc: false },
+            mlp:         { start: 2.3,   end: 0.09,  warmup: 0,    spike: false, osc: false },
+            cnn:         { start: 2.3,   end: 0.05,  warmup: 0,    spike: false, osc: false },
+            rnn:         { start: 2.3,   end: 0.22,  warmup: 0,    spike: true,  osc: false },
+            lstm:        { start: 2.3,   end: 0.08,  warmup: 0,    spike: false, osc: false },
+            transformer: { start: 2.3,   end: 0.04,  warmup: 0.12, spike: false, osc: false },
+            gan:         { start: 0.693, end: 0.55,  warmup: 0,    spike: false, osc: true  }
+        }[netKey] || { start: 2.3, end: 0.1, warmup: 0, spike: false, osc: false };
+
+        // GAN: minimax oscillation around log(2)
+        if (cfg.osc) {
+            const base = 0.693 + Math.sin(t * Math.PI * 20) * 0.06;
+            return Math.max(0.4, base + (Math.random() - 0.5) * 0.05);
+        }
+
+        // Effective t after Transformer warmup
+        let tEff = t;
+        if (cfg.warmup > 0) {
+            tEff = t < cfg.warmup
+                ? (t / cfg.warmup) * 0.05
+                : 0.05 + ((t - cfg.warmup) / (1 - cfg.warmup)) * 0.95;
+        }
+
+        // Piecewise: plateau (0–0.15) → rapid fall (0.15–0.60) → settling (0.60–1.0)
+        let base;
+        const s = cfg.start;
+        if (tEff < 0.15) {
+            base = s * (1 - tEff * 0.28);
+        } else if (tEff < 0.60) {
+            const p = (tEff - 0.15) / 0.45;
+            base = s * 0.958 * Math.exp(-p * 3.6);
+        } else {
+            const p = (tEff - 0.60) / 0.40;
+            const prev = s * 0.958 * Math.exp(-3.6);
+            base = prev + (cfg.end - prev) * (1 - Math.exp(-p * 4.5));
+        }
+
+        let noise = (Math.random() - 0.5) * base * 0.10;
+        // RNN: occasional exploding-gradient spike in first 20% (gradient norm grows exponentially)
+        if (cfg.spike && t < 0.20 && Math.random() < 0.07) noise += base * (1.5 + Math.random() * 2);
+
+        return Math.max(cfg.end * 0.6, base + noise);
+    }
+
+    function authenticValLoss(trainLoss, t, netKey) {
+        // Validation loss = train loss + architecture-complexity-dependent overfitting gap.
+        // More parameters → larger gap that widens late in training.
+        const complexity = { perceptron: 0.05, mlp: 0.6, cnn: 0.5, rnn: 0.4, lstm: 0.55, transformer: 0.8, gan: 0.15 }[netKey] || 0.4;
+        const gap = complexity * 0.18 * Math.pow(t, 1.8) + (Math.random() - 0.3) * 0.04;
+        return Math.max(trainLoss, trainLoss + gap);
+    }
+
+    // ── Loss chart with train + val lines ────────────────────────────────────
+    function initDualLossChart() {
+        const dom = document.getElementById('loss-chart');
+        if (!dom) return;
+        if (lossChart) { try { lossChart.dispose(); } catch(e){} }
+        lossChart = echarts.init(dom);
+        lossChart.setOption({
+            grid: { left: '12%', right: '8%', top: '18%', bottom: '22%' },
+            legend: {
+                data: ['Train', 'Val'],
+                top: 4,
+                textStyle: { fontSize: 10, color: '#4a5568' }
+            },
+            xAxis: { type: 'value', name: 'Epoch', nameTextStyle: { fontSize: 9 } },
+            yAxis: { type: 'value', name: 'Loss',  nameTextStyle: { fontSize: 9 } },
+            series: [
+                { name: 'Train', type: 'line', data: [], smooth: true,
+                  lineStyle: { color: '#00d4ff', width: 2 }, symbol: 'none' },
+                { name: 'Val',   type: 'line', data: [], smooth: true,
+                  lineStyle: { color: '#fbbf24', width: 2, type: 'dashed' }, symbol: 'none' }
+            ]
+        });
+    }
+
+    function pushLossPoint(epoch, trainLoss, valLoss) {
+        if (!lossChart) return;
+        const opt = lossChart.getOption();
+        opt.series[0].data.push([epoch, trainLoss]);
+        opt.series[1].data.push([epoch, valLoss]);
+        lossChart.setOption({ series: opt.series });
+    }
+
+    // ── Real training entry point ─────────────────────────────────────────────
+    // Replaces startTraining() for supervised networks that have dataset points.
+    // Falls back to authentic-dynamics sim for unsupported networks or empty canvas.
+    function realStartTraining() {
+        const key = currentNetworkKey;
+        if (!key || trainingInProgress) return;
+
+        const epochs   = parseInt(document.getElementById('epochs').value) || 100;
+        const lrSlider = parseFloat(document.getElementById('learning-rate').value) || 0.05;
+        const cfg      = mlpConfigForNetwork(key);
+        const pts      = dataset || [];
+        const doReal   = cfg && pts.length >= 4;
+
+        trainingInProgress = true;
+        document.getElementById('training-progress').style.display = 'block';
+        document.getElementById('loss-display').style.display = 'block';
+
+        initDualLossChart();
+
+        const animStatus = document.getElementById('training-anim-status');
+        if (animStatus) { animStatus.style.display = 'block'; animStatus.textContent = 'Training…'; }
+
+        // --- Branch A: real MLP on user's dataset ----------------------------
+        if (doReal) {
+            const svgEl  = document.getElementById('dataset-svg');
+            const rect   = svgEl.getBoundingClientRect();
+            const svgW   = rect.width  || 600;
+            const svgH   = rect.height || 320;
+
+            // Normalize data points to [-1, 1]
+            const trainPts = pts.map(p => ({
+                x: [p.x / svgW * 2 - 1, p.y / svgH * 2 - 1],
+                y: p.class === 'A' ? 1 : 0
+            }));
+
+            const mlp = new TinyMLP(cfg.arch);
+            const lr  = cfg.lr;
+            let epoch = 0;
+
+            // Show "linear classifier → cannot solve XOR" label for perceptron
+            if (key === 'perceptron') {
+                const hasXOR = trainPts.filter(p => p.y === 1).length > 0 &&
+                               trainPts.filter(p => p.y === 0).length > 0;
+                if (hasXOR && animStatus) {
+                    animStatus.textContent = 'Linear classifier — watch it struggle with non-linear data';
+                }
+            }
+
+            const interval = setInterval(() => {
+                if (!trainingInProgress) { clearInterval(interval); return; }
+                epoch++;
+
+                // Full-batch SGD pass (dataset small enough)
+                let totalLoss = 0;
+                const shuffled = trainPts.slice().sort(() => Math.random() - 0.5);
+                for (const pt of shuffled) {
+                    mlp.forward(pt.x);
+                    totalLoss += mlp.backward(pt.y, lr);
+                }
+                const trainLoss = totalLoss / shuffled.length;
+
+                // Val loss: evaluate on all points (overfitting signal)
+                let valTotal = 0;
+                const eps = 1e-7;
+                for (const pt of trainPts) {
+                    const p = mlp.predict(pt.x);
+                    valTotal += -(pt.y * Math.log(p + eps) + (1 - pt.y) * Math.log(1 - p + eps));
+                }
+                // Add noise to val to simulate held-out variance
+                const valLoss = valTotal / trainPts.length + (Math.random() * 0.05);
+
+                // Update UI
+                const progress = (epoch / epochs) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('current-epoch').textContent = epoch;
+                document.getElementById('current-loss').textContent = trainLoss.toFixed(4);
+
+                pushLossPoint(epoch, trainLoss, valLoss);
+
+                // Re-render boundary every 4 epochs (perf balance)
+                if (epoch % 4 === 0 || epoch === epochs) {
+                    renderDecisionBoundary(mlp, svgEl, svgW, svgH);
+                }
+
+                // Also run the existing SVG animation
+                if (typeof animateNetworkTraining === 'function') animateNetworkTraining();
+                if (typeof runTrainingAnimation === 'function') runTrainingAnimation(key, epoch, epochs, trainLoss);
+
+                if (epoch >= epochs) {
+                    clearInterval(interval);
+                    trainingInProgress = false;
+                    document.getElementById('play-btn').innerHTML = document.getElementById('play-btn').innerHTML.replace(/Train.*/, 'Retrain');
+                    if (animStatus) animStatus.textContent = 'Training complete — boundary learned';
+                }
+            }, 80);
+
+        // --- Branch B: authentic simulation (no real data / unsupported net) ---
+        } else {
+            clearDecisionBoundary();
+            let epoch = 0;
+
+            const interval = setInterval(() => {
+                if (!trainingInProgress) { clearInterval(interval); return; }
+                epoch++;
+
+                const t = epoch / epochs;
+                const trainLoss = authenticTrainLoss(epoch, epochs, key);
+                const valLoss   = authenticValLoss(trainLoss, t, key);
+
+                const progress = (epoch / epochs) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('current-epoch').textContent = epoch;
+                document.getElementById('current-loss').textContent = trainLoss.toFixed(4);
+
+                pushLossPoint(epoch, trainLoss, valLoss);
+
+                if (typeof animateNetworkTraining === 'function') animateNetworkTraining();
+                if (typeof runTrainingAnimation === 'function') runTrainingAnimation(key, epoch, epochs, trainLoss);
+
+                if (epoch >= epochs) {
+                    clearInterval(interval);
+                    trainingInProgress = false;
+                    if (animStatus) animStatus.textContent = 'Simulation complete';
+                }
+            }, 80);
+        }
+    }
+
+    // ── Wire up: replace startTraining on the play button after original init ─
+    document.addEventListener('DOMContentLoaded', function() {
+        // Original setupEventListeners() already added startTraining as a listener.
+        // Remove it and add ours. Both DOMContentLoaded callbacks fire in order,
+        // but we can't guarantee ours runs after, so use setTimeout(0) to let the
+        // original script's DOMContentLoaded finish first.
+        setTimeout(() => {
+            const btn = document.getElementById('play-btn');
+            if (!btn) return;
+            // Remove original listener (named function, same global reference)
+            btn.removeEventListener('click', startTraining);
+            btn.addEventListener('click', realStartTraining);
+
+            // Patch resetNetwork to also clear the boundary
+            const origReset = window.resetNetwork;
+            window.resetNetwork = function() {
+                if (typeof origReset === 'function') origReset();
+                clearDecisionBoundary();
+                if (lossChart) {
+                    lossChart.setOption({ series: [{ data: [] }, { data: [] }] });
+                }
+            };
+        }, 0);
+    });
     </script>
 </body>
 </html>
