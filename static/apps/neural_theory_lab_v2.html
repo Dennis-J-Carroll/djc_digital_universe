@@ -774,6 +774,62 @@
             .back-to-top, .arch-modal-overlay, .arch-modal,
             .glossary-pop, .eq-note-pop { transition: none !important; }
         }
+
+        /* ── Optimization section ──────────────────────────────────────── */
+        .optim-eq { min-height: 2.5rem; overflow-x: auto; }
+        .optim-table { border-collapse: collapse; }
+        .optim-table th, .optim-table td {
+            padding: 8px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.07);
+            font-size: 0.82rem;
+        }
+        .optim-table th {
+            font-weight: 700;
+            color: #374151;
+            background: rgba(248,250,252,0.85);
+            white-space: nowrap;
+        }
+        .optim-table tr:last-child td { border-bottom: none; }
+        .optim-table td:first-child { font-weight: 600; color: #1e40af; }
+        .optim-btn {
+            padding: 7px 20px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.15s;
+        }
+        .optim-btn:hover { opacity: 0.82; }
+        .optim-btn-run  { background: #2563eb; color: #fff; }
+        .optim-btn-reset { background: rgba(0,0,0,0.09); color: #374151; }
+        .optim-lr-slider { accent-color: #2563eb; cursor: pointer; vertical-align: middle; }
+        .optim-canvas {
+            display: block;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.09);
+            image-rendering: pixelated;
+        }
+        .optim-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        .optim-legend-item::before {
+            content: '';
+            display: inline-block;
+            width: 22px;
+            height: 3px;
+            background: var(--c);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -805,6 +861,7 @@
                     <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
                     <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
                     <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
+                    <a href="#optimization" class="text-sm hover:text-gray-900 transition">Optimization</a>
                     <a href="#glossary" class="text-sm hover:text-gray-900 transition">Glossary</a>
                 </div>
             </div>
@@ -1381,6 +1438,90 @@
                     { title: 'A Style-Based Generator Architecture for Generative Adversarial Networks (StyleGAN)', authors: 'T. Karras, S. Laine & T. Aila', year: 2019, url: 'https://arxiv.org/abs/1812.04948' }
                 ],
                 trainingAnim: 'adversarial-dance'
+            },
+            resnet: {
+                name: 'ResNet',
+                description: 'Residual networks add a skip connection that bypasses layers, solving the vanishing-gradient collapse that prevented very deep plain networks from training.',
+                equations: [
+                    'y = \\mathcal{F}(x,\\{W_i\\}) + x',
+                    'y = \\mathcal{F}(x,\\{W_i\\}) + W_s x',
+                    '\\text{BN}(x) = \\gamma\\dfrac{x - \\mu_{\\mathcal{B}}}{\\sqrt{\\sigma^2_{\\mathcal{B}}+\\epsilon}} + \\beta',
+                    '\\mathcal{F}(x) = W_2\\,\\text{ReLU}(W_1 x)'
+                ],
+                nodes: [3, 4, 4, 3],
+                connections: 'residual',
+                complexity: 'O(n)',
+                invented: 2015,
+                color: '#6366f1',
+                papers: [
+                    { title: 'Deep Residual Learning for Image Recognition', authors: 'K. He, X. Zhang, S. Ren & J. Sun', year: 2015, url: 'https://arxiv.org/abs/1512.03385' },
+                    { title: 'Identity Mappings in Deep Residual Networks', authors: 'K. He, X. Zhang, S. Ren & J. Sun', year: 2016, url: 'https://arxiv.org/abs/1603.05027' },
+                    { title: 'Densely Connected Convolutional Networks', authors: 'G. Huang, Z. Liu, L. van der Maaten & K. Weinberger', year: 2017, url: 'https://arxiv.org/abs/1608.06993' }
+                ],
+                trainingAnim: 'skip-propagation'
+            },
+            vae: {
+                name: 'Variational Autoencoder',
+                description: 'Encodes data into a structured latent distribution and decodes samples from it, learning generative structure through the ELBO objective and the reparameterization trick.',
+                equations: [
+                    '\\mathcal{L} = \\mathbb{E}_{q(z|x)}[\\log p(x|z)] - D_{\\mathrm{KL}}(q(z|x)\\|p(z))',
+                    'q(z|x) = \\mathcal{N}(\\mu_\\phi(x),\\,\\sigma^2_\\phi(x))',
+                    'z = \\mu + \\sigma \\odot \\varepsilon,\\quad \\varepsilon \\sim \\mathcal{N}(0,I)',
+                    'p(z) = \\mathcal{N}(0,\\,I)'
+                ],
+                nodes: [4, 2, 4],
+                connections: 'fully-connected',
+                complexity: 'O(n)',
+                invented: 2013,
+                color: '#8b5cf6',
+                papers: [
+                    { title: 'Auto-Encoding Variational Bayes', authors: 'D. P. Kingma & M. Welling', year: 2013, url: 'https://arxiv.org/abs/1312.6114' },
+                    { title: 'Stochastic Backpropagation and Approximate Inference in Deep Generative Models', authors: 'D. J. Rezende, S. Mohamed & D. Wierstra', year: 2014, url: 'https://arxiv.org/abs/1401.4082' },
+                    { title: 'β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework', authors: 'I. Higgins et al.', year: 2017, url: 'https://openreview.net/forum?id=Sy2fchEYwB' }
+                ],
+                trainingAnim: 'latent-sampling'
+            },
+            diffusion: {
+                name: 'Diffusion Model',
+                description: 'Learns to reverse a gradual noising process. Training predicts the noise added at each step; sampling runs the reverse chain from pure noise to a clean sample.',
+                equations: [
+                    'q(x_t|x_{t-1}) = \\mathcal{N}(x_t;\\,\\sqrt{1-\\beta_t}\\,x_{t-1},\\,\\beta_t I)',
+                    'x_t = \\sqrt{\\bar\\alpha_t}\\,x_0 + \\sqrt{1-\\bar\\alpha_t}\\,\\varepsilon,\\quad \\varepsilon\\sim\\mathcal{N}(0,I)',
+                    'p_\\theta(x_{t-1}|x_t) = \\mathcal{N}(x_{t-1};\\,\\mu_\\theta(x_t,t),\\,\\Sigma_\\theta)',
+                    '\\mathcal{L} = \\mathbb{E}_{t,x_0,\\varepsilon}\\!\\left[\\|\\varepsilon - \\varepsilon_\\theta(x_t,t)\\|^2\\right]'
+                ],
+                nodes: [4, 5, 4],
+                connections: 'diffusion',
+                complexity: 'O(T·n)',
+                invented: 2020,
+                color: '#06b6d4',
+                papers: [
+                    { title: 'Denoising Diffusion Probabilistic Models', authors: 'J. Ho, A. Jain & P. Abbeel', year: 2020, url: 'https://arxiv.org/abs/2006.11239' },
+                    { title: 'Denoising Diffusion Implicit Models', authors: 'J. Song, C. Meng & S. Ermon', year: 2020, url: 'https://arxiv.org/abs/2010.02502' },
+                    { title: 'High-Resolution Image Synthesis with Latent Diffusion Models', authors: 'R. Rombach, A. Blattmann, D. Lorenz, P. Esser & B. Ommer', year: 2022, url: 'https://arxiv.org/abs/2112.10752' }
+                ],
+                trainingAnim: 'noise-diffusion'
+            },
+            ssm: {
+                name: 'State-Space Model (Mamba)',
+                description: 'Linear recurrence with selective, input-dependent state transitions. Matches Transformer quality at linear time and constant inference memory.',
+                equations: [
+                    'h_t = \\bar{A}\\,h_{t-1} + \\bar{B}\\,x_t',
+                    'y_t = C\\,h_t',
+                    '\\bar{A} = e^{\\Delta A},\\quad \\bar{B} = (\\Delta A)^{-1}(e^{\\Delta A}-I)\\Delta B',
+                    '\\Delta,B,C = s_\\Delta(x),\\;s_B(x),\\;s_C(x)\\quad\\text{(selective)}'
+                ],
+                nodes: [3, 5, 3],
+                connections: 'state-space',
+                complexity: 'O(n)',
+                invented: 2023,
+                color: '#10b981',
+                papers: [
+                    { title: 'Mamba: Linear-Time Sequence Modeling with Selective State Spaces', authors: 'A. Gu & T. Dao', year: 2023, url: 'https://arxiv.org/abs/2312.00752' },
+                    { title: 'Efficiently Modeling Long Sequences with Structured State Spaces (S4)', authors: 'A. Gu, K. Goel & C. Ré', year: 2021, url: 'https://arxiv.org/abs/2111.00396' },
+                    { title: 'Simplified State Space Layers for Sequence Modeling (S5)', authors: 'J. T. H. Smith, A. Warrington & S. W. Linderman', year: 2022, url: 'https://arxiv.org/abs/2208.04933' }
+                ],
+                trainingAnim: 'state-scan'
             }
         };
 
@@ -1794,6 +1935,114 @@
                     dLabel.setAttribute('font-weight', '700');
                     dLabel.textContent = 'Discriminator';
                     svg.appendChild(dLabel);
+                }
+            } else if (connType === 'residual') {
+                // ResNet: fully-connected forward pass + curved skip arcs above intermediate layers
+                for (let i = 0; i < layerNodes.length - 1; i++) {
+                    layerNodes[i].forEach(from => {
+                        layerNodes[i + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+                for (let i = 0; i + 2 < layerNodes.length; i++) {
+                    const fromL = layerNodes[i];
+                    const toL   = layerNodes[i + 2];
+                    const fx = fromL.reduce((s, n) => s + n.x, 0) / fromL.length;
+                    const fy = fromL.reduce((s, n) => s + n.y, 0) / fromL.length;
+                    const tx = toL.reduce((s, n) => s + n.x, 0) / toL.length;
+                    const ty = toL.reduce((s, n) => s + n.y, 0) / toL.length;
+                    const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    arc.setAttribute('d', `M ${fx} ${fy - 24} C ${fx - 55} ${fy - 90}, ${tx - 55} ${ty - 90}, ${tx} ${ty - 24}`);
+                    arc.setAttribute('fill', 'none');
+                    arc.setAttribute('stroke', '#6366f1');
+                    arc.setAttribute('stroke-width', '2.5');
+                    arc.setAttribute('stroke-dasharray', '6,3');
+                    arc.setAttribute('marker-end', 'url(#viz-arrowhead)');
+                    arc.classList.add('network-connection');
+                    svg.appendChild(arc);
+                }
+                const skipLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                const fl0 = layerNodes[0], fl2 = layerNodes[Math.min(2, layerNodes.length - 1)];
+                skipLabel.setAttribute('x', (fl0[0].x + fl2[0].x) / 2);
+                skipLabel.setAttribute('y', 22);
+                skipLabel.setAttribute('text-anchor', 'middle');
+                skipLabel.setAttribute('fill', '#6366f1');
+                skipLabel.setAttribute('font-size', '12');
+                skipLabel.setAttribute('font-weight', '700');
+                skipLabel.textContent = 'skip connection';
+                svg.appendChild(skipLabel);
+            } else if (connType === 'diffusion') {
+                // Diffusion: forward (noising, cyan) left→right; reverse (denoising, amber dashed) right→left
+                for (let i = 0; i < layerNodes.length - 1; i++) {
+                    layerNodes[i].forEach(from => {
+                        layerNodes[i + 1].forEach(to => {
+                            const line = makeLine(from.x, from.y, to.x, to.y, 'network-connection');
+                            line.setAttribute('stroke', '#06b6d4');
+                            line.setAttribute('stroke-opacity', '0.55');
+                            svg.appendChild(line);
+                        });
+                    });
+                }
+                for (let i = layerNodes.length - 1; i > 0; i--) {
+                    layerNodes[i].forEach(from => {
+                        layerNodes[i - 1].forEach(to => {
+                            const line = makeLine(from.x, from.y, to.x, to.y, 'network-connection');
+                            line.setAttribute('stroke', '#f59e0b');
+                            line.setAttribute('stroke-opacity', '0.4');
+                            line.setAttribute('stroke-dasharray', '5,4');
+                            svg.appendChild(line);
+                        });
+                    });
+                }
+                const fLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                fLbl.setAttribute('x', (layerNodes[0][0].x + layerNodes[1][0].x) / 2);
+                fLbl.setAttribute('y', 24);
+                fLbl.setAttribute('text-anchor', 'middle');
+                fLbl.setAttribute('fill', '#06b6d4');
+                fLbl.setAttribute('font-size', '11');
+                fLbl.setAttribute('font-weight', '700');
+                fLbl.textContent = 'forward q';
+                svg.appendChild(fLbl);
+                const rLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                const rLast = layerNodes.length - 1;
+                rLbl.setAttribute('x', (layerNodes[rLast][0].x + layerNodes[rLast - 1][0].x) / 2);
+                rLbl.setAttribute('y', 24);
+                rLbl.setAttribute('text-anchor', 'middle');
+                rLbl.setAttribute('fill', '#f59e0b');
+                rLbl.setAttribute('font-size', '11');
+                rLbl.setAttribute('font-weight', '700');
+                rLbl.textContent = 'reverse pθ';
+                svg.appendChild(rLbl);
+            } else if (connType === 'state-space') {
+                // SSM/Mamba: fully-connected forward pass + self-loop arc on hidden layers for state persistence
+                for (let i = 0; i < layerNodes.length - 1; i++) {
+                    layerNodes[i].forEach(from => {
+                        layerNodes[i + 1].forEach(to => {
+                            svg.appendChild(makeLine(from.x, from.y, to.x, to.y, 'network-connection'));
+                        });
+                    });
+                }
+                for (let i = 1; i < layerNodes.length - 1; i++) {
+                    const layer = layerNodes[i];
+                    const midNode = layer[Math.floor(layer.length / 2)];
+                    const loop = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    loop.setAttribute('d', `M ${midNode.x + 21} ${midNode.y - 6} C ${midNode.x + 68} ${midNode.y - 50}, ${midNode.x + 68} ${midNode.y + 38}, ${midNode.x + 21} ${midNode.y + 6}`);
+                    loop.setAttribute('fill', 'none');
+                    loop.setAttribute('stroke', '#10b981');
+                    loop.setAttribute('stroke-width', '2.5');
+                    loop.setAttribute('stroke-dasharray', '4,3');
+                    loop.setAttribute('marker-end', 'url(#viz-arrowhead)');
+                    loop.classList.add('network-connection');
+                    svg.appendChild(loop);
+                    const htLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    htLbl.setAttribute('x', midNode.x + 74);
+                    htLbl.setAttribute('y', midNode.y + 4);
+                    htLbl.setAttribute('fill', '#10b981');
+                    htLbl.setAttribute('font-size', '12');
+                    htLbl.setAttribute('font-weight', '700');
+                    htLbl.textContent = 'hₜ';
+                    svg.appendChild(htLbl);
                 }
             }
 
@@ -3162,6 +3411,122 @@
         window.updateBuilderLayerActivation = updateBuilderLayerActivation;
     </script>
 
+    <!-- ════════ Optimization Theory (report §2.4) ════════ -->
+    <section id="optimization" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Optimization Theory</h3>
+            <p class="text-sm text-gray-600 text-center mb-10 max-w-2xl mx-auto">How neural networks actually learn: first- and second-moment gradient methods, adaptive step sizes, and the geometry of the loss landscape.</p>
+
+            <!-- Optimizer equation cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">SGD</h4>
+                        <span class="theory-badge">1951</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-sgd"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> Large datasets, near-convex problems. Baseline for every comparison.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> η (learning rate), batch size.</p>
+                </div>
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">SGD + Momentum</h4>
+                        <span class="theory-badge">1964</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-momentum"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> Deep networks with noisy gradients. β = 0.9 is a reliable default; Nesterov looks ahead before computing the gradient.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> η, β (momentum coefficient).</p>
+                </div>
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">RMSprop</h4>
+                        <span class="theory-badge">2012</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-rmsprop"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> RNNs and non-stationary objectives. Divides the LR by a per-parameter gradient scale to equalize step sizes.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> η, ρ ≈ 0.9, ε ≈ 1e-8.</p>
+                </div>
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">Adam</h4>
+                        <span class="theory-badge">2014</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-adam"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> Default for most deep learning. Combines momentum with per-parameter adaptive scaling; bias-corrected at early steps.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> η ≈ 1e-3, β₁ = 0.9, β₂ = 0.999, ε = 1e-8.</p>
+                </div>
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">AdamW</h4>
+                        <span class="theory-badge">2017</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-adamw"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> Transformers and large pretrained models. Decouples weight decay from the adaptive gradient scale — critical for regularization to work correctly.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> Same as Adam + λ (weight decay ≈ 0.01–0.1).</p>
+                </div>
+                <div class="neural-card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-800">Lion</h4>
+                        <span class="theory-badge">2023</span>
+                    </div>
+                    <div class="optim-eq mb-3" id="eq-lion"></div>
+                    <p class="text-xs text-gray-500"><strong>When:</strong> Large vision / multimodal training. Tracks only one moment (vs. Adam's two), so memory is 2× smaller. Use ~3–10× smaller η than Adam.</p>
+                    <p class="text-xs text-gray-500 mt-1"><strong>Params:</strong> η, β₁ = 0.9, β₂ = 0.99, λ (weight decay).</p>
+                </div>
+            </div>
+
+            <!-- Comparison table -->
+            <div class="neural-card p-5 mb-8 overflow-x-auto">
+                <h4 class="font-bold text-gray-800 mb-4">Optimizer Comparison</h4>
+                <table class="optim-table w-full">
+                    <thead>
+                        <tr>
+                            <th>Optimizer</th>
+                            <th>Extra memory</th>
+                            <th>Adaptive LR</th>
+                            <th>Handles anisotropy</th>
+                            <th>Best for</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>SGD</td><td>0</td><td>No</td><td>Poorly</td><td>CV with carefully tuned schedule; matches Adam with effort</td></tr>
+                        <tr><td>Momentum</td><td>1 buffer</td><td>No</td><td>Better</td><td>Deep CNNs, ResNets — standard for ImageNet training</td></tr>
+                        <tr><td>RMSprop</td><td>1 buffer</td><td>Yes</td><td>Yes</td><td>RNNs, RL with non-stationary reward signals</td></tr>
+                        <tr><td>Adam</td><td>2 buffers</td><td>Yes</td><td>Yes</td><td>Default — NLP, GANs, generative models</td></tr>
+                        <tr><td>AdamW</td><td>2 buffers</td><td>Yes</td><td>Yes</td><td>Transformers and LLMs — decoupled weight decay is essential</td></tr>
+                        <tr><td>Lion</td><td>1 buffer</td><td>Implicit</td><td>Partial</td><td>Large vision / multimodal training where memory is tight</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Interactive loss landscape -->
+            <div class="neural-card p-5">
+                <h4 class="font-bold text-gray-800 mb-1">Loss Landscape Explorer</h4>
+                <p class="text-xs text-gray-500 mb-4">
+                    Surface: <code class="bg-gray-100 px-1 rounded">f(x,y) = 0.05x² + 5y²</code> — an elongated bowl with extreme curvature anisotropy (100× steeper in y than x). This exposes the core failure mode of fixed-LR SGD. Adjust the learning rate and observe the different trajectories.
+                </p>
+                <div class="flex flex-wrap gap-3 items-center mb-4">
+                    <label class="text-sm text-gray-700 flex items-center gap-2">
+                        Learning rate
+                        <input type="range" id="optim-lr-slider" min="0.01" max="0.5" step="0.01" value="0.1" class="optim-lr-slider">
+                        <span id="optim-lr-label" class="font-mono text-blue-600 w-8 text-sm">0.10</span>
+                    </label>
+                    <button type="button" id="optim-run-btn" class="optim-btn optim-btn-run">Run</button>
+                    <button type="button" id="optim-reset-btn" class="optim-btn optim-btn-reset">Reset</button>
+                </div>
+                <div class="flex flex-wrap gap-4 mb-3">
+                    <span class="optim-legend-item" style="--c:#ef4444">SGD</span>
+                    <span class="optim-legend-item" style="--c:#3b82f6">Momentum (β=0.9)</span>
+                    <span class="optim-legend-item" style="--c:#f59e0b">RMSprop</span>
+                    <span class="optim-legend-item" style="--c:#10b981">Adam</span>
+                </div>
+                <canvas id="loss-landscape-canvas" width="700" height="300" class="optim-canvas"
+                        role="img" aria-label="Animated loss landscape showing four optimizer trajectories on an elongated bowl surface"></canvas>
+                <p id="optim-status" class="text-xs text-gray-400 mt-2">Click Run to start.</p>
+            </div>
+        </div>
+    </section>
+
     <!-- ════════ Concepts Glossary (report §5.4) ════════ -->
     <section id="glossary" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/40">
         <div class="max-w-7xl mx-auto">
@@ -3347,6 +3712,90 @@
                 "Vanishing generator gradients when D wins early — use the non-saturating loss.",
                 "Hard to evaluate; loss values are not comparable — use FID/Inception Score."
             ]
+        },
+        resnet: {
+            theory: "ResNet (He et al., 2015) solved the degradation problem: adding more layers to a plain network paradoxically increased training error, not just test error. The fix is the residual (skip) connection — a shortcut that adds the layer's input directly to its output. Instead of learning H(x) directly, the sub-network only needs to learn the residual F(x) = H(x) − x. When F → 0 the block becomes an identity, so depth is never harmful. Critically, gradients can flow directly through the skip path during backpropagation, reaching shallow layers without multiplying through every weight matrix. This lets 100–1000 layer networks train stably. Batch normalization is standard in each block. ResNets won ILSVRC 2015 by a large margin and became the foundation of nearly all subsequent vision work. Extensions include pre-activation ResNet v2 (BN before ReLU), wide ResNets, ResNeXt (grouped convolutions), and DenseNet (skip connections between every pair of layers).",
+            eqNotes: [
+                "Identity shortcut: when input and output dimensions match, x adds directly to the block output — zero extra parameters, and the block learns only the deviation from identity.",
+                "Projection shortcut Ws x: a 1×1 convolution aligns channel count and spatial resolution when they differ (e.g. at stride-2 downsampling).",
+                "Batch normalization: inside each block, BN centers and scales activations per mini-batch then rescales by learned γ, β — controls activation magnitude before the ReLU.",
+                "Residual block F(x): two linear layers with one ReLU between them — the minimal learnable residual whose output is added to the skip path."
+            ],
+            variants: ["ResNet-50/101/152", "ResNet v2 (pre-activation)", "Wide ResNet", "ResNeXt", "DenseNet", "EfficientNet", "RegNet"],
+            applications: [
+                { task: "Image classification", data: "ImageNet (1.28M images)", note: "ILSVRC 2015 winner — top-5 error 3.57%" },
+                { task: "Object detection backbone", data: "COCO", note: "Foundation for Faster R-CNN, YOLO, Mask R-CNN" },
+                { task: "Feature extraction / transfer", data: "Domain-specific datasets", note: "Pretrained ResNets are ubiquitous fine-tuning starting points" }
+            ],
+            pitfalls: [
+                "Degradation is solved but compute still scales with depth — bottleneck blocks (1×1, 3×3, 1×1) reduce FLOPs for deep variants.",
+                "Identity shortcuts require matching channel/spatial dimensions; projection shortcuts add parameters and must be trained carefully.",
+                "BatchNorm at train vs. eval behaves differently — forgetting model.eval() causes silent accuracy drops at inference.",
+                "Very deep ResNets (>200 layers) show diminishing returns — architectural refinements (wide, grouped convolutions) matter more than raw depth."
+            ]
+        },
+        vae: {
+            theory: "A VAE (Kingma & Welling, 2013) frames generative modeling as approximate Bayesian inference. The encoder learns a posterior q(z|x) over a latent variable z given input x; the decoder learns the likelihood p(x|z) mapping z back to data space. Because the true posterior is intractable, the VAE maximizes the Evidence Lower BOund (ELBO): reconstruction likelihood minus the KL divergence between the approximate posterior and the prior p(z) = N(0, I). The KL term regularizes the latent space into a smooth, compact distribution the decoder can reliably sample from. The reparameterization trick makes this differentiable: instead of sampling z directly (non-differentiable), the network outputs μ and σ, then computes z = μ + σ⊙ε where ε ~ N(0, I) — the stochastic node moves outside the gradient path. At generation time, sample z from the prior and decode. VAEs produce smooth, interpolable latent spaces but somewhat blurrier outputs than GANs, because the reconstruction term averages over all possible images consistent with each z.",
+            eqNotes: [
+                "ELBO: the first term rewards faithful reconstruction (how well the decoder recovers x from z); the KL term penalizes the posterior for drifting from the unit Gaussian prior.",
+                "Encoder q: outputs mean μ and variance σ² per latent dimension — a diagonal Gaussian posterior, cheap to compute and analytically differentiable.",
+                "Reparameterization trick: z = μ + σ⊙ε separates the deterministic parameters (μ, σ) from the noise source ε, routing gradients cleanly through the sampling step.",
+                "Prior p(z) = N(0, I): the KL divergence to a unit Gaussian has a closed form — ½Σ(μ² + σ² − 1 − log σ²) — no Monte Carlo needed for the regularization term."
+            ],
+            variants: ["β-VAE (disentanglement)", "VQ-VAE (discrete latents)", "Conditional VAE", "Hierarchical VAE", "Flow-based VAE", "Latent Diffusion Model"],
+            applications: [
+                { task: "Image generation", data: "MNIST, CelebA, CIFAR-10", note: "Smooth interpolation in latent space; blurrier than GANs" },
+                { task: "Representation learning", data: "Unlabeled data", note: "β-VAE encourages disentangled, interpretable latent factors" },
+                { task: "Anomaly detection", data: "Sensor / medical data", note: "High reconstruction error reliably flags out-of-distribution inputs" }
+            ],
+            pitfalls: [
+                "Posterior collapse: the encoder ignores x and outputs the prior — KL dominates; fix with β annealing, free bits, or KL thresholding.",
+                "Blurry reconstructions: MSE/BCE reconstruction loss averages over modes of p(x|z); GANs produce sharper images at the cost of diversity.",
+                "A weak decoder learns uninformative latent codes — encoder and decoder capacity must be balanced.",
+                "Latent traversal may not disentangle without explicit β annealing or supervision; factors can entangle arbitrarily."
+            ]
+        },
+        diffusion: {
+            theory: "Diffusion models (Ho et al., 2020 / DDPM) learn by reversing a fixed, gradual noising process. The forward process q adds Gaussian noise over T steps until the signal is pure noise; the reverse process p_θ, parameterized by a neural network, denoises step by step. A closed-form training target exists for each step: instead of explicitly predicting x_{t−1}, the network predicts the noise ε that was added to reach x_t from x_0. The simplified training loss is just MSE between predicted and true noise. At sampling time, start from x_T ~ N(0,I) and apply the reverse chain T times. DDPM requires T=1000 steps but DDIM found a deterministic shortcut enabling 10–50 step sampling. Stable Diffusion compresses images to a VAE latent space and runs diffusion there, slashing compute. Diffusion models now produce the highest-quality generative samples and underpin nearly all modern image, audio, and video synthesis systems.",
+            eqNotes: [
+                "Forward process in one shot: x_t = √ᾱt·x₀ + √(1−ᾱt)·ε gives the noisy image at any step t directly from x₀ and ε — so training doesn't require sequential simulation of the chain.",
+                "Schedule control: ᾱt = Πs≤t(1−βs) — the β schedule controls how fast signal dissolves; β₁ ≈ 0.0001 increasing to βT ≈ 0.02 in DDPM.",
+                "Reverse network: a U-Net (images) or Transformer (audio, video) conditioned on the time step t via sinusoidal embeddings predicts the noise to subtract at each step.",
+                "Simplified loss: ‖ε − ε_θ(xt, t)‖² is the Ho et al. reweighting that ignores the VLB prefactor — empirically better than the full objective."
+            ],
+            variants: ["DDIM (deterministic, fast)", "Stable Diffusion (latent)", "DALL·E 3", "Imagen", "Sora (video)", "Score matching / EDM", "Flow Matching"],
+            applications: [
+                { task: "Text-to-image generation", data: "LAION-5B + CLIP embeddings", note: "Stable Diffusion, DALL·E 3, Imagen, Flux" },
+                { task: "Video synthesis", data: "Video datasets", note: "Sora uses Diffusion Transformers (DiT) over video patches" },
+                { task: "Molecular / protein design", data: "Structure databases", note: "RFDiffusion generates novel protein backbones" }
+            ],
+            pitfalls: [
+                "Slow sampling: DDPM needs 1000 steps; DDIM reduces to 10–50 at some diversity cost; consistency models collapse to 1–4 steps.",
+                "Compute-intensive training — quality gap vs. GANs closes only at large scale; early checkpoints underperform.",
+                "Classifier-free guidance (CFG) sharpens sample quality but introduces a guidance scale that trades diversity for fidelity.",
+                "Evaluation is multi-dimensional: FID measures distribution match, CLIP score measures text alignment, and human evaluation adds overhead — no single metric suffices."
+            ]
+        },
+        ssm: {
+            theory: "State-space models (SSMs) are a linear recurrence family rooted in control theory: an input x enters, a hidden state h evolves, and output y is read from h. The Mamba model (Gu & Dao, 2023) makes SSMs competitive with Transformers by adding selectivity — the matrices A, B, C become functions of the current input rather than being fixed. This lets the model selectively compress or retain information per token, unlike S4 where matrices were time-invariant. Training is parallelizable via a hardware-aware parallel scan (associativity of matrix multiplication): the recurrence is computed in O(log n) depth rather than sequentially, so training is fast. At inference, Mamba runs as a true O(1)-state recurrence: no KV cache, constant memory regardless of sequence length. The key result is Mamba matching or exceeding Transformer perplexity on language benchmarks at a fraction of the memory cost for long sequences, motivating hybrid architectures like Jamba that interleave Mamba and attention layers.",
+            eqNotes: [
+                "State recurrence h_t = Āh_{t−1} + B̄x_t: a linear RNN where Ā controls decay (forgetting) and B̄ scales how much the input updates the state — the model's compressible memory.",
+                "Output projection y_t = Ch_t: C is also input-selective in Mamba, controlling which state dimensions matter for the current token's output.",
+                "Discretization: Ā = exp(ΔA), B̄ ≈ (ΔA)⁻¹(exp(ΔA)−I)ΔB converts the continuous-time SSM to a discrete recurrence; Δ (step size) is input-dependent and learned.",
+                "Selective scan: Δ, B, C are produced by linear projections of x — making the recurrence input-dependent, breaking the time-invariance that limited S4 to fixed dynamics."
+            ],
+            variants: ["S4 (structured, fixed A)", "S5 (MIMO SSM)", "Mamba-2 / SSD", "Jamba (Mamba + Transformer hybrid)", "VMamba (vision)"],
+            applications: [
+                { task: "Language modeling", data: "The Pile, SlimPajama", note: "Mamba-3B matches Transformer quality at lower FLOPs" },
+                { task: "Long-context tasks", data: "Long documents, audio waveforms", note: "Constant inference memory — no KV cache blowup" },
+                { task: "Genomics / biology", data: "DNA / protein sequences", note: "Handles 1M+ token contexts cost-effectively (Caduceus)" }
+            ],
+            pitfalls: [
+                "The selective scan CUDA kernel is non-trivial to implement correctly — not natively available in all frameworks; Mamba-2 simplified this.",
+                "Mamba underperforms Transformers on tasks requiring hard in-context retrieval (key-value lookup) — attention's direct access beats compressed state.",
+                "Parallel scan is associative but still communication-bound; naive implementations lose efficiency on multi-GPU setups.",
+                "Far fewer pretrained Mamba checkpoints exist vs. the Transformer ecosystem — transfer learning options are limited."
+            ]
         }
     };
 
@@ -3375,7 +3824,13 @@
         "Stride": "How far a convolution or pooling kernel moves each step. Larger strides downsample more aggressively.",
         "Transfer learning": "Reusing a model pretrained on a large dataset as a starting point for a related task with less data.",
         "Underfitting": "When a model is too simple to capture the underlying pattern, giving high error on both training and test data.",
-        "Weight initialization": "The starting values of weights before training. Schemes like Xavier and He initialization keep activation/gradient scales stable across layers."
+        "Weight initialization": "The starting values of weights before training. Schemes like Xavier and He initialization keep activation/gradient scales stable across layers.",
+        "Diffusion process": "A Markov chain that gradually adds Gaussian noise to data (forward process) and is reversed by a learned denoising network (backward process), enabling high-quality generation from pure noise.",
+        "ELBO (Evidence Lower Bound)": "The VAE training objective: reconstruction log-likelihood minus KL divergence between the learned posterior and the prior. Maximizing it jointly trains encoder and decoder without computing the intractable true posterior.",
+        "KL divergence": "Kullback–Leibler divergence measures how much one probability distribution differs from another. In VAEs it regularizes the latent posterior toward a standard Gaussian; it is always ≥ 0 and equals 0 only when distributions match.",
+        "Latent space": "A compact, learned representation space where the model encodes structured information about data. Well-organized latent spaces enable interpolation, arithmetic, and controlled generation.",
+        "Reparameterization trick": "The VAE technique z = μ + σ⊙ε (with ε ~ N(0,I)) that makes sampling differentiable by separating the stochastic node from the learnable parameters, enabling backpropagation through the sampling step.",
+        "State-space model": "A sequence model built on the linear recurrence hₜ = Āhₜ₋₁ + B̄xₜ, yₜ = Chₜ. Trained in parallel via selective scan; at inference runs in O(1) memory like an RNN but with input-dependent, selective state transitions."
     };
 
     // ── Open / close the Explore detail panel ───────────────────────
@@ -3515,6 +3970,274 @@
             sections.forEach(s => spy.observe(s));
         }
     });
+    </script>
+
+    <!-- ════════ Optimization Theory interactive canvas (report §2.4) ════════ -->
+    <script>
+    (function () {
+        // ── KaTeX rendering for optimizer equation cards ────────────────
+        const optimEqs = {
+            'eq-sgd':      '\\theta \\leftarrow \\theta - \\eta \\nabla_{\\!\\theta}\\mathcal{L}',
+            'eq-momentum': 'v \\leftarrow \\beta v + \\nabla_{\\!\\theta}\\mathcal{L};\\quad \\theta \\leftarrow \\theta - \\eta v',
+            'eq-rmsprop':  'v \\leftarrow \\rho v + (1\\!-\\!\\rho)(\\nabla\\mathcal{L})^2;\\;\\theta \\leftarrow \\theta - \\tfrac{\\eta}{\\sqrt{v+\\varepsilon}}\\nabla\\mathcal{L}',
+            'eq-adam':     '\\hat{m} = \\tfrac{m_t}{1-\\beta_1^t},\\;\\hat{v} = \\tfrac{v_t}{1-\\beta_2^t};\\quad\\theta \\leftarrow \\theta - \\tfrac{\\eta\\hat{m}}{\\sqrt{\\hat{v}}+\\varepsilon}',
+            'eq-adamw':    '\\theta \\leftarrow \\theta(1\\!-\\!\\eta\\lambda) - \\tfrac{\\eta\\hat{m}}{\\sqrt{\\hat{v}}+\\varepsilon}',
+            'eq-lion':     'c \\leftarrow \\beta_1 m + (1\\!-\\!\\beta_1)g;\\quad\\theta \\leftarrow \\theta - \\eta(\\operatorname{sign}(c) + \\lambda\\theta)'
+        };
+        function renderOptimEqs() {
+            if (typeof katex === 'undefined') { setTimeout(renderOptimEqs, 60); return; }
+            Object.entries(optimEqs).forEach(([id, latex]) => {
+                const el = document.getElementById(id);
+                if (el) katex.render(latex, el, { displayMode: true, throwOnError: false });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', renderOptimEqs);
+
+        // ── Loss landscape canvas ───────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('loss-landscape-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+
+            // Elongated bowl: extreme anisotropy (y is 100× steeper than x)
+            // Shows clearly why SGD oscillates and adaptive methods converge straight
+            const xMin = -5, xMax = 5, yMin = -2, yMax = 2;
+            function f(x, y)    { return 0.05 * x * x + 5 * y * y; }
+            function grad(x, y) { return { gx: 0.1 * x, gy: 10 * y }; }
+
+            function toCanvas(x, y) {
+                return {
+                    px: (x - xMin) / (xMax - xMin) * W,
+                    py: (1 - (y - yMin) / (yMax - yMin)) * H
+                };
+            }
+
+            // Prerender loss surface as imageData (viridis-inspired colormap)
+            let landscapeImg = null;
+            function buildLandscape() {
+                const img = ctx.createImageData(W, H);
+                const vals = new Float32Array(W * H);
+                let minF = Infinity, maxF = -Infinity;
+                for (let py = 0; py < H; py++) {
+                    for (let px = 0; px < W; px++) {
+                        const x = xMin + (px / W) * (xMax - xMin);
+                        const y = yMin + (1 - py / H) * (yMax - yMin);
+                        const v = f(x, y);
+                        vals[py * W + px] = v;
+                        if (v < minF) minF = v;
+                        if (v > maxF) maxF = v;
+                    }
+                }
+                for (let i = 0; i < W * H; i++) {
+                    // sqrt stretch for perceptual contrast in flat basin
+                    const t = Math.sqrt((vals[i] - minF) / (maxF - minF));
+                    // dark blue (low) → teal → yellow-green (high)
+                    const r = Math.round(Math.min(255, t < 0.5 ? t * 2 * 40  : 40  + (t - 0.5) * 2 * 200));
+                    const g = Math.round(Math.min(255, t < 0.5 ? t * 2 * 160 : 160 + (t - 0.5) * 2 * 55));
+                    const b = Math.round(Math.min(255, t < 0.5 ? 200 - t * 2 * 150 : Math.max(0, 50 - (t - 0.5) * 2 * 50)));
+                    const idx = i * 4;
+                    img.data[idx]     = r;
+                    img.data[idx + 1] = g;
+                    img.data[idx + 2] = b;
+                    img.data[idx + 3] = 255;
+                }
+                landscapeImg = img;
+            }
+            buildLandscape();
+
+            // Optimizer definitions
+            const OPTS = [
+                {
+                    key: 'sgd', label: 'SGD', color: '#ef4444',
+                    init: () => ({}),
+                    step(p, st, lr) {
+                        const { gx, gy } = grad(p.x, p.y);
+                        return { x: p.x - lr * gx, y: p.y - lr * gy };
+                    }
+                },
+                {
+                    key: 'momentum', label: 'Momentum', color: '#3b82f6',
+                    init: () => ({ vx: 0, vy: 0 }),
+                    step(p, st, lr) {
+                        const { gx, gy } = grad(p.x, p.y);
+                        st.vx = 0.9 * st.vx + gx;
+                        st.vy = 0.9 * st.vy + gy;
+                        return { x: p.x - lr * st.vx, y: p.y - lr * st.vy };
+                    }
+                },
+                {
+                    key: 'rmsprop', label: 'RMSprop', color: '#f59e0b',
+                    init: () => ({ vx: 1e-8, vy: 1e-8 }),
+                    step(p, st, lr) {
+                        const { gx, gy } = grad(p.x, p.y);
+                        st.vx = 0.9 * st.vx + 0.1 * gx * gx;
+                        st.vy = 0.9 * st.vy + 0.1 * gy * gy;
+                        return {
+                            x: p.x - lr * gx / Math.sqrt(st.vx + 1e-8),
+                            y: p.y - lr * gy / Math.sqrt(st.vy + 1e-8)
+                        };
+                    }
+                },
+                {
+                    key: 'adam', label: 'Adam', color: '#10b981',
+                    init: () => ({ mx: 0, my: 0, vx: 0, vy: 0, t: 0 }),
+                    step(p, st, lr) {
+                        const { gx, gy } = grad(p.x, p.y);
+                        st.t++;
+                        st.mx = 0.9  * st.mx + 0.1   * gx;
+                        st.my = 0.9  * st.my + 0.1   * gy;
+                        st.vx = 0.999 * st.vx + 0.001 * gx * gx;
+                        st.vy = 0.999 * st.vy + 0.001 * gy * gy;
+                        const b1t = 1 - Math.pow(0.9,   st.t);
+                        const b2t = 1 - Math.pow(0.999, st.t);
+                        const mhx = st.mx / b1t, mhy = st.my / b1t;
+                        const vhx = st.vx / b2t, vhy = st.vy / b2t;
+                        return {
+                            x: p.x - lr * mhx / (Math.sqrt(vhx) + 1e-8),
+                            y: p.y - lr * mhy / (Math.sqrt(vhy) + 1e-8)
+                        };
+                    }
+                }
+            ];
+
+            const START = { x: -3.8, y: 1.5 };
+            const MAX_STEPS = 180;
+            let trajs = {}, states = {}, pos = {}, running = false, rafId = null, stepN = 0;
+
+            function resetState() {
+                running = false;
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = null; stepN = 0;
+                OPTS.forEach(o => {
+                    trajs[o.key]  = [{ ...START }];
+                    states[o.key] = o.init();
+                    pos[o.key]    = { ...START };
+                });
+            }
+
+            function drawFrame() {
+                if (landscapeImg) ctx.putImageData(landscapeImg, 0, 0);
+
+                // Trajectories
+                OPTS.forEach(o => {
+                    const tr = trajs[o.key];
+                    if (tr.length < 2) return;
+                    ctx.strokeStyle = o.color;
+                    ctx.lineWidth   = 2.5;
+                    ctx.globalAlpha = 0.85;
+                    ctx.beginPath();
+                    const p0 = toCanvas(tr[0].x, tr[0].y);
+                    ctx.moveTo(p0.px, p0.py);
+                    for (let i = 1; i < tr.length; i++) {
+                        const pi = toCanvas(tr[i].x, tr[i].y);
+                        ctx.lineTo(pi.px, pi.py);
+                    }
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    // Current position dot
+                    const lp = toCanvas(tr[tr.length - 1].x, tr[tr.length - 1].y);
+                    ctx.fillStyle = o.color;
+                    ctx.beginPath();
+                    ctx.arc(lp.px, lp.py, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+
+                // Start marker (white circle)
+                const sc = toCanvas(START.x, START.y);
+                ctx.fillStyle   = '#fff';
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth   = 1.5;
+                ctx.beginPath();
+                ctx.arc(sc.px, sc.py, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+
+                // Global minimum marker (× at origin)
+                const mc = toCanvas(0, 0);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth   = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(mc.px - 7, mc.py - 7); ctx.lineTo(mc.px + 7, mc.py + 7);
+                ctx.moveTo(mc.px + 7, mc.py - 7); ctx.lineTo(mc.px - 7, mc.py + 7);
+                ctx.stroke();
+                // minimum label
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.font = '11px system-ui, sans-serif';
+                ctx.fillText('min', mc.px + 9, mc.py - 4);
+            }
+
+            function getLR() {
+                const s = document.getElementById('optim-lr-slider');
+                return s ? parseFloat(s.value) : 0.1;
+            }
+
+            function animate() {
+                if (!running) return;
+                const lr = getLR();
+                for (let s = 0; s < 3; s++) {
+                    if (stepN >= MAX_STEPS) { running = false; break; }
+                    OPTS.forEach(o => {
+                        const np = o.step(pos[o.key], states[o.key], lr);
+                        np.x = Math.max(xMin, Math.min(xMax, np.x));
+                        np.y = Math.max(yMin, Math.min(yMax, np.y));
+                        pos[o.key] = np;
+                        trajs[o.key].push({ ...np });
+                    });
+                    stepN++;
+                }
+                drawFrame();
+                const status = document.getElementById('optim-status');
+                if (status) {
+                    if (!running) {
+                        const losses = OPTS.map(o => {
+                            const p = pos[o.key];
+                            return o.label + ': ' + f(p.x, p.y).toExponential(2);
+                        }).join('  |  ');
+                        status.textContent = 'Done (' + stepN + ' steps). Final loss — ' + losses;
+                    } else {
+                        status.textContent = 'Step ' + stepN + ' / ' + MAX_STEPS;
+                    }
+                }
+                if (running) rafId = requestAnimationFrame(animate);
+            }
+
+            // Init
+            resetState();
+            drawFrame();
+
+            document.getElementById('optim-run-btn')?.addEventListener('click', () => {
+                if (running) return;
+                running = true;
+                rafId = requestAnimationFrame(animate);
+            });
+            document.getElementById('optim-reset-btn')?.addEventListener('click', () => {
+                resetState();
+                drawFrame();
+                const status = document.getElementById('optim-status');
+                if (status) status.textContent = 'Click Run to start.';
+            });
+
+            // Live LR label
+            const lrSlider = document.getElementById('optim-lr-slider');
+            const lrLabel  = document.getElementById('optim-lr-label');
+            if (lrSlider && lrLabel) {
+                lrSlider.addEventListener('input', () => {
+                    lrLabel.textContent = parseFloat(lrSlider.value).toFixed(2);
+                });
+            }
+
+            // Pause animation when section scrolls out of view
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(entries => {
+                    if (!entries[0].isIntersecting && running) {
+                        running = false;
+                        if (rafId) cancelAnimationFrame(rafId);
+                    }
+                }, { threshold: 0.05 }).observe(canvas);
+            }
+        });
+    })();
     </script>
 
     <!-- ════════ Real Training Engine + Decision Boundary (report §3.1) ════════ -->
@@ -3673,7 +4396,11 @@
             rnn:         { start: 2.3,   end: 0.22,  warmup: 0,    spike: true,  osc: false },
             lstm:        { start: 2.3,   end: 0.08,  warmup: 0,    spike: false, osc: false },
             transformer: { start: 2.3,   end: 0.04,  warmup: 0.12, spike: false, osc: false },
-            gan:         { start: 0.693, end: 0.55,  warmup: 0,    spike: false, osc: true  }
+            gan:         { start: 0.693, end: 0.55,  warmup: 0,    spike: false, osc: true  },
+            resnet:      { start: 2.3,   end: 0.02,  warmup: 0,    spike: false, osc: false },
+            vae:         { start: 0.85,  end: 0.18,  warmup: 0.04, spike: false, osc: false },
+            diffusion:   { start: 1.4,   end: 0.07,  warmup: 0,    spike: false, osc: false },
+            ssm:         { start: 2.3,   end: 0.06,  warmup: 0,    spike: false, osc: false }
         }[netKey] || { start: 2.3, end: 0.1, warmup: 0, spike: false, osc: false };
 
         // GAN: minimax oscillation around log(2)
