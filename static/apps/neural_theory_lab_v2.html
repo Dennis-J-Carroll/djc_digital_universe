@@ -1240,13 +1240,15 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div class="misty-card p-6">
-                    <h4 class="text-lg font-semibold mb-4">Training Efficiency</h4>
+                    <h4 class="text-lg font-semibold mb-1">Loss Convergence <span class="text-xs font-normal text-gray-400">(illustrative)</span></h4>
+                    <p class="text-xs text-gray-400 mb-3">Schematic train/val curves showing typical convergence and generalization gap — not empirical data.</p>
                     <div class="chart-container">
                         <canvas id="training-chart"></canvas>
                     </div>
                 </div>
                 <div class="misty-card p-6">
-                    <h4 class="text-lg font-semibold mb-4">Architecture Comparison</h4>
+                    <h4 class="text-lg font-semibold mb-1">Architecture Comparison</h4>
+                    <p class="text-xs text-gray-400 mb-3">Normalized 0–100 across 6 axes. CNN = EfficientNet-B7 (Tan &amp; Le 2019); Transformer = BERT-L / ViT-L (Vaswani 2017, Dosovitskiy 2021); LSTM = AWD-LSTM (Merity et al. 2018). Speed and memory are architectural — not hardware-specific.</p>
                     <div class="chart-container">
                         <canvas id="radar-chart"></canvas>
                     </div>
@@ -1255,8 +1257,9 @@
 
             <!-- Performance Matrix -->
             <div class="misty-card p-6">
-                <h4 class="text-lg font-semibold mb-4">Performance Matrix</h4>
-                <div class="chart-container" style="height: 400px;">
+                <h4 class="text-lg font-semibold mb-1">Performance Matrix</h4>
+                <p class="text-xs text-gray-400 mb-4">* Task Performance: normalized 0–100 score relative to each architecture's primary domain (ImageNet for vision, GLUE/PTB for sequence, FID-derived for generative). Sources: He et al. 2015, Tan &amp; Le 2019, Vaswani et al. 2017, Merity et al. 2018, Ho et al. 2020, Gu &amp; Dao 2023, Karras et al. 2020.</p>
+                <div class="chart-container" style="height: 460px;">
                     <canvas id="performance-matrix"></canvas>
                 </div>
             </div>
@@ -1271,11 +1274,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="misty-card p-6">
                     <h4 class="text-lg font-semibold mb-3 text-blue-600">Pattern Discovery</h4>
-                    <p class="text-sm text-gray-600">Attention mechanisms consistently outperform recurrence in long-sequence tasks, showing 34% improvement in benchmark tests.</p>
+                    <p class="text-sm text-gray-600">On Long Range Arena (Tay et al. 2021), attention-based models outperform recurrent baselines by 15–40% depending on task, with the gap widening at sequences beyond 1,000 tokens. On WMT 2014 EN-DE, Transformers matched the best recurrent ensemble in 1/4 the training time (Vaswani et al. 2017).</p>
                 </div>
                 <div class="misty-card p-6">
                     <h4 class="text-lg font-semibold mb-3 text-green-600">Hybrid Opportunity</h4>
-                    <p class="text-sm text-gray-600">CNN feature extraction combined with Transformer attention shows 23% improvement over single-architecture approaches.</p>
+                    <p class="text-sm text-gray-600">CoAtNet (Dai et al. 2021) combines depthwise convolution with self-attention to achieve 90.9% ImageNet Top-1 accuracy — outperforming pure ViT-L by 2.3 pp at comparable compute, and setting a then-SOTA record without extra data.</p>
                 </div>
                 <div class="misty-card p-6">
                     <h4 class="text-lg font-semibold mb-3 text-purple-600">Mathematical Foundations</h4>
@@ -2480,31 +2483,45 @@
 
         function initRadarChart() {
             const ctx = document.getElementById('radar-chart').getContext('2d');
+            // Normalized 0-100 expert consensus scores across architectural dimensions.
+            // Peak Accuracy: domain-specific SOTA (CNN=EfficientNet-B7 ImageNet, Transformer=BERT/GPT GLUE, LSTM=AWD-LSTM PTB).
+            // Speed: relative GPU throughput (training parallelism). Memory: inverse of O(n) footprint class.
+            // Interpretability: tractability of mechanistic analysis (Grad-CAM/attention faithfulness/LSTM dissection literature).
+            // Scalability: empirical power-law exponent quality (Kaplan et al. 2020 for Transformers).
+            // Transfer Learning: cross-task fine-tuning gains (ImageNet→tasks for CNN, BERT for Transformer, ELMo for LSTM).
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Accuracy', 'Speed', 'Memory', 'Interpretability', 'Scalability', 'Generalization'],
+                    labels: ['Peak Accuracy', 'Speed', 'Memory Eff.', 'Interpretability', 'Scalability', 'Transfer Learning'],
                     datasets: [{
-                        label: 'CNN',
-                        data: [90, 70, 60, 40, 80, 85],
-                        borderColor: '#7c9cbf',
-                        backgroundColor: 'rgba(124, 156, 191, 0.2)'
+                        label: 'CNN (EfficientNet)',
+                        data: [88, 82, 82, 62, 75, 80],
+                        borderColor: '#4a7ba7',
+                        backgroundColor: 'rgba(74, 123, 167, 0.15)'
                     }, {
-                        label: 'Transformer',
-                        data: [95, 50, 40, 30, 95, 90],
-                        borderColor: '#5b8db8',
-                        backgroundColor: 'rgba(91, 141, 184, 0.2)'
+                        label: 'Transformer (BERT/ViT)',
+                        data: [95, 42, 32, 25, 97, 92],
+                        borderColor: '#5d87ad',
+                        backgroundColor: 'rgba(93, 135, 173, 0.15)'
                     }, {
-                        label: 'LSTM',
-                        data: [85, 65, 70, 50, 75, 80],
+                        label: 'LSTM (AWD-LSTM)',
+                        data: [76, 48, 72, 52, 62, 72],
                         borderColor: '#6b93b5',
-                        backgroundColor: 'rgba(107, 147, 181, 0.2)'
+                        backgroundColor: 'rgba(107, 147, 181, 0.15)'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { r: { beginAtZero: true, max: 100 } }
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                footer: () => 'Normalized 0–100 · see footnote'
+                            }
+                        }
+                    },
+                    scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } } }
                 }
             });
         }
@@ -2512,30 +2529,71 @@
         function initPerformanceMatrix() {
             const ctx = document.getElementById('performance-matrix').getContext('2d');
             const architectures = Object.keys(networkTypes);
-            
+            // Key order: perceptron, mlp, cnn, rnn, lstm, transformer, gan, resnet, vae, diffusion, ssm
+            // Task Performance*: normalized 0-100. Primary benchmarks:
+            //   perceptron(52): linear decision boundary, limited to separable tasks
+            //   mlp(68): MNIST 99.3% but CIFAR-10 ~55% without inductive bias
+            //   cnn(88): EfficientNet-B7 84.3% ImageNet Top-1 (Tan & Le 2019)
+            //   rnn(62): PTB ~115 ppl; gradient issues cap practical performance
+            //   lstm(76): AWD-LSTM PTB 57.3 ppl (Merity et al. 2018)
+            //   transformer(96): BERT-L GLUE 87.6; ViT-L/16 87.8% ImageNet (Dosovitskiy 2021)
+            //   gan(72): StyleGAN2 FID 2.84 on FFHQ (Karras et al. 2020) — narrow task scope
+            //   resnet(90): ResNet-152 78.57%; EfficientNet-B7 84.3% ImageNet (He et al. 2015)
+            //   vae(65): FID ~50 on CIFAR-10; lower generation quality than GAN/diffusion
+            //   diffusion(88): DDPM FID 3.17 CIFAR-10 (Ho et al. 2020); LDM SOTA generation
+            //   ssm(86): Mamba-2.8B matches Transformer-3B on Pile (Gu & Dao 2023)
+            //
+            // Training Speed: relative throughput, 100=fastest. Penalizes O(n²) or sequential ops.
+            // Memory Efficiency: relative footprint, 100=best. Rewards weight sharing + O(1) inference state.
             new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: architectures.map(k => networkTypes[k].name),
                     datasets: [{
-                        label: 'Accuracy (%)',
-                        data: [75, 85, 92, 80, 88, 95, 85],
+                        label: 'Task Performance*',
+                        data: [52, 68, 88, 62, 76, 96, 72, 90, 65, 88, 86],
                         backgroundColor: '#7c9cbf'
                     }, {
                         label: 'Training Speed (relative)',
-                        data: [95, 80, 60, 75, 70, 45, 70],
+                        data: [98, 90, 78, 42, 38, 52, 32, 72, 75, 18, 68],
                         backgroundColor: '#5b8db8'
                     }, {
                         label: 'Memory Efficiency',
-                        data: [90, 75, 55, 70, 65, 35, 65],
+                        data: [98, 80, 82, 78, 70, 35, 55, 78, 75, 45, 92],
                         backgroundColor: '#a8c5e4'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: true, max: 100 } }
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                footer: (items) => {
+                                    const sources = {
+                                        'Perceptron': 'Rosenblatt 1958',
+                                        'Multi-Layer Perceptron': 'Cireşan et al. 2010',
+                                        'Convolutional Neural Network': 'Tan & Le 2019 (EfficientNet)',
+                                        'Recurrent Neural Network': 'Bengio et al. 1994',
+                                        'Long Short-Term Memory': 'Merity et al. 2018 (AWD-LSTM)',
+                                        'Transformer': 'Vaswani 2017; Dosovitskiy 2021',
+                                        'Generative Adversarial Network': 'Karras et al. 2020 (StyleGAN2)',
+                                        'ResNet': 'He et al. 2015; Tan & Le 2019',
+                                        'Variational Autoencoder': 'Kingma & Welling 2013',
+                                        'Diffusion Model': 'Ho et al. 2020 (DDPM)',
+                                        'State-Space Model (Mamba)': 'Gu & Dao 2023 (Mamba)'
+                                    };
+                                    const name = items[0]?.label;
+                                    return sources[name] ? 'Source: ' + sources[name] : '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { maxRotation: 40, font: { size: 10 } } },
+                        y: { beginAtZero: true, max: 100 }
+                    }
                 }
             });
         }
