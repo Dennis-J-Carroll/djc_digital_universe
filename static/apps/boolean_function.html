@@ -5,53 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boolean Analysis & Neural Networks</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['\\(','\\)'], ['$','$']], displayMath: [['\\[','\\]'], ['$$','$$']] },
+            options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+            startup: { typeset: false }
+        };
+    </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
-        }
-        
-        .math-font {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .math-font { font-family: 'JetBrains Mono', monospace; }
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
             border-radius: 1rem;
         }
+        .bar-fill { transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        .bar-container {
-            transition: all 0.3s ease;
-        }
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; background: #334155; border-radius: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #22d3ee; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #22d3ee; cursor: pointer; border: none; }
 
-        .bar-fill {
-            transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+        .notation-card { background: rgba(15,23,42,0.5); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
+        .notation-card:last-child { margin-bottom: 0; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569; 
+        .butterfly-path { transition: stroke 0.2s, stroke-width 0.2s; }
+
+        .inf-bar-fill { transition: width 0.6s ease; }
+
+        .nn-node { transition: fill 0.3s; }
+        .nn-edge { transition: stroke-opacity 0.3s, stroke-width 0.3s; }
+
+        @media (max-width: 640px) {
+            .section-header { font-size: 1.1rem; }
+            .control-row { flex-direction: column; gap: 0.75rem; }
         }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen">
+
 <style>
   .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
   .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
@@ -68,367 +68,1432 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
 
+<div class="max-w-6xl mx-auto px-4 py-8">
+
     <!-- Header -->
-    <header class="max-w-6xl mx-auto mb-12 text-center">
-        <h1 class="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-4">
-            Boolean Analysis <span class="text-slate-500">&</span> Neural Nets
+    <header class="mb-10 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-3">
+            Boolean Analysis <span class="text-slate-500">&amp;</span> Neural Nets
         </h1>
-        <p class="text-lg text-slate-400 max-w-2xl mx-auto">
-            Why are some logic functions easy for AI to learn, while others are nearly impossible? 
+        <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base">
+            Why are some logic functions easy for AI to learn, while others are nearly impossible?
             The answer lies in the <span class="text-cyan-400 font-bold">Fourier Spectrum</span>.
         </p>
     </header>
 
-    <main class="max-w-6xl mx-auto space-y-8">
+    <main class="space-y-8">
 
-        <!-- Section 1: The Notation Shift -->
+        <!-- SECTION 1: Notation Shift -->
         <section class="glass-panel p-6 md:p-8">
             <div class="flex flex-col md:flex-row gap-8 items-center">
                 <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-white mb-4">1. The Notation Shift</h2>
-                    <p class="text-slate-300 mb-4">
-                        Standard logic uses <span class="math-font text-pink-400">{0, 1}</span>. 
-                        But math and physics prefer <span class="math-font text-cyan-400">{-1, 1}</span>.
-                        This simple translation turns logical rules into algebraic equations.
+                    <h2 class="text-xl font-bold text-white mb-3 section-header">1. The Notation Shift</h2>
+                    <p class="text-slate-300 mb-4 text-sm leading-relaxed">
+                        Standard logic uses <span class="math-font text-pink-400">{0, 1}</span>.
+                        Fourier analysis prefers <span class="math-font text-cyan-400">{-1, +1}</span>.
+                        The map is \(\chi(b) = (-1)^b\): bit 0 becomes +1, bit 1 becomes −1.
+                        This translation turns logical rules into algebraic equations,
+                        making Walsh functions the orthonormal basis for all Boolean functions.
                     </p>
-                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
-                        <div class="bg-slate-800 p-4 rounded-lg border border-pink-500/30">
-                            <div class="text-pink-400 font-bold mb-2">Computer Science</div>
-                            <div class="text-2xl font-bold">0 / 1</div>
-                            <div class="text-xs text-slate-500 mt-2">Bit</div>
+                    <div class="grid grid-cols-2 gap-3 text-center text-sm">
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-pink-500/30">
+                            <div class="text-pink-400 font-bold mb-1 text-xs uppercase tracking-wide">Computer Science</div>
+                            <div class="text-2xl font-bold font-mono">0 / 1</div>
+                            <div class="text-xs text-slate-500 mt-1">Bit</div>
                         </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border border-cyan-500/30">
-                            <div class="text-cyan-400 font-bold mb-2">Fourier Analysis</div>
-                            <div class="text-2xl font-bold">-1 / +1</div>
-                            <div class="text-xs text-slate-500 mt-2">Sign (Spin)</div>
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-cyan-500/30">
+                            <div class="text-cyan-400 font-bold mb-1 text-xs uppercase tracking-wide">Fourier Analysis</div>
+                            <div class="text-2xl font-bold font-mono">−1 / +1</div>
+                            <div class="text-xs text-slate-500 mt-1">Sign (Spin)</div>
                         </div>
                     </div>
                 </div>
-                <div class="flex-1 bg-slate-900 rounded-lg p-6 border border-slate-700">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">The Parity "Trick"</h3>
-                    <div class="space-y-4">
+                <div class="flex-1 bg-slate-900/50 rounded-xl p-5 border border-slate-700">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">The Parity Trick</h3>
+                    <div class="space-y-3 text-sm">
                         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                            <span class="text-slate-400">Logic Rule</span>
-                            <span class="math-font text-pink-400">Count 1s. Is count Odd?</span>
+                            <span class="text-slate-400">Logic (0/1)</span>
+                            <span class="math-font text-pink-400 text-xs">Count 1s. Is count odd?</span>
                         </div>
                         <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                            <span class="text-slate-400">Algebraic Rule</span>
-                            <span class="math-font text-cyan-400">\( f(x) = x_1 \cdot x_2 \cdot x_3 ... \)</span>
+                            <span class="text-slate-400">Algebra (±1)</span>
+                            <span class="math-font text-cyan-400 text-xs">\(f(x) = x_1 \cdot x_2 \cdot x_3\)</span>
                         </div>
-                        <div class="text-xs text-slate-500 italic mt-2">
-                            "Multiplying the inputs allows us to detect 'sameness' or 'difference' purely with math."
+                        <div class="text-xs text-slate-500 italic">
+                            Multiplying ±1 inputs detects sameness vs. difference purely algebraically — no bit-counting needed.
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Section 2: Interactive Analyzer -->
+        <!-- SECTION 2: Interactive Analyzer -->
         <section class="glass-panel p-6 md:p-8 relative overflow-hidden">
-            <!-- Background decoration -->
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
 
-            <div class="flex flex-col md:flex-row justify-between items-end mb-6 border-b border-slate-700 pb-6">
+            <!-- Controls -->
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-6 border-b border-slate-700 pb-5">
                 <div>
-                    <h2 class="text-2xl font-bold text-white">2. Interactive Spectrum Analyzer</h2>
-                    <p class="text-slate-400 text-sm mt-1">Select a function (n=3) to see its Fourier "DNA".</p>
+                    <h2 class="text-xl font-bold text-white section-header">2. Interactive Spectrum Analyzer</h2>
+                    <p class="text-slate-400 text-xs mt-1">Adjust variables, select a function, or build your own.</p>
                 </div>
-                <div class="mt-4 md:mt-0">
-                    <label class="text-xs font-bold text-slate-500 uppercase mr-2">Function:</label>
-                    <select id="funcSelector" class="bg-slate-800 text-white border border-slate-600 rounded px-4 py-2 focus:outline-none focus:border-cyan-500 transition-colors">
-                        <option value="and">AND (All inputs 1)</option>
-                        <option value="or">OR (Any input 1)</option>
-                        <option value="maj">MAJORITY (More 1s than -1s)</option>
-                        <option value="parity">PARITY / XOR (Product of inputs)</option>
-                    </select>
+                <div class="flex flex-wrap items-end gap-5">
+                    <!-- Variable slider -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Variables</label>
+                        <div class="flex items-center gap-3">
+                            <input id="nSlider" type="range" min="2" max="6" value="3" class="w-28">
+                            <span id="nLabel" class="math-font text-cyan-400 text-sm font-bold">n = 3</span>
+                            <span id="nSize" class="text-slate-500 text-xs">(8 rows)</span>
+                        </div>
+                    </div>
+                    <!-- Function selector -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Function</label>
+                        <select id="funcSelector" class="bg-slate-800 text-white border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-cyan-500">
+                            <option value="and">AND — All inputs +1</option>
+                            <option value="or">OR — Any input +1</option>
+                            <option value="maj">MAJORITY — More +1 than −1</option>
+                            <option value="parity">PARITY — Product of all inputs</option>
+                            <option value="nand">NAND — Negated AND (universal)</option>
+                            <option value="xor2">XOR-2 — First two variables only</option>
+                            <option value="tribes">TRIBES — Read-once CNF</option>
+                            <option value="innerProduct">INNER PRODUCT — Pairwise cryptic</option>
+                            <option value="random">RANDOM — Uniform typical case</option>
+                            <option value="dictator">DICTATOR — x₁ decides all</option>
+                            <option value="custom">★ CUSTOM — Click output cells to edit</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <!-- Truth Table Column -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Truth Table -->
                 <div class="lg:col-span-1">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase mb-4">Truth Table ({-1, 1} World)</h3>
-                    <div class="overflow-hidden rounded-lg border border-slate-700">
-                        <table class="w-full text-sm text-left text-slate-300">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-800">
-                                <tr>
-                                    <th class="px-4 py-2">x1</th>
-                                    <th class="px-4 py-2">x2</th>
-                                    <th class="px-4 py-2">x3</th>
-                                    <th class="px-4 py-2 text-right text-cyan-400">Output</th>
-                                </tr>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Truth Table (±1 World)</h3>
+                    <div id="truthTableWrap" class="overflow-auto rounded-lg border border-slate-700 max-h-72">
+                        <table class="w-full text-sm text-left">
+                            <thead id="truthTableHead" class="text-xs text-slate-400 uppercase bg-slate-800 sticky top-0">
+                                <tr></tr>
                             </thead>
-                            <tbody id="truthTableBody" class="font-mono bg-slate-900/50">
-                                <!-- JS Injects Rows Here -->
-                            </tbody>
+                            <tbody id="truthTableBody" class="math-font bg-slate-900/50"></tbody>
                         </table>
                     </div>
+                    <div id="customHint" class="hidden mt-2 text-xs text-cyan-500/70 italic">Click output cells to flip values</div>
                 </div>
 
-                <!-- Visualization Column -->
-                <div class="lg:col-span-2 flex flex-col gap-6">
-                    
-                    <!-- Spectrum Chart -->
-                    <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700/50 flex-1">
-                        <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex justify-between">
-                            <span>Fourier Spectrum (Coefficients Squared)</span>
-                            <span id="spectrumTotal" class="text-xs text-slate-500">Total Mass: 1.0</span>
-                        </h3>
-                        
-                        <!-- Bars Container -->
-                        <div id="spectrumContainer" class="h-48 flex items-end justify-between gap-2 px-2">
-                            <!-- JS Injects Bars Here -->
+                <!-- Spectrum + Metrics -->
+                <div class="lg:col-span-2 flex flex-col gap-4">
+                    <!-- Spectrum -->
+                    <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-700/50 flex-1">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fourier Spectrum</h3>
+                            <span id="spectrumTotal" class="text-xs text-slate-500 math-font">Σ mass = 1.00</span>
                         </div>
-                        
-                        <!-- X Axis Labels -->
-                        <div id="spectrumLabels" class="flex justify-between px-2 mt-2 text-xs text-slate-500 font-mono">
-                            <!-- JS Injects Labels Here -->
+                        <div id="spectrumContainer" class="h-40 flex items-end justify-between gap-1 px-1"></div>
+                        <div id="spectrumLabels" class="flex justify-between px-1 mt-2 text-xs text-slate-500 font-mono overflow-hidden"></div>
+                        <!-- Degree legend -->
+                        <div id="degreeLegend" class="flex gap-3 mt-3 flex-wrap"></div>
+                    </div>
+
+                    <!-- Metrics row -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Neural Net Difficulty</div>
+                            <div id="difficultyLabel" class="text-xl font-bold text-green-400">Easy</div>
+                            <p id="difficultyDesc" class="text-xs text-slate-400 mt-1 leading-relaxed"></p>
+                        </div>
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Degree-1 Mass (Linearity)</div>
+                            <div class="w-full bg-slate-700 h-3 rounded-full mt-2 overflow-hidden">
+                                <div id="linearityBar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-700" style="width:0%"></div>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-xs text-slate-500">0% Noise</span>
+                                <span id="linearityValue" class="text-xs text-white math-font">0%</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Difficulty Meter -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Neural Net Difficulty</div>
-                            <div id="difficultyLabel" class="text-2xl font-bold text-green-400">Easy</div>
-                            <p id="difficultyDesc" class="text-xs text-slate-400 mt-2 leading-relaxed">
-                                High linear mass. A single perceptron can learn this easily.
-                            </p>
+                    <!-- Formula panel -->
+                    <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Fourier Expansion</h3>
+                            <span class="text-xs text-slate-500 math-font">\(\hat{f}(S) = \mathbb{E}[f \cdot \chi_S]\)</span>
                         </div>
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="text-xs text-slate-500 uppercase font-bold mb-1">Linearity (Degree-1 Mass)</div>
-                            <div class="w-full bg-slate-700 h-4 rounded-full mt-2 overflow-hidden">
-                                <div id="linearityBar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-3/4 transition-all duration-700"></div>
-                            </div>
-                            <div class="flex justify-between mt-1">
-                                <span class="text-xs text-slate-500">0% (Pure Noise)</span>
-                                <span id="linearityValue" class="text-xs text-white font-mono">75%</span>
-                            </div>
-                        </div>
+                        <div id="formulaPanel" class="text-slate-200 overflow-x-auto min-h-8 text-sm"></div>
+                        <div class="text-xs text-slate-600 mt-2">Terms with |f̂(S)| &lt; 0.001 omitted for clarity.</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Section 3: Summary -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-panel p-6 border-t-4 border-green-500">
+        <!-- SECTION 3: Mathematical Foundations -->
+        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(34,211,238,0.15);">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">3. Mathematical Foundations</h2>
+            <p class="text-slate-400 text-xs mb-5">The definitions that make the spectrum meaningful.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Encoding map -->
+                <div class="notation-card" style="border-left: 3px solid #22d3ee;">
+                    <h3 class="text-xs font-semibold mb-2 text-cyan-400 uppercase tracking-wide">Encoding Map</h3>
+                    <div id="mjx-encoding" class="text-sm mb-3 overflow-x-auto"></div>
+                    <div class="flex items-center gap-3 mt-2" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                        <span class="text-slate-500 text-xs">Try:</span>
+                        <button id="enc-bit-btn" class="px-3 py-1 rounded border text-cyan-400 cursor-pointer hover:bg-slate-700 transition-colors" style="background:#1e293b; border-color:#334155; font-size:0.85rem;">b = 0</button>
+                        <span class="text-slate-500">→</span>
+                        <span id="enc-result" class="text-pink-400 font-bold text-lg" style="transition: transform 0.15s ease; display:inline-block;">+1</span>
+                    </div>
+                </div>
+
+                <!-- Walsh Characters -->
+                <div class="notation-card" style="border-left: 3px solid #a855f7;">
+                    <h3 class="text-xs font-semibold mb-2 text-purple-400 uppercase tracking-wide">Walsh Characters</h3>
+                    <div id="mjx-walsh" class="text-sm mb-3 overflow-x-auto"></div>
+                    <div id="walsh-demo" class="text-xs text-slate-500 math-font mt-2"></div>
+                </div>
+
+                <!-- Fourier Expansion -->
+                <div class="notation-card" style="border-left: 3px solid #22d3ee;">
+                    <h3 class="text-xs font-semibold mb-2 text-cyan-400 uppercase tracking-wide">Fourier Expansion Theorem</h3>
+                    <div id="mjx-fourier" class="text-sm overflow-x-auto"></div>
+                </div>
+
+                <!-- Parseval -->
+                <div class="notation-card" style="border-left: 3px solid #ec4899;">
+                    <h3 class="text-xs font-semibold mb-2 text-pink-400 uppercase tracking-wide">Parseval's Identity</h3>
+                    <div id="mjx-parseval" class="text-sm mb-2 overflow-x-auto"></div>
+                    <div id="parseval-check" class="math-font text-xs mt-2"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: WHT Butterfly Diagram -->
+        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(34,211,238,0.15);">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">4. Fast Walsh-Hadamard Transform</h2>
+            <p class="text-slate-400 text-xs mb-4">The algorithm that computes all 2ⁿ Fourier coefficients in <span class="text-cyan-400 math-font">O(n·2ⁿ)</span> time.</p>
+
+            <div class="flex flex-wrap gap-3 mb-4 items-center">
+                <button id="btnAnimateButterfly" class="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#22d3ee; color:#0f172a;">▶ Animate</button>
+                <button id="btnResetButterfly" class="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#1e293b; color:#e2e8f0; border:1px solid #334155;">↺ Reset</button>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500">Show n =</span>
+                    <select id="butterflyN" class="bg-slate-800 text-white border border-slate-600 rounded px-2 py-1 text-sm focus:outline-none">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <div class="ml-auto flex gap-4 text-xs math-font text-slate-400">
+                    <span>Stages: <span id="wht-stages" class="text-cyan-400">3</span></span>
+                    <span>Ops/stage: <span id="wht-ops" class="text-cyan-400">4</span></span>
+                    <span>Total: <span id="wht-total" class="text-pink-400">12</span></span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg" style="background:rgba(15,23,42,0.5);">
+                <svg id="butterfly-svg" width="680" height="300" style="border-radius:8px; min-width:400px;"></svg>
+            </div>
+            <div id="butterfly-stage-labels" class="flex gap-2 mt-2 text-xs text-slate-500 math-font"></div>
+            <div id="butterfly-status" class="mt-2 text-xs text-slate-400 min-h-4"></div>
+        </section>
+
+        <!-- SECTION 5: Per-Variable Influence -->
+        <section class="glass-panel p-6 md:p-8">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">5. Variable Influence</h2>
+            <p class="text-slate-400 text-xs mb-5">
+                Influence of variable \(i\): \(\mathbf{Inf}_i[f] = \sum_{S \ni i} \hat{f}(S)^2\).
+                Poincaré inequality: \(\mathbf{Var}[f] \leq \sum_i \mathbf{Inf}_i[f]\).
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div id="influencePanel" class="space-y-2"></div>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-3 tracking-wide">Degree Distribution</div>
+                    <div id="degDistPanel" class="space-y-2"></div>
+                    <div class="mt-4 pt-3 border-t border-slate-700/50">
+                        <div class="text-xs text-slate-500">Max influence: <span id="maxInfluence" class="text-cyan-400 math-font">—</span></div>
+                        <div class="text-xs text-slate-500 mt-1">Sum of influences: <span id="sumInfluence" class="text-pink-400 math-font">—</span></div>
+                        <div class="text-xs text-slate-500 mt-1">Variance \(\mathbf{Var}[f]\): <span id="variance" class="text-slate-300 math-font">—</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: Cumulative Spectral Mass & LMN -->
+        <section class="glass-panel p-6 md:p-8">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">6. Spectral Mass &amp; the LMN Theorem</h2>
+            <p class="text-slate-400 text-xs mb-4 leading-relaxed">
+                The <strong class="text-slate-200">Linial-Mansour-Nisan (1993)</strong> theorem: AC⁰ circuits have spectra concentrated on low-degree coefficients.
+                Formally, \(\sum_{|S|>k} \hat{f}(S)^2 \leq \varepsilon\) for small \(k\).
+                Functions like PARITY violate this — their mass lives entirely at maximum degree.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                    <div class="text-xs text-slate-400 uppercase font-bold mb-3 tracking-wide">Cumulative Spectral Mass by Degree</div>
+                    <div style="position:relative; height:220px;">
+                        <canvas id="cumulativeChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-500 uppercase font-bold mb-2">LMN Concentration</div>
+                        <div id="lmnConcentration" class="text-sm text-slate-300 math-font leading-relaxed"></div>
+                    </div>
+                    <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-500 uppercase font-bold mb-2">Degree Threshold k=1</div>
+                        <div id="lmnK1" class="text-sm math-font"></div>
+                    </div>
+                    <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                        <div class="text-xs text-slate-500 uppercase font-bold mb-2">Learnability Verdict</div>
+                        <div id="lmnVerdict" class="text-sm font-bold"></div>
+                        <div id="lmnVerdictDesc" class="text-xs text-slate-400 mt-1 leading-relaxed"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: Neural Network Training -->
+        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(168,85,247,0.2);">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">7. Neural Network Training</h2>
+            <p class="text-slate-400 text-xs mb-4">
+                Train a 2-layer network on the selected Boolean function. Watch the loss reflect the function's Fourier complexity.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <!-- Controls + Network Viz -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700 space-y-3">
+                        <div>
+                            <label class="text-xs text-slate-400 uppercase font-bold">Hidden neurons</label>
+                            <div class="flex items-center gap-3 mt-1">
+                                <input id="hiddenSlider" type="range" min="2" max="16" value="8" class="flex-1">
+                                <span id="hiddenLabel" class="math-font text-purple-400 text-sm w-5">8</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 uppercase font-bold">Learning rate</label>
+                            <div class="flex items-center gap-3 mt-1">
+                                <input id="lrSlider" type="range" min="1" max="10" value="5" class="flex-1">
+                                <span id="lrLabel" class="math-font text-purple-400 text-sm w-12">0.050</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button id="btnTrain" class="flex-1 px-3 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#a855f7; color:#fff;">▶ Train</button>
+                            <button id="btnResetNN" class="px-3 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#1e293b; color:#e2e8f0; border:1px solid #334155;">↺ Reset</button>
+                        </div>
+                        <div class="flex gap-3 text-xs math-font">
+                            <span class="text-slate-500">Epoch: <span id="epochNum" class="text-white">0</span></span>
+                            <span class="text-slate-500">Loss: <span id="lossNum" class="text-purple-400">—</span></span>
+                            <span class="text-slate-500">Acc: <span id="accNum" class="text-cyan-400">—</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Network diagram -->
+                    <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700/50">
+                        <div class="text-xs text-slate-400 uppercase font-bold mb-2 tracking-wide">Network Architecture</div>
+                        <svg id="nnDiagram" width="100%" height="180" viewBox="0 0 260 180"></svg>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                        <div class="text-xs text-slate-400 uppercase font-bold mb-2 tracking-wide">Training Loss</div>
+                        <div style="height:160px;"><canvas id="lossChart"></canvas></div>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                        <div class="text-xs text-slate-400 uppercase font-bold mb-2 tracking-wide">Predictions vs Truth</div>
+                        <div id="predGrid" class="overflow-auto max-h-40"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: Summary cards -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="glass-panel p-5 border-t-4 border-green-500">
                 <h3 class="font-bold text-white mb-2">Low Frequency (Easy)</h3>
-                <p class="text-sm text-slate-400">Functions like AND, OR, and MAJORITY have large coefficients on single variables (Degree 1). Neural nets find these gradients immediately.</p>
+                <p class="text-sm text-slate-400">AND, OR, MAJORITY, DICTATOR concentrate mass on degree-1 coefficients. A single perceptron finds these gradients immediately — no hidden layers required.</p>
             </div>
-            <div class="glass-panel p-6 border-t-4 border-red-500">
+            <div class="glass-panel p-5 border-t-4 border-red-500">
                 <h3 class="font-bold text-white mb-2">High Frequency (Hard)</h3>
-                <p class="text-sm text-slate-400">PARITY has all its mass on the highest interaction term. It looks like random noise to a perceptron. It requires depth (layers) to solve.</p>
+                <p class="text-sm text-slate-400">PARITY places all its mass on the degree-n coefficient. It looks like pure noise to a perceptron — the gradient signal is zero at initialization. Requires exponential depth or width to learn.</p>
             </div>
-            <div class="glass-panel p-6 border-t-4 border-purple-500">
+            <div class="glass-panel p-5 border-t-4 border-purple-500">
                 <h3 class="font-bold text-white mb-2">The Takeaway</h3>
-                <p class="text-sm text-slate-400">Fourier Analysis gives us an "X-Ray" view of a boolean function's complexity before we even try to train a network on it.</p>
+                <p class="text-sm text-slate-400">Fourier analysis gives an X-ray of a Boolean function's computational complexity before training begins. Spectral mass concentration predicts learnability across model families.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 9: References -->
+        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(148,163,184,0.15);">
+            <h2 class="text-xl font-bold text-white mb-4 section-header">References &amp; Further Reading</h2>
+            <div class="space-y-4">
+                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #22d3ee;">
+                    <h3 class="text-sm font-semibold text-cyan-400 mb-1">Analysis of Boolean Functions</h3>
+                    <p class="text-xs text-slate-400 math-font mb-2">Ryan O'Donnell. Cambridge University Press, 2014.
+                        <a href="https://arxiv.org/abs/2105.10386" target="_blank" rel="noopener" class="text-cyan-500 hover:text-cyan-300 underline ml-2">arXiv:2105.10386</a>
+                    </p>
+                    <p class="text-sm text-slate-300 leading-relaxed">The definitive graduate-level textbook. Chapters 1–3 cover the Fourier expansion, Walsh characters, and spectral concentration theorems visualized in this app. The free online edition includes exercises that pair naturally with the interactive presets.</p>
+                </article>
+
+                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #8b5cf6;">
+                    <h3 class="text-sm font-semibold text-purple-400 mb-1">Constant Depth Circuits, Fourier Transform, and Learnability</h3>
+                    <p class="text-xs text-slate-400 math-font mb-2">N. Linial, Y. Mansour, N. Nisan. <em>JACM</em>, 40(3):607–620, 1993.
+                        <a href="https://doi.org/10.1145/174130.174138" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline ml-2">DOI:10.1145/174130.174138</a>
+                    </p>
+                    <p class="text-sm text-slate-300 leading-relaxed">The foundational paper connecting Boolean Fourier analysis to PAC learning theory. Proves that AC⁰ circuits have spectra concentrated on low-degree coefficients — the pattern visible when selecting TRIBES or AND and observing cool-colored bars dominating the spectrum.</p>
+                </article>
+
+                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #ec4899;">
+                    <h3 class="text-sm font-semibold text-pink-400 mb-1">Induced Subgraphs of Hypercubes and a Proof of the Sensitivity Conjecture</h3>
+                    <p class="text-xs text-slate-400 math-font mb-2">Hao Huang. <em>Annals of Mathematics</em>, 190(3):949–955, 2019.
+                        <a href="https://doi.org/10.4007/annals.2019.190.3.6" target="_blank" rel="noopener" class="text-pink-400 hover:text-pink-300 underline ml-2">DOI:10.4007/annals.2019.190.3.6</a>
+                    </p>
+                    <p class="text-sm text-slate-300 leading-relaxed">Huang's two-page proof resolved a three-decade-old conjecture relating sensitivity to block sensitivity. Demonstrates that Fourier analysis on the Boolean cube remains a fertile source of breakthrough results. The INNER PRODUCT preset attains the conjectured bound with equality.</p>
+                </article>
+            </div>
+            <div class="mt-5 pt-4 text-center text-xs text-slate-500" style="border-top: 1px solid rgba(148,163,184,0.1);">
+                See also O'Donnell's <a href="https://www.cs.cmu.edu/~odonnell/papers/survey-focs08.pdf" target="_blank" rel="noopener" class="text-slate-400 hover:text-slate-200 underline">FOCS 2008 survey</a> for a concise, accessible introduction.
             </div>
         </section>
 
     </main>
 
-    <footer class="max-w-6xl mx-auto mt-12 mb-8 text-center text-slate-600 text-sm">
-        <p>Generated by Gemini | Visualizing Boolean Analysis Foundations</p>
+    <footer class="mt-12 mb-8 text-center text-slate-600 text-sm">
+        <p>Boolean Analysis &amp; Neural Networks Explorer — dennisjcarroll.com</p>
     </footer>
+</div>
 
-    <script>
-        (function() {
-            // --- Logic & Math Core ---
+<script>
+/**
+ * MODULE MAP
+ * A — Math core: generateInputs, wht, functions registry, computeAll
+ * B — Rendering: renderAll, renderTruthTable, renderSpectrum, renderMetrics, renderFormula
+ * C — Influence & cumulative panel
+ * D — Formal notation section (MathJax)
+ * E — Butterfly diagram (SVG animation)
+ * F — Neural network training
+ * G — Event wiring, init
+ */
 
-            const N = 3; // Fixed for this demo visualization
-            
-            // Generate inputs for n=3 (lexicographical)
-            // [-1,-1,-1], [-1,-1,1], ...
-            const generateInputs = (n) => {
-                const inputs = [];
-                const numRows = 1 << n;
-                for (let i = 0; i < numRows; i++) {
-                    const row = [];
-                    for (let j = 0; j < n; j++) {
-                        // Check bit j of i. If 0 -> -1, if 1 -> 1
-                        // Note: standard binary order usually maps 0->-1, 1->1.
-                        // Let's stick to the order used in wht: 
-                        // i=0 (000) -> -1,-1,-1
-                        row.push((i >> j) & 1 ? 1 : -1); 
-                    }
-                    inputs.push(row); // This is technically reversed bit order (x0, x1, x2), but consistent for WHT
-                }
-                return inputs;
-            };
+/* =========================================================
+   MODULE A — Math Core
+   ========================================================= */
 
-            const inputs = generateInputs(N);
+let currentN = 3;
+let currentFunctionKey = 'and';
+let isCustomMode = false;
+let customOutputs = [];
+let _renderTimeout = null;
 
-            // Function Definitions
-            const functions = {
-                and: (x) => x.every(val => val === 1) ? 1 : -1,
-                or: (x) => x.some(val => val === 1) ? 1 : -1,
-                maj: (x) => x.reduce((a,b)=>a+b, 0) > 0 ? 1 : -1,
-                parity: (x) => x.reduce((a,b)=>a*b, 1)
-            };
-
-            // Fast Walsh-Hadamard Transform (1D array in-place)
-            function wht(data) {
-                const a = [...data]; // Copy
-                const n = Math.log2(a.length);
-                let h = 1;
-                while (h < a.length) {
-                    for (let i = 0; i < a.length; i += h * 2) {
-                        for (let j = i; j < i + h; j++) {
-                            const x = a[j];
-                            const y = a[j + h];
-                            a[j] = x + y;
-                            a[j + h] = x - y;
-                        }
-                    }
-                    h *= 2;
-                }
-                // Normalize
-                return a.map(val => val / (1 << n));
+// Preset function registry
+const functions = {
+    and:          x => x.every(v => v === 1) ? 1 : -1,
+    or:           x => x.some(v => v === 1) ? 1 : -1,
+    maj:          x => x.reduce((a,b) => a+b, 0) > 0 ? 1 : -1,
+    parity:       x => x.reduce((a,b) => a*b, 1),
+    nand:         x => x.every(v => v === 1) ? -1 : 1,
+    xor2:         x => x[0] * x[1],
+    tribes: x => {
+        const sz = 2;
+        for (let i = 0; i < x.length; i += sz) {
+            let ok = false;
+            for (let j = i; j < Math.min(i+sz, x.length); j++) { if (x[j]===1){ok=true;break;} }
+            if (!ok) return -1;
+        }
+        return 1;
+    },
+    innerProduct: x => {
+        if (x.length < 4) return x[0]*x[1];
+        return (x[0]*x[2] + x[1]*x[3]) > 0 ? 1 : -1;
+    },
+    random: (() => {
+        const tables = new Map();
+        return x => {
+            const key = x.length;
+            if (!tables.has(key)) {
+                const t = new Array(1<<key);
+                for (let i = 0; i < t.length; i++) t[i] = Math.random()<0.5 ? 1 : -1;
+                tables.set(key, t);
             }
+            let idx = 0;
+            for (let i = 0; i < x.length; i++) if (x[i]===1) idx |= (1<<i);
+            return tables.get(key)[idx];
+        };
+    })(),
+    dictator: x => x[0],
+    custom:   null  // handled via customOutputs
+};
 
-            // --- UI & Rendering ---
+function generateInputs(n) {
+    const inputs = [], numRows = 1<<n;
+    for (let i = 0; i < numRows; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) row.push((i>>j)&1 ? 1 : -1);
+        inputs.push(row);
+    }
+    return inputs;
+}
 
-            const funcSelector = document.getElementById('funcSelector');
-            const tableBody = document.getElementById('truthTableBody');
-            const spectrumContainer = document.getElementById('spectrumContainer');
-            const spectrumLabels = document.getElementById('spectrumLabels');
-            const spectrumTotal = document.getElementById('spectrumTotal');
-            const difficultyLabel = document.getElementById('difficultyLabel');
-            const difficultyDesc = document.getElementById('difficultyDesc');
-            const linearityBar = document.getElementById('linearityBar');
-            const linearityValue = document.getElementById('linearityValue');
-
-            // Helper: Get label for subset index (e.g., 3 -> "x1x2")
-            function getLabel(idx) {
-                if (idx === 0) return "∅"; // Bias
-                let s = "";
-                for (let j = 0; j < N; j++) {
-                    if ((idx >> j) & 1) s += `x${j+1}`;
-                }
-                return s;
+function wht(data) {
+    const a = [...data];
+    let h = 1;
+    while (h < a.length) {
+        for (let i = 0; i < a.length; i += h*2)
+            for (let j = i; j < i+h; j++) {
+                const x = a[j], y = a[j+h];
+                a[j] = x+y; a[j+h] = x-y;
             }
+        h *= 2;
+    }
+    const n = Math.log2(a.length);
+    return a.map(v => v / (1<<n));
+}
 
-            function render() {
-                const funcKey = funcSelector.value;
-                const func = functions[funcKey];
+function subsetDegree(idx) {
+    let d = 0, v = idx;
+    while (v) { d += v&1; v >>= 1; }
+    return d;
+}
 
-                // 1. Calculate Truth Table Output
-                const outputs = inputs.map(row => func(row));
+function degreeToHue(deg, n) {
+    return n > 0 ? 190 + (deg/n)*140 : 190;
+}
 
-                // 2. Render Truth Table
-                tableBody.innerHTML = '';
-                inputs.forEach((row, i) => {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-800 hover:bg-white/5 transition-colors";
-                    
-                    // Input Cells
-                    row.forEach(val => {
-                        const td = document.createElement('td');
-                        td.className = `px-4 py-2 ${val === 1 ? 'text-white' : 'text-slate-600'}`;
-                        td.textContent = val === 1 ? '+1' : '-1';
-                        tr.appendChild(td);
-                    });
+function getLabel(idx, n) {
+    if (idx === 0) return '∅';
+    let s = '';
+    for (let j = 0; j < n; j++) if ((idx>>j)&1) s += `x${j+1}`;
+    return s;
+}
 
-                    // Output Cell
-                    const tdOut = document.createElement('td');
-                    const val = outputs[i];
-                    tdOut.className = `px-4 py-2 text-right font-bold ${val === 1 ? 'text-cyan-400' : 'text-pink-500'}`;
-                    tdOut.textContent = val === 1 ? '+1' : '-1';
-                    tr.appendChild(tdOut);
+function computeAll() {
+    const n = currentN;
+    const inputs = generateInputs(n);
+    let outputs;
+    if (isCustomMode && customOutputs.length === (1<<n)) {
+        outputs = [...customOutputs];
+    } else {
+        const fn = functions[currentFunctionKey] || functions.and;
+        outputs = inputs.map(row => fn(row));
+    }
 
-                    tableBody.appendChild(tr);
-                });
+    const coeffs = wht(outputs);
+    const degMass = new Array(n+1).fill(0);
+    let degree1Mass = 0, totalMass = 0;
 
-                // 3. Compute Spectrum
-                const coeffs = wht(outputs);
-                
-                // 4. Render Spectrum Bars
-                spectrumContainer.innerHTML = '';
-                spectrumLabels.innerHTML = '';
-                
-                let degree1Mass = 0;
-                let totalMass = 0;
+    for (let i = 0; i < coeffs.length; i++) {
+        const p = coeffs[i]*coeffs[i];
+        totalMass += p;
+        const d = subsetDegree(i);
+        degMass[d] += p;
+        if (d === 1) degree1Mass += p;
+    }
 
-                coeffs.forEach((c, idx) => {
-                    const magnitude = Math.abs(c);
-                    const power = c * c; // Mass
-                    totalMass += power;
+    // Per-variable influence: Inf_i = sum_{S∋i} f̂(S)²
+    const influences = new Array(n).fill(0);
+    for (let i = 1; i < coeffs.length; i++) {
+        const p = coeffs[i]*coeffs[i];
+        for (let j = 0; j < n; j++) if ((i>>j)&1) influences[j] += p;
+    }
 
-                    // Check degree for metrics
-                    let degree = 0;
-                    for(let b=0; b<N; b++) if((idx>>b)&1) degree++;
-                    if (degree === 1) degree1Mass += power;
+    // Cumulative mass sorted by degree
+    const cumulativeMass = [];
+    let running = 0;
+    for (let d = 0; d <= n; d++) {
+        running += degMass[d];
+        cumulativeMass.push({ deg: d, mass: running });
+    }
 
-                    // Bar Wrapper
-                    const barWrapper = document.createElement('div');
-                    barWrapper.className = "flex-1 flex flex-col justify-end items-center group relative h-full";
+    return { inputs, outputs, coeffs, degMass, degree1Mass, totalMass, influences, cumulativeMass };
+}
 
-                    // Tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.className = "absolute bottom-full mb-2 bg-black text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10";
-                    tooltip.innerHTML = `Term: ${getLabel(idx)}<br>Coeff: ${c.toFixed(2)}<br>Mass: ${power.toFixed(2)}`;
-                    barWrapper.appendChild(tooltip);
+/* =========================================================
+   MODULE B — Rendering
+   ========================================================= */
 
-                    // Bar Fill
-                    const bar = document.createElement('div');
-                    // Color based on sign of coeff (Cyan for +, Pink for -)
-                    const isPos = c >= 0;
-                    bar.className = `w-full max-w-[40px] rounded-t-sm bar-fill ${isPos ? 'bg-cyan-500' : 'bg-pink-500'} opacity-80 hover:opacity-100`;
-                    // Height based on MAGNITUDE (scaled up for visibility)
-                    // Max coeff is 1.0. Let's map 1.0 to 100% height.
-                    bar.style.height = `${magnitude * 100}%`;
-                    
-                    // Add faint line for 0 height if needed
-                    if (magnitude < 0.01) {
-                        bar.style.height = "2px";
-                        bar.className = "w-full max-w-[40px] bg-slate-700";
-                    }
+function renderAll() {
+    const data = computeAll();
+    renderTruthTable(data);
+    renderSpectrum(data);
+    renderMetrics(data);
+    renderFormula(data.coeffs);
+    renderInfluence(data);
+    renderCumulative(data);
+    updateParsevalCheck(data.coeffs);
+    updateWalshDemo();
+    return data;
+}
 
-                    barWrapper.appendChild(bar);
-                    spectrumContainer.appendChild(barWrapper);
+function renderTruthTable({ inputs, outputs }) {
+    const n = currentN;
+    // Header
+    const thead = document.getElementById('truthTableHead');
+    const tr = document.createElement('tr');
+    for (let j = 0; j < n; j++) {
+        const th = document.createElement('th');
+        th.className = 'px-3 py-2 text-center';
+        th.textContent = `x${j+1}`;
+        tr.appendChild(th);
+    }
+    const thOut = document.createElement('th');
+    thOut.className = 'px-3 py-2 text-right text-cyan-400';
+    thOut.textContent = 'f(x)';
+    tr.appendChild(thOut);
+    thead.innerHTML = '';
+    thead.appendChild(tr);
 
-                    // Label
-                    const label = document.createElement('div');
-                    label.className = "flex-1 text-center";
-                    label.innerHTML = getLabel(idx);
-                    spectrumLabels.appendChild(label);
-                });
+    // Body
+    const tbody = document.getElementById('truthTableBody');
+    tbody.innerHTML = '';
 
-                // 5. Update Metrics
-                spectrumTotal.textContent = `Total Mass: ${totalMass.toFixed(2)}`;
-                
-                // Linearity
-                const linearityPct = Math.round(degree1Mass * 100);
-                linearityBar.style.width = `${linearityPct}%`;
-                linearityValue.textContent = `${linearityPct}%`;
+    inputs.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-slate-800 hover:bg-white/5 transition-colors';
 
-                // Difficulty Logic
-                if (linearityPct > 60) {
-                    difficultyLabel.textContent = "Easy";
-                    difficultyLabel.className = "text-2xl font-bold text-green-400";
-                    difficultyDesc.textContent = "High linear mass. A simple perceptron will converge quickly.";
-                    linearityBar.className = "bg-gradient-to-r from-green-400 to-emerald-600 h-full transition-all duration-700";
-                } else if (linearityPct > 0) {
-                    difficultyLabel.textContent = "Moderate";
-                    difficultyLabel.className = "text-2xl font-bold text-yellow-400";
-                    difficultyDesc.textContent = "Some linear signal, but significant higher-order interactions exist.";
-                    linearityBar.className = "bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-700";
-                } else {
-                    difficultyLabel.textContent = "Hard / Impossible";
-                    difficultyLabel.className = "text-2xl font-bold text-red-500";
-                    difficultyDesc.textContent = "Zero linear signal. The gradient for a perceptron is effectively blind. Requires hidden layers.";
-                    linearityBar.className = "bg-gradient-to-r from-red-500 to-pink-600 h-full transition-all duration-700";
+        row.forEach(val => {
+            const td = document.createElement('td');
+            td.className = `px-3 py-1.5 text-center text-xs ${val===1?'text-white':'text-slate-600'}`;
+            td.textContent = val===1 ? '+1' : '−1';
+            tr.appendChild(td);
+        });
+
+        const outVal = outputs[i];
+        if (isCustomMode) {
+            const td = document.createElement('td');
+            td.className = 'px-3 py-1.5 text-right';
+            const btn = document.createElement('button');
+            btn.className = `text-xs font-bold px-2 py-0.5 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 ${outVal===1?'text-cyan-400 bg-cyan-500/10':'text-pink-400 bg-pink-500/10'}`;
+            btn.textContent = outVal===1 ? '+1' : '−1';
+            btn.setAttribute('aria-label', `Toggle output row ${i}`);
+            btn.addEventListener('click', () => {
+                customOutputs[i] = -customOutputs[i];
+                btn.textContent = customOutputs[i]===1 ? '+1' : '−1';
+                btn.className = `text-xs font-bold px-2 py-0.5 rounded transition-all duration-150 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 ${customOutputs[i]===1?'text-cyan-400 bg-cyan-500/10':'text-pink-400 bg-pink-500/10'}`;
+                if (_renderTimeout) clearTimeout(_renderTimeout);
+                _renderTimeout = setTimeout(() => {
+                    const d = computeAll();
+                    renderSpectrum(d); renderMetrics(d); renderFormula(d.coeffs);
+                    renderInfluence(d); renderCumulative(d); updateParsevalCheck(d.coeffs);
+                }, 80);
+            });
+            td.appendChild(btn);
+            tr.appendChild(td);
+        } else {
+            const td = document.createElement('td');
+            td.className = `px-3 py-1.5 text-right text-xs font-bold ${outVal===1?'text-cyan-400':'text-pink-500'}`;
+            td.textContent = outVal===1 ? '+1' : '−1';
+            tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+    });
+}
+
+function renderSpectrum({ coeffs }) {
+    const n = currentN;
+    const container = document.getElementById('spectrumContainer');
+    const labelEl = document.getElementById('spectrumLabels');
+    const legendEl = document.getElementById('degreeLegend');
+    container.innerHTML = '';
+    labelEl.innerHTML = '';
+    legendEl.innerHTML = '';
+
+    const maxCoeff = Math.max(...coeffs.map(Math.abs)) || 1;
+
+    if (n <= 4) {
+        coeffs.forEach((c, idx) => {
+            const degree = subsetDegree(idx);
+            const hue = degreeToHue(degree, n);
+            const sat = 75 + (degree/n)*15;
+            const lit = c < 0 ? 45 : 58;
+            const heightPct = (Math.abs(c)/maxCoeff)*100;
+
+            const wrap = document.createElement('div');
+            wrap.className = 'flex-1 flex flex-col justify-end items-center group relative h-full';
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute bottom-full mb-1 bg-slate-900 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 border border-slate-600';
+            tooltip.innerHTML = `<span class="text-cyan-400">${getLabel(idx,n)}</span><br>ĉ = ${c.toFixed(4)}<br>deg = ${degree}<br>mass = ${(c*c).toFixed(4)}`;
+            wrap.appendChild(tooltip);
+
+            const bar = document.createElement('div');
+            bar.className = 'w-full max-w-10 rounded-t-sm bar-fill hover:brightness-125 cursor-default';
+            bar.style.height = Math.abs(c) < 0.005 ? '2px' : `${heightPct}%`;
+            bar.style.backgroundColor = Math.abs(c) < 0.005 ? '#1e293b' : `hsl(${hue},${sat}%,${lit}%)`;
+            bar.style.opacity = 0.4 + (Math.abs(c)/maxCoeff)*0.6;
+            wrap.appendChild(bar);
+            container.appendChild(wrap);
+
+            const lbl = document.createElement('div');
+            lbl.className = 'flex-1 text-center truncate';
+            lbl.style.color = `hsl(${hue},60%,65%)`;
+            lbl.textContent = getLabel(idx,n);
+            labelEl.appendChild(lbl);
+        });
+
+        // Degree legend
+        for (let d = 0; d <= n; d++) {
+            const hue = degreeToHue(d, n);
+            const item = document.createElement('div');
+            item.className = 'flex items-center gap-1 text-xs text-slate-400';
+            item.innerHTML = `<span style="width:10px;height:10px;border-radius:2px;background:hsl(${hue},80%,55%);display:inline-block;"></span>deg ${d}`;
+            legendEl.appendChild(item);
+        }
+    } else {
+        // Heatmap mode for n≥5
+        container.className = 'h-20 flex items-stretch gap-px rounded overflow-hidden w-full';
+        coeffs.forEach((c, idx) => {
+            const degree = subsetDegree(idx);
+            const hue = degreeToHue(degree, n);
+            const intensity = Math.abs(c)/maxCoeff;
+            const cell = document.createElement('div');
+            cell.className = 'flex-1 cursor-default';
+            cell.style.backgroundColor = `hsla(${hue},85%,${25+intensity*55}%,0.9)`;
+            cell.title = `${getLabel(idx,n)}: ${c.toFixed(4)} (deg ${degree})`;
+            container.appendChild(cell);
+        });
+        labelEl.innerHTML = `<div class="text-center w-full text-xs text-slate-500 math-font">${1<<n} Fourier coefficients — hover for details</div>`;
+    }
+}
+
+function renderMetrics({ degree1Mass, totalMass }) {
+    document.getElementById('spectrumTotal').textContent = `Σ mass = ${totalMass.toFixed(4)}`;
+
+    const pct = Math.round(degree1Mass*100);
+    const bar = document.getElementById('linearityBar');
+    bar.style.width = `${pct}%`;
+    document.getElementById('linearityValue').textContent = `${pct}%`;
+
+    const label = document.getElementById('difficultyLabel');
+    const desc  = document.getElementById('difficultyDesc');
+
+    if (pct > 60) {
+        label.textContent = 'Easy'; label.className = 'text-xl font-bold text-green-400';
+        bar.className = 'bg-gradient-to-r from-green-400 to-emerald-600 h-full transition-all duration-700';
+        desc.textContent = 'High linear mass. A single perceptron can learn this.';
+    } else if (pct > 15) {
+        label.textContent = 'Moderate'; label.className = 'text-xl font-bold text-yellow-400';
+        bar.className = 'bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-700';
+        desc.textContent = 'Some linear signal. Requires hidden layers for full accuracy.';
+    } else if (pct > 0) {
+        label.textContent = 'Hard'; label.className = 'text-xl font-bold text-orange-400';
+        bar.className = 'bg-gradient-to-r from-orange-500 to-red-600 h-full transition-all duration-700';
+        desc.textContent = 'Weak linear signal. High-degree interactions dominate.';
+    } else {
+        label.textContent = 'Very Hard'; label.className = 'text-xl font-bold text-red-500';
+        bar.className = 'bg-gradient-to-r from-red-500 to-pink-600 h-full transition-all duration-700';
+        desc.textContent = 'Zero linear signal. Perceptron gradient is blind. Exponential width/depth needed.';
+    }
+}
+
+/* =========================================================
+   MODULE D — Formula Panel & Formal Notation (MathJax)
+   ========================================================= */
+
+function coeffsToLatex(coeffs, n) {
+    const terms = [];
+    coeffs.forEach((c, idx) => {
+        if (Math.abs(c) < 0.001) return;
+        const sign = c < 0 ? '-' : (terms.length === 0 ? '' : '+');
+        const absC = Math.abs(c);
+        let coeffStr;
+        if (Math.abs(absC - Math.round(absC)) < 1e-6) {
+            coeffStr = absC === 1 ? '' : Math.round(absC).toString();
+        } else {
+            const recip = 1/absC;
+            if (Math.abs(recip - Math.round(recip)) < 1e-6 && Math.round(recip) <= 128) {
+                coeffStr = `\\tfrac{1}{${Math.round(recip)}}`;
+            } else {
+                coeffStr = absC.toFixed(3).replace(/\.?0+$/,'');
+            }
+        }
+        let charStr;
+        if (idx === 0) {
+            charStr = '1';
+        } else {
+            const vars = [];
+            for (let b = 0; b < n; b++) if ((idx>>b)&1) vars.push(`x_{${b+1}}`);
+            charStr = vars.join('\\!\\cdot\\!');
+        }
+        terms.push(`${sign}${coeffStr}${charStr}`);
+    });
+    if (terms.length === 0) return 'f(x) = 0';
+    return `f(x) = ${terms.join(' ')}`;
+}
+
+function renderFormula(coeffs) {
+    const panel = document.getElementById('formulaPanel');
+    const latex = coeffsToLatex(coeffs, currentN);
+    panel.textContent = `\\[ ${latex} \\]`;
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([panel]).catch(e => {
+            panel.textContent = latex;
+        });
+    }
+}
+
+let _mjxInited = false;
+function renderFormalDefinitions() {
+    if (_mjxInited) return;
+    _mjxInited = true;
+
+    const encodingTex = `\\(\\chi:\\{0,1\\}\\to\\{-1,+1\\},\\quad \\chi(b)=(-1)^b\\)`;
+    const walshTex = `\\(\\chi_S(x)=\\prod_{i\\in S}x_i\\quad\\text{for }S\\subseteq[n],\\text{ orthonormal under }\\mathbb{E}\\)`;
+    const fourierTex = `\\[f(x)=\\sum_{S\\subseteq[n]}\\hat{f}(S)\\,\\chi_S(x),\\quad\\hat{f}(S)=\\mathbb{E}_{x}[f(x)\\chi_S(x)]\\]`;
+    const parsevalTex = `\\[\\sum_{S\\subseteq[n]}\\hat{f}(S)^2=\\mathbb{E}[f(x)^2]=1\\quad(f:\\{\\pm1\\}^n\\to\\{\\pm1\\})\\]`;
+
+    document.getElementById('mjx-encoding').innerHTML = encodingTex;
+    document.getElementById('mjx-walsh').innerHTML = walshTex;
+    document.getElementById('mjx-fourier').innerHTML = fourierTex;
+    document.getElementById('mjx-parseval').innerHTML = parsevalTex;
+
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([
+            document.getElementById('mjx-encoding'),
+            document.getElementById('mjx-walsh'),
+            document.getElementById('mjx-fourier'),
+            document.getElementById('mjx-parseval')
+        ]).catch(e => console.warn('MathJax typeset:', e));
+    }
+}
+
+let _demoBit = 0;
+function setupEncodingToggle() {
+    const btn = document.getElementById('enc-bit-btn');
+    const result = document.getElementById('enc-result');
+    btn.addEventListener('click', () => {
+        _demoBit = _demoBit === 0 ? 1 : 0;
+        btn.textContent = `b = ${_demoBit}`;
+        const encoded = _demoBit === 0 ? '+1' : '−1';
+        result.textContent = encoded;
+        result.style.transform = 'scale(1.4)';
+        setTimeout(() => { result.style.transform = 'scale(1)'; }, 150);
+    });
+}
+
+function updateWalshDemo() {
+    const n = currentN;
+    const el = document.getElementById('walsh-demo');
+    const x = generateInputs(n)[Math.floor(Math.random()*5)+1] || generateInputs(n)[1];
+    const S = [0]; // x1
+    for (let i = 0; i < n && i < 2; i++) S.push(i);
+    const sub = S.length > 1 ? S.slice(1) : [0];
+    const prod = sub.reduce((a,i) => a * x[i], 1);
+    const xStr = x.slice(0,Math.min(n,3)).map((v,i) => `x${i+1}=${v>=1?'+1':'−1'}`).join(', ');
+    el.textContent = `e.g. S={x₁}: χ_S(${x.slice(0,1).map(v=>v>=1?'+1':'−1')}) = ${prod>=1?'+1':'−1'}`;
+}
+
+function updateParsevalCheck(coeffs) {
+    let sumSq = 0;
+    for (const c of coeffs) sumSq += c*c;
+    const holds = Math.abs(sumSq - 1.0) < 1e-8;
+    const el = document.getElementById('parseval-check');
+    el.innerHTML = holds
+        ? `<span style="color:#22d3ee;">✓ Σf̂(S)² = ${sumSq.toFixed(6)}</span> <span style="color:#64748b;">(identity holds)</span>`
+        : `<span style="color:#ef4444;">✗ Σf̂(S)² = ${sumSq.toFixed(6)}</span> <span style="color:#ef4444;">(numerical error)</span>`;
+}
+
+/* =========================================================
+   MODULE C — Influence & Cumulative Panels
+   ========================================================= */
+
+function renderInfluence({ influences, degMass, totalMass }) {
+    const n = currentN;
+    const infPanel = document.getElementById('influencePanel');
+    const degPanel = document.getElementById('degDistPanel');
+    infPanel.innerHTML = '';
+    degPanel.innerHTML = '';
+
+    const maxInf = Math.max(...influences, 0.0001);
+    influences.forEach((inf, i) => {
+        const pct = (inf/maxInf)*100;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+            <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-slate-400 math-font">x<sub>${i+1}</sub></span>
+                <span class="text-cyan-400 math-font">${inf.toFixed(4)}</span>
+            </div>
+            <div class="w-full bg-slate-700/60 h-2 rounded-full overflow-hidden">
+                <div class="inf-bar-fill h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500" style="width:${pct}%"></div>
+            </div>`;
+        infPanel.appendChild(wrap);
+    });
+
+    // Degree distribution
+    for (let d = 0; d <= n; d++) {
+        const mass = degMass[d] || 0;
+        const pct = totalMass > 0 ? (mass/totalMass)*100 : 0;
+        const hue = degreeToHue(d, n);
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `
+            <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-slate-400 math-font">deg ${d}</span>
+                <span class="math-font" style="color:hsl(${hue},80%,65%)">${pct.toFixed(1)}%</span>
+            </div>
+            <div class="w-full bg-slate-700/60 h-1.5 rounded-full overflow-hidden">
+                <div class="inf-bar-fill h-full rounded-full" style="width:${pct}%;background:hsl(${hue},70%,50%)"></div>
+            </div>`;
+        degPanel.appendChild(wrap);
+    }
+
+    const sumInf = influences.reduce((a,b)=>a+b,0);
+    const variance = totalMass - (computeAll().coeffs[0]**2); // Var[f] = E[f²] - E[f]² ≈ totalMass - bias²
+    document.getElementById('maxInfluence').textContent = Math.max(...influences).toFixed(4);
+    document.getElementById('sumInfluence').textContent = sumInf.toFixed(4);
+    document.getElementById('variance').textContent = variance.toFixed(4);
+}
+
+let _cumulChart = null;
+function renderCumulative({ cumulativeMass, degMass, totalMass }) {
+    const n = currentN;
+    const labels = cumulativeMass.map(p => `≤${p.deg}`);
+    const data   = cumulativeMass.map(p => +(p.mass.toFixed(6)));
+    const colors = cumulativeMass.map(p => `hsl(${degreeToHue(p.deg,n)},75%,55%)`);
+
+    if (_cumulChart) {
+        _cumulChart.data.labels = labels;
+        _cumulChart.data.datasets[0].data = data;
+        _cumulChart.data.datasets[0].pointBackgroundColor = colors;
+        _cumulChart.update('none');
+    } else {
+        const ctx = document.getElementById('cumulativeChart').getContext('2d');
+        _cumulChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34,211,238,0.08)',
+                    pointBackgroundColor: colors,
+                    pointRadius: 5,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+                plugins: { legend: { display: false }, tooltip: {
+                    callbacks: { label: ctx => `Cum. mass: ${(ctx.parsed.y*100).toFixed(2)}%` }
+                }},
+                scales: {
+                    x: { ticks: { color:'#94a3b8', font:{size:10} }, grid: { color:'#1e293b' } },
+                    y: { min:0, max:1.05, ticks: { color:'#94a3b8', font:{size:10},
+                         callback: v => `${(v*100).toFixed(0)}%` }, grid: { color:'#1e293b' } }
                 }
             }
+        });
+    }
 
-            // Listeners
-            funcSelector.addEventListener('change', render);
+    // LMN annotations
+    const k1mass = (degMass[0]||0) + (degMass[1]||0);
+    const lmn = document.getElementById('lmnConcentration');
+    lmn.textContent = `${(k1mass*100).toFixed(1)}% of spectral mass on degrees 0–1`;
 
-            // Initial Render
-            render();
-        })();
-    </script>
+    const k1el = document.getElementById('lmnK1');
+    k1el.innerHTML = `<span class="${k1mass>0.5?'text-green-400':'text-red-400'}">${(k1mass*100).toFixed(2)}%</span> mass at deg ≤ 1`;
+
+    const verdict = document.getElementById('lmnVerdict');
+    const vdesc  = document.getElementById('lmnVerdictDesc');
+    if (k1mass > 0.75) {
+        verdict.textContent = 'PAC-Learnable'; verdict.className = 'text-sm font-bold text-green-400';
+        vdesc.textContent = 'High degree-1 concentration. LMN: efficiently learnable by half-space queries.';
+    } else if (k1mass > 0.3) {
+        verdict.textContent = 'Partially Learnable'; verdict.className = 'text-sm font-bold text-yellow-400';
+        vdesc.textContent = 'Some low-degree concentration but significant higher-order structure.';
+    } else {
+        verdict.textContent = 'Hard for AC⁰'; verdict.className = 'text-sm font-bold text-red-400';
+        vdesc.textContent = 'Spectrum distributed across high degrees. Not efficiently learnable by constant-depth circuits.';
+    }
+}
+
+/* =========================================================
+   MODULE E — Butterfly Diagram (SVG animation)
+   ========================================================= */
+
+let _butterflyN = 3;
+let _bfAnimId = null;
+let _bfStep = 0;
+let _bfStages = []; // [{paths:[]}] per butterfly
+
+function createSVGPath(x1,y1,x2,y2,color,w) {
+    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const mx = (x1+x2)/2;
+    const d = `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+    p.setAttribute('d', d);
+    p.setAttribute('stroke', color);
+    p.setAttribute('stroke-width', w);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('class','butterfly-path');
+    return p;
+}
+
+function createSVGCircle(x,y,r,fill,stroke) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',r);
+    c.setAttribute('fill',fill); c.setAttribute('stroke',stroke);
+    c.setAttribute('stroke-width','1.5');
+    return c;
+}
+
+function createSVGText(x,y,text,color,size) {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x); t.setAttribute('y',y);
+    t.setAttribute('fill',color); t.setAttribute('font-size',size);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family',"'JetBrains Mono',monospace");
+    t.textContent = text;
+    return t;
+}
+
+function generateButterflyDiagram(n) {
+    const svg = document.getElementById('butterfly-svg');
+    const N = 1<<n, cols = n+1;
+    const padX = 55, padY = 25;
+    const w = 680;
+    const h = Math.max(200, N * 32 + padY*2);
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('height', h);
+    svg.innerHTML = '';
+    _bfStages = [];
+
+    const colSpacing = (w - 2*padX) / Math.max(cols-1,1);
+    const rowSpacing = N > 1 ? (h - 2*padY) / (N-1) : h/2;
+
+    // Node positions
+    const nodes = [];
+    for (let s = 0; s < cols; s++) {
+        const col = [];
+        for (let i = 0; i < N; i++) col.push({ x: padX + s*colSpacing, y: padY + i*rowSpacing });
+        nodes.push(col);
+    }
+
+    // Connections (grouped by butterfly)
+    for (let stage = 0; stage < n; stage++) {
+        const stride = 1<<stage;
+        const stagePaths = [];
+        for (let i = 0; i < N; i += stride*2) {
+            for (let j = 0; j < stride; j++) {
+                const fT = nodes[stage][i+j];
+                const fB = nodes[stage][i+j+stride];
+                const tT = nodes[stage+1][i+j];
+                const tB = nodes[stage+1][i+j+stride];
+                const p1 = createSVGPath(fT.x,fT.y,tT.x,tT.y,'#334155',1.5);
+                const p2 = createSVGPath(fB.x,fB.y,tB.x,tB.y,'#334155',1.5);
+                const p3 = createSVGPath(fT.x,fT.y,tB.x,tB.y,'#334155',1);
+                const p4 = createSVGPath(fB.x,fB.y,tT.x,tT.y,'#334155',1);
+                [p1,p2,p3,p4].forEach(p => { p.dataset.stage=stage; svg.appendChild(p); });
+                stagePaths.push([p1,p2,p3,p4]);
+            }
+        }
+        _bfStages.push(stagePaths);
+    }
+
+    // Nodes and labels
+    for (let s = 0; s < cols; s++) {
+        for (let i = 0; i < N; i++) {
+            const {x,y} = nodes[s][i];
+            svg.appendChild(createSVGCircle(x,y,5,'#1e293b','#475569'));
+            if (s === 0) {
+                const lbl = n<=3 ? `f(${i.toString(2).padStart(n,'0')})` : i.toString();
+                svg.appendChild(createSVGText(x-padX+10,y,lbl,'#64748b',8));
+            }
+        }
+    }
+
+    // Stage labels
+    const labelsEl = document.getElementById('butterfly-stage-labels');
+    labelsEl.innerHTML = '';
+    for (let s = 0; s < cols; s++) {
+        const span = document.createElement('span');
+        span.className = 'flex-1 text-center';
+        span.textContent = s===0 ? 'Input' : `Stage ${s}`;
+        labelsEl.appendChild(span);
+    }
+
+    // Complexity stats
+    document.getElementById('wht-stages').textContent = n;
+    document.getElementById('wht-ops').textContent = N/2;
+    document.getElementById('wht-total').textContent = n*(N/2);
+}
+
+function startButterflyAnimation() {
+    if (_bfAnimId) { clearTimeout(_bfAnimId); }
+    // Reset colors
+    _bfStages.flat().flat().forEach(p => {
+        p.setAttribute('stroke','#334155'); p.setAttribute('stroke-width', p.dataset.cross?1:1.5);
+    });
+    _bfStep = 0;
+    const status = document.getElementById('butterfly-status');
+
+    function step() {
+        if (_bfStep >= _bfStages.length) {
+            status.textContent = 'Complete — all Fourier coefficients computed.';
+            return;
+        }
+        // Dim previous stage
+        if (_bfStep > 0) {
+            _bfStages[_bfStep-1].flat().forEach(p => {
+                p.setAttribute('stroke','#1e3a4a'); p.setAttribute('stroke-width','1');
+            });
+        }
+        // Highlight current stage
+        const hue = degreeToHue(_bfStep, _bfStages.length);
+        const color = `hsl(${hue},80%,60%)`;
+        _bfStages[_bfStep].flat().forEach(p => {
+            p.setAttribute('stroke', color); p.setAttribute('stroke-width','2');
+        });
+        status.textContent = `Stage ${_bfStep+1}/${_bfStages.length}: pairing elements at distance ${1<<_bfStep}.`;
+        _bfStep++;
+        _bfAnimId = setTimeout(step, 600);
+    }
+    step();
+}
+
+function resetButterflyAnimation() {
+    if (_bfAnimId) { clearTimeout(_bfAnimId); _bfAnimId = null; }
+    _bfStep = 0;
+    _bfStages.flat().flat().forEach(p => {
+        p.setAttribute('stroke','#334155'); p.setAttribute('stroke-width','1.5');
+    });
+    document.getElementById('butterfly-status').textContent = '';
+}
+
+/* =========================================================
+   MODULE F — Neural Network Training
+   ========================================================= */
+
+let _nnWeights = null; // { W1, b1, W2, b2 }
+let _lossChart = null;
+let _nnTraining = false;
+let _nnEpoch = 0;
+let _nnRafId = null;
+let _lossHistory = [];
+const NN_BATCH = 10; // epochs per RAF tick
+
+function sigmoid(x) { return 1/(1+Math.exp(-x)); }
+function relu(x) { return x > 0 ? x : 0; }
+function reluGrad(x) { return x > 0 ? 1 : 0; }
+
+function initNN(n, hiddenSize) {
+    const scale = Math.sqrt(2/n);
+    const W1 = [], b1 = [], W2 = [], b2 = [0];
+    for (let i = 0; i < hiddenSize; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) row.push((Math.random()-0.5)*scale);
+        W1.push(row);
+        b1.push(0);
+        W2.push((Math.random()-0.5)*0.5);
+    }
+    _nnWeights = { W1, b1, W2, b2, n, hiddenSize };
+}
+
+function nnForward(x, W) {
+    const { W1, b1, W2, b2, hiddenSize } = W;
+    const h1 = [], h1a = [];
+    for (let i = 0; i < hiddenSize; i++) {
+        let z = b1[i];
+        for (let j = 0; j < x.length; j++) z += W1[i][j]*x[j];
+        h1.push(z);
+        h1a.push(relu(z));
+    }
+    let z2 = b2[0];
+    for (let i = 0; i < hiddenSize; i++) z2 += W2[i]*h1a[i];
+    const out = Math.tanh(z2); // output ∈ (-1,+1)
+    return { h1, h1a, z2, out };
+}
+
+function nnTrain(inputs, outputs, W, lr) {
+    const { W1, b1, W2, b2, hiddenSize } = W;
+    let loss = 0;
+    const n = inputs.length;
+    for (let idx = 0; idx < n; idx++) {
+        const x = inputs[idx];
+        const y = outputs[idx]; // ±1
+        const { h1, h1a, z2, out } = nnForward(x, W);
+        const err = out - y;
+        loss += err*err;
+        // Backprop
+        const dOut = 2*err*(1 - out*out); // tanh derivative
+        for (let i = 0; i < hiddenSize; i++) {
+            const dW2 = dOut * h1a[i];
+            W2[i] -= lr * dW2;
+            const dH = dOut * W2[i] * reluGrad(h1[i]);
+            b1[i] -= lr * dH;
+            for (let j = 0; j < x.length; j++) W1[i][j] -= lr * dH * x[j];
+        }
+        b2[0] -= lr * dOut;
+    }
+    return loss / n;
+}
+
+function drawNNDiagram(n, hiddenSize) {
+    const svg = document.getElementById('nnDiagram');
+    svg.innerHTML = '';
+    const W = 260, H = 180;
+    const layerX = [30, 130, 230];
+    const inputY = Array.from({length:n}, (_,i) => (H/(n+1))*(i+1));
+    const hidden = Math.min(hiddenSize, 8);
+    const hiddenY = Array.from({length:hidden}, (_,i) => (H/(hidden+1))*(i+1));
+    const outputY = [H/2];
+
+    function mkCircle(x,y,r,fill) {
+        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',r);
+        c.setAttribute('fill',fill); c.setAttribute('stroke','#475569'); c.setAttribute('stroke-width','1');
+        c.setAttribute('class','nn-node');
+        return c;
+    }
+    function mkLine(x1,y1,x2,y2,op) {
+        const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+        l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+        l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+        l.setAttribute('stroke','#475569'); l.setAttribute('stroke-width','0.5');
+        l.setAttribute('stroke-opacity', op); l.setAttribute('class','nn-edge');
+        return l;
+    }
+    // Edges
+    inputY.forEach(iy => hiddenY.forEach(hy => svg.appendChild(mkLine(layerX[0],iy,layerX[1],hy,0.3))));
+    hiddenY.forEach(hy => svg.appendChild(mkLine(layerX[1],hy,layerX[2],outputY[0],0.3)));
+    // Nodes
+    inputY.forEach(iy => svg.appendChild(mkCircle(layerX[0],iy,7,'#1e3a4a')));
+    hiddenY.forEach(hy => svg.appendChild(mkCircle(layerX[1],hy,7,'#2d1b69')));
+    svg.appendChild(mkCircle(layerX[2],outputY[0],9,'#0c4a6e'));
+    // Labels
+    function mkText(x,y,txt,color) {
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',x); t.setAttribute('y',y+3);
+        t.setAttribute('fill',color); t.setAttribute('font-size','7');
+        t.setAttribute('text-anchor','middle'); t.setAttribute('font-family',"'JetBrains Mono',monospace");
+        t.textContent=txt; return t;
+    }
+    svg.appendChild(mkText(layerX[0],H-8,`${n} in`,'#64748b'));
+    svg.appendChild(mkText(layerX[1],H-8,`${hidden} ReLU`,'#64748b'));
+    svg.appendChild(mkText(layerX[2],H-8,'tanh','#64748b'));
+}
+
+function updatePredGrid(inputs, outputs) {
+    const W = _nnWeights;
+    if (!W) return;
+    const rows = inputs.map((x,i) => {
+        const { out } = nnForward(x, W);
+        const pred = out >= 0 ? 1 : -1;
+        const correct = pred === outputs[i];
+        return `<tr class="border-b border-slate-800 text-xs">
+            <td class="px-2 py-1 math-font text-slate-400">${x.slice(0,3).map(v=>v>=1?'+1':'−1').join(' ')}</td>
+            <td class="px-2 py-1 text-center math-font ${outputs[i]===1?'text-cyan-400':'text-pink-400'}">${outputs[i]>=1?'+1':'−1'}</td>
+            <td class="px-2 py-1 text-center math-font ${pred===1?'text-cyan-400':'text-pink-400'}">${pred>=1?'+1':'−1'}</td>
+            <td class="px-2 py-1 text-center">${correct?'<span class="text-green-400">✓</span>':'<span class="text-red-400">✗</span>'}</td>
+        </tr>`;
+    }).join('');
+    document.getElementById('predGrid').innerHTML = `
+        <table class="w-full text-xs">
+            <thead class="text-slate-500 bg-slate-800/60"><tr>
+                <th class="px-2 py-1 text-left">Input</th>
+                <th class="px-2 py-1">Truth</th>
+                <th class="px-2 py-1">Pred</th>
+                <th class="px-2 py-1">✓</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
+function startTraining() {
+    if (_nnTraining) { stopTraining(); return; }
+    const n = currentN;
+    const hidden = parseInt(document.getElementById('hiddenSlider').value);
+    const lrVal = parseInt(document.getElementById('lrSlider').value);
+    const lr = lrVal * 0.01;
+
+    initNN(n, hidden);
+    _lossHistory = [];
+    _nnEpoch = 0;
+    _nnTraining = true;
+    document.getElementById('btnTrain').textContent = '■ Stop';
+    document.getElementById('btnTrain').style.background = '#ef4444';
+
+    if (!_lossChart) {
+        const ctx = document.getElementById('lossChart').getContext('2d');
+        _lossChart = new Chart(ctx, {
+            type:'line',
+            data:{ labels:[], datasets:[{
+                data:[], borderColor:'#a855f7', backgroundColor:'rgba(168,85,247,0.08)',
+                tension:0.4, pointRadius:0, fill:true
+            }]},
+            options:{
+                responsive:true, maintainAspectRatio:false, animation:{duration:0},
+                plugins:{legend:{display:false}},
+                scales:{
+                    x:{ticks:{color:'#94a3b8',font:{size:9},maxTicksLimit:8},grid:{color:'#1e293b'}},
+                    y:{ticks:{color:'#94a3b8',font:{size:9}},grid:{color:'#1e293b'}}
+                }
+            }
+        });
+    } else {
+        _lossChart.data.labels = [];
+        _lossChart.data.datasets[0].data = [];
+        _lossChart.update('none');
+    }
+
+    drawNNDiagram(n, hidden);
+
+    const { inputs, outputs } = computeAll();
+
+    function tick() {
+        if (!_nnTraining) return;
+        let lastLoss = 0;
+        for (let k = 0; k < NN_BATCH; k++) {
+            lastLoss = nnTrain(inputs, outputs, _nnWeights, lr);
+            _nnEpoch++;
+            _lossHistory.push(lastLoss);
+        }
+
+        // Accuracy
+        let correct = 0;
+        inputs.forEach((x,i) => {
+            const { out } = nnForward(x, _nnWeights);
+            if ((out>=0?1:-1) === outputs[i]) correct++;
+        });
+        const acc = (correct/inputs.length*100).toFixed(1);
+
+        document.getElementById('epochNum').textContent = _nnEpoch;
+        document.getElementById('lossNum').textContent = lastLoss.toFixed(4);
+        document.getElementById('accNum').textContent = `${acc}%`;
+
+        if (_nnEpoch % 20 === 0) {
+            _lossChart.data.labels.push(_nnEpoch);
+            _lossChart.data.datasets[0].data.push(lastLoss);
+            _lossChart.update('none');
+            updatePredGrid(inputs, outputs);
+        }
+
+        if (_nnEpoch < 2000 && lastLoss > 1e-5) {
+            _nnRafId = requestAnimationFrame(tick);
+        } else {
+            stopTraining();
+            updatePredGrid(inputs, outputs);
+        }
+    }
+    _nnRafId = requestAnimationFrame(tick);
+}
+
+function stopTraining() {
+    _nnTraining = false;
+    if (_nnRafId) { cancelAnimationFrame(_nnRafId); _nnRafId = null; }
+    document.getElementById('btnTrain').textContent = '▶ Train';
+    document.getElementById('btnTrain').style.background = '#a855f7';
+}
+
+function resetNN() {
+    stopTraining();
+    _nnWeights = null;
+    _lossHistory = [];
+    _nnEpoch = 0;
+    document.getElementById('epochNum').textContent = '0';
+    document.getElementById('lossNum').textContent = '—';
+    document.getElementById('accNum').textContent = '—';
+    document.getElementById('predGrid').innerHTML = '';
+    if (_lossChart) { _lossChart.data.labels=[]; _lossChart.data.datasets[0].data=[]; _lossChart.update('none'); }
+    const n = currentN, hidden = parseInt(document.getElementById('hiddenSlider').value);
+    drawNNDiagram(n, hidden);
+}
+
+/* =========================================================
+   MODULE G — Event Wiring & Init
+   ========================================================= */
+
+function init() {
+    // Variable slider
+    const nSlider = document.getElementById('nSlider');
+    nSlider.addEventListener('input', () => {
+        currentN = parseInt(nSlider.value);
+        document.getElementById('nLabel').textContent = `n = ${currentN}`;
+        document.getElementById('nSize').textContent = `(${1<<currentN} rows)`;
+        // Reset custom mode on n change
+        if (isCustomMode) {
+            isCustomMode = false;
+            document.getElementById('funcSelector').value = 'and';
+            currentFunctionKey = 'and';
+            document.getElementById('customHint').classList.add('hidden');
+        }
+        stopTraining();
+        renderAll();
+        generateButterflyDiagram(_butterflyN);
+        drawNNDiagram(currentN, parseInt(document.getElementById('hiddenSlider').value));
+    });
+
+    // Function selector
+    const funcSel = document.getElementById('funcSelector');
+    funcSel.addEventListener('change', () => {
+        const val = funcSel.value;
+        if (val === 'custom') {
+            isCustomMode = true;
+            const { outputs } = computeAll();
+            customOutputs = [...outputs]; // seed from current function
+            document.getElementById('customHint').classList.remove('hidden');
+            currentFunctionKey = 'and'; // fallback for computeAll when isCustomMode
+        } else {
+            isCustomMode = false;
+            currentFunctionKey = val;
+            document.getElementById('customHint').classList.add('hidden');
+        }
+        stopTraining();
+        renderAll();
+    });
+
+    // Butterfly controls
+    document.getElementById('btnAnimateButterfly').addEventListener('click', startButterflyAnimation);
+    document.getElementById('btnResetButterfly').addEventListener('click', resetButterflyAnimation);
+    document.getElementById('butterflyN').addEventListener('change', (e) => {
+        _butterflyN = parseInt(e.target.value);
+        generateButterflyDiagram(_butterflyN);
+        resetButterflyAnimation();
+    });
+
+    // NN controls
+    document.getElementById('btnTrain').addEventListener('click', startTraining);
+    document.getElementById('btnResetNN').addEventListener('click', resetNN);
+    document.getElementById('hiddenSlider').addEventListener('input', (e) => {
+        document.getElementById('hiddenLabel').textContent = e.target.value;
+        drawNNDiagram(currentN, parseInt(e.target.value));
+    });
+    document.getElementById('lrSlider').addEventListener('input', (e) => {
+        document.getElementById('lrLabel').textContent = (parseInt(e.target.value)*0.01).toFixed(3);
+    });
+
+    // Encoding toggle
+    setupEncodingToggle();
+
+    // Initial render
+    renderAll();
+    generateButterflyDiagram(_butterflyN);
+    drawNNDiagram(currentN, 8);
+
+    // MathJax formal definitions — render after MathJax ready
+    if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+        MathJax.startup.promise.then(renderFormalDefinitions);
+    } else {
+        // Poll fallback
+        const t = setInterval(() => {
+            if (window.MathJax && MathJax.typesetPromise) {
+                clearInterval(t); renderFormalDefinitions();
+            }
+        }, 200);
+    }
+}
+
+// Kick off when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
 </body>
 </html>
