@@ -2765,6 +2765,52 @@
                         ${buildGANAnimSVG()}
                     </svg>`;
                     break;
+                case 'resnet':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <defs>
+                            <marker id="arr-i" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0,8 3,0 6" fill="#6366f1"/>
+                            </marker>
+                        </defs>
+                        <text x="30" y="22" fill="#4a5568" font-size="11" font-weight="600">Residual Learning: y = ℱ(x,{Wᵢ}) + x</text>
+                        ${buildResNetAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'vae':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <defs>
+                            <marker id="arr-p" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0,8 3,0 6" fill="#8b5cf6"/>
+                            </marker>
+                        </defs>
+                        <text x="30" y="22" fill="#4a5568" font-size="11" font-weight="600">ELBO = 𝔼[log p(x|z)] − KL(q(z|x) ‖ p(z))</text>
+                        ${buildVAEAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'diffusion':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <defs>
+                            <marker id="arr-c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0,8 3,0 6" fill="#06b6d4"/>
+                            </marker>
+                            <marker id="arr-a" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+                                <polygon points="8 0,0 3,8 6" fill="#f59e0b"/>
+                            </marker>
+                        </defs>
+                        <text x="30" y="22" fill="#4a5568" font-size="11" font-weight="600">Forward q(x_t|x_{t-1}) → noise  ·  Reverse p_θ(x_{t-1}|x_t) → denoise</text>
+                        ${buildDiffusionAnimSVG()}
+                    </svg>`;
+                    break;
+                case 'ssm':
+                    svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+                        <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
+                        <text x="30" y="22" fill="#4a5568" font-size="11" font-weight="600">Selective Scan: h_t = Āh_{t-1} + B̄x_t  ·  y_t = Ch_t</text>
+                        ${buildSSMAnimSVG()}
+                    </svg>`;
+                    break;
                 default:
                     svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
                         <rect width="${w}" height="${h}" fill="#f8fafc" rx="8"/>
@@ -2953,6 +2999,189 @@
             return svg;
         }
 
+        function buildResNetAnimSVG() {
+            let svg = '';
+            // 3 residual blocks. Positions (all y=125 centerline):
+            // Input cx=45; Block1 x=75-174; Add1 cx=204; Block2 x=232-331; Add2 cx=361; Block3 x=389-488; Add3 cx=518; Output cx=652
+            const blocks = [{bx:75, ax:204}, {bx:232, ax:361}, {bx:389, ax:518}];
+            // Input
+            svg += `<circle cx="45" cy="125" r="16" fill="#6366f1" opacity="0.7"/>`;
+            svg += `<text x="45" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="700">x</text>`;
+            blocks.forEach((b, i) => {
+                // Block rect
+                svg += `<rect class="resnet-block" id="resnet-blk-${i}" x="${b.bx}" y="97" width="99" height="56" rx="8" fill="#6366f1" opacity="0.1" stroke="#6366f1" stroke-width="2"/>`;
+                svg += `<text x="${b.bx + 49}" y="117" text-anchor="middle" fill="#6366f1" font-size="9" font-weight="600">BN + ReLU</text>`;
+                svg += `<text x="${b.bx + 49}" y="130" text-anchor="middle" fill="#6366f1" font-size="9">Conv 3×3</text>`;
+                svg += `<text x="${b.bx + 49}" y="143" text-anchor="middle" fill="#6366f1" font-size="9" font-weight="600">BN + ReLU</text>`;
+                // Add circle
+                svg += `<circle cx="${b.ax}" cy="125" r="13" fill="white" stroke="#6366f1" stroke-width="2"/>`;
+                svg += `<text x="${b.ax}" y="130" text-anchor="middle" fill="#6366f1" font-size="15" font-weight="700">+</text>`;
+                // Skip arc (over block, curving above at y=52)
+                const arcFromX = i === 0 ? 61 : blocks[i-1].ax + 13;
+                svg += `<path class="resnet-skip" id="resnet-skip-${i}" d="M ${arcFromX} 112 C ${arcFromX} 52 ${b.ax - 13} 52 ${b.ax - 13} 112" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arr-i)" opacity="0.55"/>`;
+                // Horizontal arrows
+                const prevRight = i === 0 ? 61 : blocks[i-1].ax + 13;
+                svg += `<line x1="${prevRight}" y1="125" x2="${b.bx - 1}" y2="125" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arr-i)"/>`;
+                svg += `<line x1="${b.bx + 99}" y1="125" x2="${b.ax - 14}" y2="125" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arr-i)"/>`;
+            });
+            // Arrow from last add to output
+            svg += `<line x1="${blocks[2].ax + 13}" y1="125" x2="636" y2="125" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arr-i)"/>`;
+            // Output
+            svg += `<circle cx="652" cy="125" r="16" fill="#10b981" opacity="0.75"/>`;
+            svg += `<text x="652" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="700">ŷ</text>`;
+            // Signal dot
+            svg += `<circle id="resnet-signal" cx="45" cy="125" r="6" fill="#fbbf24" opacity="0"/>`;
+            // Label
+            svg += `<text x="500" y="220" text-anchor="middle" fill="#6366f1" font-size="10">Gradient shortcuts around ℱ → no vanishing</text>`;
+            return svg;
+        }
+
+        function buildVAEAnimSVG() {
+            let svg = '';
+            // Encoder box
+            svg += `<rect x="28" y="75" width="105" height="100" rx="8" fill="#8b5cf6" opacity="0.1" stroke="#8b5cf6" stroke-width="2"/>`;
+            svg += `<text x="80" y="98" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="700">Encoder</text>`;
+            svg += `<text x="80" y="115" text-anchor="middle" fill="#8b5cf6" font-size="10">q_φ(z|x)</text>`;
+            // μ and σ outputs
+            svg += `<circle cx="171" cy="105" r="13" fill="#8b5cf6" opacity="0.75"/>`;
+            svg += `<text x="171" y="110" text-anchor="middle" fill="white" font-size="11" font-weight="700">μ</text>`;
+            svg += `<circle cx="171" cy="145" r="13" fill="#ec4899" opacity="0.75"/>`;
+            svg += `<text x="171" y="150" text-anchor="middle" fill="white" font-size="11" font-weight="700">σ</text>`;
+            svg += `<text id="vae-mu-val" x="171" y="88" text-anchor="middle" fill="#8b5cf6" font-size="8">0.000</text>`;
+            svg += `<text id="vae-sig-val" x="171" y="170" text-anchor="middle" fill="#ec4899" font-size="8">1.000</text>`;
+            // Reparameterization arrow
+            svg += `<line x1="184" y1="125" x2="218" y2="125" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-p)"/>`;
+            svg += `<text x="201" y="117" text-anchor="middle" fill="#4a5568" font-size="8">z=μ+σε</text>`;
+            // Latent space ellipse
+            svg += `<ellipse cx="298" cy="125" rx="52" ry="68" fill="#8b5cf6" opacity="0.05" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+            svg += `<text x="298" y="208" text-anchor="middle" fill="#8b5cf6" font-size="10" font-weight="600">Latent Z ~ 𝒩(μ,σ²)</text>`;
+            // Latent dots (initial: scattered; target: compact cluster)
+            const dOff = [{ox:-32,oy:-52,tx:-13,ty:-21},{ox:-50,oy:28,tx:-20,ty:11},{ox:18,oy:-60,tx:7,ty:-24},
+                          {ox:42,oy:22,tx:17,ty:9},{ox:-8,oy:56,tx:-3,ty:22},{ox:55,oy:-28,tx:22,ty:-11},
+                          {ox:-58,oy:-12,tx:-23,ty:-5},{ox:28,oy:48,tx:11,ty:19},{ox:-18,oy:-64,tx:-7,ty:-26},{ox:6,oy:38,tx:2,ty:15}];
+            dOff.forEach((d, i) => {
+                svg += `<circle class="vae-dot" id="vae-dot-${i}" cx="${298+d.ox}" cy="${125+d.oy}" r="5" fill="#8b5cf6" opacity="0.45" data-ox="${d.ox}" data-oy="${d.oy}" data-tx="${d.tx}" data-ty="${d.ty}"/>`;
+            });
+            // Sampled z (animated)
+            svg += `<circle id="vae-sample" cx="298" cy="125" r="7" fill="#fbbf24" opacity="0.9" stroke="white" stroke-width="1.5"/>`;
+            // Decoder
+            svg += `<line x1="350" y1="125" x2="383" y2="125" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-p)"/>`;
+            svg += `<rect x="393" y="75" width="105" height="100" rx="8" fill="#8b5cf6" opacity="0.1" stroke="#8b5cf6" stroke-width="2"/>`;
+            svg += `<text x="445" y="98" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="700">Decoder</text>`;
+            svg += `<text x="445" y="115" text-anchor="middle" fill="#8b5cf6" font-size="10">p_θ(x|z)</text>`;
+            // Reconstruction
+            svg += `<line x1="498" y1="125" x2="528" y2="125" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-p)"/>`;
+            svg += `<rect id="vae-recon" x="538" y="95" width="52" height="60" rx="6" fill="#8b5cf6" opacity="0.12" stroke="#8b5cf6" stroke-width="1.5"/>`;
+            svg += `<text x="564" y="130" text-anchor="middle" fill="#8b5cf6" font-size="13" font-weight="700">x̂</text>`;
+            // ELBO panel
+            svg += `<text x="620" y="80" text-anchor="middle" fill="#4a5568" font-size="10" font-weight="600">ELBO</text>`;
+            svg += `<text id="vae-elbo" x="620" y="100" text-anchor="middle" fill="#8b5cf6" font-size="14" font-weight="700">—</text>`;
+            svg += `<text x="620" y="125" text-anchor="middle" fill="#4a5568" font-size="8">𝔼[log p(x|z)]</text>`;
+            svg += `<text x="620" y="139" text-anchor="middle" fill="#4a5568" font-size="8">− KL(q ‖ p)</text>`;
+            svg += `<text x="620" y="165" text-anchor="middle" fill="#4a5568" font-size="9" font-weight="600">KL weight:</text>`;
+            svg += `<text id="vae-kl" x="620" y="180" text-anchor="middle" fill="#ec4899" font-size="10">β = 1.00</text>`;
+            return svg;
+        }
+
+        function buildDiffusionAnimSVG() {
+            let svg = '';
+            // 5 timestep frames: x₀ (clean) → x_T (pure noise)
+            // frameW=80, gap=24, startX=22, startY=42, frameH=88
+            const frames = [
+                {label:'x₀', t:0,    fill:'#06b6d4', noise:0.00},
+                {label:'x_{t/4}', t:250, fill:'#4da8c7', noise:0.25},
+                {label:'x_{t/2}', t:500, fill:'#8090a8', noise:0.50},
+                {label:'x_{3t/4}', t:750, fill:'#a07f90', noise:0.75},
+                {label:'x_T',  t:1000, fill:'#94a3b8', noise:1.00}
+            ];
+            const fW=78, fH=82, gap=22, sX=22, sY=42;
+            frames.forEach((f, i) => {
+                const fx = sX + i*(fW+gap);
+                const cx = fx + fW/2;
+                // Frame rect
+                svg += `<rect class="diff-frame" id="diff-frame-${i}" x="${fx}" y="${sY}" width="${fW}" height="${fH}" rx="6" fill="${f.fill}" opacity="${0.08 + (1-f.noise)*0.45}" stroke="${f.fill}" stroke-width="1.5"/>`;
+                // Noise texture: mix of colored + gray dots
+                const nDots = Math.round(f.noise * 16);
+                const sDots = Math.round((1-f.noise) * 12);
+                for (let d=0; d<sDots; d++) {
+                    const dx = fx + 8 + (d%4)*16 + (d>3?4:0);
+                    const dy = sY + 14 + Math.floor(d/4)*18;
+                    svg += `<circle cx="${dx}" cy="${dy}" r="4" fill="${f.fill}" opacity="${0.55+0.35*(1-f.noise)}"/>`;
+                }
+                for (let d=0; d<nDots; d++) {
+                    const dx = fx + 10 + (d%5)*12;
+                    const dy = sY + 20 + Math.floor(d/5)*18;
+                    svg += `<circle cx="${dx}" cy="${dy}" r="3" fill="#94a3b8" opacity="${0.4+0.3*f.noise}"/>`;
+                }
+                // Labels
+                svg += `<text x="${cx}" y="${sY+fH+14}" text-anchor="middle" fill="#4a5568" font-size="10" font-weight="600">${f.label}</text>`;
+                svg += `<text x="${cx}" y="${sY+fH+28}" text-anchor="middle" fill="${f.fill}" font-size="8">t=${f.t}</text>`;
+                // Forward arrow (→)
+                if (i < 4) svg += `<line x1="${fx+fW+2}" y1="${sY+fH/2}" x2="${fx+fW+gap-2}" y2="${sY+fH/2}" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arr-c)"/>`;
+            });
+            // Reverse process arrow (←) below
+            const arrowY = sY + fH + 42;
+            const lastRx = sX + 4*(fW+gap);
+            svg += `<text x="${(sX+lastRx+fW)/2}" y="${arrowY-4}" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">← pθ reverse denoising</text>`;
+            svg += `<line x1="${lastRx+fW-2}" y1="${arrowY+4}" x2="${sX+2}" y2="${arrowY+4}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="7,4" marker-end="url(#arr-a)"/>`;
+            // Info panel (right)
+            const iX = 548;
+            svg += `<text x="${iX}" y="60" fill="#4a5568" font-size="11" font-weight="600">Training</text>`;
+            svg += `<text x="${iX}" y="78" fill="#06b6d4" font-size="10">ε_θ(x_t, t) predicts</text>`;
+            svg += `<text x="${iX}" y="92" fill="#06b6d4" font-size="10">noise added at step t</text>`;
+            svg += `<text x="${iX}" y="116" fill="#4a5568" font-size="10" font-weight="600">Current step:</text>`;
+            svg += `<text id="diff-step" x="${iX}" y="132" fill="#f59e0b" font-size="13" font-weight="700">t = 1000</text>`;
+            svg += `<text x="${iX}" y="158" fill="#4a5568" font-size="10" font-weight="600">Sample quality:</text>`;
+            svg += `<text id="diff-quality" x="${iX}" y="174" fill="#f59e0b" font-size="11">FID ≈ —</text>`;
+            svg += `<text id="diff-status" x="${iX}" y="198" fill="#94a3b8" font-size="10">pure noise</text>`;
+            return svg;
+        }
+
+        function buildSSMAnimSVG() {
+            let svg = '';
+            const nT=5, tW=76, tH=38, tGap=14, tPitch=90, sX=28, tY=32, outY=172;
+            const stW = nT*tPitch - tGap; // 5*90-14 = 436
+            const stX = sX, stY=108, stH=30;
+            const labs  = ['x₁','x₂','x₃','x₄','x₅'];
+            const oLabs = ['y₁','y₂','y₃','y₄','y₅'];
+            const selInit = [0.9, 0.3, 0.75, 0.2, 0.85];
+            // State bar
+            svg += `<text x="${stX + stW/2}" y="${stY-8}" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">State h_t</text>`;
+            svg += `<rect x="${stX}" y="${stY}" width="${stW}" height="${stH}" rx="8" fill="#10b981" opacity="0.07" stroke="#10b981" stroke-width="2"/>`;
+            svg += `<rect id="ssm-sfill" x="${stX+2}" y="${stY+2}" width="${Math.round(stW*0.2)}" height="${stH-4}" rx="6" fill="#10b981" opacity="0.3"/>`;
+            svg += `<text id="ssm-stext" x="${stX + stW/2}" y="${stY+stH/2+4}" text-anchor="middle" fill="#10b981" font-size="9">Ā·h_{t-1} + B̄·x_t</text>`;
+            for (let i=0; i<nT; i++) {
+                const tx = sX + i*tPitch;
+                const cx = tx + tW/2;
+                const sel = selInit[i];
+                const gc  = sel > 0.5 ? '#10b981' : '#94a3b8';
+                const midY = tY + tH + (stY - tY - tH)/2 + 4;
+                // Input token
+                svg += `<rect class="ssm-tok" id="ssm-tok-${i}" x="${tx}" y="${tY}" width="${tW}" height="${tH}" rx="8" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-width="1.5"/>`;
+                svg += `<text x="${cx}" y="${tY+tH/2+5}" text-anchor="middle" fill="#10b981" font-size="14" font-weight="700">${labs[i]}</text>`;
+                // Arrow & Δ label
+                svg += `<line class="ssm-arr" id="ssm-arr-${i}" x1="${cx}" y1="${tY+tH}" x2="${cx}" y2="${stY-1}" stroke="${gc}" stroke-width="${sel>0.5?2:1.2}" stroke-dasharray="${sel>0.5?'none':'4,3'}" opacity="0.6"/>`;
+                svg += `<text class="ssm-gl" id="ssm-gl-${i}" x="${cx}" y="${midY}" text-anchor="middle" fill="${gc}" font-size="8" font-weight="600">Δ=${sel.toFixed(1)}</text>`;
+                // State → output arrow
+                svg += `<line x1="${cx}" y1="${stY+stH}" x2="${cx}" y2="${outY-1}" stroke="#10b981" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.45"/>`;
+                // Output token
+                svg += `<rect class="ssm-out" id="ssm-out-${i}" x="${tx}" y="${outY}" width="${tW}" height="${tH}" rx="8" fill="#10b981" opacity="0.06" stroke="#10b981" stroke-width="1.2" stroke-dasharray="5,2"/>`;
+                svg += `<text x="${cx}" y="${outY+tH/2+5}" text-anchor="middle" fill="#10b981" font-size="14">${oLabs[i]}</text>`;
+            }
+            // Right info panel
+            const iX = 546;
+            svg += `<text x="${iX}" y="48" fill="#4a5568" font-size="11" font-weight="600">Mamba SSM</text>`;
+            svg += `<text x="${iX}" y="66" fill="#10b981" font-size="9">Δ high → expand state</text>`;
+            svg += `<text x="${iX}" y="80" fill="#94a3b8" font-size="9">Δ low  → compress/gate</text>`;
+            svg += `<text x="${iX}" y="104" fill="#4a5568" font-size="10" font-weight="600">Inference: O(1)</text>`;
+            svg += `<text x="${iX}" y="118" fill="#4a5568" font-size="9">no KV cache · const memory</text>`;
+            svg += `<text x="${iX}" y="144" fill="#4a5568" font-size="10" font-weight="600">Active token:</text>`;
+            svg += `<text id="ssm-active" x="${iX}" y="160" fill="#10b981" font-size="11" font-weight="700">—</text>`;
+            svg += `<text x="${iX}" y="188" fill="#4a5568" font-size="10" font-weight="600">Gate Δ:</text>`;
+            svg += `<text id="ssm-sel" x="${iX}" y="204" fill="#10b981" font-size="10">—</text>`;
+            return svg;
+        }
+
         function runTrainingAnimation(networkType, epoch, totalEpochs, loss) {
             const progress = epoch / totalEpochs;
             const statusEl = document.getElementById('training-anim-status');
@@ -3094,6 +3323,137 @@
                     if (gScore) gScore.textContent = `G loss: ${(loss * 0.8).toFixed(3)}`;
                     if (dScore) dScore.textContent = `D loss: ${(loss * 1.2 * (1 + Math.sin(epoch*0.1)*0.3)).toFixed(3)}`;
                     if (quality) quality.textContent = `Quality: ${(progress * 100).toFixed(0)}%`;
+                    break;
+                }
+                case 'resnet': {
+                    const activeBlk = epoch % 3;
+                    document.querySelectorAll('.resnet-block').forEach(b => {
+                        const bi = parseInt(b.id.replace('resnet-blk-', ''));
+                        b.setAttribute('opacity', bi === activeBlk ? '0.28' : '0.1');
+                        b.setAttribute('stroke-width', bi === activeBlk ? '3' : '2');
+                    });
+                    for (let i = 0; i < 3; i++) {
+                        const arc = document.getElementById(`resnet-skip-${i}`);
+                        if (arc) {
+                            if (i === activeBlk) {
+                                const pulse = 0.45 + 0.55 * Math.abs(Math.sin(epoch * 0.6));
+                                arc.setAttribute('opacity', String(pulse));
+                                arc.setAttribute('stroke-width', '3');
+                                arc.setAttribute('stroke', progress > 0.5 ? '#10b981' : '#6366f1');
+                            } else {
+                                arc.setAttribute('opacity', '0.3');
+                                arc.setAttribute('stroke-width', '2');
+                                arc.setAttribute('stroke', '#6366f1');
+                            }
+                        }
+                    }
+                    const sig = document.getElementById('resnet-signal');
+                    if (sig) {
+                        const blkStartX = [61, 217, 374];
+                        const blkEndX   = [191, 348, 505];
+                        const t = (epoch % 12) / 12;
+                        sig.setAttribute('cx', String(blkStartX[activeBlk] + t * (blkEndX[activeBlk] - blkStartX[activeBlk])));
+                        sig.setAttribute('opacity', '0.9');
+                        sig.setAttribute('fill', progress > 0.6 ? '#10b981' : '#fbbf24');
+                    }
+                    break;
+                }
+                case 'vae': {
+                    document.querySelectorAll('.vae-dot').forEach(dot => {
+                        const ox = parseFloat(dot.getAttribute('data-ox'));
+                        const oy = parseFloat(dot.getAttribute('data-oy'));
+                        const tx = parseFloat(dot.getAttribute('data-tx'));
+                        const ty = parseFloat(dot.getAttribute('data-ty'));
+                        dot.setAttribute('cx', String(298 + ox + progress * (tx - ox)));
+                        dot.setAttribute('cy', String(125 + oy + progress * (ty - oy)));
+                        dot.setAttribute('opacity', String(0.35 + progress * 0.6));
+                    });
+                    const sampleDot = document.getElementById('vae-sample');
+                    if (sampleDot) {
+                        const jitter = 22 * (1 - progress * 0.88);
+                        sampleDot.setAttribute('cx', String(298 + Math.cos(epoch * 0.5) * jitter));
+                        sampleDot.setAttribute('cy', String(125 + Math.sin(epoch * 0.5) * jitter));
+                    }
+                    const muEl = document.getElementById('vae-mu-val');
+                    if (muEl) muEl.textContent = 'μ=' + ((Math.random() - 0.5) * 0.6 * (1 - progress)).toFixed(3);
+                    const sigEl = document.getElementById('vae-sig-val');
+                    if (sigEl) sigEl.textContent = 'σ=' + (1 - progress * 0.22 + (Math.random() - 0.5) * 0.04).toFixed(3);
+                    const elboEl = document.getElementById('vae-elbo');
+                    if (elboEl) {
+                        const v = -2.05 + progress * 1.87 + (Math.random() - 0.5) * 0.12 * (1 - progress * 0.8);
+                        elboEl.textContent = v.toFixed(3);
+                        elboEl.setAttribute('fill', v > -0.6 ? '#10b981' : '#8b5cf6');
+                    }
+                    const klEl = document.getElementById('vae-kl');
+                    if (klEl) klEl.textContent = `β = ${(1 + progress * 3).toFixed(2)}`;
+                    const reconEl = document.getElementById('vae-recon');
+                    if (reconEl) reconEl.setAttribute('opacity', String(0.12 + progress * 0.68));
+                    break;
+                }
+                case 'diffusion': {
+                    const stepEl = document.getElementById('diff-step');
+                    if (stepEl) stepEl.textContent = `t = ${Math.round(1000 * (1 - progress))}`;
+                    const qualityEl = document.getElementById('diff-quality');
+                    if (qualityEl) {
+                        const fid = (80 * (1 - progress) + 3.2).toFixed(1);
+                        qualityEl.textContent = `FID ≈ ${fid}`;
+                        qualityEl.setAttribute('fill', parseFloat(fid) < 15 ? '#10b981' : '#f59e0b');
+                    }
+                    const statusEl2 = document.getElementById('diff-status');
+                    if (statusEl2) {
+                        if (progress < 0.2)      statusEl2.textContent = 'learning noise structure';
+                        else if (progress < 0.5) statusEl2.textContent = 'denoising improving…';
+                        else if (progress < 0.8) statusEl2.textContent = 'sharp details emerging';
+                        else                      statusEl2.textContent = 'converged ✓';
+                        statusEl2.setAttribute('fill', progress > 0.8 ? '#10b981' : '#94a3b8');
+                    }
+                    // Highlight the "current reverse step" frame (t decreases as training progresses)
+                    const activeFr = Math.min(4, Math.floor((1 - progress) * 5));
+                    for (let fi = 0; fi < 5; fi++) {
+                        const frEl = document.getElementById(`diff-frame-${fi}`);
+                        if (frEl) frEl.setAttribute('stroke-width', fi === activeFr ? '3' : '1.5');
+                    }
+                    break;
+                }
+                case 'ssm': {
+                    const activeT = epoch % 5;
+                    const selVals = [0.9, 0.3, 0.75, 0.2, 0.85];
+                    // Highlight active token
+                    document.querySelectorAll('.ssm-tok').forEach(t => {
+                        const i = parseInt(t.id.replace('ssm-tok-', ''));
+                        t.setAttribute('opacity', i === activeT ? '0.28' : '0.1');
+                        t.setAttribute('stroke-width', i === activeT ? '3' : '1.5');
+                    });
+                    // Arrow highlights
+                    document.querySelectorAll('.ssm-arr').forEach(a => {
+                        const i = parseInt(a.id.replace('ssm-arr-', ''));
+                        a.setAttribute('opacity', i === activeT ? '1' : '0.35');
+                        a.setAttribute('stroke-width', i === activeT ? '3' : (selVals[i] > 0.5 ? '2' : '1.2'));
+                    });
+                    // Output tokens light up once processed
+                    document.querySelectorAll('.ssm-out').forEach(o => {
+                        const i = parseInt(o.id.replace('ssm-out-', ''));
+                        o.setAttribute('opacity', i <= activeT ? '0.22' : '0.06');
+                        o.setAttribute('stroke-width', i <= activeT ? '2' : '1.2');
+                        if (i <= activeT) o.removeAttribute('stroke-dasharray');
+                    });
+                    // State fill grows
+                    const sfill = document.getElementById('ssm-sfill');
+                    if (sfill) sfill.setAttribute('width', String(Math.round(432 * (activeT + 1) / 5)));
+                    // State text: show selectivity behavior
+                    const stxt = document.getElementById('ssm-stext');
+                    const curSel = selVals[activeT];
+                    if (stxt) {
+                        stxt.textContent = curSel > 0.5 ? `Δ=${curSel.toFixed(2)}: expand → remember x${activeT+1}` : `Δ=${curSel.toFixed(2)}: compress → gate x${activeT+1}`;
+                        stxt.setAttribute('fill', curSel > 0.5 ? '#10b981' : '#94a3b8');
+                    }
+                    const activeEl = document.getElementById('ssm-active');
+                    if (activeEl) activeEl.textContent = `x${activeT + 1}`;
+                    const selEl = document.getElementById('ssm-sel');
+                    if (selEl) {
+                        selEl.textContent = `${curSel.toFixed(2)} → ${curSel > 0.5 ? 'keep' : 'gate'}`;
+                        selEl.setAttribute('fill', curSel > 0.5 ? '#10b981' : '#94a3b8');
+                    }
                     break;
                 }
             }
