@@ -844,6 +844,51 @@
         .shape-value { font-family: ui-monospace, monospace; font-size: 0.68rem; color: #6b7280; }
         .shape-err-msg { font-size: 0.68rem; color: #ef4444; margin-top: 2px; }
         .shape-warn-msg { font-size: 0.68rem; color: #f59e0b; margin-top: 2px; }
+
+        /* ── Mobile hamburger nav ── */
+        #mobile-menu { display: none; position: absolute; top: 64px; left: 0; right: 0; background: rgba(255,255,255,0.98); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,212,255,0.15); padding: 12px 0; z-index: 9999; }
+        #mobile-menu.open { display: flex; flex-direction: column; }
+        #mobile-menu a { display: block; padding: 10px 24px; font-size: 0.9rem; color: #374151; border-bottom: 1px solid #f3f4f6; transition: background 0.15s; }
+        #mobile-menu a:last-child { border-bottom: none; }
+        #mobile-menu a:hover { background: rgba(0,212,255,0.06); }
+        .hamburger-btn { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 8px; border: none; background: none; border-radius: 8px; }
+        .hamburger-btn span { display: block; width: 22px; height: 2px; background: #374151; border-radius: 2px; transition: all 0.25s; transform-origin: center; }
+        .hamburger-btn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .hamburger-btn.open span:nth-child(2) { opacity: 0; }
+        .hamburger-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        @media (max-width: 767px) { .hamburger-btn { display: flex; } }
+
+        /* ── Mobile canvas/chart overflow ── */
+        .canvas-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ── Mobile touch targets ── */
+        @media (max-width: 767px) {
+            .palette-item { padding: 12px 14px; font-size: 0.8rem; }
+            .builder-layer { padding: 12px 14px; }
+            .builder-layer .layer-controls input,
+            .builder-layer .layer-controls select { width: 60px; font-size: 0.7rem; }
+            .activ-tab { padding: 0.5rem 0.875rem; font-size: 0.75rem; }
+        }
+        #dataset-class-toggle { display: none; gap: 8px; margin-bottom: 10px; }
+        .dataset-class-btn { flex: 1; padding: 8px; border: 2px solid transparent; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .dataset-class-btn.active { border-color: currentColor; }
+        .dataset-class-btn.class-a { color: #3b82f6; background: #eff6ff; }
+        .dataset-class-btn.class-a.active { background: #3b82f6; color: white; }
+        .dataset-class-btn.class-b { color: #ef4444; background: #fef2f2; }
+        .dataset-class-btn.class-b.active { background: #ef4444; color: white; }
+
+        /* ── Mobile: stack builder columns ── */
+        @media (max-width: 767px) {
+            .builder-preview-svg { height: 180px; }
+            .optim-canvas { max-width: 100%; }
+            /* Push nav below the djc-app-bar (44px sticky) so hamburger isn't blocked */
+            nav { top: 44px !important; }
+            #mobile-menu { top: 108px !important; } /* 44px app-bar + 64px nav */
+            /* Increase hero padding to clear app-bar + nav (108px total) */
+            .pt-24 { padding-top: 7.5rem !important; } /* 120px */
+            /* Dataset class toggle: visible on mobile */
+            #dataset-class-toggle { display: flex !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -863,23 +908,36 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50">
+    <nav class="fixed top-0 w-full z-50" aria-label="Main navigation">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
                     <h1 class="text-xl font-bold gradient-text">Neural Theory Lab</h1>
                 </div>
-                <div class="hidden md:flex space-x-6">
-                    <a href="#architectures" class="text-sm hover:text-gray-900 transition">Architectures</a>
-                    <a href="#interactive" class="text-sm hover:text-gray-900 transition">Interactive Lab</a>
-                    <a href="#activations" class="text-sm hover:text-gray-900 transition">Activations</a>
-                    <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
-                    <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
-                    <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
-                    <a href="#optimization" class="text-sm hover:text-gray-900 transition">Optimization</a>
-                    <a href="#glossary" class="text-sm hover:text-gray-900 transition">Glossary</a>
+                <div class="hidden md:flex space-x-6" role="menubar">
+                    <a href="#architectures" class="text-sm hover:text-gray-900 transition" role="menuitem">Architectures</a>
+                    <a href="#interactive" class="text-sm hover:text-gray-900 transition" role="menuitem">Interactive Lab</a>
+                    <a href="#activations" class="text-sm hover:text-gray-900 transition" role="menuitem">Activations</a>
+                    <a href="#builder" class="text-sm hover:text-gray-900 transition" role="menuitem">Network Builder</a>
+                    <a href="#comparison" class="text-sm hover:text-gray-900 transition" role="menuitem">Performance</a>
+                    <a href="#research" class="text-sm hover:text-gray-900 transition" role="menuitem">Research</a>
+                    <a href="#optimization" class="text-sm hover:text-gray-900 transition" role="menuitem">Optimization</a>
+                    <a href="#glossary" class="text-sm hover:text-gray-900 transition" role="menuitem">Glossary</a>
                 </div>
+                <button class="hamburger-btn md:hidden" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <span></span><span></span><span></span>
+                </button>
             </div>
+        </div>
+        <div id="mobile-menu" role="menu" aria-label="Mobile navigation">
+            <a href="#architectures" role="menuitem">Architectures</a>
+            <a href="#interactive" role="menuitem">Interactive Lab</a>
+            <a href="#activations" role="menuitem">Activations</a>
+            <a href="#builder" role="menuitem">Network Builder</a>
+            <a href="#comparison" role="menuitem">Performance</a>
+            <a href="#research" role="menuitem">Research</a>
+            <a href="#optimization" role="menuitem">Optimization</a>
+            <a href="#glossary" role="menuitem">Glossary</a>
         </div>
     </nav>
 
@@ -985,7 +1043,7 @@
                     <div id="training-animation" class="misty-card p-6 mt-6" style="display: none;">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold text-gray-900">Training Visualization</h3>
-                            <div id="training-anim-status" class="training-overlay" style="display:none;">Epoch 0</div>
+                            <div id="training-anim-status" class="training-overlay" style="display:none;" aria-live="polite" aria-atomic="true">Epoch 0</div>
                         </div>
                         <div id="training-anim-canvas" class="training-anim-container bg-gray-50 rounded-lg" style="min-height: 250px;">
                             <!-- Training animation SVG will be rendered here -->
@@ -1006,7 +1064,11 @@
                                         <button onclick="clearDataset()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Clear</button>
                                     </div>
                                 </div>
-                                <svg id="dataset-svg" class="w-full h-80 border border-gray-200 rounded-lg cursor-crosshair">
+                                <div id="dataset-class-toggle" aria-label="Active class for touch input">
+                                    <button class="dataset-class-btn class-a active" id="ds-class-a-btn" onclick="setDatasetClass('A')" aria-pressed="true">Class A (blue)</button>
+                                    <button class="dataset-class-btn class-b" id="ds-class-b-btn" onclick="setDatasetClass('B')" aria-pressed="false">Class B (red)</button>
+                                </div>
+                                <svg id="dataset-svg" class="w-full h-80 border border-gray-200 rounded-lg cursor-crosshair" role="img" aria-label="Dataset canvas — tap or click to add data points">
                                     <!-- Dataset visualization will be rendered here -->
                                 </svg>
                             </div>
@@ -1030,10 +1092,11 @@
                                 <div class="mt-6 pt-6 border-t border-gray-200">
                                     <h4 class="font-semibold text-gray-900 mb-3">Instructions</h4>
                                     <ul class="text-sm text-gray-600 space-y-2">
-                                        <li>• Click to add data points</li>
-                                        <li>• Left click: Class A (blue)</li>
-                                        <li>• Right click: Class B (red)</li>
-                                        <li>• Use preset patterns for quick setup</li>
+                                        <li>• Click / tap to add points</li>
+                                        <li>• Left click → Class A (blue)</li>
+                                        <li>• Right click → Class B (red)</li>
+                                        <li class="md:hidden text-blue-600">• Mobile: use A/B toggle above</li>
+                                        <li>• Load preset patterns above</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1103,7 +1166,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Training Progress
                             </label>
-                            <div class="bg-gray-200 rounded-full h-2 mb-2">
+                            <div class="bg-gray-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Training progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="training-progress-bar-wrap">
                                 <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                             </div>
                             <div class="text-sm text-gray-600">
@@ -1112,9 +1175,9 @@
                         </div>
 
                         <!-- Loss Display -->
-                        <div id="loss-display" class="mb-6" style="display: none;">
+                        <div id="loss-display" class="mb-6" style="display: none;" aria-live="polite">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Current Loss: <span id="current-loss">0.000</span>
+                                Current Loss: <span id="current-loss" aria-live="polite">0.000</span>
                             </label>
                             <div id="loss-chart" class="h-32 bg-gray-50 rounded-lg"></div>
                         </div>
@@ -1164,43 +1227,43 @@
                     <div class="misty-card p-6 mb-6">
                         <h4 class="text-lg font-semibold text-gray-800 mb-4">Layer Palette</h4>
                         <div class="builder-palette" id="builder-palette">
-                            <div class="palette-item" draggable="true" data-layer-type="input">
+                            <div class="palette-item" draggable="true" data-layer-type="input" role="button" tabindex="0" aria-label="Add Input layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg></div>
                                 <span>Input</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="dense">
+                            <div class="palette-item" draggable="true" data-layer-type="dense" role="button" tabindex="0" aria-label="Add Dense layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></div>
                                 <span>Dense</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="conv2d">
+                            <div class="palette-item" draggable="true" data-layer-type="conv2d" role="button" tabindex="0" aria-label="Add Conv2D layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg></div>
                                 <span>Conv2D</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="maxpool">
+                            <div class="palette-item" draggable="true" data-layer-type="maxpool" role="button" tabindex="0" aria-label="Add MaxPool layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 6 5 5 5-5"/><path d="m7 13 5 5 5-5"/></svg></div>
                                 <span>MaxPool</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="lstm">
+                            <div class="palette-item" draggable="true" data-layer-type="lstm" role="button" tabindex="0" aria-label="Add LSTM layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></div>
                                 <span>LSTM</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="attention">
+                            <div class="palette-item" draggable="true" data-layer-type="attention" role="button" tabindex="0" aria-label="Add Attention layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
                                 <span>Attention</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="dropout">
+                            <div class="palette-item" draggable="true" data-layer-type="dropout" role="button" tabindex="0" aria-label="Add Dropout layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #6b7280, #4b5563);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div>
                                 <span>Dropout</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="batchnorm">
+                            <div class="palette-item" draggable="true" data-layer-type="batchnorm" role="button" tabindex="0" aria-label="Add BatchNorm layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div>
                                 <span>BatchNorm</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="flatten">
+                            <div class="palette-item" draggable="true" data-layer-type="flatten" role="button" tabindex="0" aria-label="Add Flatten layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg></div>
                                 <span>Flatten</span>
                             </div>
-                            <div class="palette-item" draggable="true" data-layer-type="output">
+                            <div class="palette-item" draggable="true" data-layer-type="output" role="button" tabindex="0" aria-label="Add Output layer">
                                 <div class="layer-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></div>
                                 <span>Output</span>
                             </div>
@@ -1252,7 +1315,7 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Status:</span>
-                                    <span id="builder-status" class="font-medium text-amber-600">No layers</span>
+                                    <span id="builder-status" class="font-medium text-amber-600" aria-live="polite" aria-atomic="true">No layers</span>
                                 </div>
                             </div>
                         </div>
@@ -1267,7 +1330,7 @@
                         <!-- Builder Training Progress -->
                         <div id="builder-training-display" class="mt-6 pt-4 border-t border-gray-200" style="display:none;">
                             <h4 class="font-semibold text-gray-800 mb-3">Training Progress</h4>
-                            <div class="bg-gray-200 rounded-full h-2 mb-2">
+                            <div class="bg-gray-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Builder training progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="builder-progress-bar-wrap">
                                 <div id="builder-progress-bar" class="bg-gradient-to-r from-cyan-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500">
@@ -1346,6 +1409,29 @@
     </section>
 
     <script>
+        /**
+         * §7.1 — Module Map (logical sections within this script block)
+         * ─────────────────────────────────────────────────────────────────
+         * MODULE A │ Data: networkTypes, architectureDetails, lossConfig, glossary
+         * MODULE B │ Lifecycle: DOMContentLoaded init, typewriter, p5 canvas
+         * MODULE C │ Architecture cards: populateNetworkSelector, selectNetwork
+         * MODULE D │ Network visualizer: SVG drawing, viz connection branches
+         * MODULE E │ Training engine: runTraining, lossConfig sim, epoch loop
+         * MODULE F │ Training animations: initTrainingAnimSVG, runTrainingAnimation,
+         *           │   build*AnimSVG helpers (one per architecture)
+         * MODULE G │ Dataset playground: initializeDatasetPlayground, addDataPoint
+         * MODULE H │ Network Builder: initializeBuilder, renderBuilderWorkspace,
+         *           │   computeShapeFlow, renderShapeFlowPanel, trainBuilderNetwork
+         * MODULE I │ Charts: initializeCharts, initRadarChart, initPerformanceMatrix
+         * MODULE J │ Scroll animations, equation rendering, glossary
+         * ─────────────────────────────────────────────────────────────────
+         * External scripts (separate <script> blocks below):
+         *   §4.5  Optimization loss-landscape canvas + optimizer equations
+         *   §3.4  Activation function explorer (f(x) + f'(x) dual charts)
+         *   §6.3  ARIA + §6.4 mobile touch + hamburger nav
+         */
+
+        // ═══ MODULE A: Data registries ═══════════════════════════════════
         // Neural Network Types and their configurations
         const networkTypes = {
             perceptron: {
@@ -4068,8 +4154,10 @@
                     <span class="optim-legend-item" style="--c:#f59e0b">RMSprop</span>
                     <span class="optim-legend-item" style="--c:#10b981">Adam</span>
                 </div>
+                <div class="canvas-scroll-wrap">
                 <canvas id="loss-landscape-canvas" width="700" height="300" class="optim-canvas"
                         role="img" aria-label="Animated loss landscape showing four optimizer trajectories on an elongated bowl surface"></canvas>
+                </div>
                 <p id="optim-status" class="text-xs text-gray-400 mt-2">Click Run to start.</p>
             </div>
         </div>
@@ -5178,6 +5266,107 @@
             };
         }, 0);
     });
+    </script>
+
+    <!-- §6.3 ARIA + §6.4 Mobile touch + Hamburger nav -->
+    <script>
+    (function () {
+        'use strict';
+
+        // ── Hamburger nav toggle ──────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn  = document.getElementById('hamburger-btn');
+            const menu = document.getElementById('mobile-menu');
+            if (!btn || !menu) return;
+            btn.addEventListener('click', function () {
+                const isOpen = menu.classList.toggle('open');
+                btn.classList.toggle('open', isOpen);
+                btn.setAttribute('aria-expanded', String(isOpen));
+            });
+            menu.querySelectorAll('a').forEach(a => {
+                a.addEventListener('click', () => {
+                    menu.classList.remove('open');
+                    btn.classList.remove('open');
+                    btn.setAttribute('aria-expanded', 'false');
+                });
+            });
+        });
+
+        // ── Dataset: class toggle + touch ─────────────────────────────────
+        let _dsClass = 'A';
+        window.setDatasetClass = function (cls) {
+            _dsClass = cls;
+            const bA = document.getElementById('ds-class-a-btn');
+            const bB = document.getElementById('ds-class-b-btn');
+            if (bA) { bA.classList.toggle('active', cls === 'A'); bA.setAttribute('aria-pressed', String(cls === 'A')); }
+            if (bB) { bB.classList.toggle('active', cls === 'B'); bB.setAttribute('aria-pressed', String(cls === 'B')); }
+        };
+        document.addEventListener('DOMContentLoaded', function () {
+            const svg = document.getElementById('dataset-svg');
+            if (!svg) return;
+            svg.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+            svg.addEventListener('touchend', function (e) {
+                e.preventDefault();
+                const t = e.changedTouches[0];
+                const r = svg.getBoundingClientRect();
+                if (typeof addDataPoint === 'function') addDataPoint(t.clientX - r.left, t.clientY - r.top, _dsClass);
+            }, { passive: false });
+        });
+
+        // ── Builder: keyboard + touch tap-to-add ──────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            const palette = document.getElementById('builder-palette');
+            if (!palette) return;
+            const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+            palette.querySelectorAll('.palette-item').forEach(item => {
+                const type = item.getAttribute('data-layer-type');
+                item.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (type && typeof addBuilderLayer === 'function') {
+                            addBuilderLayer(type);
+                            item.style.transform = 'scale(0.92)';
+                            setTimeout(() => { item.style.transform = ''; }, 180);
+                        }
+                    }
+                });
+                if (isTouch) {
+                    item.addEventListener('touchend', function (e) {
+                        e.preventDefault();
+                        if (type && typeof addBuilderLayer === 'function') {
+                            addBuilderLayer(type);
+                            item.style.transform = 'scale(0.92)';
+                            setTimeout(() => { item.style.transform = ''; }, 180);
+                        }
+                    }, { passive: false });
+                }
+            });
+
+            if (isTouch) {
+                const ws = document.getElementById('builder-workspace');
+                if (ws) {
+                    const hint = ws.querySelector('.empty-state p:last-child');
+                    if (hint) hint.textContent = 'Tap a layer above to add it';
+                }
+            }
+        });
+
+        // ── ARIA progressbar: keep aria-valuenow in sync via MutationObserver ──
+        document.addEventListener('DOMContentLoaded', function () {
+            function syncBar(barId, wrapId) {
+                const bar = document.getElementById(barId);
+                const wrap = document.getElementById(wrapId);
+                if (!bar || !wrap) return;
+                new MutationObserver(() => {
+                    wrap.setAttribute('aria-valuenow', String(Math.round(parseFloat(bar.style.width) || 0)));
+                }).observe(bar, { attributes: true, attributeFilter: ['style'] });
+            }
+            syncBar('progress-bar', 'training-progress-bar-wrap');
+            syncBar('builder-progress-bar', 'builder-progress-bar-wrap');
+        });
+
+    })();
     </script>
 
     <!-- §3.4 Activation Function Explorer -->
