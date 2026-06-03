@@ -830,6 +830,20 @@
             border-radius: 2px;
             flex-shrink: 0;
         }
+        /* Activation Explorer */
+        .activ-tab { padding: 0.375rem 1rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 500; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.15s; background: transparent; }
+        .activ-tab:hover { border-color: #d1d5db; }
+        /* Builder validation */
+        .builder-layer.layer-error { border-left: 4px solid #ef4444 !important; }
+        .builder-layer.layer-warn  { border-left: 4px solid #f59e0b !important; }
+        .builder-layer.layer-ok    { border-left: 4px solid #10b981 !important; }
+        .shape-badge { font-family: ui-monospace, monospace; font-size: 0.68rem; color: #9ca3af; }
+        .shape-row { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; border-bottom: 1px solid #f1f5f9; }
+        .shape-row:last-child { border-bottom: none; }
+        .shape-layer-name { font-size: 0.7rem; color: #374151; min-width: 90px; flex-shrink: 0; }
+        .shape-value { font-family: ui-monospace, monospace; font-size: 0.68rem; color: #6b7280; }
+        .shape-err-msg { font-size: 0.68rem; color: #ef4444; margin-top: 2px; }
+        .shape-warn-msg { font-size: 0.68rem; color: #f59e0b; margin-top: 2px; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -858,6 +872,7 @@
                 <div class="hidden md:flex space-x-6">
                     <a href="#architectures" class="text-sm hover:text-gray-900 transition">Architectures</a>
                     <a href="#interactive" class="text-sm hover:text-gray-900 transition">Interactive Lab</a>
+                    <a href="#activations" class="text-sm hover:text-gray-900 transition">Activations</a>
                     <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
                     <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
                     <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
@@ -1109,6 +1124,33 @@
         </div>
     </section>
 
+    <!-- Activation Function Explorer -->
+    <section id="activations" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/40">
+        <div class="max-w-7xl mx-auto">
+            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Activation Function Explorer</h3>
+            <p class="text-center text-gray-500 mb-8 text-sm">Compare f(x) and f′(x) — the derivative is what backprop actually multiplies through each layer</p>
+            <div class="flex flex-wrap gap-2 justify-center mb-8" id="activ-tabs"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="misty-card p-6">
+                    <h4 class="text-base font-semibold mb-1 text-gray-700">f(x) — Activation output</h4>
+                    <div id="activ-formula" class="text-sm text-gray-400 mb-3" style="min-height:28px;"></div>
+                    <div style="height:220px;position:relative;"><canvas id="activ-fn-canvas"></canvas></div>
+                </div>
+                <div class="misty-card p-6">
+                    <h4 class="text-base font-semibold mb-1 text-gray-700">f′(x) — Gradient signal through this layer</h4>
+                    <div id="activ-deriv-label" class="text-sm text-gray-400 mb-3" style="min-height:28px;"></div>
+                    <div style="height:220px;position:relative;"><canvas id="activ-df-canvas"></canvas></div>
+                </div>
+            </div>
+            <div class="misty-card p-6">
+                <h4 class="text-base font-semibold mb-4 text-gray-700">Properties</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="activ-props">
+                    <div class="text-sm text-gray-400 col-span-4">Select an activation above</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Build Your Own Network Section -->
     <section id="builder" class="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white/60 to-blue-50/60">
         <div class="max-w-7xl mx-auto">
@@ -1213,6 +1255,13 @@
                                     <span id="builder-status" class="font-medium text-amber-600">No layers</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Shape Flow Panel -->
+                        <div id="builder-shape-panel" class="mt-4 pt-4 border-t border-gray-200" style="display:none;">
+                            <h4 class="font-semibold text-gray-800 mb-2 text-sm">Shape Flow</h4>
+                            <div id="builder-shape-flow" class="space-y-0"></div>
+                            <div id="builder-shape-errors" class="mt-2 space-y-1"></div>
                         </div>
 
                         <!-- Builder Training Progress -->
@@ -3549,8 +3598,11 @@
                 return;
             }
 
+            const shapeResults = computeShapeFlow(builderLayers);
+
             builderLayers.forEach((layer, idx) => {
                 const def = layerDefinitions[layer.type];
+                const sr = shapeResults[idx];
                 // Connector between layers
                 if (idx > 0) {
                     const connector = document.createElement('div');
@@ -3559,7 +3611,8 @@
                 }
 
                 const el = document.createElement('div');
-                el.className = 'builder-layer';
+                const validCls = sr.error ? 'layer-error' : sr.warning ? 'layer-warn' : (builderLayers.length > 1 ? 'layer-ok' : '');
+                el.className = `builder-layer ${validCls}`;
                 el.draggable = true;
                 el.setAttribute('data-builder-id', layer.id);
 
@@ -3576,11 +3629,18 @@
                     </select>`;
                 }
 
+                const shapeNote = sr.error
+                    ? `<div class="shape-badge shape-err-msg">✗ ${sr.error}</div>`
+                    : sr.warning
+                    ? `<div class="shape-badge shape-warn-msg">⚠ ${sr.warning}</div>`
+                    : `<div class="shape-badge">→ ${sr.shape}</div>`;
+
                 el.innerHTML = `
                     <div class="layer-icon" style="background: linear-gradient(135deg, ${def.color}, ${def.color}dd);">${def.icon}</div>
                     <div class="layer-info">
                         <div class="layer-name">${def.name}</div>
                         <div class="layer-config">${def.hasUnits ? (def.unitLabel || 'units') + ': ' + layer.units : ''} ${layer.activation ? '· ' + layer.activation : ''} ${layer.rate != null ? '· rate: ' + layer.rate : ''}</div>
+                        ${shapeNote}
                     </div>
                     <div class="layer-controls">${controlsHTML}</div>
                     <button class="remove-layer" onclick="removeBuilderLayer('${layer.id}')" title="Remove layer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -3699,6 +3759,74 @@
             svg.innerHTML = svgContent;
         }
 
+        function computeShapeFlow(layers) {
+            const results = [];
+            let mode = 'none'; // 'none'|'1d'|'seq'|'spatial'
+            let lastShape = '—';
+            layers.forEach(layer => {
+                let shape = '?', error = null, warning = null;
+                switch (layer.type) {
+                    case 'input':
+                        if (results.some(r => r.layer.type === 'input')) error = 'Duplicate Input layer';
+                        shape = `(N, ${layer.units})`; mode = '1d'; break;
+                    case 'dense':
+                        if (mode === 'spatial') { error = 'Dense after Conv2D — add Flatten first'; shape = '?'; }
+                        else if (mode === 'seq') { shape = `(N, T, ${layer.units})`; }
+                        else { shape = `(N, ${layer.units})`; mode = '1d'; }
+                        break;
+                    case 'conv2d':
+                        if (mode === 'seq') error = 'Conv2D expects spatial input, not sequence';
+                        else if (mode === '1d') warning = 'Conv2D expects H×W spatial input — valid if Input carries image data';
+                        shape = `(N, H, W, ${layer.units})`; mode = 'spatial'; break;
+                    case 'maxpool':
+                        if (mode !== 'spatial') error = 'MaxPool2D requires spatial input — add Conv2D first';
+                        shape = mode === 'spatial' ? '(N, H/2, W/2, C)' : '?'; break;
+                    case 'flatten':
+                        if (mode === '1d') { warning = 'Input already 1D — Flatten has no effect'; shape = lastShape; }
+                        else { shape = mode === 'spatial' ? '(N, H×W×C)' : '(N, T×d)'; }
+                        mode = '1d'; break;
+                    case 'lstm':
+                        if (mode === 'spatial') error = 'LSTM expects sequence — add Flatten first';
+                        else if (mode === '1d') warning = 'LSTM expects (N,T,d) — treating as single-step';
+                        shape = `(N, ${layer.units})`; mode = '1d'; break;
+                    case 'attention':
+                        if (mode === 'spatial') error = 'Attention expects sequence input — add Flatten first';
+                        shape = mode === 'seq' ? '(N, T, d)' : `(N, T, ${layer.units})`; mode = 'seq'; break;
+                    case 'dropout': case 'batchnorm':
+                        shape = lastShape; break;
+                    case 'output':
+                        if (mode === 'spatial') error = 'Output requires 1D input — add Flatten + Dense first';
+                        if (results.some(r => r.layer.type === 'output')) error = 'Duplicate Output layer';
+                        shape = `(N, ${layer.units})`; mode = '1d'; break;
+                    default: shape = lastShape;
+                }
+                if (!error && shape !== '?') lastShape = shape;
+                results.push({ layer, shape, error, warning });
+            });
+            return results;
+        }
+
+        function renderShapeFlowPanel(results) {
+            const panel = document.getElementById('builder-shape-panel');
+            const flowEl = document.getElementById('builder-shape-flow');
+            const errEl = document.getElementById('builder-shape-errors');
+            if (!panel || !flowEl) return;
+            if (results.length === 0) { panel.style.display = 'none'; return; }
+            panel.style.display = 'block';
+            flowEl.innerHTML = results.map(r => {
+                const def = layerDefinitions[r.layer.type];
+                const dot = r.error ? `<span style="color:#ef4444;font-size:0.7rem;">✗</span>` : r.warning ? `<span style="color:#f59e0b;font-size:0.7rem;">⚠</span>` : `<span style="color:#10b981;font-size:0.65rem;">→</span>`;
+                const nameStr = def.name.split(' ')[0] + (r.layer.units ? `(${r.layer.units})` : '');
+                return `<div class="shape-row">${dot}<span class="shape-layer-name">${nameStr}</span><span class="shape-value">${r.shape}</span></div>`;
+            }).join('');
+            if (errEl) {
+                const issues = results.filter(r => r.error || r.warning);
+                errEl.innerHTML = issues.map(r =>
+                    r.error ? `<div class="shape-err-msg">✗ ${r.layer.type}: ${r.error}</div>` : `<div class="shape-warn-msg">⚠ ${r.layer.type}: ${r.warning}</div>`
+                ).join('');
+            }
+        }
+
         function updateBuilderStats() {
             document.getElementById('builder-layer-count').textContent = builderLayers.length;
 
@@ -3742,6 +3870,8 @@
                 statusEl.className = 'font-medium text-green-600';
                 trainBtn.disabled = false;
             }
+            // Shape flow
+            renderShapeFlowPanel(computeShapeFlow(builderLayers));
         }
 
         function clearBuilder() {
@@ -5048,6 +5178,126 @@
             };
         }, 0);
     });
+    </script>
+
+    <!-- §3.4 Activation Function Explorer -->
+    <script>
+    (function () {
+        'use strict';
+        const X = Array.from({length: 201}, (_, i) => parseFloat((-5 + i * 0.05).toFixed(3)));
+        const sig = x => 1 / (1 + Math.exp(-x));
+
+        const ACTIVATIONS = {
+            relu:      { name:'ReLU',        color:'#3b82f6', f: x => Math.max(0,x), df: x => x>0?1:0,
+                         formula:'\\text{ReLU}(x)=\\max(0,x)', deriv:"f'(x)=\\begin{cases}1&x>0\\\\0&x\\le0\\end{cases}",
+                         range:'[0, ∞)', diff0:'No (kink at 0)', saturates:'Left only', use:'Default for hidden layers (CNNs, MLPs)' },
+            sigmoid:   { name:'Sigmoid',     color:'#8b5cf6', f: sig, df: x => { const s=sig(x); return s*(1-s); },
+                         formula:'\\sigma(x)=\\dfrac{1}{1+e^{-x}}', deriv:"f'(x)=\\sigma(x)(1-\\sigma(x))",
+                         range:'(0, 1)', diff0:'Yes', saturates:'Both ends', use:'Output layer — binary classification' },
+            tanh:      { name:'Tanh',        color:'#10b981', f: Math.tanh, df: x => 1-Math.tanh(x)**2,
+                         formula:'\\tanh(x)=\\dfrac{e^x-e^{-x}}{e^x+e^{-x}}', deriv:"f'(x)=1-\\tanh^2(x)",
+                         range:'(-1, 1)', diff0:'Yes', saturates:'Both ends', use:'RNNs, LSTM gates (zero-centered)' },
+            gelu:      { name:'GELU',        color:'#f59e0b',
+                         f: x => x*0.5*(1+Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x**3))),
+                         df: x => { const c=Math.sqrt(2/Math.PI),t=Math.tanh(c*(x+0.044715*x**3)); return 0.5*(1+t)+x*0.5*(1-t*t)*c*(1+3*0.044715*x**2); },
+                         formula:'\\text{GELU}(x)=x\\cdot\\Phi(x)', deriv:"f'(x)=\\Phi(x)+x\\cdot\\phi(x)",
+                         range:'≈ (−0.17, ∞)', diff0:'Yes', saturates:'Left only (soft)', use:'Transformers — BERT, GPT' },
+            swish:     { name:'Swish',       color:'#06b6d4', f: x => x*sig(x), df: x => { const s=sig(x); return s+x*s*(1-s); },
+                         formula:'\\text{Swish}(x)=x\\cdot\\sigma(x)', deriv:"f'(x)=\\sigma(x)+x\\sigma(x)(1-\\sigma(x))",
+                         range:'≈ (−0.28, ∞)', diff0:'Yes', saturates:'Left only (soft)', use:'EfficientNet, MobileNetV4' },
+            leakyrelu: { name:'Leaky ReLU',  color:'#ef4444', f: x => x>0?x:0.01*x, df: x => x>0?1:0.01,
+                         formula:'f(x)=\\max(0.01x,\\,x)', deriv:"f'(x)=\\begin{cases}1&x>0\\\\0.01&x\\le0\\end{cases}",
+                         range:'(−∞, ∞)', diff0:'No (kink at 0)', saturates:'Neither', use:'When dead-ReLU neurons are a risk' },
+            elu:       { name:'ELU',         color:'#ec4899', f: x => x>0?x:(Math.exp(x)-1), df: x => x>0?1:Math.exp(x),
+                         formula:'\\text{ELU}(x)=\\begin{cases}x&x>0\\\\e^x-1&x\\le0\\end{cases}', deriv:"f'(x)=\\begin{cases}1&x>0\\\\e^x&x\\le0\\end{cases}",
+                         range:'(−1, ∞)', diff0:'Yes (smooth)', saturates:'Left only (soft)', use:'Self-normalizing networks' },
+        };
+
+        let fnChart = null, dfChart = null, activeKey = 'relu';
+
+        function buildTabs() {
+            const c = document.getElementById('activ-tabs');
+            if (!c) return;
+            Object.entries(ACTIVATIONS).forEach(([key, fn]) => {
+                const btn = document.createElement('button');
+                btn.id = 'activ-tab-' + key;
+                btn.className = 'activ-tab';
+                btn.textContent = fn.name;
+                btn.style.color = '#4b5563';
+                btn.onclick = () => selectActivation(key);
+                c.appendChild(btn);
+            });
+        }
+
+        function selectActivation(key) {
+            activeKey = key;
+            const fn = ACTIVATIONS[key];
+            const yFn = X.map(x => { const v=fn.f(x); return isFinite(v)?v:null; });
+            const yDf = X.map(x => { const v=fn.df(x); return isFinite(v)?v:null; });
+
+            // Tabs
+            Object.keys(ACTIVATIONS).forEach(k => {
+                const tab = document.getElementById('activ-tab-' + k);
+                if (!tab) return;
+                if (k === key) { tab.style.background = ACTIVATIONS[k].color; tab.style.borderColor = ACTIVATIONS[k].color; tab.style.color = '#fff'; }
+                else { tab.style.background = ''; tab.style.borderColor = '#e5e7eb'; tab.style.color = '#4b5563'; }
+            });
+
+            // Charts
+            if (fnChart) { fnChart.data.datasets[0].data = yFn.map((y,i)=>({x:X[i],y})); fnChart.data.datasets[0].borderColor = fn.color; fnChart.data.datasets[0].backgroundColor = fn.color+'18'; fnChart.update('none'); }
+            if (dfChart) { dfChart.data.datasets[0].data = yDf.map((y,i)=>({x:X[i],y})); dfChart.data.datasets[0].borderColor = fn.color; dfChart.data.datasets[0].backgroundColor = fn.color+'18'; dfChart.update('none'); }
+
+            // KaTeX formulas
+            renderKatex('activ-formula', fn.formula);
+            renderKatex('activ-deriv-label', fn.deriv);
+
+            // Properties
+            const p = document.getElementById('activ-props');
+            if (p) p.innerHTML = [
+                ['Range', `<code class="font-mono text-sm">${fn.range}</code>`],
+                ['Differentiable at 0', fn.diff0],
+                ['Saturation', fn.saturates],
+                ['Typical use', fn.use]
+            ].map(([k,v]) => `<div class="text-sm"><span class="text-gray-400 block text-xs uppercase font-semibold mb-1 tracking-wide">${k}</span>${v}</div>`).join('');
+        }
+
+        function renderKatex(id, latex) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (typeof katex !== 'undefined') {
+                try { katex.render(latex, el, {displayMode: false, throwOnError: false}); } catch(e) { el.textContent = latex; }
+            } else {
+                setTimeout(() => renderKatex(id, latex), 80);
+            }
+        }
+
+        function makeChart(canvasId, yData, color, yLabel) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return null;
+            const fn = ACTIVATIONS['relu'];
+            return new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: { datasets: [{ data: yData.map((y,i)=>({x:X[i],y})), borderColor: color, backgroundColor: color+'18', borderWidth: 2.5, fill: true, tension: 0.1, pointRadius: 0, spanGaps: false }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    animation: { duration: 200 },
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: { label: ctx => `${yLabel}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(4) : 'n/a'}` } } },
+                    scales: {
+                        x: { type: 'linear', min: -5, max: 5, grid: { color: ctx => ctx.tick.value === 0 ? '#94a3b8' : '#f1f5f9' }, title: { display: true, text: 'x', font: { size: 11 } } },
+                        y: { grid: { color: ctx => ctx.tick.value === 0 ? '#94a3b8' : '#f1f5f9' }, title: { display: true, text: yLabel, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            buildTabs();
+            const fn = ACTIVATIONS['relu'];
+            fnChart = makeChart('activ-fn-canvas', X.map(x=>fn.f(x)), fn.color, 'f(x)');
+            dfChart = makeChart('activ-df-canvas', X.map(x=>fn.df(x)), fn.color, "f'(x)");
+            selectActivation('relu');
+        });
+    })();
     </script>
 </body>
 </html>
