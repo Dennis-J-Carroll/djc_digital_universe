@@ -437,6 +437,13 @@
                         <button class="tab-btn" onclick="switchTab('warnings')">WARNINGS</button>
                         <button class="tab-btn" onclick="switchTab('sourceCode')">SOURCE CODE</button>
                         <button class="tab-btn" onclick="switchTab('devLens')">DEV-LENS</button>
+                        <button class="tab-btn" onclick="switchTab('security')">SECURITY</button>
+                        <button class="tab-btn" onclick="switchTab('deadCode')">DEAD CODE</button>
+                        <button class="tab-btn" onclick="switchTab('modernize')">MODERNIZE</button>
+                        <button class="tab-btn" onclick="switchTab('coupling')">COUPLING</button>
+                        <button class="tab-btn" onclick="switchTab('testQuality')">TESTS</button>
+                        <button class="tab-btn" onclick="switchTab('version')">VERSION</button>
+                        <button class="tab-btn" onclick="switchTab('concepts')">CONCEPTS</button>
                     </div>
                     
                     <div class="box-body" id="resultsBody" style="background-color: #161e2e;">
@@ -580,7 +587,55 @@
                                 <p style="color: var(--text-muted);">Select an architectural lens above to begin exploration.</p>
                             </div>
                         </div>
-                        
+
+                        <!-- TAB 10: SECURITY -->
+                        <div id="tab-security" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Security Analysis</h3>
+                            <div id="securityScore" style="margin-bottom: 15px;"></div>
+                            <div id="securityList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 11: DEAD CODE -->
+                        <div id="tab-deadCode" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Dead Code Detection</h3>
+                            <div id="deadCodeList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 12: MODERNIZE -->
+                        <div id="tab-modernize" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Modernization Hints</h3>
+                            <div id="modernizeList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 13: COUPLING -->
+                        <div id="tab-coupling" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Coupling &amp; Cohesion</h3>
+                            <h4 style="color: var(--accent-blue); margin: 10px 0 5px;">Classes — LCOM-4 (0 = cohesive, higher = fragmented)</h4>
+                            <div id="couplingClasses"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                            <h4 style="color: var(--accent-blue); margin: 15px 0 5px;">Functions — Fan-In / Fan-Out</h4>
+                            <div id="couplingFunctions"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 14: TEST QUALITY -->
+                        <div id="tab-testQuality" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Test Quality Estimation</h3>
+                            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 10px;">Minimum tests needed per function: max(branches, 1) + loops + exception paths.</p>
+                            <div id="testQualityList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 15: VERSION -->
+                        <div id="tab-version" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Python Version Requirements</h3>
+                            <div id="versionInfo"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
+                        <!-- TAB 16: CONCEPTS -->
+                        <div id="tab-concepts" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Concept Cards</h3>
+                            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 10px;">Interactive teaching cards for Python concepts detected in your code.</p>
+                            <div id="conceptCards"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -913,7 +968,8 @@ class AdvancedASTVisitor(ast.NodeVisitor):
             'has_yield': False,
             'complexity': 1,
             'statements': 0,
-            'body': body_source
+            'body': body_source,
+            'node': node
         }
         
         self.functions.append(func_info)
@@ -967,7 +1023,8 @@ class AdvancedASTVisitor(ast.NodeVisitor):
             'methods': [],
             'class_vars': [],
             'instance_vars': [],
-            'role': role
+            'role': role,
+            'node': node
         }
         self.classes.append(class_info)
         
@@ -1289,6 +1346,499 @@ class AdvancedASTVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+# --- Security Visitor ---
+_SECURITY_SEVERITY_WEIGHT = {"CRITICAL": 15, "HIGH": 8, "MEDIUM": 3, "LOW": 1}
+
+class SecurityVisitor(ast.NodeVisitor):
+    _SQL_NAMES = {"query", "sql", "statement", "cmd", "command", "q"}
+    _SECRET_NAMES = {"password", "passwd", "pwd", "secret", "api_key", "apikey",
+                     "token", "access_key", "secret_key", "private_key", "auth"}
+    _RANDOM_SEC_NAMES = {"token", "password", "passwd", "pwd", "secret", "key",
+                         "salt", "nonce", "otp", "session"}
+
+    def __init__(self, source_code):
+        self.source_lines = source_code.splitlines()
+        self.findings = []
+
+    def _snippet(self, node):
+        start = max(0, node.lineno - 1)
+        end = min(len(self.source_lines), getattr(node, 'end_lineno', node.lineno))
+        return '\n'.join(self.source_lines[start:end])[:120]
+
+    def _add(self, rule_id, severity, category, cwe, message, node, remediation, confidence="HIGH"):
+        self.findings.append({
+            'rule_id': rule_id, 'severity': severity, 'category': category,
+            'cwe_id': cwe, 'message': message, 'lineno': node.lineno,
+            'source_snippet': self._snippet(node),
+            'remediation': remediation, 'confidence': confidence,
+        })
+
+    def visit_Call(self, node):
+        func = node.func
+        if isinstance(func, ast.Name) and func.id in {"eval", "exec", "compile"}:
+            if node.args and not isinstance(node.args[0], ast.Constant):
+                self._add("SEC-001", "CRITICAL", "Code Injection", "CWE-94",
+                          f"Dynamic {func.id}() with non-literal argument — code injection risk.", node,
+                          f"Avoid {func.id}(). Use ast.literal_eval() for safe literal parsing.")
+        if isinstance(func, ast.Attribute):
+            shell_true = any(isinstance(kw.arg, str) and kw.arg == "shell"
+                             and isinstance(kw.value, ast.Constant) and kw.value.value is True
+                             for kw in node.keywords)
+            if shell_true:
+                self._add("SEC-002", "CRITICAL", "Command Injection", "CWE-78",
+                          "shell=True in subprocess call enables shell injection.", node,
+                          "Pass a list of arguments instead of a shell string. Remove shell=True.")
+            obj_name = getattr(func.value, 'id', '') if isinstance(func.value, ast.Name) else ''
+            if ((obj_name == "pickle" and func.attr == "loads") or
+                    (obj_name == "marshal" and func.attr == "load") or
+                    (obj_name == "yaml" and func.attr in {"unsafe_load", "load"})):
+                self._add("SEC-003", "HIGH", "Insecure Deserialization", "CWE-502",
+                          f"Unsafe deserialization via {obj_name}.{func.attr}() — arbitrary code execution risk.", node,
+                          "Use safe alternatives: json, yaml.safe_load(), or define a custom decoder.")
+            if obj_name == "hashlib" and func.attr in {"md5", "sha1"}:
+                self._add("SEC-004", "HIGH", "Weak Cryptography", "CWE-328",
+                          f"hashlib.{func.attr}() is cryptographically weak for security use.", node,
+                          "Use hashlib.sha256() or hashlib.sha3_256() for security-sensitive hashing.")
+            if func.attr == "mktemp":
+                self._add("SEC-010", "MEDIUM", "Insecure Temp File", "CWE-377",
+                          "tempfile.mktemp() is vulnerable to a time-of-check/time-of-use race.", node,
+                          "Use tempfile.mkstemp() or NamedTemporaryFile() which create the file atomically.")
+            if func.attr == "run":
+                debug_true = any(isinstance(kw.arg, str) and kw.arg == "debug"
+                                 and isinstance(kw.value, ast.Constant) and kw.value.value is True
+                                 for kw in node.keywords)
+                if debug_true:
+                    self._add("SEC-009", "HIGH", "Debug Mode Enabled", "CWE-489",
+                              "Debug mode enabled in production — exposes stack traces and interactive debugger.", node,
+                              "Set debug=False in production. Use environment variables to control debug mode.")
+        self.generic_visit(node)
+
+    @staticmethod
+    def _name_matches(name, keywords):
+        return any(kw in name.lower() for kw in keywords)
+
+    def visit_Assign(self, node):
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            tname = target.id
+            if self._name_matches(tname, self._SQL_NAMES) and isinstance(node.value, ast.JoinedStr):
+                if any(isinstance(v, ast.FormattedValue) for v in node.value.values):
+                    self._add("SEC-007", "CRITICAL", "SQL Injection", "CWE-89",
+                              f"Variable '{tname}' constructed via f-string — SQL injection risk.", node,
+                              "Use parameterized queries: cursor.execute(sql, (param,)) instead of string formatting.")
+            if (self._name_matches(tname, self._SECRET_NAMES)
+                    and isinstance(node.value, ast.Constant)
+                    and isinstance(node.value.value, str)
+                    and len(node.value.value) >= 6):
+                self._add("SEC-006", "CRITICAL", "Hard-coded Secret", "CWE-798",
+                          f"Hard-coded secret assigned to '{tname}'.", node,
+                          "Load secrets from environment variables or a secrets manager, never source code.")
+            if (self._name_matches(tname, self._RANDOM_SEC_NAMES)
+                    and isinstance(node.value, ast.Call)):
+                vfunc = node.value.func
+                rand_obj = (isinstance(vfunc, ast.Attribute)
+                            and isinstance(vfunc.value, ast.Name)
+                            and vfunc.value.id == "random")
+                if rand_obj:
+                    self._add("SEC-005", "MEDIUM", "Insecure Randomness", "CWE-338",
+                              f"random.{vfunc.attr}() used for security value '{tname}' — predictable.", node,
+                              "Use the secrets module (secrets.token_hex, secrets.randbelow) for security-sensitive values.")
+        self.generic_visit(node)
+
+    @staticmethod
+    def calculate_security_score(findings):
+        base = 100
+        for f in findings:
+            multiplier = 1.0 if f['confidence'] == "HIGH" else 0.6
+            base -= int(_SECURITY_SEVERITY_WEIGHT.get(f['severity'], 0) * multiplier)
+        return max(0, base)
+
+
+# --- Dead Code Detector ---
+class DeadCodeDetector:
+    _EXEMPT_NAMES = {"__init__", "__str__", "__repr__", "__main__"}
+
+    def __init__(self):
+        self.findings = []
+
+    def analyze(self, tree, visitor):
+        called_funcs = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    called_funcs.add(node.func.id)
+                elif isinstance(node.func, ast.Attribute):
+                    called_funcs.add(node.func.attr)
+        for func in visitor.functions:
+            if 'node' in func:
+                self._check_unreachable_in_stmts(func['node'].body)
+        for func in visitor.functions:
+            if func['class'] is not None:
+                continue
+            if self._is_exempt(func['name']):
+                continue
+            if func['name'] not in called_funcs:
+                self.findings.append({
+                    'type': 'unused_function', 'name': func['name'], 'line': func['line'],
+                    'message': f"Function '{func['name']}' is defined but never called.",
+                })
+
+    def _check_unreachable_in_stmts(self, stmts):
+        for i, stmt in enumerate(stmts):
+            if isinstance(stmt, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
+                for dead_stmt in stmts[i + 1:]:
+                    self.findings.append({
+                        'type': 'unreachable', 'line': dead_stmt.lineno, 'name': None,
+                        'message': f"Unreachable code at line {dead_stmt.lineno} (after unconditional {type(stmt).__name__}).",
+                    })
+                break
+
+    def _is_exempt(self, name):
+        if name in self._EXEMPT_NAMES:
+            return True
+        if name.startswith('__') and name.endswith('__'):
+            return True
+        if name.startswith('test_'):
+            return True
+        return False
+
+
+# --- Modernization Checker ---
+_TYPING_BUILTIN_MAP = {
+    'List': 'list', 'Dict': 'dict', 'Set': 'set', 'Tuple': 'tuple',
+    'FrozenSet': 'frozenset', 'Type': 'type',
+}
+
+class ModernizationChecker:
+    def __init__(self, source_code):
+        self.source_code = source_code
+        self.hints = []
+
+    def check(self):
+        try:
+            tree = ast.parse(self.source_code)
+        except SyntaxError:
+            return self.hints
+        self._check_format_strings(tree)
+        self._check_typing_imports(tree)
+        self._check_elif_chains(tree)
+        self._check_py2isms(tree)
+        self._check_ospath(tree)
+        self._check_walrus_opportunity(tree)
+        return self.hints
+
+    def _check_py2isms(self, tree):
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == 'has_key'):
+                self.hints.append({'type': 'py2_has_key', 'line': node.lineno,
+                                   'message': "Python 2 `.has_key()` removed in Python 3 — use the `in` operator.",
+                                   'example': "'key' in d  instead of  d.has_key('key')"})
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'xrange':
+                self.hints.append({'type': 'py2_xrange', 'line': node.lineno,
+                                   'message': "Python 2 `xrange()` removed in Python 3 — use `range()`.",
+                                   'example': "range(n)  instead of  xrange(n)"})
+
+    def _check_ospath(self, tree):
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == 'join'
+                    and isinstance(node.func.value, ast.Attribute)
+                    and node.func.value.attr == 'path'
+                    and isinstance(node.func.value.value, ast.Name)
+                    and node.func.value.value.id == 'os'):
+                self.hints.append({'type': 'use_pathlib', 'line': node.lineno,
+                                   'message': "Prefer pathlib over os.path.join (Python 3.4+).",
+                                   'example': "Path(a) / b  instead of  os.path.join(a, b)"})
+
+    def _check_walrus_opportunity(self, tree):
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.If):
+                continue
+            test_calls = {ast.dump(n) for n in ast.walk(node.test) if isinstance(n, ast.Call)}
+            if not test_calls:
+                continue
+            body_calls = set()
+            for stmt in node.body:
+                for n in ast.walk(stmt):
+                    if isinstance(n, ast.Call):
+                        body_calls.add(ast.dump(n))
+            if test_calls & body_calls:
+                self.hints.append({'type': 'use_walrus', 'line': node.lineno,
+                                   'message': "Repeated call in condition and body — use the walrus operator (Python 3.8+).",
+                                   'example': "if (n := len(data)) > 0: return n"})
+
+    def _check_format_strings(self, tree):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                if (isinstance(node.func, ast.Attribute) and node.func.attr == 'format'
+                        and isinstance(node.func.value, ast.Constant)
+                        and isinstance(node.func.value.value, str)):
+                    self.hints.append({'type': 'use_fstring', 'line': node.lineno,
+                                       'message': 'Use f-string instead of .format() (Python 3.6+)',
+                                       'example': 'f"Hello, {name}" instead of "Hello, {}".format(name)'})
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
+                if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
+                    self.hints.append({'type': 'use_fstring', 'line': node.lineno,
+                                       'message': 'Use f-string instead of % formatting (Python 3.6+)',
+                                       'example': 'f"Hello, {name}" instead of "Hello, %s" % name'})
+
+    def _check_typing_imports(self, tree):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module == 'typing':
+                for alias in node.names:
+                    if alias.name in _TYPING_BUILTIN_MAP:
+                        self.hints.append({
+                            'type': 'use_builtin_generics', 'line': node.lineno,
+                            'message': f"Use built-in `{_TYPING_BUILTIN_MAP[alias.name]}` instead of `typing.{alias.name}` (Python 3.9+)",
+                            'example': f'list[int] instead of List[int]'})
+
+    def _check_elif_chains(self, tree):
+        seen = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.If) and id(node) not in seen:
+                chain = self._get_elif_chain(node)
+                for n in chain:
+                    seen.add(id(n))
+                if len(chain) >= 3:
+                    compared_vars = set()
+                    for if_node in chain:
+                        test = if_node.test
+                        if isinstance(test, ast.Compare) and isinstance(test.left, ast.Name):
+                            compared_vars.add(test.left.id)
+                    if len(compared_vars) == 1:
+                        self.hints.append({'type': 'use_match_case', 'line': node.lineno,
+                                           'message': f"Consider match/case instead of if/elif chain on '{next(iter(compared_vars))}' (Python 3.10+)",
+                                           'example': 'match status:\n    case "a": ...'})
+
+    def _get_elif_chain(self, node):
+        chain = [node]
+        orelse = node.orelse
+        while len(orelse) == 1 and isinstance(orelse[0], ast.If):
+            chain.append(orelse[0])
+            orelse = orelse[0].orelse
+        return chain
+
+
+# --- Coupling & Cohesion ---
+class CouplingCohesionAnalyzer:
+    @staticmethod
+    def _method_attrs_and_calls(method):
+        attrs, calls = set(), set()
+        for n in ast.walk(method):
+            if (isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+                    and n.value.id == 'self'):
+                if isinstance(getattr(n, 'ctx', None), (ast.Load, ast.Store)):
+                    attrs.add(n.attr)
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and isinstance(n.func.value, ast.Name) and n.func.value.id == 'self'):
+                calls.add(n.func.attr)
+        return attrs, calls
+
+    @classmethod
+    def compute_lcom(cls, class_node):
+        methods = [n for n in class_node.body
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        if len(methods) <= 1:
+            return 0
+        names = [m.name for m in methods]
+        attrs = {}
+        calls_map = {}
+        for m in methods:
+            a, c = cls._method_attrs_and_calls(m)
+            attrs[m.name] = a - {m.name}
+            calls_map[m.name] = c
+        parent = {n: n for n in names}
+        def find(x):
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+        def union(a, b):
+            parent[find(a)] = find(b)
+        for i, m1 in enumerate(names):
+            for m2 in names[i + 1:]:
+                if bool(attrs[m1] & attrs[m2]) or (m2 in calls_map[m1]) or (m1 in calls_map[m2]):
+                    union(m1, m2)
+        components = len({find(n) for n in names})
+        return max(components - 1, 0)
+
+    @classmethod
+    def analyze(cls, visitor):
+        fan_out = {}
+        fan_in = {}
+        for edge in visitor.call_graph:
+            caller, callee = edge['caller'], edge['callee']
+            fan_out.setdefault(caller, set()).add(callee)
+            fan_in.setdefault(callee, set()).add(caller)
+        func_metrics = []
+        for func in visitor.functions:
+            name = func['name']
+            func_metrics.append({
+                'name': name, 'class': func['class'],
+                'fan_in': len(fan_in.get(name, set())),
+                'fan_out': len(fan_out.get(name, set())),
+            })
+        class_metrics = []
+        for c in visitor.classes:
+            if 'node' in c:
+                class_metrics.append({
+                    'name': c['name'],
+                    'lcom': cls.compute_lcom(c['node']),
+                    'method_count': len([m for m in c['node'].body
+                                         if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]),
+                })
+        return {'functions': func_metrics, 'classes': class_metrics}
+
+
+# --- Test Quality Estimator ---
+class TestQualityEstimator:
+    @staticmethod
+    def estimate(func_node):
+        branches = exceptions = loops = 0
+        for n in ast.walk(func_node):
+            if isinstance(n, ast.If):
+                branches += 1
+            elif isinstance(n, (ast.For, ast.While, ast.AsyncFor)):
+                loops += 1
+            elif isinstance(n, ast.ExceptHandler):
+                exceptions += 1
+        minimum = max(branches, 1) + exceptions + loops
+        status = "low" if minimum <= 1 else ("moderate" if minimum <= 4 else "high")
+        return {
+            'name': getattr(func_node, 'name', '<lambda>'),
+            'branches': branches, 'loops': loops, 'exceptions': exceptions,
+            'minimum_tests_needed': minimum, 'status': status,
+        }
+
+
+# --- Version Detector ---
+class VersionDetector:
+    def __init__(self, source_code):
+        self.source_code = source_code
+
+    def detect(self):
+        min_version = [3, 0]
+        reasons = []
+        try:
+            tree = ast.parse(self.source_code)
+        except SyntaxError:
+            return {'min_version': min_version, 'reasons': reasons}
+        def require(ver, feature, node):
+            nonlocal min_version
+            if ver > min_version:
+                min_version = ver[:]
+            reasons.append({'version': ver[:], 'feature': feature, 'line': getattr(node, 'lineno', 0)})
+        for node in ast.walk(tree):
+            if isinstance(node, ast.JoinedStr):
+                require([3, 6], "f-string", node)
+            elif isinstance(node, ast.NamedExpr):
+                require([3, 8], "walrus operator (:=)", node)
+            elif isinstance(node, ast.Match):
+                require([3, 10], "match/case", node)
+            elif isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
+                if node.value.id in ('list', 'dict', 'set', 'tuple', 'frozenset', 'type'):
+                    require([3, 9], f"builtin generic {node.value.id}[...]", node)
+        return {'min_version': min_version, 'reasons': reasons}
+
+
+# --- Concept Cards + Detector ---
+CONCEPT_CARDS = {
+    "decorators": {
+        "what": "A decorator wraps a function to add behavior without changing its body.",
+        "why": "Separates cross-cutting concerns (logging, caching, auth) from business logic.",
+        "how": "Define a wrapper that calls the original; return it. Use @functools.wraps(func).",
+        "common_mistakes": "Forgetting @wraps loses the function's name and docstring.",
+        "practice": "Write a @timer decorator that prints how long a function takes.",
+    },
+    "list_comprehensions": {
+        "what": "A concise expression that builds a list by transforming/filtering an iterable.",
+        "why": "More readable and usually faster than an explicit append loop.",
+        "how": "[expr for item in iterable if condition].",
+        "common_mistakes": "Nesting too deeply hurts readability — use a loop or generator instead.",
+        "practice": "Rewrite a for-append loop that squares positive numbers as a comprehension.",
+    },
+    "generators": {
+        "what": "A function using `yield` that produces values lazily, one at a time.",
+        "why": "Constant memory for large/infinite sequences; values computed on demand.",
+        "how": "Use `yield` in a function; iterate with for or next().",
+        "common_mistakes": "Reusing an exhausted generator — they iterate only once.",
+        "practice": "Write a generator that yields the Fibonacci sequence.",
+    },
+    "context_managers": {
+        "what": "An object used with `with` that sets up and tears down a resource.",
+        "why": "Guarantees cleanup (closing files, releasing locks) even on exceptions.",
+        "how": "Use `with open(...) as f:` or implement __enter__/__exit__ or @contextmanager.",
+        "common_mistakes": "Manually closing resources instead of using `with`.",
+        "practice": "Write a context manager that times the code inside its block.",
+    },
+    "async_programming": {
+        "what": "Coroutines defined with `async def` and awaited with `await`.",
+        "why": "Efficient concurrency for I/O-bound work without threads.",
+        "how": "Define `async def`, `await` coroutines, run with asyncio.run().",
+        "common_mistakes": "Calling a coroutine without awaiting it — it never runs.",
+        "practice": "Write an async function that awaits asyncio.sleep then returns a value.",
+    },
+    "type_annotations": {
+        "what": "Hints that declare expected argument and return types.",
+        "why": "Enable static type checking, better editor support, and clearer intent.",
+        "how": "def f(x: int) -> str: ...  Use X | None for optionals (3.10+).",
+        "common_mistakes": "Assuming annotations are enforced at runtime — they are not.",
+        "practice": "Add complete type hints to an untyped function.",
+    },
+    "dataclasses": {
+        "what": "Classes decorated with @dataclass that auto-generate __init__, __repr__, __eq__.",
+        "why": "Removes boilerplate for data-holding classes.",
+        "how": "from dataclasses import dataclass; @dataclass class Point: x: int.",
+        "common_mistakes": "Using a mutable default (list) without field(default_factory=...).",
+        "practice": "Convert a plain class with a verbose __init__ into a dataclass.",
+    },
+    "exception_handling": {
+        "what": "try/except blocks that catch and respond to errors.",
+        "why": "Lets programs recover gracefully instead of crashing.",
+        "how": "Catch specific exceptions; use else/finally where appropriate.",
+        "common_mistakes": "Bare `except:` hides bugs — catch specific exception types.",
+        "practice": "Wrap a risky call so a ValueError is caught and logged.",
+    },
+}
+
+class ConceptDetector:
+    def __init__(self, source_code):
+        self.source_code = source_code
+
+    def detect(self):
+        try:
+            tree = ast.parse(self.source_code)
+        except SyntaxError:
+            return []
+        found = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.decorator_list:
+                found.add("decorators")
+            if isinstance(node, ast.ListComp):
+                found.add("list_comprehensions")
+            if isinstance(node, (ast.Yield, ast.YieldFrom)):
+                found.add("generators")
+            if isinstance(node, (ast.With, ast.AsyncWith)):
+                found.add("context_managers")
+            if isinstance(node, (ast.AsyncFunctionDef, ast.Await)):
+                found.add("async_programming")
+            if isinstance(node, (ast.AnnAssign, ast.arg)) and getattr(node, 'annotation', None):
+                found.add("type_annotations")
+            if isinstance(node, ast.ClassDef) and any('dataclass' in ast.unparse(d) for d in node.decorator_list):
+                found.add("dataclasses")
+            if isinstance(node, ast.Try):
+                found.add("exception_handling")
+        cards = []
+        for concept in found:
+            if concept in CONCEPT_CARDS:
+                card = {'concept': concept}
+                card.update(CONCEPT_CARDS[concept])
+                cards.append(card)
+        return cards
+
+
 def full_ast_analysis(raw_code):
     tree = ast.parse(raw_code)
     visitor = AdvancedASTVisitor(raw_code)
@@ -1311,6 +1861,37 @@ def full_ast_analysis(raw_code):
                 'line': imp['line']
             })
             
+    # NEW: Security analysis
+    sec_visitor = SecurityVisitor(raw_code)
+    sec_visitor.visit(tree)
+    security_findings = sec_visitor.findings
+    security_score = SecurityVisitor.calculate_security_score(security_findings)
+
+    # NEW: Dead code detection (uses 'node' in func records)
+    dead_detector = DeadCodeDetector()
+    dead_detector.analyze(tree, visitor)
+
+    # NEW: Modernization hints
+    modernization_hints = ModernizationChecker(raw_code).check()
+
+    # NEW: Coupling & Cohesion (uses 'node' in class records)
+    coupling = CouplingCohesionAnalyzer.analyze(visitor)
+
+    # NEW: Test quality (uses 'node' in func records)
+    test_quality = [TestQualityEstimator.estimate(f['node']) for f in visitor.functions if 'node' in f]
+
+    # NEW: Version requirements
+    version_info = VersionDetector(raw_code).detect()
+
+    # NEW: Concept cards
+    concept_cards = ConceptDetector(raw_code).detect()
+
+    # Strip AST node references before JSON serialization
+    for f in visitor.functions:
+        f.pop('node', None)
+    for c in visitor.classes:
+        c.pop('node', None)
+
     # Compute Metrics
     lines = raw_code.splitlines()
     physical_loc = len(lines)
@@ -1438,7 +2019,17 @@ def full_ast_analysis(raw_code):
         'hardcoded_paths': visitor.hardcoded_paths,
         'abc_classes': visitor.abc_classes,
         'has_main_block': visitor.has_main_block,
-        'concurrency_libraries': list(set(visitor.concurrency_libraries))
+        'concurrency_libraries': list(set(visitor.concurrency_libraries)),
+
+        # v3 features
+        'security_findings': security_findings,
+        'security_score': security_score,
+        'dead_code': dead_detector.findings,
+        'modernization_hints': modernization_hints,
+        'coupling': coupling,
+        'test_quality': test_quality,
+        'version_info': version_info,
+        'concept_cards': concept_cards,
     }
 `;
                 
@@ -1738,7 +2329,185 @@ json.dumps(result)
             
             // Populate architectural lens
             selectLens(1);
-            
+
+            // --- SECURITY TAB ---
+            const sevColor = {CRITICAL: '#ef4444', HIGH: '#f97316', MEDIUM: '#eab308', LOW: '#6b7280'};
+            const score = analysis.security_score != null ? analysis.security_score : 100;
+            const scoreColor = score >= 80 ? 'var(--success-color)' : score >= 50 ? '#eab308' : '#ef4444';
+            document.getElementById('securityScore').innerHTML =
+                `<div class="metric-card" style="display:inline-block; min-width:160px;">
+                    <div style="color:var(--text-secondary);">Security Score</div>
+                    <div class="metric-val" style="color:${scoreColor};">${score}</div>
+                    <div style="font-size:11px;">${score >= 80 ? 'Good' : score >= 50 ? 'Needs attention' : 'Critical issues'}</div>
+                </div>`;
+            let secHtml = '';
+            if (analysis.security_findings && analysis.security_findings.length > 0) {
+                secHtml = '<table><thead><tr><th>Rule</th><th>Severity</th><th>Category</th><th>CWE</th><th>Line</th><th>Message</th><th>Remediation</th></tr></thead><tbody>';
+                analysis.security_findings.forEach(f => {
+                    const color = sevColor[f.severity] || '#6b7280';
+                    secHtml += `<tr>
+                        <td style="font-weight:bold;">${f.rule_id}</td>
+                        <td style="color:${color};font-weight:bold;">${f.severity}</td>
+                        <td>${f.category}</td>
+                        <td style="color:var(--text-muted);">${f.cwe_id}</td>
+                        <td>${f.lineno}</td>
+                        <td>${escapeHtml(f.message)}</td>
+                        <td style="font-size:11px;color:var(--text-secondary);">${escapeHtml(f.remediation)}</td>
+                    </tr>`;
+                });
+                secHtml += '</tbody></table>';
+            } else {
+                secHtml = '<div class="warning-card" style="background-color:var(--success-color);border:none;"><div class="warning-title">No security issues found</div><div class="warning-body">No known vulnerability patterns detected in this code.</div></div>';
+            }
+            document.getElementById('securityList').innerHTML = secHtml;
+
+            // --- DEAD CODE TAB ---
+            let deadHtml = '';
+            if (analysis.dead_code && analysis.dead_code.length > 0) {
+                analysis.dead_code.forEach(d => {
+                    const icon = d.type === 'unused_function' ? '[UNUSED]' : '[UNREACHABLE]';
+                    deadHtml += `<div class="warning-card" style="border-left-color:#f97316;">
+                        <div class="warning-title" style="color:#f97316;">${icon} Line ${d.line}</div>
+                        <div class="warning-body">${escapeHtml(d.message)}</div>
+                    </div>`;
+                });
+            } else {
+                deadHtml = '<div class="warning-card" style="background-color:var(--success-color);border:none;"><div class="warning-title">No dead code detected</div><div class="warning-body">All functions are called and no unreachable statements found.</div></div>';
+            }
+            document.getElementById('deadCodeList').innerHTML = deadHtml;
+
+            // --- MODERNIZE TAB ---
+            const modernTypeLabel = {
+                use_fstring: 'F-STRING', use_builtin_generics: 'GENERICS',
+                use_match_case: 'MATCH/CASE', py2_has_key: 'PY2 HAS_KEY',
+                py2_xrange: 'PY2 XRANGE', use_pathlib: 'PATHLIB', use_walrus: 'WALRUS',
+            };
+            let modernHtml = '';
+            if (analysis.modernization_hints && analysis.modernization_hints.length > 0) {
+                modernHtml = '<table><thead><tr><th>Line</th><th>Type</th><th>Suggestion</th><th>Example</th></tr></thead><tbody>';
+                analysis.modernization_hints.forEach(h => {
+                    modernHtml += `<tr>
+                        <td>${h.line}</td>
+                        <td><span class="keyword-tag">${modernTypeLabel[h.type] || h.type.toUpperCase()}</span></td>
+                        <td>${escapeHtml(h.message)}</td>
+                        <td><code style="font-size:11px;">${escapeHtml(h.example || '')}</code></td>
+                    </tr>`;
+                });
+                modernHtml += '</tbody></table>';
+            } else {
+                modernHtml = '<div class="warning-card" style="background-color:var(--success-color);border:none;"><div class="warning-title">Already modern!</div><div class="warning-body">No outdated patterns detected.</div></div>';
+            }
+            document.getElementById('modernizeList').innerHTML = modernHtml;
+
+            // --- COUPLING TAB ---
+            let couplingClassHtml = '';
+            if (analysis.coupling && analysis.coupling.classes && analysis.coupling.classes.length > 0) {
+                couplingClassHtml = '<table><thead><tr><th>Class</th><th>LCOM-4</th><th>Methods</th><th>Assessment</th></tr></thead><tbody>';
+                analysis.coupling.classes.forEach(c => {
+                    const lcomColor = c.lcom === 0 ? 'var(--success-color)' : c.lcom <= 2 ? '#eab308' : '#ef4444';
+                    const lcomLabel = c.lcom === 0 ? 'Cohesive' : c.lcom <= 2 ? 'Moderate fragmentation' : 'High fragmentation — consider splitting';
+                    couplingClassHtml += `<tr>
+                        <td class="function-name">${c.name}</td>
+                        <td style="color:${lcomColor};font-weight:bold;">${c.lcom}</td>
+                        <td>${c.method_count}</td>
+                        <td style="font-size:12px;">${lcomLabel}</td>
+                    </tr>`;
+                });
+                couplingClassHtml += '</tbody></table>';
+            } else {
+                couplingClassHtml = '<p style="color:var(--text-muted);">No classes to analyze.</p>';
+            }
+            document.getElementById('couplingClasses').innerHTML = couplingClassHtml;
+
+            let couplingFuncHtml = '';
+            if (analysis.coupling && analysis.coupling.functions && analysis.coupling.functions.length > 0) {
+                couplingFuncHtml = '<table><thead><tr><th>Function</th><th>Class</th><th>Fan-In</th><th>Fan-Out</th></tr></thead><tbody>';
+                analysis.coupling.functions.forEach(f => {
+                    couplingFuncHtml += `<tr>
+                        <td class="function-name">${f.name}()</td>
+                        <td>${f.class || '—'}</td>
+                        <td>${f.fan_in}</td>
+                        <td>${f.fan_out}</td>
+                    </tr>`;
+                });
+                couplingFuncHtml += '</tbody></table>';
+            } else {
+                couplingFuncHtml = '<p style="color:var(--text-muted);">No functions to analyze.</p>';
+            }
+            document.getElementById('couplingFunctions').innerHTML = couplingFuncHtml;
+
+            // --- TEST QUALITY TAB ---
+            let testHtml = '';
+            if (analysis.test_quality && analysis.test_quality.length > 0) {
+                testHtml = '<table><thead><tr><th>Function</th><th>Branches</th><th>Loops</th><th>Exception Paths</th><th>Min Tests</th><th>Complexity</th></tr></thead><tbody>';
+                analysis.test_quality.forEach(t => {
+                    const statusColor = t.status === 'low' ? 'var(--success-color)' : t.status === 'moderate' ? '#eab308' : '#ef4444';
+                    testHtml += `<tr>
+                        <td class="function-name">${t.name}()</td>
+                        <td>${t.branches}</td>
+                        <td>${t.loops}</td>
+                        <td>${t.exceptions}</td>
+                        <td style="font-weight:bold;color:${statusColor};">${t.minimum_tests_needed}</td>
+                        <td style="color:${statusColor};">${t.status}</td>
+                    </tr>`;
+                });
+                testHtml += '</tbody></table>';
+            } else {
+                testHtml = '<p style="color:var(--text-muted);">No functions defined.</p>';
+            }
+            document.getElementById('testQualityList').innerHTML = testHtml;
+
+            // --- VERSION TAB ---
+            let versionHtml = '';
+            if (analysis.version_info) {
+                const v = analysis.version_info;
+                const verStr = 'Python ' + v.min_version.join('.');
+                versionHtml = `<div class="metric-card" style="display:inline-block;min-width:200px;margin-bottom:15px;">
+                    <div style="color:var(--text-secondary);">Minimum Required Version</div>
+                    <div class="metric-val" style="font-size:22px;">${verStr}</div>
+                </div>`;
+                if (v.reasons && v.reasons.length > 0) {
+                    versionHtml += '<table><thead><tr><th>Feature</th><th>Requires</th><th>Line</th></tr></thead><tbody>';
+                    v.reasons.forEach(r => {
+                        versionHtml += `<tr>
+                            <td>${escapeHtml(r.feature)}</td>
+                            <td>Python ${r.version.join('.')}</td>
+                            <td>${r.line}</td>
+                        </tr>`;
+                    });
+                    versionHtml += '</tbody></table>';
+                } else {
+                    versionHtml += '<p style="color:var(--text-muted);">No version-specific features detected (compatible with Python 3.0+).</p>';
+                }
+            } else {
+                versionHtml = '<p style="color:var(--text-muted);">No version data available.</p>';
+            }
+            document.getElementById('versionInfo').innerHTML = versionHtml;
+
+            // --- CONCEPT CARDS TAB ---
+            let conceptHtml = '';
+            if (analysis.concept_cards && analysis.concept_cards.length > 0) {
+                analysis.concept_cards.forEach(card => {
+                    const title = card.concept.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    conceptHtml += `
+                    <div class="warning-card" style="background-color:#111827;border:1px solid var(--border-color);margin-bottom:15px;">
+                        <div class="warning-title" style="color:var(--accent-blue);font-size:15px;">${title}</div>
+                        <div class="warning-body">
+                            <p><strong>What:</strong> ${escapeHtml(card.what)}</p>
+                            <p style="margin-top:6px;"><strong>Why:</strong> ${escapeHtml(card.why)}</p>
+                            <p style="margin-top:6px;"><strong>How:</strong> ${escapeHtml(card.how)}</p>
+                            <p style="margin-top:6px;color:#ef4444;"><strong>Common mistake:</strong> ${escapeHtml(card.common_mistakes)}</p>
+                            <div style="margin-top:8px;border-left:2px solid var(--accent-blue);padding-left:8px;">
+                                <strong style="color:var(--accent-blue);">Practice:</strong> ${escapeHtml(card.practice)}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                conceptHtml = '<p style="color:var(--text-muted);">No notable Python concepts detected. Try adding decorators, generators, async, comprehensions, or exception handling.</p>';
+            }
+            document.getElementById('conceptCards').innerHTML = conceptHtml;
+
             // Show export button
             document.getElementById('exportBtnContainer').classList.remove('hidden');
         }
