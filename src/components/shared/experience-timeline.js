@@ -43,7 +43,7 @@ const experiences = [
     current: true,
     icon: <CodeIcon />,
     responsibilities: [
-      "Built 24+ browser-based interactive applications — neural network visualizers, Bayesian analytics dashboards, mechanistic interpretability tools, generative audio/visual systems — all running in the browser with no install required.",
+      "Built 26+ browser-based interactive applications — neural network visualizers, Bayesian analytics dashboards, mechanistic interpretability tools, generative audio/visual systems — all running in the browser with no install required.",
       "Designed and implemented ML pipelines in Python using TensorFlow, PyTorch, Scikit-learn, and PyMC; deployed interactive frontends with React, Gatsby, Three.js, and TensorFlow.js.",
       "Authored research-level interpretability tooling for transformer model analysis, including an attention-head visualizer and a structured annotation system for MLP blocks.",
       "Wrote and self-published three original fictional universes — a post-humanity sci-fi saga, a space opera, and a secondary-world fantasy — developed in parallel with technical work.",

@@ -135,7 +135,7 @@ const AboutPage = ({ location }) => {
             >
               <p>
                 I build interactive tools that make complex ideas intuitive. Over the past 5 years,
-                I've created 24+ standalone web applications spanning neural network visualizations,
+                I've created 26+ standalone web applications spanning neural network visualizations,
                 Bayesian analytics dashboards, real-time ML training environments, and mathematical
                 exploration tools — all designed to run in the browser.
               </p>

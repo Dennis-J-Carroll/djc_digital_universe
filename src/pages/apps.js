@@ -173,9 +173,16 @@ const featuredProjects = [
   },
   {
     title: "Personal Portfolio Website",
-    description: "This website - a modern, performant Gatsby site with React components, multiple themes, and 24+ standalone web applications.",
+    description: "This website - a modern, performant Gatsby site with React components, multiple themes, and 26+ standalone web applications.",
     tech: ["React", "Gatsby", "Tailwind CSS", "Framer Motion"],
     github: "https://github.com/Dennis-J-Carroll/personal-website"
+  },
+  {
+    title: "repo-tester",
+    description: "GitHub repository safety scanner — detects malicious code patterns, supply chain risks, and repo health issues. Runs three parallel scanners: malicious pattern detection (obfuscation, backdoors, credential theft), supply chain analysis via OSV database, and repo health metrics. Available on PyPI.",
+    tech: ["Python", "Security", "AST Analysis", "OSV API", "CLI"],
+    github: "https://github.com/Dennis-J-Carroll/repo-tester",
+    demo: "https://pypi.org/project/repo-tester/"
   }
 ];
 
