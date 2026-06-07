@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AST Python Protocol - TUI Explorer</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #111827;
+            --border-color: #4b5563;
+            --text-primary: #f9fafb;
+            --text-secondary: #cbd5e1;
+            --text-muted: #6b7280;
+            --accent-blue: #38bdf8;
+            --accent-gray: #9ca3af;
+            --success-color: #1e3a8a;
+            --warning-color: #374151;
+            --error-color: #7f1d1d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            background-color: var(--panel-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px double var(--border-color);
+            padding-bottom: 12px;
+        }
+        
+        .header h1 {
+            color: var(--text-primary);
+            font-size: 20px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        
+        .header p {
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 550px;
+        }
+        
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .box-panel {
+            border: 1px solid var(--border-color);
+            background-color: #161e2e;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .box-header {
+            background-color: #1f2937;
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: bold;
+            color: var(--accent-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .box-body {
+            padding: 12px;
+            flex: 1;
+            overflow: auto;
+        }
+        
+        .editor-container {
+            display: flex;
+            flex-direction: row;
+            border: 1px solid var(--border-color);
+            background-color: #0b0f19;
+            height: 100%;
+            min-height: 400px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .editor-container:focus-within {
+            border-color: var(--accent-blue);
+        }
+        
+        .gutter {
+            width: 45px;
+            background-color: #080c14;
+            border-right: 1px solid #1e293b;
+            color: var(--text-muted);
+            text-align: right;
+            padding: 12px 8px 12px 0;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow: hidden;
+            user-select: none;
+            box-sizing: border-box;
+            white-space: pre;
+        }
+        
+        textarea {
+            flex: 1;
+            height: 100%;
+            background-color: transparent;
+            color: var(--text-primary);
+            border: none;
+            font-family: inherit;
+            font-size: 13px;
+            padding: 12px;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 8px 15px;
+            background-color: #1f2937;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: var(--accent-blue);
+            color: var(--bg-color);
+            border-color: var(--accent-blue);
+        }
+        
+        button:disabled {
+            color: var(--text-muted);
+            border-color: #374151;
+            cursor: not-allowed;
+        }
+        
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #1f2937;
+            overflow-x: auto;
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-right: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: none;
+        }
+        
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background-color: #111827;
+        }
+        
+        .tab-btn.active {
+            color: var(--accent-blue);
+            background-color: #161e2e;
+            border-bottom: 2px solid var(--accent-blue);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            height: 100%;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--accent-blue);
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .ascii-art {
+            color: var(--accent-blue);
+            font-size: 10px;
+            line-height: 1.2;
+            white-space: pre;
+            margin-bottom: 5px;
+        }
+        
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        
+        th {
+            background-color: #1f2937;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #1c2535;
+        }
+        
+        /* Colors for different categories */
+        .function-name { color: var(--text-primary); font-weight: bold; }
+        .class-name { color: var(--text-primary); font-weight: bold; }
+        .keyword-tag { color: var(--accent-blue); }
+        .string-literal { color: var(--text-secondary); }
+        
+        /* Metric display */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .metric-card {
+            border: 1px solid var(--border-color);
+            background-color: #111827;
+            padding: 10px;
+        }
+        
+        .metric-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin: 5px 0;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #1f2937;
+            border: 1px solid var(--border-color);
+            margin-top: 5px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-blue);
+        }
+        
+        /* Call graph list */
+        .tree-node {
+            margin-left: 20px;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        .tree-node::before {
+            content: "├─";
+            position: absolute;
+            left: -10px;
+            color: var(--border-color);
+        }
+        
+        .tree-node:last-child::before {
+            content: "└─";
+        }
+        
+        /* Code Preview syntax styling */
+        pre.code-preview {
+            background-color: #0b0f19;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            overflow: auto;
+            max-height: 250px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        /* Anti-patterns */
+        .warning-card {
+            border-left: 4px solid var(--border-color);
+            background-color: var(--warning-color);
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .warning-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        
+        .warning-body {
+            color: var(--text-secondary);
+        }
+        
+        .concept-pill {
+            display: inline-block;
+            background-color: #1f2937;
+            border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="ascii-art">
+   ______   __  __  ______        ______   __  __  ______  __  __  ______   __   __   ______   ______   ______  ______  ______  ______   ______   __      
+  /\  __ \ /\ \_\ \/\  ___\      /\  __ \ /\ \_\ \/\__  _\/\ \_\ \/\  __ \ /\ "-.\ \ /\  ___\ /\  __ \ /\  == \/\__  _\/\  ___\/\  ___\ /\  ___\ /\ \     
+  \ \  __ \\ \____ \ \___  \     \ \  __ \\ \____ \/_/\ \/\ \  __ \ \  __ \\ \ \-.  \\ \  __\ \ \  __ \\ \  __< \/_/\ \/\ \  __\\ \  __\\ \  __\ \ \ \____
+   \ \_\ \_\\/\_____\/\_____\     \ \_\ \_\\/\_____\  \ \_\ \ \_\ \_\ \_\ \_\\ \_\\"\ _\\ \_\    \ \_\ \_\\ \_\ \_\  \ \_\ \ \_____\ \_____\ \_____\ \_____\
+    \/_/\/_/ \/_____/\/_____/      \/_/\/_/ \/_____/   \/_/  \/_/\/_/\/_/\/_/ \/_/ \/_/ \/_/     \/_/\/_/ \/_/ /_/   \/_/  \/_____/\/_____/\/_____/\/_____/
+            </div>
+            <h1>AST PYTHON PROTOCOL - TERMINAL EXPLORER v2.0</h1>
+            <p>Upload Python scripts and explore their AST layout, metrics, control flow, call graphs and warnings</p>
+        </div>
+        
+        <div class="main-layout">
+            <!-- Left Panel: Input -->
+            <div class="left-column">
+                <div class="box-panel" style="flex: 1;">
+                    <div class="box-header">
+                        <span>[ INPUT EDITOR ]</span>
+                        <span id="editorStats" style="font-size: 11px; font-weight: normal;">0 chars</span>
+                    </div>
+                    <div class="box-body" style="padding: 0;">
+                        <div class="editor-container">
+                            <div id="gutter" class="gutter">1</div>
+                            <textarea id="codeInput" placeholder="Paste your Python code here or load a script file..." onscroll="syncGutterScroll()" oninput="updateLineNumbers()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button onclick="document.getElementById('fileInput').click()">[LOAD FILE]</button>
+                    <input type="file" id="fileInput" accept=".py" style="display:none" onchange="loadFile(event)">
+                    <button id="analyzeBtn" onclick="analyzeCode()">[RUN ANALYSIS]</button>
+                    <button onclick="clearAll()">[CLEAR]</button>
+                </div>
+                
+                <div id="loadingIndicator" class="loading hidden">
+                    <p style="color: var(--accent-blue); font-weight: bold;">> STARTING PYODIDE RUNTIME ENGINE...</p>
+                    <p>> RESOLVING SYMBOLS AND PREPARING ENVIRONMENT...</p>
+                </div>
+                
+                <div id="consoleOutPanel" class="box-panel" style="height: 120px;">
+                    <div class="box-header"><span>[ LOG MESSAGES ]</span></div>
+                    <div class="box-body" id="consoleLogs" style="font-size: 11px; color: var(--text-secondary); background-color: #0b0f19;">
+                        <p style="color: var(--text-muted);">> System ready. Awaiting script...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Results Tabs -->
+            <div class="right-column">
+                <div class="box-panel" style="flex: 1;">
+                    <!-- Tabs Menu -->
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('summary')">SUMMARY</button>
+                        <button class="tab-btn" onclick="switchTab('functions')">FUNCTIONS</button>
+                        <button class="tab-btn" onclick="switchTab('classes')">CLASSES</button>
+                        <button class="tab-btn" onclick="switchTab('importsVars')">IMPORTS/VARS</button>
+                        <button class="tab-btn" onclick="switchTab('controlFlow')">FLOW/EXPR</button>
+                        <button class="tab-btn" onclick="switchTab('callGraph')">CALL GRAPH</button>
+                        <button class="tab-btn" onclick="switchTab('warnings')">WARNINGS</button>
+                        <button class="tab-btn" onclick="switchTab('sourceCode')">SOURCE CODE</button>
+                        <button class="tab-btn" onclick="switchTab('devLens')">DEV-LENS</button>
+                    </div>
+                    
+                    <div class="box-body" id="resultsBody" style="background-color: #161e2e;">
+                        
+                        <!-- TAB 1: SUMMARY -->
+                        <div id="tab-summary" class="tab-content active">
+                            <div style="margin-bottom: 15px;">
+                                <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">Quality Metrics Dashboard</h3>
+                            </div>
+                            
+                            <div class="metric-grid">
+                                <div class="metric-card">
+                                    <div style="color: var(--text-secondary);">Maintainability Index</div>
+                                    <div class="metric-val" id="val-mi">0.0</div>
+                                    <div style="font-size: 11px;" id="val-mi-grade">Awaiting analysis</div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" id="pb-mi" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <div style="color: var(--text-secondary);">Avg Cyclomatic Complexity</div>
+                                    <div class="metric-val" id="val-cc">0.0</div>
+                                    <div style="font-size: 11px;">Independent paths per func</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div style="color: var(--text-secondary);">Physical LOC</div>
+                                    <div class="metric-val" id="val-loc">0</div>
+                                    <div style="font-size: 11px;" id="val-lloc">Logical: 0 lines</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div style="color: var(--text-secondary);">Skill Level Assessment</div>
+                                    <div class="metric-val" id="val-skill" style="font-size: 18px; line-height: 29px;">Awaiting</div>
+                                    <div style="font-size: 11px;">Based on construct usage</div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 15px;">
+                                <h4 style="color: var(--accent-blue); margin-bottom: 5px;">Concept Tags:</h4>
+                                <div id="summary-concepts"><span style="color: var(--text-muted);">None detected</span></div>
+                            </div>
+                            
+                            <div style="margin-top: 15px;">
+                                <h4 style="color: var(--accent-blue); margin-bottom: 5px;">Structure Summary:</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Structure type</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Functions / Methods</td><td id="cnt-functions">0</td></tr>
+                                        <tr><td>Classes Defs</td><td id="cnt-classes">0</td></tr>
+                                        <tr><td>Imports</td><td id="cnt-imports">0</td></tr>
+                                        <tr><td>Variables</td><td id="cnt-variables">0</td></tr>
+                                        <tr><td>Control Flow Blocks</td><td id="cnt-cflow">0</td></tr>
+                                        <tr><td>Advanced Expressions</td><td id="cnt-expr">0</td></tr>
+                                        <tr><td>Anti-patterns detected</td><td id="cnt-warn" style="color: var(--text-primary);">0</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 2: FUNCTIONS -->
+                        <div id="tab-functions" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Functions & Methods</h3>
+                            <div id="functionsList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+                        
+                        <!-- TAB 3: CLASSES -->
+                        <div id="tab-classes" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Classes Definitions</h3>
+                            <div id="classesList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                        </div>
+                        
+                        <!-- TAB 4: IMPORTS/VARS -->
+                        <div id="tab-importsVars" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">Imports</h3>
+                            <div id="importsList" style="margin-bottom: 20px;"><p style="color: var(--text-muted);">No imports detected.</p></div>
+                            
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">Variables Dictionary</h3>
+                            <div id="variablesList"><p style="color: var(--text-muted);">No variables detected.</p></div>
+                        </div>
+                        
+                        <!-- TAB 5: CONTROL FLOW -->
+                        <div id="tab-controlFlow" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">Control Flow Blocks</h3>
+                            <div id="controlFlowList" style="margin-bottom: 20px;"><p style="color: var(--text-muted);">No control flow constructs detected.</p></div>
+                            
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">Advanced Expressions</h3>
+                            <div id="expressionsList"><p style="color: var(--text-muted);">No advanced expressions detected.</p></div>
+                        </div>
+                        
+                        <!-- TAB 6: CALL GRAPH -->
+                        <div id="tab-callGraph" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Execution Call Graph</h3>
+                            <div id="callGraphTree" style="font-family: inherit; background-color: #0b0f19; padding: 15px; border: 1px solid var(--border-color); overflow: auto; min-height: 250px;">
+                                <p style="color: var(--text-muted);">Awaiting code analysis...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 7: WARNINGS -->
+                        <div id="tab-warnings" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Anti-patterns & Warnings</h3>
+                            <div id="warningsList" style="margin-bottom: 20px;"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                            
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Element Explanations</h3>
+                            <div id="explanationsList"><p style="color: var(--text-muted);">Awaiting code analysis...</p></div>
+                            
+                            <div style="margin-top: 15px;" id="exportBtnContainer" class="hidden">
+                                <button onclick="exportMarkdownReport()">[EXPORT FULL MARKDOWN REPORT]</button>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 8: SOURCE CODE -->
+                        <div id="tab-sourceCode" class="tab-content">
+                            <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue); margin-bottom: 10px;">Source Code View</h3>
+                            <pre id="sourceCodeCode" class="code-preview" style="max-height: 500px; font-size: 13px; font-family: inherit; color: var(--text-primary);"></pre>
+                        </div>
+                        
+                        <!-- TAB 9: DEV-LENS -->
+                        <div id="tab-devLens" class="tab-content">
+                            <div style="margin-bottom: 15px;">
+                                <h3 style="border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--accent-blue);">🛡️ Architecture Dev-Lens (Views & Beyond)</h3>
+                                <p style="color: var(--text-muted); margin-top: 5px; font-size: 13px; line-height: 1.5;">
+                                    To analyze and deeply understand the architecture of a Python script, there is no single “best” lens — but there is a well‑established, multi‑view methodology that the software architecture community considers the gold standard. By applying that methodology and supplementing it with Python‑specific perspectives, you can systematically uncover everything from high‑level structure to runtime behavior.
+                                </p>
+                            </div>
+                            
+                            <div style="display: flex; gap: 6px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+                                <button class="tab-btn" onclick="selectLens(1)" id="lens-btn-1" style="flex: 1; min-width: 110px;">1. MODULE VIEW</button>
+                                <button class="tab-btn" onclick="selectLens(2)" id="lens-btn-2" style="flex: 1; min-width: 110px;">2. C&C VIEW</button>
+                                <button class="tab-btn" onclick="selectLens(3)" id="lens-btn-3" style="flex: 1; min-width: 110px;">3. ALLOCATION</button>
+                                <button class="tab-btn" onclick="selectLens(4)" id="lens-btn-4" style="flex: 1; min-width: 110px;">4. DATA FLOW</button>
+                                <button class="tab-btn" onclick="selectLens(5)" id="lens-btn-5" style="flex: 1; min-width: 110px;">5. COUPLING</button>
+                                <button class="tab-btn" onclick="selectLens(6)" id="lens-btn-6" style="flex: 1; min-width: 110px;">6. IDIOMS</button>
+                                <button class="tab-btn" onclick="selectLens(7)" id="lens-btn-7" style="flex: 1; min-width: 110px;">WORKFLOW</button>
+                            </div>
+                            
+                            <div id="lens-container" style="border: 1px solid var(--border-color); background-color: #0b0f19; padding: 15px; min-height: 300px;">
+                                <p style="color: var(--text-muted);">Select an architectural lens above to begin exploration.</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pyodide;
+        let lastAnalysisResult = null;
+        
+        async function loadPyodideEngine() {
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            printLog('> Initializing Python Pyodide engine...');
+            try {
+                pyodide = await loadPyodide();
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                printLog('> Pyodide runtime engine loaded successfully.');
+            } catch (error) {
+                printLog('<span style="color: var(--error-color);">ERROR: Failed to load Pyodide engine.</span>');
+                document.getElementById('loadingIndicator').innerHTML = 
+                    '<p style="color: var(--error-color);">ERROR: FAILED TO LOAD PYTHON RUNTIME</p>';
+            }
+        }
+        
+        function loadFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('codeInput').value = e.target.result;
+                    document.getElementById('editorStats').textContent = e.target.result.length + ' chars';
+                    updateLineNumbers();
+                    printLog('> File loaded: ' + file.name);
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function printLog(text) {
+            const logs = document.getElementById('consoleLogs');
+            const p = document.createElement('p');
+            p.innerHTML = text;
+            logs.appendChild(p);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function clearAll() {
+            document.getElementById('codeInput').value = '';
+            document.getElementById('editorStats').textContent = '0 chars';
+            updateLineNumbers();
+            printLog('> Editor cleared.');
+            lastAnalysisResult = null;
+            
+            // Reset fields
+            document.getElementById('val-mi').textContent = '0.0';
+            document.getElementById('val-mi-grade').textContent = 'Awaiting analysis';
+            document.getElementById('pb-mi').style.width = '0%';
+            document.getElementById('val-cc').textContent = '0.0';
+            document.getElementById('val-loc').textContent = '0';
+            document.getElementById('val-lloc').textContent = 'Logical: 0 lines';
+            document.getElementById('val-skill').textContent = 'Awaiting';
+            document.getElementById('summary-concepts').innerHTML = '<span style="color: var(--text-muted);">None detected</span>';
+            
+            document.getElementById('cnt-functions').textContent = '0';
+            document.getElementById('cnt-classes').textContent = '0';
+            document.getElementById('cnt-imports').textContent = '0';
+            document.getElementById('cnt-variables').textContent = '0';
+            document.getElementById('cnt-cflow').textContent = '0';
+            document.getElementById('cnt-expr').textContent = '0';
+            document.getElementById('cnt-warn').textContent = '0';
+            
+            document.getElementById('functionsList').innerHTML = '<p style="color: var(--text-muted);">Awaiting code analysis...</p>';
+            document.getElementById('classesList').innerHTML = '<p style="color: var(--text-muted);">Awaiting code analysis...</p>';
+            document.getElementById('importsList').innerHTML = '<p style="color: var(--text-muted);">No imports detected.</p>';
+            document.getElementById('variablesList').innerHTML = '<p style="color: var(--text-muted);">No variables detected.</p>';
+            document.getElementById('controlFlowList').innerHTML = '<p style="color: var(--text-muted);">No control flow constructs detected.</p>';
+            document.getElementById('expressionsList').innerHTML = '<p style="color: var(--text-muted);">No advanced expressions detected.</p>';
+            document.getElementById('callGraphTree').innerHTML = '<p style="color: var(--text-muted);">Awaiting code analysis...</p>';
+            document.getElementById('warningsList').innerHTML = '<p style="color: var(--text-muted);">Awaiting code analysis...</p>';
+            document.getElementById('explanationsList').innerHTML = '<p style="color: var(--text-muted);">Awaiting code analysis...</p>';
+            document.getElementById('sourceCodeCode').innerHTML = '';
+            document.getElementById('lens-container').innerHTML = '<p style="color: var(--text-muted);">Select an architectural lens above to begin exploration.</p>';
+            document.getElementById('exportBtnContainer').classList.add('hidden');
+        }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Find button by onclick attribute value
+            const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if (btn) btn.classList.add('active');
+            
+            const content = document.getElementById('tab-' + tabId);
+            if (content) content.classList.add('active');
+        }
+        
+        async function analyzeCode() {
+            const code = document.getElementById('codeInput').value;
+            if (!code.trim()) {
+                printLog('<span style="color: var(--error-color);">ERROR: Code input is empty.</span>');
+                return;
+            }
+            
+            if (!pyodide) {
+                printLog('<span style="color: var(--accent-blue);">WAIT: Pyodide engine is still loading...</span>');
+                return;
+            }
+            
+            printLog('> Starting AST syntax analysis...');
+            
+            try {
+                // Set the code inside Python environment safely using Pyodide globals
+                pyodide.globals.set("source_code", code);
+                
+                const pythonRunnerScript = `
+import ast
+import json
+import math
+import io
+import tokenize
+
+class AdvancedASTVisitor(ast.NodeVisitor):
+    def __init__(self, source_code: str):
+        self.source_code = source_code
+        self.scope_stack = []
+        self.functions = []
+        self.classes = []
+        self.imports = []
+        self.variables = []
+        self.control_flow = []
+        self.expressions = []
+        self.anti_patterns = []
+        self.call_graph = []
+        self.recursion_detected = set()
+        
+        # New Architectural tracking metrics
+        self.dunder_methods = []
+        self.env_accesses = []
+        self.hardcoded_paths = []
+        self.abc_classes = []
+        self.has_main_block = False
+        self.concurrency_libraries = []
+        
+        # Halstead metrics counts
+        self.operators = []
+        self.operands = []
+        self.used_names = set()
+        self.defined_names = set()
+        self.global_declarations = {}
+        
+    def current_scope(self):
+        if not self.scope_stack:
+            return 'global', 'global'
+        return self.scope_stack[-1]
+
+    def visit_Import(self, node):
+        for alias in node.names:
+            self.imports.append({
+                'type': 'import',
+                'module': alias.name,
+                'name': None,
+                'alias': alias.asname or alias.name,
+                'line': node.lineno
+            })
+            self.defined_names.add(alias.asname or alias.name)
+            self.operands.append(alias.name)
+            if alias.asname:
+                self.operands.append(alias.asname)
+                
+            module_name = alias.name.split('.')[0]
+            if module_name in ('asyncio', 'threading', 'multiprocessing', 'concurrent'):
+                self.concurrency_libraries.append(module_name)
+                
+        self.operators.append('import')
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node):
+        for alias in node.names:
+            self.imports.append({
+                'type': 'from',
+                'module': node.module or '',
+                'name': alias.name,
+                'alias': alias.asname or alias.name,
+                'line': node.lineno
+            })
+            self.defined_names.add(alias.asname or alias.name)
+            self.operands.append(node.module or '')
+            self.operands.append(alias.name)
+            if alias.asname:
+                self.operands.append(alias.asname)
+                
+        module_name = (node.module or '').split('.')[0]
+        if module_name in ('asyncio', 'threading', 'multiprocessing', 'concurrent'):
+            self.concurrency_libraries.append(module_name)
+            
+        self.operators.append('from_import')
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Load):
+            self.used_names.add(node.id)
+            self.operands.append(node.id)
+        elif isinstance(node.ctx, ast.Store):
+            self.defined_names.add(node.id)
+            self.operands.append(node.id)
+        self.generic_visit(node)
+
+    def visit_Call(self, node):
+        callee = None
+        if isinstance(node.func, ast.Name):
+            callee = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            callee = ast.unparse(node.func)
+            
+        scope_type, scope_name = self.current_scope()
+        if scope_type == 'function':
+            caller = scope_name
+            self.call_graph.append({
+                'caller': caller,
+                'callee': callee,
+                'line': node.lineno
+            })
+            if callee == caller:
+                self.recursion_detected.add(caller)
+                
+        # Check environment accesses in function calls
+        call_str = ast.unparse(node.func)
+        if 'getenv' in call_str or 'environ' in call_str:
+            self.env_accesses.append({
+                'call': ast.unparse(node),
+                'line': node.lineno
+            })
+            
+        self.operators.append('call')
+        self.generic_visit(node)
+
+    def visit_Subscript(self, node):
+        sub_str = ast.unparse(node)
+        if 'os.environ' in sub_str:
+            self.env_accesses.append({
+                'call': sub_str,
+                'line': node.lineno
+            })
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        self._analyze_func_like(node, is_async=False)
+
+    def visit_AsyncFunctionDef(self, node):
+        self._analyze_func_like(node, is_async=True)
+
+    def _analyze_func_like(self, node, is_async=False):
+        parent_scope_type, parent_scope_name = self.current_scope()
+        func_name = node.name
+        is_nested = (parent_scope_type == 'function')
+        
+        args = [arg.arg for arg in node.args.args]
+        posonlyargs = [arg.arg for arg in node.args.posonlyargs]
+        kwonlyargs = [arg.arg for arg in node.args.kwonlyargs]
+        vararg = node.args.vararg.arg if node.args.vararg else None
+        kwarg = node.args.kwarg.arg if node.args.kwarg else None
+        
+        returns = ast.unparse(node.returns) if node.returns else None
+        decorators = [ast.unparse(dec) for dec in node.decorator_list]
+        defaults = [ast.unparse(d) for d in node.args.defaults]
+        kw_defaults = [ast.unparse(d) if d else None for d in node.args.kw_defaults]
+        
+        for default_node in node.args.defaults + [d for d in node.args.kw_defaults if d]:
+            if isinstance(default_node, (ast.List, ast.Dict, ast.Set)):
+                self.anti_patterns.append({
+                    'type': 'mutable_default',
+                    'message': f"Function '{func_name}' uses a mutable default argument ({ast.unparse(default_node)}).",
+                    'line': default_node.lineno
+                })
+        
+        builtins_list = dir(__builtins__)
+        if func_name in builtins_list:
+            self.anti_patterns.append({
+                'type': 'shadow_builtin',
+                'message': f"Function '{func_name}' shadows a Python built-in name.",
+                'line': node.lineno
+            })
+            
+        role = "worker"
+        if func_name.startswith('get_'):
+            role = "getter method" if parent_scope_type == 'class' else "getter function"
+        elif func_name.startswith('set_'):
+            role = "setter method" if parent_scope_type == 'class' else "setter function"
+        elif func_name.startswith('test_'):
+            role = "test case"
+        elif func_name == '__init__':
+            role = "constructor"
+        elif func_name.startswith('__') and func_name.endswith('__'):
+            role = "magic (dunder) method"
+        elif func_name.startswith('is_') or func_name.startswith('has_') or func_name.startswith('can_'):
+            role = "predicate (boolean check)"
+            
+        if func_name.startswith('__') and func_name.endswith('__'):
+            self.dunder_methods.append({
+                'name': func_name,
+                'class': parent_scope_name if parent_scope_type == 'class' else None,
+                'line': node.lineno
+            })
+            
+        body_source = ""
+        try:
+            body_source = ast.unparse(node)
+        except Exception:
+            body_source = f"def {func_name}(...): ..."
+            
+        func_info = {
+            'name': func_name,
+            'class': parent_scope_name if parent_scope_type == 'class' else None,
+            'args': args,
+            'posonlyargs': posonlyargs,
+            'kwonlyargs': kwonlyargs,
+            'vararg': vararg,
+            'kwarg': kwarg,
+            'defaults': defaults,
+            'kw_defaults': kw_defaults,
+            'returns': returns,
+            'decorators': decorators,
+            'docstring': ast.get_docstring(node),
+            'line': node.lineno,
+            'end_line': getattr(node, 'end_lineno', node.lineno),
+            'is_async': is_async,
+            'is_nested': is_nested,
+            'role': role,
+            'has_yield': False,
+            'complexity': 1,
+            'statements': 0,
+            'body': body_source
+        }
+        
+        self.functions.append(func_info)
+        
+        branch_nodes = (ast.If, ast.For, ast.While, ast.ExceptHandler, ast.With, 
+                        ast.match_case, ast.And, ast.Or, ast.IfExp, 
+                        ast.ListComp, ast.DictComp, ast.SetComp, ast.GeneratorExp)
+        complexity = 1
+        statements = 0
+        has_yield = False
+        
+        for child in ast.walk(node):
+            if isinstance(child, branch_nodes):
+                complexity += 1
+            if isinstance(child, ast.stmt):
+                statements += 1
+            if isinstance(child, (ast.Yield, ast.YieldFrom)):
+                has_yield = True
+                
+        func_info['complexity'] = complexity
+        func_info['statements'] = statements
+        func_info['has_yield'] = has_yield
+        
+        self.scope_stack.append(('function', func_name))
+        self.generic_visit(node)
+        self.scope_stack.pop()
+
+    def visit_ClassDef(self, node):
+        parent_scope_type, parent_scope_name = self.current_scope()
+        class_name = node.name
+        
+        bases = [ast.unparse(base) for base in node.bases]
+        decorators = [ast.unparse(dec) for dec in node.decorator_list]
+        
+        is_dataclass = any('dataclass' in dec for dec in decorators)
+        role = "standard class"
+        if is_dataclass:
+            role = "dataclass"
+        elif any('Exception' in b or 'Error' in b for b in bases):
+            role = "custom exception class"
+        elif class_name.endswith('Factory'):
+            role = "factory pattern class"
+            
+        class_info = {
+            'name': class_name,
+            'bases': bases,
+            'decorators': decorators,
+            'docstring': ast.get_docstring(node),
+            'line': node.lineno,
+            'end_line': getattr(node, 'end_lineno', node.lineno),
+            'methods': [],
+            'class_vars': [],
+            'instance_vars': [],
+            'role': role
+        }
+        self.classes.append(class_info)
+        
+        if any('ABC' in base or 'Abstract' in base for base in bases):
+            self.abc_classes.append({
+                'name': class_name,
+                'line': node.lineno
+            })
+            
+        self.scope_stack.append(('class', class_name))
+        self.generic_visit(node)
+        self.scope_stack.pop()
+
+    def visit_Assign(self, node):
+        scope_type, scope_name = self.current_scope()
+        val_str = ast.unparse(node.value)
+        for target in node.targets:
+            self._process_target(target, node.lineno, val_str, scope_type, scope_name)
+        self.operators.append('assign')
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node):
+        scope_type, scope_name = self.current_scope()
+        val_str = ast.unparse(node.value) if node.value else "None"
+        anno_str = ast.unparse(node.annotation)
+        if node.target:
+            self._process_target(node.target, node.lineno, val_str, scope_type, scope_name, is_annotated=True, annotation=anno_str)
+        self.operators.append('ann_assign')
+        self.generic_visit(node)
+
+    def visit_AugAssign(self, node):
+        scope_type, scope_name = self.current_scope()
+        val_str = ast.unparse(node.value)
+        op_str = type(node.op).__name__
+        self._process_target(node.target, node.lineno, f"{op_str} {val_str}", scope_type, scope_name)
+        self.operators.append('aug_assign')
+        self.generic_visit(node)
+
+    def visit_NamedExpr(self, node):
+        scope_type, scope_name = self.current_scope()
+        val_str = ast.unparse(node.value)
+        self._process_target(node.target, node.lineno, val_str, scope_type, scope_name, is_walrus=True)
+        self.operators.append('walrus')
+        self.generic_visit(node)
+
+    def _process_target(self, target, line, val_str, scope_type, scope_name, is_annotated=False, annotation=None, is_walrus=False):
+        if isinstance(target, ast.Name):
+            var_name = target.id
+            builtins_list = dir(__builtins__)
+            if var_name in builtins_list:
+                self.anti_patterns.append({
+                    'type': 'shadow_builtin',
+                    'message': f"Variable '{var_name}' shadows a Python built-in name.",
+                    'line': line
+                })
+                
+            var_type = 'global'
+            var_scope = 'global'
+            if scope_type == 'class':
+                var_type = 'class'
+                var_scope = scope_name
+            elif scope_type == 'function':
+                is_global = False
+                if scope_name in self.global_declarations and var_name in self.global_declarations[scope_name]:
+                    is_global = True
+                if is_global:
+                    var_type = 'global'
+                    var_scope = 'global'
+                else:
+                    var_type = 'local'
+                    var_scope = scope_name
+                    
+            self.variables.append({
+                'name': var_name,
+                'type': var_type,
+                'scope': var_scope,
+                'value': val_str,
+                'line': line,
+                'is_annotated': is_annotated,
+                'annotation': annotation,
+                'is_walrus': is_walrus
+            })
+            
+            if scope_type == 'class':
+                for cls in self.classes:
+                    if cls['name'] == scope_name:
+                        cls['class_vars'].append({
+                            'name': var_name,
+                            'value': val_str,
+                            'line': line,
+                            'annotation': annotation
+                        })
+        elif isinstance(target, ast.Attribute):
+            if isinstance(target.value, ast.Name) and target.value.id == 'self':
+                var_name = target.attr
+                class_in_scope = None
+                for stype, sname in reversed(self.scope_stack):
+                    if stype == 'class':
+                        class_in_scope = sname
+                        break
+                if class_in_scope:
+                    self.variables.append({
+                        'name': f"self.{var_name}",
+                        'type': 'instance',
+                        'scope': class_in_scope,
+                        'value': val_str,
+                        'line': line,
+                        'is_annotated': is_annotated,
+                        'annotation': annotation,
+                        'is_walrus': is_walrus
+                    })
+                    for cls in self.classes:
+                        if cls['name'] == class_in_scope:
+                            if not any(iv['name'] == var_name for iv in cls['instance_vars']):
+                                cls['instance_vars'].append({
+                                    'name': var_name,
+                                    'value': val_str,
+                                    'line': line,
+                                    'annotation': annotation
+                                })
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for elt in target.elts:
+                self._process_target(elt, line, val_str, scope_type, scope_name, is_annotated, annotation, is_walrus)
+
+    def visit_Global(self, node):
+        scope_type, scope_name = self.current_scope()
+        if scope_type == 'function':
+            if scope_name not in self.global_declarations:
+                self.global_declarations[scope_name] = set()
+            for name in node.names:
+                self.global_declarations[scope_name].add(name)
+                self.anti_patterns.append({
+                    'type': 'global_keyword',
+                    'message': f"Function '{scope_name}' uses the 'global' keyword to modify variable '{name}'.",
+                    'line': node.lineno
+                })
+        self.operators.append('global')
+        self.generic_visit(node)
+
+    def visit_If(self, node):
+        if isinstance(node.test, ast.Compare):
+            left_str = ast.unparse(node.test.left)
+            if left_str == "__name__":
+                for op, comparator in zip(node.test.ops, node.test.comparators):
+                    if isinstance(op, ast.Eq):
+                        comp_str = ast.unparse(comparator)
+                        if comp_str in ("'__main__'", '"__main__"'):
+                            self.has_main_block = True
+                            
+        self.control_flow.append({
+            'type': 'If',
+            'line': node.lineno,
+            'description': f"Conditional branch (if {ast.unparse(node.test)})"
+        })
+        self.operators.append('if')
+        self.generic_visit(node)
+
+    def visit_For(self, node):
+        self.control_flow.append({
+            'type': 'For',
+            'line': node.lineno,
+            'description': f"Loop (for {ast.unparse(node.target)} in {ast.unparse(node.iter)})"
+        })
+        self.operators.append('for')
+        self.generic_visit(node)
+
+    def visit_While(self, node):
+        self.control_flow.append({
+            'type': 'While',
+            'line': node.lineno,
+            'description': f"Loop (while {ast.unparse(node.test)})"
+        })
+        self.operators.append('while')
+        self.generic_visit(node)
+
+    def visit_Try(self, node):
+        self.control_flow.append({
+            'type': 'Try',
+            'line': node.lineno,
+            'description': "Exception handling block (try...except)"
+        })
+        self.operators.append('try')
+        self.generic_visit(node)
+
+    def visit_ExceptHandler(self, node):
+        exc_type = ast.unparse(node.type) if node.type else "Bare Except"
+        if exc_type == "Bare Except":
+            self.anti_patterns.append({
+                'type': 'bare_except',
+                'message': "Bare except clause. Catching all exceptions blindly can hide unexpected bugs.",
+                'line': node.lineno
+            })
+        self.control_flow.append({
+            'type': 'Except',
+            'line': node.lineno,
+            'description': f"Except handler for: {exc_type}"
+        })
+        self.operators.append('except')
+        self.generic_visit(node)
+
+    def visit_With(self, node):
+        items = [ast.unparse(item) for item in node.items]
+        self.control_flow.append({
+            'type': 'With',
+            'line': node.lineno,
+            'description': f"Context manager (with {', '.join(items)})"
+        })
+        self.operators.append('with')
+        self.generic_visit(node)
+
+    def visit_Match(self, node):
+        self.control_flow.append({
+            'type': 'Match',
+            'line': node.lineno,
+            'description': f"Pattern matching (match {ast.unparse(node.subject)})"
+        })
+        self.operators.append('match')
+        self.generic_visit(node)
+
+    def visit_Compare(self, node):
+        for op, comp in zip(node.ops, node.comparators):
+            if isinstance(op, (ast.Eq, ast.NotEq)):
+                is_none = False
+                if isinstance(comp, ast.Constant) and comp.value is None:
+                    is_none = True
+                elif isinstance(comp, ast.Name) and comp.id == 'None':
+                    is_none = True
+                if isinstance(node.left, ast.Constant) and node.left.value is None:
+                    is_none = True
+                elif isinstance(node.left, ast.Name) and node.left.id == 'None':
+                    is_none = True
+                if is_none:
+                    op_word = "==" if isinstance(op, ast.Eq) else "!="
+                    self.anti_patterns.append({
+                        'type': 'none_comparison',
+                        'message': f"Comparing with None using '{op_word}' operator. Use 'is None' instead.",
+                        'line': node.lineno
+                    })
+        for op in node.ops:
+            self.operators.append(type(op).__name__)
+        self.generic_visit(node)
+
+    def visit_Lambda(self, node):
+        self.expressions.append({
+            'type': 'Lambda',
+            'line': node.lineno,
+            'description': f"Lambda expression: {ast.unparse(node)}"
+        })
+        self.operators.append('lambda')
+        self.generic_visit(node)
+
+    def visit_IfExp(self, node):
+        self.expressions.append({
+            'type': 'Ternary',
+            'line': node.lineno,
+            'description': f"Ternary conditional: {ast.unparse(node)}"
+        })
+        self.operators.append('ternary')
+        self.generic_visit(node)
+
+    def visit_ListComp(self, node):
+        self.expressions.append({
+            'type': 'List Comprehension',
+            'line': node.lineno,
+            'description': f"List comprehension: {ast.unparse(node)}"
+        })
+        self.operators.append('list_comp')
+        self.generic_visit(node)
+
+    def visit_DictComp(self, node):
+        self.expressions.append({
+            'type': 'Dict Comprehension',
+            'line': node.lineno,
+            'description': f"Dict comprehension: {ast.unparse(node)}"
+        })
+        self.operators.append('dict_comp')
+        self.generic_visit(node)
+
+    def visit_SetComp(self, node):
+        self.expressions.append({
+            'type': 'Set Comprehension',
+            'line': node.lineno,
+            'description': f"Set comprehension: {ast.unparse(node)}"
+        })
+        self.operators.append('set_comp')
+        self.generic_visit(node)
+
+    def visit_GeneratorExp(self, node):
+        self.expressions.append({
+            'type': 'Generator Expression',
+            'line': node.lineno,
+            'description': f"Generator expression: {ast.unparse(node)}"
+        })
+        self.operators.append('generator_exp')
+        self.generic_visit(node)
+
+    def visit_BinOp(self, node):
+        self.operators.append(type(node.op).__name__)
+        self.generic_visit(node)
+
+    def visit_UnaryOp(self, node):
+        self.operators.append(type(node.op).__name__)
+        self.generic_visit(node)
+
+    def visit_BoolOp(self, node):
+        self.operators.append(type(node.op).__name__)
+        self.generic_visit(node)
+
+    def visit_Constant(self, node):
+        if isinstance(node.value, str):
+            val = node.value
+            for ext in ('.txt', '.csv', '.json', '.db', '.sqlite', '.yaml', '.yml', '.ini', '.config'):
+                if val.endswith(ext) or '/' + ext[1:] in val or '\\\\' + ext[1:] in val:
+                    self.hardcoded_paths.append({
+                        'path': val,
+                        'line': node.lineno
+                    })
+        self.operands.append(str(node.value))
+        self.generic_visit(node)
+
+
+def full_ast_analysis(raw_code):
+    tree = ast.parse(raw_code)
+    visitor = AdvancedASTVisitor(raw_code)
+    visitor.visit(tree)
+    
+    # Associate methods with classes
+    for cls in visitor.classes:
+        cls['methods'] = []
+        for func in visitor.functions:
+            if func['class'] == cls['name']:
+                cls['methods'].append(func)
+                
+    # Detect unused imports
+    for imp in visitor.imports:
+        name_to_check = imp['alias'] or imp['name'] or imp['module']
+        if name_to_check not in visitor.used_names:
+            visitor.anti_patterns.append({
+                'type': 'unused_import',
+                'message': f"Unused import: '{name_to_check}' from module '{imp['module']}'.",
+                'line': imp['line']
+            })
+            
+    # Compute Metrics
+    lines = raw_code.splitlines()
+    physical_loc = len(lines)
+    comment_lines = 0
+    blank_lines = 0
+    
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(raw_code).readline))
+        for tok in tokens:
+            if tok.type == tokenize.COMMENT:
+                comment_lines += 1
+    except Exception:
+        for line in lines:
+            if line.strip().startswith('#'):
+                comment_lines += 1
+                
+    for line in lines:
+        if not line.strip():
+            blank_lines += 1
+            
+    code_lines = max(0, physical_loc - comment_lines - blank_lines)
+    comment_density = (comment_lines / physical_loc * 100) if physical_loc > 0 else 0
+    
+    total_cc = 1
+    for f in visitor.functions:
+        total_cc += (f['complexity'] - 1)
+    avg_cc = sum(f['complexity'] for f in visitor.functions) / len(visitor.functions) if visitor.functions else 1
+    
+    # Halstead
+    distinct_ops = set(visitor.operators)
+    n1 = len(distinct_ops)
+    N1 = len(visitor.operators)
+    
+    distinct_opnds = set(visitor.operands)
+    n2 = len(distinct_opnds)
+    N2 = len(visitor.operands)
+    
+    vocabulary = n1 + n2
+    length = N1 + N2
+    
+    volume = length * math.log2(vocabulary) if vocabulary > 0 else 0
+    difficulty = (n1 / 2) * (N2 / n2) if n2 > 0 else 0
+    effort = difficulty * volume
+    
+    # MI
+    loc_val = max(1, physical_loc)
+    vol_val = max(1.0, volume)
+    mi = 171.0 - 5.2 * math.log(vol_val) - 0.23 * avg_cc - 16.2 * math.log(loc_val)
+    mi = max(0.0, min(100.0, mi))
+    
+    mi_grade = "Low"
+    if mi > 65:
+        mi_grade = "High (Good)"
+    elif mi >= 30:
+        mi_grade = "Medium"
+        
+    # Skill level assessment
+    has_async = any(f['is_async'] for f in visitor.functions)
+    has_decorators = any(f['decorators'] for f in visitor.functions) or any(c['decorators'] for c in visitor.classes)
+    has_classes = len(visitor.classes) > 0
+    has_comprehensions = any(e['type'] in ('List Comprehension', 'Dict Comprehension', 'Set Comprehension', 'Generator Expression') for e in visitor.expressions)
+    has_exceptions = any(cf['type'] == 'Except' for cf in visitor.control_flow)
+    
+    points = 0
+    if has_classes: points += 2
+    if has_decorators: points += 2
+    if has_async: points += 3
+    if has_comprehensions: points += 1
+    if has_exceptions: points += 1
+    if avg_cc > 4: points += 2
+    if len(visitor.functions) > 5: points += 1
+    
+    skill_level = "Beginner"
+    if points >= 6 or has_async:
+        skill_level = "Advanced"
+    elif points >= 2:
+        skill_level = "Intermediate"
+        
+    # Concept Tags
+    concept_tags = []
+    if any(f['decorators'] for f in visitor.functions): concept_tags.append("#decorator")
+    if has_async: concept_tags.append("#async-programming")
+    if any(c['bases'] for c in visitor.classes): concept_tags.append("#class-inheritance")
+    if visitor.recursion_detected: concept_tags.append("#recursion")
+    if has_exceptions: concept_tags.append("#exception-handling")
+    if any(e['type'] == 'List Comprehension' for e in visitor.expressions): concept_tags.append("#list-comprehension")
+    if any(e['type'] == 'Dict Comprehension' for e in visitor.expressions): concept_tags.append("#dict-comprehension")
+    if any(e['type'] == 'Generator Expression' for e in visitor.expressions): concept_tags.append("#generators")
+    if any(v['is_walrus'] for v in visitor.variables): concept_tags.append("#walrus-operator")
+    if any(cf['type'] == 'Match' for cf in visitor.control_flow): concept_tags.append("#pattern-matching")
+    
+    return {
+        'functions': visitor.functions,
+        'classes': visitor.classes,
+        'imports': visitor.imports,
+        'variables': visitor.variables,
+        'control_flow': visitor.control_flow,
+        'expressions': visitor.expressions,
+        'anti_patterns': visitor.anti_patterns,
+        'call_graph': visitor.call_graph,
+        'recursion_detected': list(visitor.recursion_detected),
+        'metrics': {
+            'physical_loc': physical_loc,
+            'code_lines': code_lines,
+            'comment_lines': comment_lines,
+            'comment_density': comment_density,
+            'avg_cc': avg_cc,
+            'total_cc': total_cc,
+            'maintainability_index': mi,
+            'mi_grade': mi_grade,
+            'halstead': {
+                'vocabulary': vocabulary,
+                'length': length,
+                'volume': volume,
+                'difficulty': difficulty,
+                'effort': effort
+            }
+        },
+        'skill_level': skill_level,
+        'concept_tags': concept_tags,
+        
+        # Dev-lens variables
+        'dunder_methods': visitor.dunder_methods,
+        'env_accesses': visitor.env_accesses,
+        'hardcoded_paths': visitor.hardcoded_paths,
+        'abc_classes': visitor.abc_classes,
+        'has_main_block': visitor.has_main_block,
+        'concurrency_libraries': list(set(visitor.concurrency_libraries))
+    }
+`;
+                
+                printLog('> Processing abstract syntax tree nodes...');
+                
+                // Run the full analysis script
+                const analysisResult = await pyodide.runPythonAsync(`
+${pythonRunnerScript}
+result = full_ast_analysis(source_code)
+import json
+json.dumps(result)
+                `);
+                
+                lastAnalysisResult = JSON.parse(analysisResult);
+                
+                displayDashboard(lastAnalysisResult);
+                printLog('> Code analysis compiled successfully.');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                printLog('<span style="color: var(--error-color);">ERROR: ' + error.message + '</span>');
+                
+                // Format syntax error if matching Python syntax errors
+                let errorHtml = '<div class="warning-card" style="background-color: var(--error-color);">';
+                errorHtml += '<div class="warning-title">Syntax Error Detected</div>';
+                errorHtml += '<div class="warning-body">' + error.message.replace(/\n/g, '<br>') + '</div>';
+                errorHtml += '</div>';
+                document.getElementById('warningsList').innerHTML = errorHtml;
+                switchTab('warnings');
+            }
+        }
+        
+        function displayDashboard(analysis) {
+            // Update Summary Dashboard counts
+            document.getElementById('cnt-functions').textContent = analysis.functions.length;
+            document.getElementById('cnt-classes').textContent = analysis.classes.length;
+            document.getElementById('cnt-imports').textContent = analysis.imports.length;
+            document.getElementById('cnt-variables').textContent = analysis.variables.length;
+            document.getElementById('cnt-cflow').textContent = analysis.control_flow.length;
+            document.getElementById('cnt-expr').textContent = analysis.expressions.length;
+            document.getElementById('cnt-warn').textContent = analysis.anti_patterns.length;
+            
+            // Metrics cards
+            const metrics = analysis.metrics;
+            document.getElementById('val-mi').textContent = metrics.maintainability_index.toFixed(2);
+            document.getElementById('val-mi-grade').textContent = 'Rating: ' + metrics.mi_grade;
+            document.getElementById('pb-mi').style.width = metrics.maintainability_index + '%';
+            document.getElementById('val-cc').textContent = metrics.avg_cc.toFixed(2);
+            document.getElementById('val-loc').textContent = metrics.physical_loc;
+            document.getElementById('val-lloc').textContent = 'Logical: ' + metrics.code_lines + ' lines | Comment lines: ' + metrics.comment_lines;
+            document.getElementById('val-skill').textContent = analysis.skill_level;
+            
+            // Concept tags
+            let tagsHtml = '';
+            if (analysis.concept_tags.length > 0) {
+                analysis.concept_tags.forEach(tag => {
+                    tagsHtml += `<span class="concept-pill">${tag}</span>`;
+                });
+            } else {
+                tagsHtml = '<span style="color: var(--text-muted);">None detected</span>';
+            }
+            document.getElementById('summary-concepts').innerHTML = tagsHtml;
+            
+            // Render Functions Tab
+            let funcsHtml = '';
+            if (analysis.functions.length > 0) {
+                analysis.functions.forEach((func, idx) => {
+                    funcsHtml += `
+                    <div class="warning-card" style="background-color: #111827; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                        <div class="warning-title" style="color: var(--accent-blue); font-size: 15px;">
+                            ${func.class ? func.class + '.' : ''}${func.name}()
+                        </div>
+                        <div class="warning-body" style="margin-top: 5px;">
+                            <p><strong>Lines:</strong> ${func.line} - ${func.end_line} | <strong>Role:</strong> ${func.role}</p>
+                            <p><strong>Complexity:</strong> ${func.complexity} | <strong>Statements:</strong> ${func.statements}</p>
+                            ${func.args.length > 0 ? '<p><strong>Arguments:</strong> ' + func.args.join(', ') + '</p>' : ''}
+                            ${func.decorators.length > 0 ? '<p><strong>Decorators:</strong> ' + func.decorators.join(', ') + '</p>' : ''}
+                            ${func.docstring ? '<div style="margin-top: 8px; border-left: 2px solid var(--border-color); padding-left: 8px; font-style: italic; color: var(--text-secondary);">' + func.docstring.replace(/\n/g, '<br>') + '</div>' : ''}
+                            
+                            <div style="margin-top: 10px;">
+                                <p style="font-weight: bold; color: var(--accent-gray);">Code Preview:</p>
+                                <pre class="code-preview">${escapeHtml(func.body)}</pre>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                funcsHtml = '<p style="color: var(--text-muted);">No functions defined in this code.</p>';
+            }
+            document.getElementById('functionsList').innerHTML = funcsHtml;
+            
+            // Render Classes Tab
+            let classesHtml = '';
+            if (analysis.classes.length > 0) {
+                analysis.classes.forEach((cls, idx) => {
+                    const methodsList = cls.methods.map(m => m.name + '()').join(', ');
+                    const classVars = cls.class_vars.map(v => v.name + ' = ' + v.value).join(', ');
+                    const instanceVars = cls.instance_vars.map(v => 'self.' + v.name).join(', ');
+                    
+                    classesHtml += `
+                    <div class="warning-card" style="background-color: #111827; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                        <div class="warning-title" style="color: var(--accent-blue); font-size: 15px;">
+                            class ${cls.name}
+                        </div>
+                        <div class="warning-body" style="margin-top: 5px;">
+                            <p><strong>Line:</strong> ${cls.line} - ${cls.end_line} | <strong>Pattern Role:</strong> ${cls.role}</p>
+                            <p><strong>Bases:</strong> ${cls.bases.length > 0 ? cls.bases.join(', ') : 'object'}</p>
+                            ${methodsList ? '<p><strong>Methods:</strong> ' + methodsList + '</p>' : ''}
+                            ${classVars ? '<p><strong>Class Variables:</strong> ' + classVars + '</p>' : ''}
+                            ${instanceVars ? '<p><strong>Instance Variables:</strong> ' + instanceVars + '</p>' : ''}
+                            ${cls.docstring ? '<div style="margin-top: 8px; border-left: 2px solid var(--border-color); padding-left: 8px; font-style: italic; color: var(--text-secondary);">' + cls.docstring.replace(/\n/g, '<br>') + '</div>' : ''}
+                        </div>
+                    </div>`;
+                });
+            } else {
+                classesHtml = '<p style="color: var(--text-muted);">No classes defined in this code.</p>';
+            }
+            document.getElementById('classesList').innerHTML = classesHtml;
+            
+            // Render Imports and Vars Tab
+            let importsHtml = '<table><thead><tr><th>Type</th><th>Module</th><th>Import Name</th><th>Alias</th><th>Line</th></tr></thead><tbody>';
+            if (analysis.imports.length > 0) {
+                analysis.imports.forEach(imp => {
+                    const isUnused = !analysis.variables.some(v => v.name === (imp.alias || imp.name || imp.module));
+                    const rowStyle = isUnused ? 'style="color: var(--text-muted); text-decoration: line-through;"' : '';
+                    importsHtml += `
+                    <tr ${rowStyle}>
+                        <td>${imp.type}</td>
+                        <td>${imp.module}</td>
+                        <td>${imp.name || '*'}</td>
+                        <td>${imp.alias || ''}</td>
+                        <td>${imp.line}</td>
+                    </tr>`;
+                });
+                importsHtml += '</tbody></table>';
+            } else {
+                importsHtml = '<p style="color: var(--text-muted);">No imports detected.</p>';
+            }
+            document.getElementById('importsList').innerHTML = importsHtml;
+            
+            let varsHtml = '<table><thead><tr><th>Variable</th><th>Scope</th><th>Scope Name</th><th>Annotated Type</th><th>Value representation</th><th>Line</th></tr></thead><tbody>';
+            if (analysis.variables.length > 0) {
+                analysis.variables.forEach(v => {
+                    varsHtml += `
+                    <tr>
+                        <td class="function-name">${v.name}</td>
+                        <td>${v.type}</td>
+                        <td>${v.scope}</td>
+                        <td>${v.annotation || 'None'}</td>
+                        <td style="font-family: inherit;">${escapeHtml(v.value)}</td>
+                        <td>${v.line}</td>
+                    </tr>`;
+                });
+                varsHtml += '</tbody></table>';
+            } else {
+                varsHtml = '<p style="color: var(--text-muted);">No variables detected.</p>';
+            }
+            document.getElementById('variablesList').innerHTML = varsHtml;
+            
+            // Render Control Flow & Expressions
+            let flowHtml = '<table><thead><tr><th>Line</th><th>Construct</th><th>Description</th></tr></thead><tbody>';
+            if (analysis.control_flow.length > 0) {
+                analysis.control_flow.forEach(f => {
+                    flowHtml += `
+                    <tr>
+                        <td>${f.line}</td>
+                        <td class="keyword-tag">${f.type}</td>
+                        <td>${escapeHtml(f.description)}</td>
+                    </tr>`;
+                });
+                flowHtml += '</tbody></table>';
+            } else {
+                flowHtml = '<p style="color: var(--text-muted);">No control flow blocks detected.</p>';
+            }
+            document.getElementById('controlFlowList').innerHTML = flowHtml;
+            
+            let exprHtml = '<table><thead><tr><th>Line</th><th>Expression Type</th><th>Code</th></tr></thead><tbody>';
+            if (analysis.expressions.length > 0) {
+                analysis.expressions.forEach(e => {
+                    exprHtml += `
+                    <tr>
+                        <td>${e.line}</td>
+                        <td>${e.type}</td>
+                        <td style="font-family: inherit;">${escapeHtml(e.description)}</td>
+                    </tr>`;
+                });
+                exprHtml += '</tbody></table>';
+            } else {
+                exprHtml = '<p style="color: var(--text-muted);">No advanced expressions detected.</p>';
+            }
+            document.getElementById('expressionsList').innerHTML = exprHtml;
+            
+            // Render Call Graph Tree
+            let graphHtml = '';
+            if (analysis.call_graph.length > 0) {
+                const callerMap = {};
+                analysis.call_graph.forEach(call => {
+                    if (!callerMap[call.caller]) callerMap[call.caller] = [];
+                    if (!callerMap[call.caller].some(c => c.callee === call.callee)) {
+                        callerMap[call.caller].push(call);
+                    }
+                });
+                
+                const allCallees = new Set(analysis.call_graph.map(c => c.callee));
+                const entryPoints = Object.keys(callerMap).filter(caller => !allCallees.has(caller));
+                const roots = entryPoints.length > 0 ? entryPoints : Object.keys(callerMap);
+                const visited = new Set();
+                
+                function buildTreeHtml(caller) {
+                    if (visited.has(caller)) {
+                        return `<div class="tree-node" style="color: var(--text-muted);">${caller}() [recursive]</div>`;
+                    }
+                    visited.add(caller);
+                    
+                    let html = '';
+                    if (callerMap[caller]) {
+                        callerMap[caller].forEach(call => {
+                            html += `<div class="tree-node">`;
+                            html += `<span class="function-name">${call.callee || 'anonymous'}()</span> <span style="color: var(--text-muted); font-size: 11px;">(line ${call.line})</span>`;
+                            if (callerMap[call.callee]) {
+                                html += buildTreeHtml(call.callee);
+                            }
+                            html += `</div>`;
+                        });
+                    }
+                    visited.delete(caller);
+                    return html;
+                }
+                
+                roots.forEach(root => {
+                    graphHtml += `<div style="margin-bottom: 10px;">`;
+                    graphHtml += `<span style="font-weight: bold; color: var(--accent-blue);">${root}()</span>`;
+                    graphHtml += buildTreeHtml(root);
+                    graphHtml += `</div>`;
+                });
+            } else {
+                graphHtml = '<p style="color: var(--text-muted);">No function call relationships detected.</p>';
+            }
+            document.getElementById('callGraphTree').innerHTML = graphHtml;
+            
+            // Render Warnings and Explanations
+            let warningsHtml = '';
+            if (analysis.anti_patterns.length > 0) {
+                analysis.anti_patterns.forEach(ap => {
+                    const apLabel = ap.type.replace('_', ' ').toUpperCase();
+                    warningsHtml += `
+                    <div class="warning-card" style="border-left-color: var(--accent-gray);">
+                        <div class="warning-title" style="color: var(--text-primary);">[${apLabel}] Line ${ap.line}</div>
+                        <div class="warning-body">${ap.message}</div>
+                        <div style="font-size: 11px; margin-top: 5px; color: var(--text-muted);">
+                            <strong>Advice:</strong> ${getAntiPatternAdvice(ap.type)}
+                        </div>
+                    </div>`;
+                });
+            } else {
+                warningsHtml = '<div class="warning-card" style="background-color: var(--success-color); border: none;"><div class="warning-title">All clean!</div><div class="warning-body">No common anti-patterns or code smells were found in this snippet.</div></div>';
+            }
+            document.getElementById('warningsList').innerHTML = warningsHtml;
+            
+            // Explanations (Element Cards)
+            let explanationsHtml = '';
+            analysis.functions.forEach(f => {
+                explanationsHtml += `
+                <div class="warning-card" style="background-color: #111827; border: 1px solid var(--border-color);">
+                    <div class="warning-title" style="color: var(--accent-blue);">${f.name}() Explanation</div>
+                    <div class="warning-body">
+                        <p>A function named <code>${f.name}</code> defined at line ${f.line}.</p>
+                        <p><strong>Purpose:</strong> It has been classified as a <strong>${f.role}</strong>. It accepts parameters (<code>${f.args.join(', ') || 'none'}</code>).</p>
+                        <p><strong>Complexity rating:</strong> Its path complexity index is <code>${f.complexity}</code>, denoting ${f.complexity > 5 ? 'complex branches (consider refactoring)' : 'simple, readable execution flow'}.</p>
+                    </div>
+                </div>`;
+            });
+            analysis.classes.forEach(c => {
+                explanationsHtml += `
+                <div class="warning-card" style="background-color: #111827; border: 1px solid var(--border-color);">
+                    <div class="warning-title" style="color: var(--accent-blue);">class ${c.name} Explanation</div>
+                    <div class="warning-body">
+                        <p>A class named <code>${c.name}</code> representing a blueprint or data model defined at line ${c.line}.</p>
+                        <p><strong>Role:</strong> Classified as <strong>${c.role}</strong>.</p>
+                        <p>It inherits from: <code>${c.bases.join(', ') || 'object'}</code> and has <code>${c.methods.length}</code> methods.</p>
+                    </div>
+                </div>`;
+            });
+            if (!explanationsHtml) {
+                explanationsHtml = '<p style="color: var(--text-muted);">No functions or classes to explain.</p>';
+            }
+            document.getElementById('explanationsList').innerHTML = explanationsHtml;
+            
+            // Populate source code tab with line numbers
+            const code = document.getElementById('codeInput').value;
+            const codeLines = code.split('\n');
+            let numberedHtml = '';
+            codeLines.forEach((line, idx) => {
+                numberedHtml += `<span style="color: var(--text-muted); display: inline-block; width: 40px; text-align: right; border-right: 1px solid var(--border-color); padding-right: 8px; margin-right: 8px; user-select: none;">${idx+1}</span>${escapeHtml(line)}\n`;
+            });
+            document.getElementById('sourceCodeCode').innerHTML = numberedHtml;
+            
+            // Populate architectural lens
+            selectLens(1);
+            
+            // Show export button
+            document.getElementById('exportBtnContainer').classList.remove('hidden');
+        }
+        
+        function selectLens(lensId) {
+            for (let i = 1; i <= 7; i++) {
+                const btn = document.getElementById('lens-btn-' + i);
+                if (btn) {
+                    if (i === lensId) {
+                        btn.style.borderColor = 'var(--accent-blue)';
+                        btn.style.color = 'var(--accent-blue)';
+                        btn.style.backgroundColor = '#161e2e';
+                    } else {
+                        btn.style.borderColor = 'var(--border-color)';
+                        btn.style.color = 'var(--text-muted)';
+                        btn.style.backgroundColor = 'transparent';
+                    }
+                }
+            }
+            
+            const container = document.getElementById('lens-container');
+            if (!lastAnalysisResult) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Please upload a script and run analysis first.</p>';
+                return;
+            }
+            
+            const analysis = lastAnalysisResult;
+            let html = '';
+            
+            if (lensId === 1) {
+                const std_libs = [];
+                const ext_libs = [];
+                analysis.imports.forEach(imp => {
+                    const baseMod = imp.module.split('.')[0];
+                    if (['sys', 'os', 'math', 'json', 'ast', 'io', 'tokenize', 'collections', 'typing', 'datetime', 'time', 'abc'].includes(baseMod)) {
+                        std_libs.push(imp.module);
+                    } else {
+                        ext_libs.push(imp.module);
+                    }
+                });
+                const unique_std = [...new Set(std_libs)];
+                const unique_ext = [...new Set(ext_libs)];
+                
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">1. Module Viewtype – *How is the code organized?*</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    Focus on the static decomposition of the script into modules, packages, classes, and functions.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 What you look for:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>Module/package hierarchy and responsibilities.</li>
+                        <li>Import dependencies (<code>import</code>, <code>from … import</code>).</li>
+                        <li>Use of <code>__init__.py</code>, namespace packages, relative imports.</li>
+                        <li>Code layering (e.g., separation between data access, business logic, presentation).</li>
+                    </ul>
+                    <strong style="display: block; margin-top: 10px;">🛠️ Helpful techniques/tools:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li><strong>pydeps</strong> – renders a module‑level dependency graph.</li>
+                        <li><strong>pyreverse</strong> (part of pylint) – generates UML class diagrams showing inheritance and associations.</li>
+                        <li>Manual inspection of the import tree and <code>__all__</code> lists.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>Static Decomposition:</strong> Found ${analysis.classes.length} class(es) and ${analysis.functions.length} function(s).</p>
+                        <p>• <strong>Core Python imports:</strong> ${unique_std.length > 0 ? unique_std.join(', ') : 'None'}</p>
+                        <p>• <strong>External imports:</strong> ${unique_ext.length > 0 ? unique_ext.join(', ') : 'None'}</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">Modular Clean Architecture Example:</p>
+                    <pre class="code-preview"># Standard modular separation
+project/
+├── domain/models.py       # Plain Business Logic
+├── infrastructure/db.py   # Database Client Code
+└── app_interface.py       # UI Presentation Layer</pre>
+                </div>`;
+            } else if (lensId === 2) {
+                const recursion = analysis.recursion_detected.join(', ') || 'None';
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">2. Component‑and‑Connector (C&C) Viewtype – *How do the pieces interact at runtime?*</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    This view reveals the dynamic behaviour: which parts talk to each other, in what order, and through which mechanisms.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 What you look for:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>Entry points (<code>if __name__ == "__main__"</code>, CLI argument parsers, web endpoints).</li>
+                        <li>Call graphs – direct function calls, callbacks, signals, async coroutines.</li>
+                        <li>Communication patterns – shared mutable state, queues, pipes, message brokers, REST calls.</li>
+                        <li>Concurrency models – threads, <code>asyncio</code> event loops, multiprocessing.</li>
+                    </ul>
+                    <strong style="display: block; margin-top: 10px;">🛠️ Helpful techniques/tools:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li><strong>code2flow</strong> – builds a call graph from source code.</li>
+                        <li><strong>py-spy</strong> or <strong>viztracer</strong> – profile and trace actual execution flows.</li>
+                        <li>Manual tracing of a typical request/transaction through the code.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>Execution Entry block:</strong> ${analysis.has_main_block ? 'Found main block (\`if __name__ == "__main__"\`)' : 'No main entry block found (runs automatically on import)'}</p>
+                        <p>• <strong>Concurrency:</strong> ${analysis.concurrency_libraries.length > 0 ? analysis.concurrency_libraries.join(', ') : 'Sequential execution (no threads/asyncio)'}</p>
+                        <p>• <strong>Recursion Callees:</strong> ${recursion}</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">Clean Entry Point wrapper:</p>
+                    <pre class="code-preview">def main():
+    # Startup process
+    print("App running...")
+
+if __name__ == "__main__":
+    main() # Prevents execution on import</pre>
+                </div>`;
+            } else if (lensId === 3) {
+                const envs = [...new Set(analysis.env_accesses.map(e => e.call))];
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">3. Allocation Viewtype – *How does the software relate to its environment?*</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    Map the software onto the file system, operating system processes, and external services.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 What you look for:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>File/directory layout (config files, static resources, templates).</li>
+                        <li>Deployment structure (Docker containers, virtual environments, cloud functions).</li>
+                        <li>External dependencies (databases, caches, third‑party APIs) and how they are configured.</li>
+                    </ul>
+                    <strong style="display: block; margin-top: 10px;">🛠️ Helpful techniques:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>Reading <code>setup.py</code> / <code>pyproject.toml</code> / <code>requirements.txt</code> for dependencies.</li>
+                        <li>Examining environment variable usage and configuration loading (e.g., <code>os.environ</code>, <code>python-dotenv</code>).</li>
+                        <li>Looking at Dockerfiles, <code>docker-compose.yml</code>, or CI/CD pipelines.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>Environment lookups:</strong> ${envs.length > 0 ? envs.join(', ') : 'None'}</p>
+                        <p>• <strong>Recommendation:</strong> ${envs.length > 0 ? 'Wrap environment variables in a single configuration container.' : 'No OS env variables accessed.'}</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">Dotenv Config Allocation:</p>
+                    <pre class="code-preview">import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load vars from local .env config file
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///dev.db")</pre>
+                </div>`;
+            } else if (lensId === 4) {
+                const yields = analysis.functions.filter(f => f.has_yield).map(f => f.name + '()');
+                const withs = analysis.control_flow.filter(cf => cf.type === 'With').length;
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">4. Control‑ & Data‑Flow Lens</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    Trace how data enters, is transformed, and exits the system. In Python this often reveals architectural patterns.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 Look for:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>Pipelines (generators, <code>yield</code>, chained functions).</li>
+                        <li>Decorators adding cross‑cutting concerns (caching, logging, authentication).</li>
+                        <li>Context managers (<code>with</code> statements) managing resources.</li>
+                        <li>The “strategy” pattern implemented via first‑class functions or callables.</li>
+                    </ul>
+                    <strong style="display: block; margin-top: 10px;">🛠️ Tool:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li><strong>birdseye</strong> – a debugger that shows expression values directly in the code, making data flow obvious.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>Generators (yield):</strong> ${yields.length > 0 ? yields.join(', ') : 'None'}</p>
+                        <p>• <strong>Context Managers (with):</strong> ${withs} block(s)</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">Yield Pipeline Flow:</p>
+                    <pre class="code-preview">def stream_data(source):
+    with open(source) as f:
+        for line in f:
+            yield line.strip()</pre>
+                </div>`;
+            } else if (lensId === 5) {
+                const paths = [...new Set(analysis.hardcoded_paths.map(p => p.path))];
+                const abcs = analysis.abc_classes.map(c => c.name);
+                const score = analysis.imports.length + paths.length;
+                const rating = score > 8 ? 'High Coupling' : (score >= 3 ? 'Medium Coupling' : 'Low Coupling');
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">5. Dependency‑Inversion & Coupling Lens</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    Good Python architecture respects the Dependency Inversion Principle – high‑level modules should not depend on low‑level details.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 Symptoms of poor structure:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>Top‑level modules importing many concrete implementations directly.</li>
+                        <li>“String‑ly typed” interfaces (e.g., passing <code>'csv'</code> instead of using a <code>Writer</code> protocol).</li>
+                        <li>Hard‑coded file paths, database connections, or API keys.</li>
+                    </ul>
+                    <strong style="display: block; margin-top: 10px;">🛠️ Tool:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li><strong>import-linter</strong> – define and enforce architectural rules (layers, independence) in a contract‑driven way.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>Hardcoded paths/extensions:</strong> ${paths.length > 0 ? paths.join(', ') : 'None'}</p>
+                        <p>• <strong>ABC Interfaces:</strong> ${abcs.length > 0 ? abcs.join(', ') : 'None'}</p>
+                        <p>• <strong>Coupling score:</strong> ${score} (Rating: <strong>${rating}</strong>)</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">Dependency Inversion Protocol:</p>
+                    <pre class="code-preview">from abc import ABC, abstractmethod
+
+class DataReader(ABC):
+    @abstractmethod
+    def read(self) -> str: pass # Interface definition
+
+class Client:
+    def __init__(self, reader: DataReader): # Injected interface
+        self.reader = reader</pre>
+                </div>`;
+            } else if (lensId === 6) {
+                const trys = analysis.control_flow.filter(cf => cf.type === 'Except').length;
+                const dunders = analysis.dunder_methods.map(d => (d.class ? d.class + '.' : '') + d.name);
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 8px;">6. Pythonic Pattern Lens</h4>
+                <p style="margin-bottom: 12px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    Recognising common Python idioms instantly reveals intent.
+                </p>
+                <div style="margin-bottom: 15px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
+                    <strong>🔍 Patterns to spot:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px; list-style-type: disc;">
+                        <li>EAFP (“Easier to Ask Forgiveness than Permission”) – <code>try</code>/<code>except</code> rather than pre‑checks.</li>
+                        <li>Duck typing and abstract base classes (<code>collections.abc</code>) for interface contracts.</li>
+                        <li>Data classes / Pydantic models for structured data carriers.</li>
+                        <li><code>__dunder__</code> methods hooking into operator overloading or context management.</li>
+                    </ul>
+                </div>
+                <div class="warning-card" style="background-color: #0b0f19; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="warning-title">📊 Script Specific Analysis:</div>
+                    <div class="warning-body" style="font-size: 12px; line-height: 1.5;">
+                        <p>• <strong>EAFP exception handlers:</strong> ${trys} block(s)</p>
+                        <p>• <strong>Magic hooks:</strong> ${dunders.length > 0 ? dunders.join(', ') : 'None'}</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="font-weight: bold; color: var(--accent-gray); font-size: 13px;">EAFP Pattern Example:</p>
+                    <pre class="code-preview"># EAFP style dict check
+try:
+    result = my_dict['key']
+except KeyError:
+    result = 'default_val'</pre>
+                </div>`;
+            } else if (lensId === 7) {
+                html = `
+                <h4 style="color: var(--accent-blue); margin-bottom: 10px;">A Practical, Step‑by‑Step Workflow</h4>
+                <p style="margin-bottom: 15px; color: var(--text-secondary); line-height: 1.5; font-size: 13px;">
+                    When you’re handed an unfamiliar Python script and need to understand its architecture, apply the lenses in this order:
+                </p>
+                <div style="font-size: 13px; line-height: 1.6; color: var(--text-muted);">
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--accent-blue); display: block; margin-bottom: 3px;">1. Allocation + Module View</strong>
+                        Map the file tree and external dependencies; draw a box‑and‑line diagram of modules.
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--accent-blue); display: block; margin-bottom: 3px;">2. C&C View</strong>
+                        Identify the entry point and walk through one complete execution scenario, drawing a sequence diagram manually or with a tool like <code>viztracer</code>.
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--accent-blue); display: block; margin-bottom: 3px;">3. Data & Control Flow</strong>
+                        Trace how the main data structure is built, passed, and consumed.
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: var(--accent-blue); display: block; margin-bottom: 3px;">4. Coupling / Pythonic Patterns</strong>
+                        Evaluate whether imports and abstractions follow clean separation; rewrite mental model using known design patterns.
+                    </div>
+                </div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        function getAntiPatternAdvice(type) {
+            const advices = {
+                'mutable_default': 'Avoid defining list/dict/set directly in function arguments default value, since it persists across multiple function calls. Use default=None and instantiate inside the function instead.',
+                'bare_except': 'Avoid writing except: without specifying an exception class. Capturing all exceptions indiscriminately makes debugging harder by hiding unexpected system errors.',
+                'shadow_builtin': 'Rename this object to avoid shadowing Python built-in symbols (like list, dict, type, min, sum, open) which overrides the original functionality.',
+                'none_comparison': 'Use "is None" or "is not None" instead of "== None" for comparing objects with None. Identity check is faster and safer.',
+                'global_keyword': 'Avoid writing global variable declarations inside functions. Modifying global variables creates side effects that make the code tightly coupled and hard to test.',
+                'unused_import': 'Remove this import statement if it is not used elsewhere in the file. Keep dependencies clean.'
+            };
+            return advices[type] || 'Follow standard PEP 8 coding style guidelines.';
+        }
+        
+        function exportMarkdownReport() {
+            if (!lastAnalysisResult) return;
+            
+            const analysis = lastAnalysisResult;
+            const metrics = analysis.metrics;
+            const hal = metrics.halstead;
+            
+            let md = `# AST Python Protocol - Code Analysis Report\n`;
+            md += `Generated for Python Script Analysis\n\n`;
+            md += `## 📊 Code Quality & Complexity Dashboard\n`;
+            md += `- **Physical Lines of Code (LOC):** ${metrics.physical_loc}\n`;
+            md += `- **Logical Lines of Code (LLOC):** ${metrics.code_lines}\n`;
+            md += `- **Comment Lines:** ${metrics.comment_lines} (Density: ${metrics.comment_density.toFixed(1)}%)\n`;
+            md += `- **Average Cyclomatic Complexity:** ${metrics.avg_cc.toFixed(2)}\n`;
+            md += `- **Maintainability Index:** ${metrics.maintainability_index.toFixed(2)} (${metrics.mi_grade})\n`;
+            md += `- **Estimated Developer Skill Level:** ${analysis.skill_level}\n`;
+            md += `- **Concepts Tagged:** ${analysis.concept_tags.join(', ') || 'None'}\n\n`;
+            
+            md += `### Halstead Complexity Metrics\n`;
+            md += `- **Vocabulary (n):** ${hal.vocabulary}\n`;
+            md += `- **Program Length (N):** ${hal.length}\n`;
+            md += `- **Calculated Volume (V):** ${hal.volume.toFixed(2)}\n`;
+            md += `- **Calculated Difficulty (D):** ${hal.difficulty.toFixed(2)}\n`;
+            md += `- **Calculated Effort (E):** ${hal.effort.toFixed(2)}\n\n`;
+            
+            md += `## 🧩 Code Elements Breakdown\n\n`;
+            
+            md += `### Functions & Methods\n`;
+            if (analysis.functions.length > 0) {
+                analysis.functions.forEach(f => {
+                    const scope = f.class ? `inside class \`${f.class}\`` : 'global scope';
+                    md += `#### \`${f.name}()\` (Line ${f.line}-${f.end_line})\n`;
+                    md += `- **Scope:** ${scope}\n`;
+                    md += `- **Role:** ${f.role}\n`;
+                    md += `- **Complexity:** ${f.complexity}\n`;
+                    md += `- **Statements:** ${f.statements}\n`;
+                    md += `- **Arguments:** \`${f.args.join(', ') || 'None'}\`\n`;
+                    if (f.docstring) {
+                        md += `- **Docstring:**\n  \`\`\`\n  ${f.docstring.trim()}\n  \`\`\`\n`;
+                    }
+                    md += `\n`;
+                });
+            } else {
+                md += `No functions or methods found.\n\n`;
+            }
+            
+            md += `### Classes\n`;
+            if (analysis.classes.length > 0) {
+                analysis.classes.forEach(c => {
+                    md += `#### \`class ${c.name}\` (Line ${c.line}-${c.end_line})\n`;
+                    md += `- **Role:** ${c.role}\n`;
+                    md += `- **Bases:** \`${c.bases.join(', ') || 'object'}\`\n`;
+                    const methods = c.methods.map(m => m.name).join(', ');
+                    md += `- **Methods:** ${methods || 'None'}\n`;
+                    if (c.docstring) {
+                        md += `- **Docstring:**\n  \`\`\`\n  ${c.docstring.trim()}\n  \`\`\`\n`;
+                    }
+                    md += `\n`;
+                });
+            } else {
+                md += `No classes found.\n\n`;
+            }
+            
+            md += `## ⚠️ Anti-patterns & Suggestions\n`;
+            if (analysis.anti_patterns.length > 0) {
+                analysis.anti_patterns.forEach(ap => {
+                    const apLabel = ap.type.replace('_', ' ').toUpperCase();
+                    md += `### Line ${ap.line} - ${apLabel}\n`;
+                    md += `- **Message:** ${ap.message}\n`;
+                    md += `- **Explanation:** ${getAntiPatternAdvice(ap.type)}\n\n`;
+                });
+            } else {
+                md += `No major anti-patterns detected. The code looks standard and follows python specifications.\n`;
+            }
+            
+            // Create download link
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ast_analysis_report.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            printLog('> Report downloaded successfully: ast_analysis_report.md');
+        }
+
+        function updateLineNumbers() {
+            const codeInput = document.getElementById('codeInput');
+            const gutter = document.getElementById('gutter');
+            if (!codeInput || !gutter) return;
+            
+            const lines = codeInput.value.split('\n');
+            let numbers = '';
+            for (let i = 1; i <= lines.length; i++) {
+                numbers += i + '\n';
+            }
+            gutter.textContent = numbers;
+            gutter.scrollTop = codeInput.scrollTop;
+        }
+
+        function syncGutterScroll() {
+            const codeInput = document.getElementById('codeInput');
+            const gutter = document.getElementById('gutter');
+            if (codeInput && gutter) {
+                gutter.scrollTop = codeInput.scrollTop;
+            }
+        }
+
+        // Initialize Pyodide & line numbers on load
+        window.addEventListener('load', () => {
+            loadPyodideEngine();
+            updateLineNumbers();
+        });
+        
+        // Dynamic character counter & line numbers for editor
+        document.getElementById('codeInput').addEventListener('input', function(e) {
+            document.getElementById('editorStats').textContent = e.target.value.length + ' chars';
+            updateLineNumbers();
+        });
+        
+        // Scroll synchronization for gutter
+        document.getElementById('codeInput').addEventListener('scroll', syncGutterScroll);
+    </script>
+</body>
+</html>
