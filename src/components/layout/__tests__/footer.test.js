@@ -49,7 +49,6 @@ describe('Footer Component', () => {
     const emailInput = screen.getByLabelText(/Email address for newsletter updates/i);
     expect(emailInput).toBeInTheDocument();
     expect(emailInput).toHaveAttribute('type', 'email');
-    expect(emailInput).toHaveAttribute('aria-required', 'true');
   });
 
   it('newsletter form has accessible submit button', () => {

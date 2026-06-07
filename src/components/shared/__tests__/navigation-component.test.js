@@ -7,7 +7,7 @@ jest.mock("framer-motion", () => {
   const React = require('react');
   return {
     motion: {
-      div: React.forwardRef(({ children, whileInView, initial, animate, transition, layoutId, viewport, ...props }, ref) =>
+      div: React.forwardRef(({ children, whileInView, initial, animate, transition, layoutId, viewport, exit, ...props }, ref) =>
         React.createElement('div', { ref, ...props }, children)
       ),
     },
@@ -21,12 +21,12 @@ jest.mock("gsap", () => ({
   },
 }))
 
-// Mock @reach/router
+// Mock @reach/router — aliased to @gatsbyjs/reach-router by Gatsby's webpack but not by Jest
 jest.mock("@reach/router", () => ({
   useLocation: () => ({
     pathname: "/",
   }),
-}))
+}), { virtual: true })
 
 describe("Navigation Component", () => {
   it("renders without crashing", () => {
@@ -37,7 +37,7 @@ describe("Navigation Component", () => {
   it("displays all navigation links", () => {
     render(<Navigation />)
     expect(screen.getByText("Home")).toBeInTheDocument()
-    expect(screen.getByText("Development Projects")).toBeInTheDocument()
+    expect(screen.getByText("Apps & Projects")).toBeInTheDocument()
     expect(screen.getByText("Stories & More")).toBeInTheDocument()
     expect(screen.getByText("About")).toBeInTheDocument()
     expect(screen.getByText("Contact")).toBeInTheDocument()
@@ -51,13 +51,13 @@ describe("Navigation Component", () => {
   it("has correct href attributes", () => {
     render(<Navigation />)
     const homeLink = screen.getByRole("link", { name: /Home/i })
-    const devLink = screen.getByRole("link", { name: /Development Projects/i })
+    const appsLink = screen.getByRole("link", { name: /Apps & Projects/i })
     const storiesLink = screen.getByRole("link", { name: /Stories & More/i })
     const aboutLink = screen.getByRole("link", { name: /About/i })
     const contactLink = screen.getByRole("link", { name: /Contact/i })
 
     expect(homeLink).toHaveAttribute("href", "/")
-    expect(devLink).toHaveAttribute("href", "/development-projects")
+    expect(appsLink).toHaveAttribute("href", "/apps")
     expect(storiesLink).toHaveAttribute("href", "/stories")
     expect(aboutLink).toHaveAttribute("href", "/about")
     expect(contactLink).toHaveAttribute("href", "/contact")

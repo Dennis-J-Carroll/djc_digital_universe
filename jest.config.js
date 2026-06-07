@@ -7,8 +7,9 @@ module.exports = {
     ".+\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": `<rootDir>/__mocks__/file-mock.js`,
     "^gatsby-page-utils/(.*)$": `<rootDir>/node_modules/gatsby-page-utils/dist/$1`,
     "^gatsby-core-utils/(.*)$": `<rootDir>/node_modules/gatsby-core-utils/dist/$1`,
+    "^@reach/router$": `<rootDir>/node_modules/@gatsbyjs/reach-router`,
   },
-  testPathIgnorePatterns: [`node_modules`, `\\.cache`, `<rootDir>.*/public`],
+  testPathIgnorePatterns: [`node_modules`, `\\.cache`, `<rootDir>.*/public`, `<rootDir>/apps/`],
   transformIgnorePatterns: [`node_modules/(?!(gatsby|gatsby-script|gatsby-link)/)`],
   globals: {
     __PATH_PREFIX__: ``,

@@ -2,18 +2,13 @@ import React from "react"
 import { render, screen } from "@testing-library/react"
 import IndexPage from "../index"
 
-// Mock framer-motion with proper prop filtering
+// Mock framer-motion — cover all motion.* elements via Proxy
 jest.mock("framer-motion", () => {
   const React = require('react');
+  const passthrough = ({ children, initial, animate, whileInView, transition, variants, viewport, exit, layoutId, ...props }) =>
+    React.createElement('div', props, children);
   return {
-    motion: {
-      div: React.forwardRef(({ children, whileInView, initial, animate, transition, viewport, ...props }, ref) =>
-        React.createElement('div', { ref, ...props }, children)
-      ),
-      section: React.forwardRef(({ children, whileInView, initial, animate, transition, viewport, ...props }, ref) =>
-        React.createElement('section', { ref, ...props }, children)
-      ),
-    },
+    motion: new Proxy({}, { get: () => passthrough }),
   };
 });
 
@@ -66,7 +61,7 @@ describe("IndexPage", () => {
   it("displays the hero section", () => {
     render(<IndexPage location={mockLocation} />)
     expect(screen.getByTestId("hero-text")).toBeInTheDocument()
-    expect(screen.getByText("Welcome to My Digital Universe")).toBeInTheDocument()
+    expect(screen.getByText(/Exploring Data Science/i)).toBeInTheDocument()
   })
 
   it("displays featured work cards", () => {
@@ -75,32 +70,31 @@ describe("IndexPage", () => {
     expect(featureCards.length).toBeGreaterThan(0)
   })
 
-  it("displays Development Projects card", () => {
+  it("displays Hypersphere Explorer card", () => {
     render(<IndexPage location={mockLocation} />)
-    const developmentProjects = screen.getAllByText("Development Projects")
-    expect(developmentProjects.length).toBeGreaterThan(0)
+    expect(screen.getByText("Hypersphere Explorer")).toBeInTheDocument()
   })
 
-  it("displays Stories & More card", () => {
+  it("displays Chroma Echo card", () => {
     render(<IndexPage location={mockLocation} />)
-    const storiesMore = screen.getAllByText("Stories & More")
-    expect(storiesMore.length).toBeGreaterThan(0)
+    expect(screen.getByText("Chroma Echo")).toBeInTheDocument()
   })
 
-  it("displays About Me card", () => {
+  it("displays Mech Interp Viz card", () => {
     render(<IndexPage location={mockLocation} />)
-    expect(screen.getByText("About Me")).toBeInTheDocument()
+    expect(screen.getByText("Mech Interp Viz")).toBeInTheDocument()
   })
 
-  it("has navigation links to main sections", () => {
+  it("has Apps & Projects CTA link", () => {
     render(<IndexPage location={mockLocation} />)
-    const developmentLink = screen.getByRole("link", { name: /Development Projects/i })
-    const contactLink = screen.getByRole("link", { name: /Contact Me/i })
-    const storiesLink = screen.getByRole("link", { name: /Stories & More/i })
+    const appsLink = screen.getByRole("link", { name: /Apps & Projects/i })
+    expect(appsLink).toHaveAttribute("href", "/apps")
+  })
 
-    expect(developmentLink).toHaveAttribute("href", "/development-projects")
-    expect(contactLink).toHaveAttribute("href", "/contact")
-    expect(storiesLink).toHaveAttribute("href", "/stories")
+  it("has About Me CTA link", () => {
+    render(<IndexPage location={mockLocation} />)
+    const aboutLink = screen.getByRole("link", { name: /About Me/i })
+    expect(aboutLink).toHaveAttribute("href", "/about")
   })
 
   it("does not display Data Science card", () => {
