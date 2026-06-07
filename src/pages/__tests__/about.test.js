@@ -9,6 +9,19 @@ jest.mock('../../components/layout/layout', () => {
   };
 });
 
+// Mock framer-motion so animated elements render immediately
+jest.mock('framer-motion', () => {
+  const passthrough = ({ children, ...props }) => {
+    const { initial, animate, transition, variants, whileInView, viewport, ...rest } = props;
+    return <div {...rest}>{children}</div>;
+  };
+  return {
+    motion: new Proxy({}, { get: () => passthrough }),
+    useAnimation: () => ({ start: jest.fn() }),
+    useInView: () => true,
+  };
+});
+
 describe('About Page', () => {
   const mockLocation = { pathname: '/about' };
 
@@ -17,14 +30,14 @@ describe('About Page', () => {
     expect(screen.getByTestId('layout')).toBeInTheDocument();
   });
 
-  it('displays About Me heading', () => {
+  it('displays name heading', () => {
     render(<AboutPage location={mockLocation} />);
-    expect(screen.getByText(/About Me/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dennis J. Carroll/i)).toBeInTheDocument();
   });
 
   it('displays background content', () => {
     render(<AboutPage location={mockLocation} />);
-    expect(screen.getByText(/passionate technologist/i)).toBeInTheDocument();
+    expect(screen.getByText(/The Mission/i)).toBeInTheDocument();
   });
 
   it('displays skills section', () => {
