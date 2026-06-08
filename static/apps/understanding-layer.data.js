@@ -98,8 +98,8 @@ window.UL_TRACE = {
       parts: [
         {
           partKind: "TOOL_USE", icon: "tool-use",
-          content: "insert({\"text\": \"from marshmallow.fields import TimeDelta\\nfrom datetime import timedel)",
-          preview: "insert({\"text\": \"from marshmallow.fields import TimeDelta\\nfrom datetime import timedel)",
+          content: "insert({\"text\": \"from marshmallow.fields import TimeDelta\\nfrom datetime import timedel…",
+          preview: "insert({\"text\": \"from marshmallow.fields import TimeDelta\\nfrom datetime import timedel…",
           truncatedUpstream: true
         }
       ]
@@ -248,8 +248,8 @@ window.UL_TRACE = {
       parts: [
         {
           partKind: "TOOL_USE", icon: "tool-use",
-          content: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep)",
-          preview: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep)",
+          content: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep…",
+          preview: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep…",
           truncatedUpstream: true
         }
       ]
@@ -278,8 +278,8 @@ window.UL_TRACE = {
       parts: [
         {
           partKind: "TOOL_USE", icon: "tool-use",
-          content: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep)",
-          preview: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep)",
+          content: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep…",
+          preview: "edit({\"search\": \"return int(value.total_seconds() / base_unit.total_seconds())\", \"rep…",
           truncatedUpstream: true
         }
       ]
@@ -443,8 +443,8 @@ window.UL_TRACE = {
       parts: [
         {
           partKind: "TOOL_USE", icon: "tool-use",
-          content: "insert({\"text\": \"from sympy import symbols, Min, pycode\\n\\na, b = symbols(\\\"a b\\\")\\nc =)",
-          preview: "insert({\"text\": \"from sympy import symbols, Min, pycode\\n\\na, b = symbols(\\\"a b\\\")\\nc =)",
+          content: "insert({\"text\": \"from sympy import symbols, Min, pycode\\n\\na, b = symbols(\\\"a b\\\")\\nc =…",
+          preview: "insert({\"text\": \"from sympy import symbols, Min, pycode\\n\\na, b = symbols(\\\"a b\\\")\\nc =…",
           truncatedUpstream: true
         }
       ]
