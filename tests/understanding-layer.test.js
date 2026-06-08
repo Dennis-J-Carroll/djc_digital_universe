@@ -23,3 +23,66 @@ test('renderSummary shows the five summary cards', () => {
   const html = UL.renderSummary(UL.computeStats(TRACE.events));
   ['Events','Actors','Tool Calls','Fabricated','Annotated Events'].forEach(l => expect(html).toContain(l));
 });
+
+// ── Feature A: groupByPhase ──────────────────────────────────────────────────
+test('groupByPhase returns 5 groups matching phases, correct first event, total 46', () => {
+  const groups = UL.groupByPhase(TRACE.events, TRACE.phases);
+  expect(groups.length).toBe(5);
+  expect(groups[0].events[0].id).toBe('e0');
+  const total = groups.reduce((acc, g) => acc + g.events.length, 0);
+  expect(total).toBe(46);
+  TRACE.phases.forEach((ph, i) => expect(groups[i].phase.label).toBe(ph.label));
+});
+
+// ── Feature B: per-event annotations ────────────────────────────────────────
+test('renderEventCard for e22 includes annotation-callout and annotated class', () => {
+  const e22 = TRACE.events.find(e => e.id === 'e22');
+  const html = UL.renderEventCard(e22);
+  expect(html).toContain('annotation-callout');
+  expect(html).toContain('annotated');
+  expect(html).toContain('decision-point');
+  expect(html).toContain('without re-validating');
+});
+test('computeStats annotated counts distinct event-annotated ids', () => {
+  const distinctAnnotatedIds = new Set(
+    TRACE.annotations.filter(a => a.scope === 'event').map(a => a.eventId)
+  ).size;
+  const s = UL.computeStats(TRACE.events);
+  expect(s.annotated).toBe(distinctAnnotatedIds);
+  expect(s.annotated).toBeGreaterThan(0);
+});
+
+// ── Feature C: expandable card wiring ────────────────────────────────────────
+test('renderEventCard shows ul-expand button for long non-truncated content', () => {
+  const syntheticEvent = {
+    id: 'eX', index: 0, kind: 'MESSAGE', from: 'user', to: 'agent',
+    causalParent: null, isError: false, fabricated: false,
+    phase: 'task1-reproduce',
+    parts: [{
+      partKind: 'TEXT',
+      content: 'x'.repeat(300),
+      preview: 'x'.repeat(140) + '…',
+      truncatedUpstream: false
+    }]
+  };
+  const html = UL.renderEventCard(syntheticEvent, {});
+  expect(html).toContain('ul-expand');
+  // collapsed: shows preview (140 chars + ellipsis)
+  expect(html).toContain('x'.repeat(140) + '…');
+});
+test('renderEventCard with opts.expanded shows full content for long non-truncated part', () => {
+  const syntheticEvent = {
+    id: 'eX', index: 0, kind: 'MESSAGE', from: 'user', to: 'agent',
+    causalParent: null, isError: false, fabricated: false,
+    phase: 'task1-reproduce',
+    parts: [{
+      partKind: 'TEXT',
+      content: 'x'.repeat(300),
+      preview: 'x'.repeat(140) + '…',
+      truncatedUpstream: false
+    }]
+  };
+  const html = UL.renderEventCard(syntheticEvent, { expanded: true });
+  // full 300 chars present in data-full attribute
+  expect(html).toContain('x'.repeat(300));
+});
