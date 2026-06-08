@@ -249,3 +249,82 @@ test('markErrorChains returns at least one chain including e14', () => {
   const chainWithE14 = chains.find(c => c.eventIds.includes('e14'));
   expect(chainWithE14).toBeDefined();
 });
+
+// ── Sprint 3: Tasks 18/19/20/21 ───────────────────────────────────────────────
+
+// Task 18: computeAnalytics
+test('computeAnalytics returns toolUsage, errorRate, errorCount, retryCount, perPhase', () => {
+  const an = UL.computeAnalytics(TRACE.events);
+  expect(typeof an.toolUsage).toBe('object');
+  expect(typeof an.errorRate).toBe('number');
+  expect(an.errorRate).toBeGreaterThanOrEqual(0);
+  expect(an.errorRate).toBeLessThanOrEqual(1);
+  expect(typeof an.errorCount).toBe('number');
+  expect(typeof an.retryCount).toBe('number');
+  expect(typeof an.perPhase).toBe('object');
+  // toolUsage counts TOOL_CALL events by their `to`
+  const toolCalls = TRACE.events.filter(e => e.kind === 'TOOL_CALL');
+  const totalFromUsage = Object.values(an.toolUsage).reduce((a, b) => a + b, 0);
+  expect(totalFromUsage).toBe(toolCalls.length);
+  // perPhase totals match event count
+  const totalPerPhase = Object.values(an.perPhase).reduce((a, b) => a + b, 0);
+  expect(totalPerPhase).toBe(TRACE.events.length);
+});
+
+test('renderAnalytics returns HTML with .ul-analytics and .ul-bar-row elements', () => {
+  const an = UL.computeAnalytics(TRACE.events);
+  const html = UL.renderAnalytics(an);
+  expect(html).toContain('ul-analytics');
+  expect(html).toContain('ul-bar-row');
+  expect(html).toContain('Trace analytics');
+});
+
+// Task 19: sparkline
+test('sparkline([1,2,3]) returns an <svg> containing 3 <rect', () => {
+  const html = UL.sparkline([1, 2, 3]);
+  expect(html).toContain('<svg');
+  const rects = (html.match(/<rect/g) || []).length;
+  expect(rects).toBe(3);
+});
+
+test('renderSummary(stats, events) contains <svg for sparkline', () => {
+  const html = UL.renderSummary(UL.computeStats(TRACE.events), TRACE.events);
+  expect(html).toContain('<svg');
+});
+
+test('renderSummary(stats) without events still works and contains Events label', () => {
+  const html = UL.renderSummary(UL.computeStats(TRACE.events));
+  expect(html).toContain('Events');
+  // No sparkline when events omitted
+  expect(html).not.toContain('<svg');
+});
+
+// Task 20: causalChain
+test('causalChain(events, "e3") returns e0>e1>e2>e3, length 4', () => {
+  const chain = UL.causalChain(TRACE.events, 'e3');
+  expect(chain).toEqual(['e0', 'e1', 'e2', 'e3']);
+  expect(chain.length).toBe(4);
+});
+
+test('causalChain for a root event returns just that event', () => {
+  const chain = UL.causalChain(TRACE.events, 'e0');
+  expect(chain).toEqual(['e0']);
+});
+
+// Task 21: summarizePhase
+test('summarizePhase returns eventCount, toolCount, hasError for a slice', () => {
+  const slice = TRACE.events.slice(0, 7);
+  const group = { phase: { label: 'X' }, events: slice };
+  const result = UL.summarizePhase(group);
+  expect(result.eventCount).toBe(7);
+  const expectedToolCount = slice.filter(e => e.kind === 'TOOL_CALL').length;
+  expect(result.toolCount).toBe(expectedToolCount);
+  expect(typeof result.hasError).toBe('boolean');
+  expect(result.label).toBe('X');
+});
+
+test('renderTimeline includes .phase-summary spans (one per non-empty phase group)', () => {
+  const html = UL.renderTimeline(TRACE.events);
+  const matches = (html.match(/class="phase-summary"/g) || []).length;
+  expect(matches).toBe(5); // 5 phases, all non-empty
+});

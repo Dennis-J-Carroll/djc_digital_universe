@@ -274,11 +274,18 @@
       if (g.events.length === 0) return '';
       var eventsHtml = g.events.map(function (e) { return renderEventCard(e, chainOpts); }).join('');
       var count = g.events.length;
+      // Task 21: phase summary for collapsed state
+      var psum = summarizePhase(g);
+      var psumParts = [count + ' event' + (count !== 1 ? 's' : '')];
+      if (psum.toolCount > 0) psumParts.push(psum.toolCount + ' tool call' + (psum.toolCount !== 1 ? 's' : ''));
+      if (psum.hasError) psumParts.push('errors');
+      var psumText = psumParts.join(' · ');
       return '<div class="phase-group" data-phase-id="' + esc(g.phase.id) + '">' +
         '<div class="phase-header">' +
         '<span class="ph-chevron">' + icons.chevron + '</span>' +
         '<span>' + esc(g.phase.label) + '</span>' +
         '<span class="phase-count">' + count + ' event' + (count !== 1 ? 's' : '') + '</span>' +
+        '<span class="phase-summary">' + esc(psumText) + '</span>' +
         '</div>' +
         eventsHtml +
         '</div>';
@@ -446,15 +453,163 @@
       '</div>';
   }
 
-  function renderSummary(stats) {
-    function card(n, label, warn) {
-      return '<div class="summary-card"><div class="summary-num ' + (warn ? 'num-warn' : 'num-ok') + '">' + n + '</div><div class="summary-label">' + label + '</div></div>';
+  // ── Task 19: sparkline ───────────────────────────────────────────────────────
+  // Pure: returns inline SVG bar sparkline. One rect per value.
+  function sparkline(values, opts) {
+    opts = opts || {};
+    var color = opts.color || '#58a6ff';
+    var width = opts.width || 80;
+    var height = opts.height || 20;
+    var n = values.length;
+    if (!n) return '<svg width="' + width + '" height="' + height + '"></svg>';
+    var max = Math.max.apply(null, values);
+    var barW = Math.max(1, Math.floor(width / n) - 1);
+    var gap = Math.floor(width / n);
+    var rects = values.map(function (v, i) {
+      var h = max > 0 ? Math.max(2, Math.round((v / max) * height)) : 2;
+      var x = i * gap;
+      var y = height - h;
+      return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + h + '" fill="' + color + '" rx="1"/>';
+    }).join('');
+    return '<svg width="' + width + '" height="' + height + '" aria-hidden="true" style="display:inline-block;vertical-align:middle;">' + rects + '</svg>';
+  }
+
+  function renderSummary(stats, events) {
+    function card(n, label, warn, extra) {
+      return '<div class="summary-card"><div class="summary-num ' + (warn ? 'num-warn' : 'num-ok') + '">' + n + '</div><div class="summary-label">' + label + '</div>' + (extra || '') + '</div>';
     }
-    return card(stats.events, 'Events') +
+    var sparkHtml = '';
+    if (events) {
+      var msgCount = events.filter(function (e) { return e.kind === 'MESSAGE'; }).length;
+      var toolCallCount = events.filter(function (e) { return e.kind === 'TOOL_CALL'; }).length;
+      var toolResultCount = events.filter(function (e) { return e.kind === 'TOOL_RESULT'; }).length;
+      sparkHtml = '<div style="margin-top:6px;" title="MESSAGE / TOOL CALL / TOOL RESULT">' + sparkline([msgCount, toolCallCount, toolResultCount]) + '</div>';
+    }
+    return card(stats.events, 'Events', false, sparkHtml) +
       card(stats.actors, 'Actors') +
       card(stats.toolCalls, 'Tool Calls') +
       card(stats.fabricated, 'Fabricated', stats.fabricated > 0) +
       card(stats.annotated, 'Annotated Events');
+  }
+
+  // ── Task 18: computeAnalytics ────────────────────────────────────────────────
+  // Pure: returns analytics object from events array.
+  function computeAnalytics(events) {
+    var toolUsage = {};
+    var errorCount = 0;
+    var perPhase = {};
+
+    events.forEach(function (ev) {
+      // Tool usage: count TOOL_CALL events by their `to` (the tool invoked)
+      if (ev.kind === 'TOOL_CALL') {
+        toolUsage[ev.to] = (toolUsage[ev.to] || 0) + 1;
+      }
+      // Error count
+      if (ev.isError) errorCount++;
+      // Per-phase event count
+      if (ev.phase) {
+        perPhase[ev.phase] = (perPhase[ev.phase] || 0) + 1;
+      }
+    });
+
+    var errorRate = events.length > 0 ? errorCount / events.length : 0;
+
+    // retryCount: events in error chains beyond first call per chain
+    var chains = markErrorChains(events);
+    var retryCount = 0;
+    chains.forEach(function (chain) {
+      // retries = number of TOOL_CALLs to the same tool after the first one
+      var callsInChain = events.filter(function (e) {
+        return chain.eventIds.indexOf(e.id) !== -1 && e.kind === 'TOOL_CALL' && e.to === chain.tool;
+      }).length;
+      if (callsInChain > 1) retryCount += (callsInChain - 1);
+    });
+
+    return { toolUsage: toolUsage, errorRate: errorRate, errorCount: errorCount, retryCount: retryCount, perPhase: perPhase };
+  }
+
+  // ── Task 18: renderAnalytics ─────────────────────────────────────────────────
+  // Pure: returns HTML for the analytics panel.
+  function renderAnalytics(analytics) {
+    // Tool usage bar list
+    var toolNames = Object.keys(analytics.toolUsage);
+    var maxToolCount = toolNames.length > 0 ? Math.max.apply(null, toolNames.map(function (t) { return analytics.toolUsage[t]; })) : 1;
+    var toolBarsHtml = toolNames.length > 0
+      ? toolNames.map(function (tool) {
+          var count = analytics.toolUsage[tool];
+          var pct = maxToolCount > 0 ? Math.round((count / maxToolCount) * 100) : 0;
+          return '<div class="ul-bar-row">' +
+            '<span class="ul-bar-label">' + esc(tool) + '</span>' +
+            '<span class="ul-bar-track"><span class="ul-bar-fill" style="width:' + pct + '%"></span></span>' +
+            '<span class="ul-bar-count">' + count + '</span>' +
+            '</div>';
+        }).join('')
+      : '<div style="font-size:11px;color:#8b949e;">No tool calls</div>';
+
+    // Per-phase bar list
+    var phaseIds = Object.keys(analytics.perPhase);
+    var maxPhaseCount = phaseIds.length > 0 ? Math.max.apply(null, phaseIds.map(function (p) { return analytics.perPhase[p]; })) : 1;
+    var phaseBarsHtml = phaseIds.length > 0
+      ? phaseIds.map(function (ph) {
+          var count = analytics.perPhase[ph];
+          var pct = maxPhaseCount > 0 ? Math.round((count / maxPhaseCount) * 100) : 0;
+          return '<div class="ul-bar-row">' +
+            '<span class="ul-bar-label">' + esc(ph) + '</span>' +
+            '<span class="ul-bar-track"><span class="ul-bar-fill" style="width:' + pct + '%;background:#3fb950"></span></span>' +
+            '<span class="ul-bar-count">' + count + '</span>' +
+            '</div>';
+        }).join('')
+      : '<div style="font-size:11px;color:#8b949e;">No phase data</div>';
+
+    var errorPct = (analytics.errorRate * 100).toFixed(1);
+
+    return '<div class="ul-analytics">' +
+      '<div class="section-title" style="margin-bottom:14px;">Trace analytics</div>' +
+      '<div class="ul-an-grid">' +
+        '<div>' +
+          '<div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Tool usage</div>' +
+          toolBarsHtml +
+        '</div>' +
+        '<div>' +
+          '<div style="display:flex;gap:24px;margin-bottom:16px;">' +
+            '<div><div class="ul-an-stat' + (analytics.errorCount > 0 ? ' num-warn' : ' num-ok') + '">' + errorPct + '%</div><div class="ul-an-stat-label">Error rate</div></div>' +
+            '<div><div class="ul-an-stat num-ok">' + analytics.retryCount + '</div><div class="ul-an-stat-label">Retries</div></div>' +
+          '</div>' +
+          '<div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Events per phase</div>' +
+          phaseBarsHtml +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  // ── Task 20: causalChain ─────────────────────────────────────────────────────
+  // Pure: returns ordered ancestor id list from root to `id` (inclusive).
+  function causalChain(events, id) {
+    // Build id → event map
+    var byId = {};
+    events.forEach(function (ev) { byId[ev.id] = ev; });
+
+    var chain = [];
+    var current = id;
+    var visited = new Set();
+    while (current && byId[current] && !visited.has(current)) {
+      visited.add(current);
+      chain.push(current);
+      current = byId[current].causalParent;
+    }
+    // chain is in reverse order (id→root), reverse to get root→id
+    chain.reverse();
+    return chain;
+  }
+
+  // ── Task 21: summarizePhase ──────────────────────────────────────────────────
+  // Pure: returns {label, eventCount, toolCount, hasError} for a group object.
+  function summarizePhase(group) {
+    var events = group.events || [];
+    var toolCount = events.filter(function (e) { return e.kind === 'TOOL_CALL'; }).length;
+    var hasError = events.some(function (e) { return e.isError; });
+    var label = (group.phase && group.phase.label) ? group.phase.label : '';
+    return { label: label, eventCount: events.length, toolCount: toolCount, hasError: hasError };
   }
 
   // ── Tasks 10/11/12: Toolbar render ────────────────────────────────────────
@@ -496,6 +651,7 @@
         '<input class="ul-search" type="search" placeholder="Search trace…" value="' + esc(filterState.query) + '" autocomplete="off">' +
       '</div>' +
       '<span class="ul-count">' + currentCount + ' / ' + totalCount + '</span>' +
+      '<button class="ul-collapse-all" data-all-collapsed="false">Collapse all</button>' +
     '</div>';
   }
 
@@ -668,6 +824,84 @@
     }
   }
 
+  // ── Task 20: _wireCausal — hover to highlight causal ancestors+descendants ───
+  function _wireCausal() {
+    var tEl = document.getElementById('ul-timeline');
+    if (!tEl) return;
+    // Guard: jsdom/node environment without full event support — still safe to add listeners
+    var T = global.UL_TRACE;
+    if (!T) return;
+
+    tEl.addEventListener('mouseover', function (e) {
+      var card = e.target.closest && e.target.closest('.tl-event');
+      if (!card) return;
+      var evId = card.id;
+      if (!evId) return;
+
+      // Ancestors
+      var ancestorIds = new Set(causalChain(T.events, evId));
+      // Descendants: events whose causal chain includes evId
+      var descIds = new Set();
+      T.events.forEach(function (ev) {
+        if (ev.id !== evId && causalChain(T.events, ev.id).indexOf(evId) !== -1) {
+          descIds.add(ev.id);
+        }
+      });
+
+      // Lit set: ancestors + descendants + self
+      var litIds = new Set(ancestorIds);
+      descIds.forEach(function (id) { litIds.add(id); });
+      litIds.add(evId);
+
+      // Apply dim/lit classes
+      tEl.classList.add('causal-dim');
+      tEl.querySelectorAll('.tl-event').forEach(function (el) {
+        if (litIds.has(el.id)) {
+          el.classList.add('causal-lit');
+        } else {
+          el.classList.remove('causal-lit');
+        }
+      });
+    });
+
+    tEl.addEventListener('mouseout', function (e) {
+      var card = e.target.closest && e.target.closest('.tl-event');
+      if (!card) return;
+      // Only clear when leaving a .tl-event (not just a child)
+      var related = e.relatedTarget;
+      var stillInside = related && card.contains(related);
+      if (stillInside) return;
+      tEl.classList.remove('causal-dim');
+      tEl.querySelectorAll('.tl-event').forEach(function (el) {
+        el.classList.remove('causal-lit');
+      });
+    });
+  }
+
+  // ── Task 21: _wireCollapseAll — collapse/expand all phase groups ─────────────
+  function _wireCollapseAll() {
+    var toolbarEl = document.getElementById('ul-toolbar');
+    if (!toolbarEl) return;
+    toolbarEl.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.ul-collapse-all');
+      if (!btn) return;
+      var allCollapsed = btn.getAttribute('data-all-collapsed') === 'true';
+      var tEl = document.getElementById('ul-timeline');
+      if (!tEl) return;
+      var groups = tEl.querySelectorAll('.phase-group');
+      groups.forEach(function (g) {
+        if (allCollapsed) {
+          g.classList.remove('collapsed');
+        } else {
+          g.classList.add('collapsed');
+        }
+      });
+      var nowCollapsed = !allCollapsed;
+      btn.setAttribute('data-all-collapsed', nowCollapsed ? 'true' : 'false');
+      btn.textContent = nowCollapsed ? 'Expand all' : 'Collapse all';
+    });
+  }
+
   // ── Event delegation wiring ────────────────────────────────────────────────
   var _wired = false;
   function _wire() {
@@ -689,6 +923,23 @@
         var evId = expandBtn.getAttribute('data-ev');
         if (evId) _toggleExpand(evId);
         return;
+      }
+      // Task 20: flash target when clicking .parent-ref
+      var parentRef = e.target.closest && e.target.closest('.parent-ref');
+      if (parentRef) {
+        var href = parentRef.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          var targetId = href.slice(1);
+          var targetEl = document.getElementById(targetId);
+          if (targetEl) {
+            var card = targetEl.querySelector('.tl-card');
+            if (card) {
+              card.classList.add('flash');
+              setTimeout(function () { card.classList.remove('flash'); }, 1000);
+            }
+          }
+        }
+        // Don't return — let the default anchor navigation happen
       }
     });
   }
@@ -755,7 +1006,27 @@
         '.diff-ctx{color:#c9d1d9}',
         // Task 16: Error chain
         '.tl-card.in-error-chain{box-shadow:-3px 0 0 #f8514944}',
-        '.error-chain-label{font-size:10px;color:#f85149;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}'
+        '.error-chain-label{font-size:10px;color:#f85149;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}',
+        // Task 18: Analytics panel
+        '.ul-analytics{max-width:860px;margin:0 auto 24px;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px}',
+        '.ul-an-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}',
+        '.ul-bar-row{display:flex;align-items:center;gap:8px;font-size:11px;margin:3px 0}',
+        '.ul-bar-label{width:90px;color:#8b949e;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+        '.ul-bar-track{flex:1;background:#0d1117;border-radius:3px;height:10px;overflow:hidden}',
+        '.ul-bar-fill{height:100%;background:#58a6ff;border-radius:3px;transition:width .3s}',
+        '.ul-bar-count{width:24px;color:#e6edf3;font-size:11px}',
+        '.ul-an-stat{font-size:24px;font-weight:700}',
+        '.ul-an-stat-label{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em}',
+        '@media(max-width:640px){.ul-an-grid{grid-template-columns:1fr}}',
+        // Task 20: Causal highlight
+        '#ul-timeline.causal-dim .tl-event:not(.causal-lit){opacity:.35;transition:opacity .15s}',
+        '.tl-event.causal-lit{}',
+        '.tl-card.flash{outline:2px solid #e3b341;outline-offset:2px}',
+        // Task 21: Phase summary + collapse-all
+        '.phase-summary{display:none;font-size:11px;color:#8b949e;font-weight:400;text-transform:none;letter-spacing:0}',
+        '.phase-group.collapsed .phase-summary{display:inline}',
+        '.ul-collapse-all{background:#161b22;border:1px solid #30363d;color:#8b949e;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}',
+        '.ul-collapse-all:hover{border-color:#58a6ff;color:#e6edf3}'
       ].join('');
       document.head && document.head.appendChild(styleEl);
     }
@@ -768,15 +1039,20 @@
     var intentEl = document.getElementById('ul-intent');
     if (intentEl && T.intent) intentEl.innerHTML = renderIntent(T.intent);
 
-    // Summary
+    // Task 18: analytics panel (between summary and toolbar in DOM)
+    var anEl = document.getElementById('ul-analytics');
+    if (anEl) anEl.innerHTML = renderAnalytics(computeAnalytics(T.events));
+
+    // Summary (Task 19: pass events for sparkline)
     var sEl = document.getElementById('ul-summary');
-    if (sEl) sEl.innerHTML = renderSummary(computeStats(T.events));
+    if (sEl) sEl.innerHTML = renderSummary(computeStats(T.events), T.events);
 
     // Tasks 10/11/12: Toolbar (between summary and timeline)
     var tbEl = document.getElementById('ul-toolbar');
     if (tbEl) {
       tbEl.innerHTML = renderToolbar(_filterState, T.events.length);
       _wireToolbar();
+      _wireCollapseAll();
     }
 
     // Timeline (initial = all events, default filter state)
@@ -811,6 +1087,7 @@
 
     _wire();
     _wireGlossary();
+    _wireCausal();
   }
 
   var UL = {
@@ -840,6 +1117,15 @@
     renderDiff: renderDiff,
     // Task 16
     markErrorChains: markErrorChains,
+    // Task 18
+    computeAnalytics: computeAnalytics,
+    renderAnalytics: renderAnalytics,
+    // Task 19
+    sparkline: sparkline,
+    // Task 20
+    causalChain: causalChain,
+    // Task 21
+    summarizePhase: summarizePhase,
   };
   global.UL = UL;
   if (typeof module !== 'undefined') module.exports = UL;
