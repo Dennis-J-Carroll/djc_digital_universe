@@ -13,19 +13,13 @@
 
   // ── Feature A: groupByPhase ────────────────────────────────────────────────
   // Pure function: returns [{phase, events}] in phase order.
-  // Each event lands in the phase whose range[start..end] (by events array index
-  // order, keyed by event id) contains it.
+  // Each event lands in the phase named by its own `phase` field. Keying off the
+  // event's phase id (not range-boundary index lookup) keeps grouping correct for
+  // any SUBSET of events — essential for filtered/searched views, where a phase's
+  // boundary events may have been filtered out.
   function groupByPhase(events, phases) {
-    // Build id → array-index map for O(1) range lookups
-    var idToIdx = {};
-    events.forEach(function (ev, i) { idToIdx[ev.id] = i; });
-
     return phases.map(function (ph) {
-      var startIdx = idToIdx[ph.range[0]];
-      var endIdx   = idToIdx[ph.range[1]];
-      var phaseEvents = events.filter(function (ev, i) {
-        return i >= startIdx && i <= endIdx;
-      });
+      var phaseEvents = events.filter(function (ev) { return ev.phase === ph.id; });
       return { phase: ph, events: phaseEvents };
     });
   }

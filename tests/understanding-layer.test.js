@@ -188,3 +188,14 @@ test('_highlight wraps matched substring in <mark>', () => {
   expect(result).toContain('<mark>');
   expect(result).toContain('reproduce');
 });
+
+test('groupByPhase never drops events from a filtered subset (regression)', () => {
+  // Filtering can remove a phase's range-boundary events; grouping must still
+  // place every remaining event by its own phase field.
+  [['MESSAGE'], ['TOOL_CALL'], ['TOOL_RESULT']].forEach((kinds) => {
+    const filtered = UL.applyFilters(TRACE.events, { kinds });
+    const placed = UL.groupByPhase(filtered, TRACE.phases)
+      .reduce((n, g) => n + g.events.length, 0);
+    expect(placed).toBe(filtered.length);
+  });
+});
