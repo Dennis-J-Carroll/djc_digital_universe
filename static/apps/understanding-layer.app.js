@@ -27,7 +27,7 @@
     opts = opts || {};
     const icons = global.UL_ICONS;
     const dotColor = ev.isError ? '#f85149' : (KIND_COLOR[ev.kind] || '#8b949e');
-    const kindLabel = ev.kind.replace('_', ' ');
+    const kindLabel = ev.kind.replace(/_/g, ' ');
     const kindColor = KIND_COLOR[ev.kind] || '#8b949e';
     const actors = (global.UL_TRACE || {}).actors || {};
     const fromColor = (actors[ev.from] || {}).color || '#8b949e';
@@ -45,12 +45,12 @@
         '<span class="part-icon" style="color:' + kindColor + '">' + ic + '</span>' +
         '<span class="part-kind">' + esc(p.partKind) + '</span>' +
         '<span class="part-content' + (ev.isError ? ' error-text' : '') + '" data-full="' + esc(full) + '">' + esc(shown) + '</span>' +
-        (canExpand ? '<button class="ul-expand" data-ev="' + ev.id + '" aria-expanded="' + (opts.expanded ? 'true' : 'false') + '">' + icons.chevron + '<span>' + (opts.expanded ? 'Less' : 'More') + '</span></button>' : '') +
+        (canExpand ? '<button class="ul-expand" data-ev="' + esc(ev.id) + '" aria-expanded="' + (opts.expanded ? 'true' : 'false') + '">' + icons.chevron + '<span>' + (opts.expanded ? 'Less' : 'More') + '</span></button>' : '') +
         '</div>';
     }).join('');
     const truncNote = anyTrunc ? '<div class="ul-trunc-note">content truncated in source</div>' : '';
-    const parent = ev.causalParent ? '<a class="parent-ref" href="#' + ev.causalParent + '">↑ caused by ' + ev.causalParent + '</a>' : '';
-    return '<div class="tl-event" id="' + ev.id + '" data-kind="' + ev.kind + '" data-from="' + ev.from + '" data-to="' + ev.to + '" data-phase="' + ev.phase + '">' +
+    const parent = ev.causalParent ? '<a class="parent-ref" href="#' + esc(ev.causalParent) + '">↑ caused by ' + esc(ev.causalParent) + '</a>' : '';
+    return '<div class="tl-event" id="' + esc(ev.id) + '" data-kind="' + esc(ev.kind) + '" data-from="' + esc(ev.from) + '" data-to="' + esc(ev.to) + '" data-phase="' + esc(ev.phase) + '">' +
       '<div class="tl-dot" style="background:' + dotColor + '"></div>' +
       '<div class="tl-card' + (ev.isError ? ' error' : '') + (ev.fabricated ? ' fabricated' : '') + '">' +
       '<div class="card-header">' +
@@ -58,7 +58,7 @@
       '<span class="actor-badge" style="color:' + fromColor + '">' + esc(ev.from) + '</span>' +
       '<span class="arrow">→</span>' +
       '<span class="actor-badge" style="color:' + toColor + '">' + esc(ev.to) + '</span>' +
-      '<span class="ev-index">' + ev.id + '</span>' +
+      '<span class="ev-index">' + esc(ev.id) + '</span>' +
       '</div>' +
       parent + parts + truncNote +
       '</div>' +
@@ -83,6 +83,7 @@
 
   function mount() {
     var T = global.UL_TRACE;
+    if (!T) return;
     var sEl = document.getElementById('ul-summary');
     if (sEl) sEl.innerHTML = renderSummary(computeStats(T.events));
     var tEl = document.getElementById('ul-timeline');
