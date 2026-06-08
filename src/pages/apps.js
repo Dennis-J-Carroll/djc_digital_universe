@@ -202,6 +202,7 @@ const interactiveApps = [
     { title: 'Sphere, Cylinder & Hypersphere Explorer', path: '/apps/sphere_cylinder_hypersphere.html', description: 'Interactive geometric visualization of spheres, cylinders, and hyperspheres in multiple dimensions.', category: 'Math' },
     { title: 'Voltic Pile Simulator', path: '/apps/voltic_pile.html', description: 'Interactive electrochemistry simulation exploring early battery design and electrical theory.', category: 'Math' },
     { title: 'Algebraic Flow', path: '/apps/algebraic-flow/', description: 'Interactive equation solver with Play-Doh math manipulatives, proof logging, and constellation backgrounds.', category: 'Math', featured: true },
+    { title: 'Calculus Flow', path: '/apps/calc-flow/', description: 'Interactive calculus visualizer with 5 modes: Riemann sums (animate n→∞), tangent and secant lines, area under curves, Fundamental Theorem (Big Idea cinematic), and epsilon-delta limits. Intuitive tooltip layer throughout.', category: 'Math', featured: true },
     { title: 'repo-tester Security Scanner', path: '/apps/repo-tester.html', description: 'Interactive TUI security dashboard for GitHub repositories. Enter any GitHub URL to scan for malicious code patterns, supply chain vulnerabilities, and repo health issues. Features boot sequence animation, findings table, severity bars, and contextual security insights.', category: 'Tools', featured: true },
     { title: 'AST Protocol v2.0', path: '/apps/ast-v2.html', description: 'Enhanced Python AST code explorer with cognitive complexity scoring, OWASP-aligned security scanning (SEC-001 through SEC-009), dead code detection, deprecated module warnings, and modernization hints. Runs in-browser via Pyodide — no install required.', category: 'Tools', featured: true },
     { title: 'Writing Studio', path: '/apps/studio/', description: 'Unified writing workspace: Prose Trainer and Flow Writer side-by-side. Warm up with genre drills, send your best passages directly into a scene, and analyze draft selections for fog, sensory density, and kinetic verbs — all without switching tabs.', category: 'Tools', featured: true },
@@ -267,7 +268,7 @@ const AppsPage = ({ location }) => {
             Apps & Projects
           </h1>
           <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '700px', margin: '0 auto 2rem' }}>
-            {interactiveApps.length} interactive applications plus full-stack development projects.
+            {interactiveApps.length} interactive applications and full-stack development projects.
           </p>
         </motion.div>
 
