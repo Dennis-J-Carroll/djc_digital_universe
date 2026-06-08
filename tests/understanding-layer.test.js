@@ -328,3 +328,70 @@ test('renderTimeline includes .phase-summary spans (one per non-empty phase grou
   const matches = (html.match(/class="phase-summary"/g) || []).length;
   expect(matches).toBe(5); // 5 phases, all non-empty
 });
+
+// ── Sprint 3: Tasks 22/23/24 ─────────────────────────────────────────────────
+
+// Task 22: tourSteps
+test('tourSteps returns exactly 8 steps', () => {
+  const steps = UL.tourSteps();
+  expect(steps.length).toBe(8);
+});
+
+test('tourSteps — each step has target, title, and body', () => {
+  UL.tourSteps().forEach((step, i) => {
+    expect(typeof step.target).toBe('string');
+    expect(step.target.length).toBeGreaterThan(0);
+    expect(typeof step.title).toBe('string');
+    expect(step.title.length).toBeGreaterThan(0);
+    expect(typeof step.body).toBe('string');
+    expect(step.body.length).toBeGreaterThan(0);
+  });
+});
+
+test('tourSteps includes #e22 and #ul-intro targets', () => {
+  const targets = UL.tourSteps().map(s => s.target);
+  expect(targets).toContain('#e22');
+  expect(targets).toContain('#ul-intro');
+});
+
+// Task 23: eventToJSON / traceToJSON
+test('eventToJSON round-trips: JSON.parse(eventToJSON(e0)) deep-equals e0', () => {
+  const e0 = TRACE.events[0];
+  const parsed = JSON.parse(UL.eventToJSON(e0));
+  expect(JSON.stringify(parsed)).toBe(JSON.stringify(e0));
+});
+
+test('traceToJSON round-trips to an object with 46 events', () => {
+  const parsed = JSON.parse(UL.traceToJSON(TRACE));
+  expect(parsed.events.length).toBe(46);
+});
+
+test('traceToJSON output is valid indented JSON (contains newlines)', () => {
+  const json = UL.traceToJSON(TRACE);
+  expect(json).toContain('\n');
+  expect(() => JSON.parse(json)).not.toThrow();
+});
+
+// Task 24: Integration — mount injects all required elements
+test('mount injects theme toggle, tour button, export button, tour overlay, and timeline aria-label', () => {
+  // Re-mount (app module may cache state, but DOM elements should be queryable)
+  // A fresh jsdom environment is used per test-file, so we rely on the module-level mount
+  // having run via DOMContentLoaded or manual call. Call mount() explicitly.
+  document.body.innerHTML = `
+    <div class="djc-app-bar"></div>
+    <div id="ul-intro"></div>
+    <div id="ul-analytics"></div>
+    <div id="ul-summary"></div>
+    <div id="ul-toolbar"></div>
+    <div id="ul-timeline"></div>
+    <div id="ul-minimap"></div>
+    <div id="ul-intent"></div>
+    <div id="ul-panels"></div>
+  `;
+  UL.mount();
+  expect(document.querySelector('.ul-theme-toggle')).not.toBeNull();
+  expect(document.querySelector('.ul-tour-btn')).not.toBeNull();
+  expect(document.querySelector('.ul-export-json')).not.toBeNull();
+  expect(document.querySelector('.ul-tour-overlay')).not.toBeNull();
+  expect(document.getElementById('ul-timeline').getAttribute('aria-label')).toBeTruthy();
+});

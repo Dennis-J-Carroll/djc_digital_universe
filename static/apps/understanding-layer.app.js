@@ -612,6 +612,31 @@
     return { label: label, eventCount: events.length, toolCount: toolCount, hasError: hasError };
   }
 
+  // ── Task 22: tourSteps ───────────────────────────────────────────────────────
+  // Pure: returns the 8 guided tour steps.
+  function tourSteps() {
+    return [
+      { target: '#ul-intro',    title: 'Start here',         body: 'This panel explains what the trace is and how to read it.' },
+      { target: '#ul-analytics', title: 'Trace at a glance', body: 'Tool usage, error rate, and per-phase counts summarize the whole run.' },
+      { target: '#ul-toolbar',  title: 'Filter & search',    body: 'Toggle event kinds, filter by actor, or search the full trace. Collapse phases to scan structure.' },
+      { target: '#e0',          title: 'The first event',    body: 'The user hands the agent an issue. Every card is one event in the causal chain.' },
+      { target: '#e6',          title: 'Bug reproduced',     body: 'The reproduction script prints 344 — the agent now has a signal to fix against.' },
+      { target: '#e14',         title: 'First error',        body: 'The edit fails with a syntax error. Watch how the agent recovers — this run is bracketed as an error chain.' },
+      { target: '#e22',         title: 'The decision point', body: 'The agent submits without re-validating. This is exactly where the MIRAGE misleading scenario is induced.' },
+      { target: '#ul-panels',   title: 'The verdict',        body: 'The trace-level verdict and scenario explanation tie it together.' }
+    ];
+  }
+
+  // ── Task 23: eventToJSON / traceToJSON ───────────────────────────────────────
+  // Pure: serialize an event or full trace to pretty JSON.
+  function eventToJSON(ev) {
+    return JSON.stringify(ev, null, 2);
+  }
+
+  function traceToJSON(trace) {
+    return JSON.stringify(trace, null, 2);
+  }
+
   // ── Tasks 10/11/12: Toolbar render ────────────────────────────────────────
   function renderToolbar(filterState, total) {
     var icons = global.UL_ICONS;
@@ -902,6 +927,252 @@
     });
   }
 
+  // ── Task 23: Theme toggle ────────────────────────────────────────────────────
+  function _initTheme() {
+    var stored;
+    try { stored = localStorage.getItem('ul-theme'); } catch (e) { stored = null; }
+    if (stored === 'light') {
+      document.body.classList.add('theme-light');
+    } else if (stored === 'dark') {
+      document.body.classList.remove('theme-light');
+    } else {
+      // Respect system preference if no stored preference
+      var preferLight = false;
+      try {
+        if (typeof window !== 'undefined' && window.matchMedia) {
+          preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        }
+      } catch (e) { /* jsdom guard */ }
+      if (preferLight) document.body.classList.add('theme-light');
+    }
+    _updateThemeBtn();
+  }
+
+  function _updateThemeBtn() {
+    var btn = document.querySelector('.ul-theme-toggle');
+    if (!btn) return;
+    var isLight = document.body.classList.contains('theme-light');
+    btn.textContent = isLight ? 'Dark' : 'Light';
+    btn.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+    btn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+  }
+
+  function _toggleTheme() {
+    var isLight = document.body.classList.toggle('theme-light');
+    try { localStorage.setItem('ul-theme', isLight ? 'light' : 'dark'); } catch (e) { /* guard */ }
+    _updateThemeBtn();
+  }
+
+  // ── Task 22: Tour controller ─────────────────────────────────────────────────
+  var _tourActive = false;
+  var _tourIdx = 0;
+  var _tourSpotEl = null;
+
+  function _startTour() {
+    if (typeof document === 'undefined') return;
+    _tourActive = true;
+    _tourGoto(0);
+    var overlay = document.querySelector('.ul-tour-overlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function _tourGoto(i) {
+    if (typeof document === 'undefined') return;
+    var steps = tourSteps();
+    if (i < 0) i = 0;
+    if (i >= steps.length) i = steps.length - 1;
+    _tourIdx = i;
+
+    // Remove spot from previous target
+    if (_tourSpotEl) {
+      _tourSpotEl.classList.remove('ul-tour-spot');
+      _tourSpotEl = null;
+    }
+
+    var step = steps[i];
+    var targetEl = document.querySelector(step.target);
+    if (targetEl) {
+      targetEl.classList.add('ul-tour-spot');
+      _tourSpotEl = targetEl;
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Update bubble
+    var bubble = document.querySelector('.ul-tour-bubble');
+    if (!bubble) return;
+
+    var prevDisabled = i === 0 ? ' disabled' : '';
+    var nextDisabled = i === steps.length - 1 ? ' disabled' : '';
+    bubble.innerHTML =
+      '<h4>' + esc(step.title) + '</h4>' +
+      '<div>' + esc(step.body) + '</div>' +
+      '<div class="ul-tour-nav">' +
+        '<button class="ul-tour-prev"' + prevDisabled + '>&#8592; Prev</button>' +
+        '<button class="ul-tour-next"' + nextDisabled + '>Next &#8594;</button>' +
+        '<button class="ul-tour-exit">Exit</button>' +
+        '<span class="ul-tour-step">Step ' + (i + 1) + '/' + steps.length + '</span>' +
+      '</div>';
+
+    // Position bubble near target, or centered if no target
+    if (targetEl) {
+      var rect = targetEl.getBoundingClientRect();
+      var bTop = rect.bottom + 10;
+      var bLeft = Math.max(8, rect.left);
+      // Keep within viewport
+      var maxLeft = window.innerWidth - 340;
+      if (bLeft > maxLeft) bLeft = maxLeft;
+      if (bTop + 180 > window.innerHeight) bTop = Math.max(8, rect.top - 190);
+      bubble.style.top = bTop + 'px';
+      bubble.style.left = bLeft + 'px';
+    } else {
+      bubble.style.top = '50%';
+      bubble.style.left = '50%';
+      bubble.style.transform = 'translate(-50%, -50%)';
+    }
+
+    // Wire nav buttons
+    var prevBtn = bubble.querySelector('.ul-tour-prev');
+    var nextBtn = bubble.querySelector('.ul-tour-next');
+    var exitBtn = bubble.querySelector('.ul-tour-exit');
+    if (prevBtn) prevBtn.addEventListener('click', function () { _tourGoto(_tourIdx - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', function () { _tourGoto(_tourIdx + 1); });
+    if (exitBtn) exitBtn.addEventListener('click', _endTour);
+  }
+
+  function _endTour() {
+    if (typeof document === 'undefined') return;
+    _tourActive = false;
+    var overlay = document.querySelector('.ul-tour-overlay');
+    if (overlay) overlay.classList.remove('active');
+    if (_tourSpotEl) {
+      _tourSpotEl.classList.remove('ul-tour-spot');
+      _tourSpotEl = null;
+    }
+  }
+
+  // ── Task 24: Keyboard navigation ─────────────────────────────────────────────
+  var _activeIdx = -1;
+
+  function _setActiveEvent(idx) {
+    var tEl = document.getElementById('ul-timeline');
+    if (!tEl) return;
+    var cards = tEl.querySelectorAll('.tl-event');
+    if (!cards.length) return;
+    // Clamp
+    if (idx < 0) idx = 0;
+    if (idx >= cards.length) idx = cards.length - 1;
+    // Remove previous
+    cards.forEach(function (c) { c.classList.remove('kbd-active'); });
+    _activeIdx = idx;
+    var activeCard = cards[idx];
+    activeCard.classList.add('kbd-active');
+    activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function _wireKeyboard() {
+    if (typeof document === 'undefined') return;
+    document.addEventListener('keydown', function (e) {
+      // Ignore when focus is in text inputs
+      var tag = (document.activeElement || {}).tagName;
+      var inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      if (inInput && e.key !== 'Escape') return;
+
+      // Tour keyboard nav
+      if (_tourActive) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          _tourGoto(e.key === 'ArrowLeft' ? _tourIdx - 1 : _tourIdx + 1);
+          return;
+        }
+        if (e.key === 'Escape') { _endTour(); return; }
+        return; // block other keys during tour
+      }
+
+      switch (e.key) {
+        case 'j':
+        case 'ArrowDown':
+          e.preventDefault();
+          _setActiveEvent(_activeIdx + 1);
+          break;
+        case 'k':
+        case 'ArrowUp':
+          e.preventDefault();
+          _setActiveEvent(_activeIdx - 1);
+          break;
+        case 'e': {
+          // Toggle expand on active event
+          var tEl = document.getElementById('ul-timeline');
+          if (tEl && _activeIdx >= 0) {
+            var cards = tEl.querySelectorAll('.tl-event');
+            var activeCard = cards[_activeIdx];
+            if (activeCard) {
+              var expandBtn = activeCard.querySelector('.ul-expand');
+              if (expandBtn) {
+                var evId = expandBtn.getAttribute('data-ev');
+                if (evId) _toggleExpand(evId);
+              }
+            }
+          }
+          break;
+        }
+        case 'f': {
+          var kindBtn = document.querySelector('.ul-kind-btn');
+          if (kindBtn) { kindBtn.focus(); e.preventDefault(); }
+          break;
+        }
+        case 's': {
+          var searchInput = document.querySelector('.ul-search');
+          if (searchInput) { searchInput.focus(); e.preventDefault(); }
+          break;
+        }
+        case '?': {
+          var legendPanel = document.querySelector('.ul-legend-panel');
+          if (legendPanel) legendPanel.classList.toggle('open');
+          break;
+        }
+        case 'g':
+          e.preventDefault();
+          _startTour();
+          break;
+        case 'Escape': {
+          // Close tour first, then legend, then menus
+          var panel2 = document.querySelector('.ul-legend-panel');
+          if (panel2 && panel2.classList.contains('open')) {
+            panel2.classList.remove('open');
+            break;
+          }
+          var actorMenu = document.querySelector('.ul-actor-menu');
+          if (actorMenu && actorMenu.classList.contains('open')) {
+            actorMenu.classList.remove('open');
+            var actorBtn = document.querySelector('.ul-actor-btn');
+            if (actorBtn) actorBtn.setAttribute('aria-expanded', 'false');
+          }
+          break;
+        }
+      }
+    });
+  }
+
+  // ── Task 24: Export ──────────────────────────────────────────────────────────
+  function _triggerJSONDownload() {
+    try {
+      var T = global.UL_TRACE;
+      if (!T) return;
+      var json = traceToJSON(T);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (T.meta && T.meta.id ? T.meta.id : 'trace') + '.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+    } catch (e) { /* guard for jsdom / no Blob */ }
+  }
+
   // ── Event delegation wiring ────────────────────────────────────────────────
   var _wired = false;
   function _wire() {
@@ -1026,7 +1297,55 @@
         '.phase-summary{display:none;font-size:11px;color:#8b949e;font-weight:400;text-transform:none;letter-spacing:0}',
         '.phase-group.collapsed .phase-summary{display:inline}',
         '.ul-collapse-all{background:#161b22;border:1px solid #30363d;color:#8b949e;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}',
-        '.ul-collapse-all:hover{border-color:#58a6ff;color:#e6edf3}'
+        '.ul-collapse-all:hover{border-color:#58a6ff;color:#e6edf3}',
+        // Task 22: Tour
+        '.ul-tour-overlay{position:fixed;inset:0;background:rgba(1,4,9,.7);z-index:10000;display:none}',
+        '.ul-tour-overlay.active{display:block}',
+        '.ul-tour-bubble{position:fixed;z-index:10002;max-width:320px;background:#161b22;border:1px solid #58a6ff;border-radius:8px;padding:14px;font-size:13px;color:#e6edf3}',
+        '.ul-tour-bubble h4{margin:0 0 6px;font-size:13px}',
+        '.ul-tour-bubble .ul-tour-nav{display:flex;gap:8px;margin-top:10px;align-items:center}',
+        '.ul-tour-bubble button{background:#21262d;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}',
+        '.ul-tour-step{font-size:11px;color:#8b949e;margin-left:auto}',
+        '.ul-tour-spot{outline:3px solid #58a6ff !important;outline-offset:4px;border-radius:6px;position:relative;z-index:10001}',
+        // Task 23: Theme toggle button
+        '.ul-theme-toggle{background:#161b22;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-left:8px}',
+        '.ul-theme-toggle:hover{border-color:#58a6ff}',
+        // Task 24: App-bar tour button + export
+        '.ul-tour-btn{background:#161b22;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-left:8px}',
+        '.ul-tour-btn:hover{border-color:#58a6ff}',
+        '.ul-export-json{background:#161b22;border:1px solid #30363d;color:#8b949e;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}',
+        '.ul-export-json:hover{border-color:#58a6ff;color:#e6edf3}',
+        // Task 24: Keyboard active state
+        '.tl-event.kbd-active .tl-card{outline:2px solid #58a6ff;outline-offset:2px}',
+        // Task 24: Focus-visible global
+        ':focus-visible{outline:2px solid #58a6ff;outline-offset:2px}',
+        // Task 23: Light theme overrides
+        'body.theme-light{background:#ffffff;color:#1f2328}',
+        'body.theme-light .summary-card{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .tl-card{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .tl-card:hover{background:#eaeef2}',
+        'body.theme-light .intent-box{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .ul-analytics{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .phase-header{background:#ffffff;border-color:#d0d7de}',
+        'body.theme-light .ul-legend-panel{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .ul-actor-menu{background:#f6f8fa;border-color:#d0d7de}',
+        'body.theme-light .ul-search{background:#ffffff;border-color:#d0d7de;color:#1f2328}',
+        'body.theme-light .ul-actor-btn{background:#f6f8fa;border-color:#d0d7de;color:#1f2328}',
+        'body.theme-light .ul-actor-item{color:#1f2328}',
+        'body.theme-light .ul-actor-item:hover{background:#eaeef2}',
+        'body.theme-light .ul-collapse-all{background:#f6f8fa;border-color:#d0d7de;color:#57606a}',
+        'body.theme-light .ul-gloss-term{color:#1f2328}',
+        'body.theme-light .ul-gloss-def{color:#57606a}',
+        'body.theme-light .ul-count{color:#57606a}',
+        'body.theme-light .ev-index{color:#57606a}',
+        'body.theme-light .ul-bar-label{color:#57606a}',
+        'body.theme-light .ul-bar-track{background:#eaeef2}',
+        'body.theme-light .ul-theme-toggle{background:#f6f8fa;border-color:#d0d7de;color:#1f2328}',
+        'body.theme-light .ul-tour-btn{background:#f6f8fa;border-color:#d0d7de;color:#1f2328}',
+        'body.theme-light .ul-export-json{background:#f6f8fa;border-color:#d0d7de;color:#57606a}',
+        'body.theme-light .ul-tour-bubble{background:#f6f8fa;color:#1f2328}',
+        'body.theme-light .ul-tour-bubble button{background:#eaeef2;border-color:#d0d7de;color:#1f2328}',
+        'body.theme-light .ul-legend-btn{background:#f6f8fa;border-color:#d0d7de;color:#1f2328}',
       ].join('');
       document.head && document.head.appendChild(styleEl);
     }
@@ -1079,15 +1398,93 @@
       legendBtn.innerHTML = icons.info + ' Legend';
       var legendPanel = document.createElement('div');
       legendPanel.className = 'ul-legend-panel';
+      legendPanel.setAttribute('role', 'region');
+      legendPanel.setAttribute('aria-label', 'Schema legend glossary');
       legendPanel.innerHTML = '<div style="font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:8px;">Schema Legend</div>' +
         renderGlossary(T.glossary || []);
       document.body.appendChild(legendBtn);
       document.body.appendChild(legendPanel);
     }
 
+    // Task 22/23/24: Inject app-bar buttons (theme toggle, tour)
+    var appBar = document.querySelector('.djc-app-bar');
+    if (appBar) {
+      var themeBtn = document.createElement('button');
+      themeBtn.className = 'ul-theme-toggle';
+      themeBtn.setAttribute('aria-pressed', 'false');
+      themeBtn.setAttribute('aria-label', 'Switch to light theme');
+      themeBtn.textContent = 'Light';
+      appBar.appendChild(themeBtn);
+      themeBtn.addEventListener('click', _toggleTheme);
+
+      var tourBtn = document.createElement('button');
+      tourBtn.className = 'ul-tour-btn';
+      tourBtn.setAttribute('aria-label', 'Start guided tour');
+      tourBtn.textContent = 'Tour';
+      appBar.appendChild(tourBtn);
+      tourBtn.addEventListener('click', _startTour);
+    }
+
+    // Task 24: Export button in toolbar
+    var tbEl2 = document.getElementById('ul-toolbar');
+    if (tbEl2) {
+      var exportBtn = document.createElement('button');
+      exportBtn.className = 'ul-export-json';
+      exportBtn.setAttribute('aria-label', 'Download trace as JSON');
+      exportBtn.textContent = 'Download JSON';
+      tbEl2.appendChild(exportBtn);
+      exportBtn.addEventListener('click', _triggerJSONDownload);
+    }
+
+    // Task 22: Tour overlay + bubble containers
+    if (typeof document !== 'undefined') {
+      var tourOverlay = document.createElement('div');
+      tourOverlay.className = 'ul-tour-overlay';
+      tourOverlay.setAttribute('role', 'dialog');
+      tourOverlay.setAttribute('aria-modal', 'true');
+      tourOverlay.setAttribute('aria-label', 'Guided tour');
+      var tourBubble = document.createElement('div');
+      tourBubble.className = 'ul-tour-bubble';
+      document.body.appendChild(tourOverlay);
+      document.body.appendChild(tourBubble);
+      // Close tour when clicking overlay background
+      tourOverlay.addEventListener('click', _endTour);
+    }
+
+    // Task 24: aria-label on timeline region
+    var tlEl = document.getElementById('ul-timeline');
+    if (tlEl) tlEl.setAttribute('aria-label', 'Agent trace timeline');
+
+    // Task 24: aria-live on search result count
+    var countEl = document.querySelector('.ul-count');
+    if (countEl) countEl.setAttribute('aria-live', 'polite');
+
+    // Task 24: aria-labels on toolbar buttons already rendered
+    var tbEl3 = document.getElementById('ul-toolbar');
+    if (tbEl3) {
+      var kindBtns = tbEl3.querySelectorAll('.ul-kind-btn');
+      kindBtns.forEach(function (btn) {
+        var kind = btn.getAttribute('data-kind');
+        if (kind && !btn.getAttribute('aria-label')) {
+          btn.setAttribute('aria-label', 'Filter by ' + kind.replace(/_/g, ' ').toLowerCase());
+          btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
+        }
+      });
+      var actorBtn2 = tbEl3.querySelector('.ul-actor-btn');
+      if (actorBtn2 && !actorBtn2.getAttribute('aria-label')) {
+        actorBtn2.setAttribute('aria-label', 'Filter by actor');
+      }
+      var collapseBtn = tbEl3.querySelector('.ul-collapse-all');
+      if (collapseBtn && !collapseBtn.getAttribute('aria-label')) {
+        collapseBtn.setAttribute('aria-label', 'Collapse all phases');
+      }
+    }
+
     _wire();
     _wireGlossary();
     _wireCausal();
+    _initTheme();
+    _wireKeyboard();
   }
 
   var UL = {
@@ -1126,6 +1523,18 @@
     causalChain: causalChain,
     // Task 21
     summarizePhase: summarizePhase,
+    // Task 22
+    tourSteps: tourSteps,
+    _startTour: _startTour,
+    _tourGoto: _tourGoto,
+    _endTour: _endTour,
+    // Task 23
+    eventToJSON: eventToJSON,
+    traceToJSON: traceToJSON,
+    // Task 24
+    _initTheme: _initTheme,
+    _toggleTheme: _toggleTheme,
+    _wireKeyboard: _wireKeyboard,
   };
   global.UL = UL;
   if (typeof module !== 'undefined') module.exports = UL;
