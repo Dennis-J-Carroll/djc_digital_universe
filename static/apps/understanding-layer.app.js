@@ -406,6 +406,7 @@
     }).join('');
   }
 
+  var _glossaryWired = false;
   function _wireGlossary() {
     var btn = document.querySelector('.ul-legend-btn');
     var panel = document.querySelector('.ul-legend-panel');
@@ -414,14 +415,17 @@
       e.stopPropagation();
       panel.classList.toggle('open');
     });
-    document.addEventListener('click', function (e) {
-      if (!panel.contains(e.target) && e.target !== btn) {
-        panel.classList.remove('open');
-      }
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') panel.classList.remove('open');
-    });
+    if (!_glossaryWired) {
+      _glossaryWired = true;
+      document.addEventListener('click', function (e) {
+        if (!panel.contains(e.target) && e.target !== btn) {
+          panel.classList.remove('open');
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') panel.classList.remove('open');
+      });
+    }
   }
 
   // ── Task 7: renderScenario ────────────────────────────────────────────────
@@ -722,9 +726,19 @@
     if (!T) return;
     var filtered = applyFilters(T.events, _filterState);
 
+    // Fix 2: reset keyboard cursor so j/k starts from top after filter change
+    _activeIdx = -1;
+
     // Re-render timeline
     var tEl = document.getElementById('ul-timeline');
     if (tEl) tEl.innerHTML = renderTimeline(filtered, { query: _filterState.query });
+
+    // Fix 3: reset collapse-all button to "expanded" state after re-render
+    var collapseBtn = document.querySelector('.ul-collapse-all');
+    if (collapseBtn) {
+      collapseBtn.setAttribute('data-all-collapsed', 'false');
+      collapseBtn.textContent = 'Collapse all';
+    }
 
     // Re-render minimap
     var mmEl = document.getElementById('ul-minimap');
@@ -777,6 +791,7 @@
   }
 
   // ── Toolbar wiring ────────────────────────────────────────────────────────
+  var _actorDropdownWired = false;
   function _wireToolbar() {
     var toolbarEl = document.getElementById('ul-toolbar');
     if (!toolbarEl) return;
@@ -809,12 +824,15 @@
         actorBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
         actorMenu.classList.toggle('open', !expanded);
       });
-      document.addEventListener('click', function (e) {
-        if (!actorMenu.contains(e.target) && e.target !== actorBtn) {
-          actorMenu.classList.remove('open');
-          actorBtn.setAttribute('aria-expanded', 'false');
-        }
-      });
+      if (!_actorDropdownWired) {
+        _actorDropdownWired = true;
+        document.addEventListener('click', function (e) {
+          if (!actorMenu.contains(e.target) && e.target !== actorBtn) {
+            actorMenu.classList.remove('open');
+            actorBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
     }
 
     // Actor checkboxes
@@ -1392,42 +1410,50 @@
     // Task 5: glossary legend button + panel
     if (typeof document !== 'undefined') {
       var icons = global.UL_ICONS;
-      var legendBtn = document.createElement('button');
-      legendBtn.className = 'ul-legend-btn';
-      legendBtn.setAttribute('aria-label', 'Toggle glossary legend');
-      legendBtn.innerHTML = icons.info + ' Legend';
-      var legendPanel = document.createElement('div');
-      legendPanel.className = 'ul-legend-panel';
-      legendPanel.setAttribute('role', 'region');
-      legendPanel.setAttribute('aria-label', 'Schema legend glossary');
-      legendPanel.innerHTML = '<div style="font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:8px;">Schema Legend</div>' +
-        renderGlossary(T.glossary || []);
-      document.body.appendChild(legendBtn);
-      document.body.appendChild(legendPanel);
+      if (!document.querySelector('.ul-legend-btn')) {
+        var legendBtn = document.createElement('button');
+        legendBtn.className = 'ul-legend-btn';
+        legendBtn.setAttribute('aria-label', 'Toggle glossary legend');
+        legendBtn.innerHTML = icons.info + ' Legend';
+        document.body.appendChild(legendBtn);
+      }
+      if (!document.querySelector('.ul-legend-panel')) {
+        var legendPanel = document.createElement('div');
+        legendPanel.className = 'ul-legend-panel';
+        legendPanel.setAttribute('role', 'region');
+        legendPanel.setAttribute('aria-label', 'Schema legend glossary');
+        legendPanel.innerHTML = '<div style="font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:8px;">Schema Legend</div>' +
+          renderGlossary(T.glossary || []);
+        document.body.appendChild(legendPanel);
+      }
     }
 
     // Task 22/23/24: Inject app-bar buttons (theme toggle, tour)
     var appBar = document.querySelector('.djc-app-bar');
     if (appBar) {
-      var themeBtn = document.createElement('button');
-      themeBtn.className = 'ul-theme-toggle';
-      themeBtn.setAttribute('aria-pressed', 'false');
-      themeBtn.setAttribute('aria-label', 'Switch to light theme');
-      themeBtn.textContent = 'Light';
-      appBar.appendChild(themeBtn);
-      themeBtn.addEventListener('click', _toggleTheme);
+      if (!document.querySelector('.ul-theme-toggle')) {
+        var themeBtn = document.createElement('button');
+        themeBtn.className = 'ul-theme-toggle';
+        themeBtn.setAttribute('aria-pressed', 'false');
+        themeBtn.setAttribute('aria-label', 'Switch to light theme');
+        themeBtn.textContent = 'Light';
+        appBar.appendChild(themeBtn);
+        themeBtn.addEventListener('click', _toggleTheme);
+      }
 
-      var tourBtn = document.createElement('button');
-      tourBtn.className = 'ul-tour-btn';
-      tourBtn.setAttribute('aria-label', 'Start guided tour');
-      tourBtn.textContent = 'Tour';
-      appBar.appendChild(tourBtn);
-      tourBtn.addEventListener('click', _startTour);
+      if (!document.querySelector('.ul-tour-btn')) {
+        var tourBtn = document.createElement('button');
+        tourBtn.className = 'ul-tour-btn';
+        tourBtn.setAttribute('aria-label', 'Start guided tour');
+        tourBtn.textContent = 'Tour';
+        appBar.appendChild(tourBtn);
+        tourBtn.addEventListener('click', _startTour);
+      }
     }
 
     // Task 24: Export button in toolbar
     var tbEl2 = document.getElementById('ul-toolbar');
-    if (tbEl2) {
+    if (tbEl2 && !document.querySelector('.ul-export-json')) {
       var exportBtn = document.createElement('button');
       exportBtn.className = 'ul-export-json';
       exportBtn.setAttribute('aria-label', 'Download trace as JSON');
@@ -1438,17 +1464,21 @@
 
     // Task 22: Tour overlay + bubble containers
     if (typeof document !== 'undefined') {
-      var tourOverlay = document.createElement('div');
-      tourOverlay.className = 'ul-tour-overlay';
-      tourOverlay.setAttribute('role', 'dialog');
-      tourOverlay.setAttribute('aria-modal', 'true');
-      tourOverlay.setAttribute('aria-label', 'Guided tour');
-      var tourBubble = document.createElement('div');
-      tourBubble.className = 'ul-tour-bubble';
-      document.body.appendChild(tourOverlay);
-      document.body.appendChild(tourBubble);
-      // Close tour when clicking overlay background
-      tourOverlay.addEventListener('click', _endTour);
+      if (!document.querySelector('.ul-tour-overlay')) {
+        var tourOverlay = document.createElement('div');
+        tourOverlay.className = 'ul-tour-overlay';
+        tourOverlay.setAttribute('role', 'dialog');
+        tourOverlay.setAttribute('aria-modal', 'true');
+        tourOverlay.setAttribute('aria-label', 'Guided tour');
+        document.body.appendChild(tourOverlay);
+        // Close tour when clicking overlay background
+        tourOverlay.addEventListener('click', _endTour);
+      }
+      if (!document.querySelector('.ul-tour-bubble')) {
+        var tourBubble = document.createElement('div');
+        tourBubble.className = 'ul-tour-bubble';
+        document.body.appendChild(tourBubble);
+      }
     }
 
     // Task 24: aria-label on timeline region
@@ -1535,6 +1565,7 @@
     _initTheme: _initTheme,
     _toggleTheme: _toggleTheme,
     _wireKeyboard: _wireKeyboard,
+    _triggerJSONDownload: _triggerJSONDownload,
   };
   global.UL = UL;
   if (typeof module !== 'undefined') module.exports = UL;
