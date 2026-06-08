@@ -137,6 +137,98 @@
     return '<div class="tl-rail"></div>' + groupsHtml;
   }
 
+  // ── Task 4: renderIntro ───────────────────────────────────────────────────
+  function renderIntro(intro) {
+    var icons = global.UL_ICONS;
+    return '<details open class="ul-intro" style="max-width:860px;margin:0 auto 20px;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px 18px;">' +
+      '<summary style="cursor:pointer;font-size:13px;font-weight:600;color:#e6edf3;list-style:none;display:flex;align-items:center;gap:8px;">' +
+      '<span style="color:#58a6ff;flex-shrink:0;">' + icons.info + '</span>' +
+      'About this trace' +
+      '</summary>' +
+      '<div style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">' +
+      '<div><div style="font-size:11px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">What</div>' +
+      '<p style="font-size:13px;color:#e6edf3;line-height:1.6;margin:0;">' + esc(intro.what) + '</p></div>' +
+      '<div><div style="font-size:11px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">How to read it</div>' +
+      '<p style="font-size:13px;color:#e6edf3;line-height:1.6;margin:0;">' + esc(intro.read) + '</p></div>' +
+      '<div><div style="font-size:11px;font-weight:700;color:#ffa657;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">What to watch for</div>' +
+      '<p style="font-size:13px;color:#e6edf3;line-height:1.6;margin:0;">' + esc(intro.watch) + '</p></div>' +
+      '</div>' +
+      '</details>';
+  }
+
+  // ── Task 9: renderIntent ──────────────────────────────────────────────────
+  function renderIntent(intent) {
+    return '<div class="intent-box">' +
+      '<span class="intent-label">INTENT</span>' +
+      '<span style="font-size:13px;color:#e6edf3;">' + esc(intent.plain) + '</span>' +
+      '<details class="ul-intent-diff" style="margin-top:10px;">' +
+      '<summary style="cursor:pointer;font-size:12px;color:#58a6ff;font-weight:600;">Gold patch (diff)</summary>' +
+      '<pre style="margin-top:8px;font-size:12px;font-family:\'SF Mono\',\'Fira Code\',monospace;color:#a5d6ff;white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #21262d;border-radius:4px;padding:10px;overflow:auto;">' + esc(intent.raw) + '</pre>' +
+      '</details>' +
+      '<div style="margin-top:10px;font-size:12px;color:#8b949e;line-height:1.5;">' +
+      '<span style="font-weight:600;color:#e6edf3;">Issue: </span>' + esc(intent.issue) +
+      '</div>' +
+      '<div style="margin-top:6px;font-size:12px;color:#8b949e;line-height:1.5;">' +
+      '<span style="font-weight:600;color:#e6edf3;">Success criteria: </span>' + esc(intent.successCriteria) +
+      '</div>' +
+      '</div>';
+  }
+
+  // ── Task 5: renderGlossary + _wireGlossary ────────────────────────────────
+  function renderGlossary(glossary) {
+    return glossary.map(function (g) {
+      return '<div class="ul-gloss-term">' + esc(g.term) + '</div>' +
+        '<div class="ul-gloss-def">' + esc(g.def) + '</div>';
+    }).join('');
+  }
+
+  function _wireGlossary() {
+    var btn = document.querySelector('.ul-legend-btn');
+    var panel = document.querySelector('.ul-legend-panel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      panel.classList.toggle('open');
+    });
+    document.addEventListener('click', function (e) {
+      if (!panel.contains(e.target) && e.target !== btn) {
+        panel.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') panel.classList.remove('open');
+    });
+  }
+
+  // ── Task 7: renderScenario ────────────────────────────────────────────────
+  function renderScenario(scenario, annotations) {
+    var icons = global.UL_ICONS;
+    var traceAnn = (annotations || []).find(function (a) { return a.scope === 'trace'; });
+    var verdictHtml = traceAnn
+      ? '<div class="annotation-callout">' +
+        '<div class="ann-header">' +
+        '<span class="ann-sev sev-' + esc(String(traceAnn.severity)) + '">' + esc({ 1: 'NOTE', 2: 'WARNING', 3: 'CRITICAL' }[traceAnn.severity] || String(traceAnn.severity)) + '</span>' +
+        '<span class="ann-category">· ' + esc(traceAnn.category) + '</span>' +
+        '</div>' +
+        '<div class="ann-explanation">' + esc(traceAnn.explanation) + '</div>' +
+        '</div>'
+      : '';
+    var paragraphsHtml = (scenario.paragraphs || []).map(function (p) {
+      return '<p style="font-size:13px;color:#e6edf3;line-height:1.6;margin:0 0 10px 0;">' + esc(p) + '</p>';
+    }).join('');
+    return '<div class="trace-ann-section">' +
+      '<div class="section-title">' +
+      '<span style="color:#ffa657;margin-right:6px;">' + icons.warn + '</span>' +
+      'Trace-level verdict' +
+      '</div>' +
+      verdictHtml +
+      '<details class="ul-scenario" style="margin-top:14px;">' +
+      '<summary style="cursor:pointer;font-size:12px;color:#58a6ff;font-weight:600;">Why this is the \'misleading\' scenario</summary>' +
+      '<div style="margin-top:10px;">' + paragraphsHtml + '</div>' +
+      '</details>' +
+      '</div>';
+  }
+
   function renderSummary(stats) {
     function card(n, label, warn) {
       return '<div class="summary-card"><div class="summary-num ' + (warn ? 'num-warn' : 'num-ok') + '">' + n + '</div><div class="summary-label">' + label + '</div></div>';
@@ -194,11 +286,57 @@
   function mount() {
     var T = global.UL_TRACE;
     if (!T) return;
+
+    // Inject legend/glossary CSS once
+    if (!document.getElementById('ul-legend-css') && typeof document !== 'undefined') {
+      var styleEl = document.createElement('style');
+      styleEl.id = 'ul-legend-css';
+      styleEl.textContent = [
+        '.ul-legend-btn{position:fixed;bottom:20px;right:20px;z-index:50;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-radius:20px;padding:8px 14px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}',
+        '.ul-legend-btn:hover{border-color:#58a6ff}',
+        '.ul-legend-panel{position:fixed;bottom:64px;right:20px;z-index:50;width:320px;max-height:60vh;overflow:auto;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;display:none}',
+        '.ul-legend-panel.open{display:block}',
+        '.ul-gloss-term{font-weight:600;color:#e6edf3;font-size:12px;margin-top:10px}',
+        '.ul-gloss-def{color:#8b949e;font-size:12px;line-height:1.5}'
+      ].join('');
+      document.head && document.head.appendChild(styleEl);
+    }
+
+    // Task 4: intro panel
+    var introEl = document.getElementById('ul-intro');
+    if (introEl && T.intro) introEl.innerHTML = renderIntro(T.intro);
+
+    // Task 9: enriched intent
+    var intentEl = document.getElementById('ul-intent');
+    if (intentEl && T.intent) intentEl.innerHTML = renderIntent(T.intent);
+
+    // Summary + timeline
     var sEl = document.getElementById('ul-summary');
     if (sEl) sEl.innerHTML = renderSummary(computeStats(T.events));
     var tEl = document.getElementById('ul-timeline');
     if (tEl) tEl.innerHTML = renderTimeline(T.events);
+
+    // Task 7: scenario panel
+    var panelsEl = document.getElementById('ul-panels');
+    if (panelsEl && T.scenario) panelsEl.innerHTML = renderScenario(T.scenario, T.annotations);
+
+    // Task 5: glossary legend button + panel
+    if (typeof document !== 'undefined') {
+      var icons = global.UL_ICONS;
+      var legendBtn = document.createElement('button');
+      legendBtn.className = 'ul-legend-btn';
+      legendBtn.setAttribute('aria-label', 'Toggle glossary legend');
+      legendBtn.innerHTML = icons.info + ' Legend';
+      var legendPanel = document.createElement('div');
+      legendPanel.className = 'ul-legend-panel';
+      legendPanel.innerHTML = '<div style="font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:8px;">Schema Legend</div>' +
+        renderGlossary(T.glossary || []);
+      document.body.appendChild(legendBtn);
+      document.body.appendChild(legendPanel);
+    }
+
     _wire();
+    _wireGlossary();
   }
 
   var UL = {
@@ -207,10 +345,15 @@
     renderEventCard: renderEventCard,
     renderTimeline: renderTimeline,
     renderSummary: renderSummary,
+    renderIntro: renderIntro,
+    renderIntent: renderIntent,
+    renderGlossary: renderGlossary,
+    renderScenario: renderScenario,
     mount: mount,
     esc: esc,
     _toggleExpand: _toggleExpand,
     _wire: _wire,
+    _wireGlossary: _wireGlossary,
   };
   global.UL = UL;
   if (typeof module !== 'undefined') module.exports = UL;

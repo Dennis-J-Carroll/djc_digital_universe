@@ -86,3 +86,40 @@ test('renderEventCard with opts.expanded shows full content for long non-truncat
   // full 300 chars present in data-full attribute
   expect(html).toContain('x'.repeat(300));
 });
+
+// ── Sprint 1 context-panels batch ────────────────────────────────────────────
+
+test('renderIntro contains "About this trace" and all three section paragraphs', () => {
+  const html = UL.renderIntro(TRACE.intro);
+  expect(html).toContain('About this trace');
+  // esc() escapes apostrophes to &#39; — compare against escaped versions
+  expect(html).toContain(UL.esc(TRACE.intro.what));
+  expect(html).toContain(UL.esc(TRACE.intro.read));
+  expect(html).toContain(UL.esc(TRACE.intro.watch));
+});
+
+test('renderGlossary contains every term in TRACE.glossary', () => {
+  const html = UL.renderGlossary(TRACE.glossary);
+  TRACE.glossary.forEach(g => {
+    expect(html).toContain(g.term);
+  });
+});
+
+test('renderIntent contains plain summary, raw diff text (escaped), and "Success criteria"', () => {
+  const html = UL.renderIntent(TRACE.intent);
+  // esc() escapes apostrophes — compare against escaped versions
+  expect(html).toContain(UL.esc(TRACE.intent.plain));
+  // The raw diff text will be HTML-escaped in the output
+  expect(html).toContain('diff --git');
+  expect(html).toContain('Success criteria');
+});
+
+test('renderScenario contains trace verdict explanation and all 3 scenario paragraphs', () => {
+  const traceAnn = TRACE.annotations.find(a => a.scope === 'trace');
+  const html = UL.renderScenario(TRACE.scenario, TRACE.annotations);
+  // esc() escapes apostrophes — compare against escaped version
+  expect(html).toContain(UL.esc(traceAnn.explanation));
+  TRACE.scenario.paragraphs.forEach(p => {
+    expect(html).toContain(UL.esc(p));
+  });
+});
