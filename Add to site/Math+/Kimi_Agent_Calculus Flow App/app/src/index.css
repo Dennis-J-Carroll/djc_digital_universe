@@ -93,6 +93,25 @@
   }
 }
 
+/* KaTeX dark theme overrides */
+.katex {
+  color: #22d3ee;
+  font-size: 1em;
+}
+
+.katex .katex-html {
+  color: #22d3ee;
+}
+
+.katex-formula .katex-display {
+  margin: 0.25em 0;
+  text-align: left;
+}
+
+.katex-formula {
+  line-height: 1.6;
+}
+
 @layer components {
   .glass-card {
     background: rgba(17, 24, 53, 0.7);
