@@ -897,37 +897,15 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 (function () {
   const canvas = document.getElementById('crack-canvas');
   const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, baseCracks = [], startTime = null;
+  let W = 0, H = 0, startTime = null;
 
-  // ── SIZING ──────────────────────────────────────────────────
   function resize() {
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
   }
-  window.addEventListener('resize', () => { resize(); buildBaseCracks(); initParticles(); });
+  window.addEventListener('resize', () => { resize(); rebuildAll(); });
 
   // ── CRACK GEOMETRY ──────────────────────────────────────────
-  function buildBaseCracks() {
-    baseCracks = [];
-    const cx = W * 0.5, cy = H * 0.42;
-    const mainCount = 11;
-    for (let i = 0; i < mainCount; i++) {
-      const baseAngle = (i / mainCount) * Math.PI * 2;
-      const angle = baseAngle + (Math.random() - 0.5) * 0.35;
-      const length = Math.min(W, H) * 0.38 + Math.random() * Math.min(W, H) * 0.22;
-      baseCracks.push(makeCrack(cx, cy, angle, length, 0, 2));
-    }
-    for (let ring = 0; ring < 3; ring++) {
-      const r = (ring + 1) * Math.min(W, H) * 0.12;
-      const arcCount = 5 + ring * 3;
-      for (let j = 0; j < arcCount; j++) {
-        const a1 = (j / arcCount) * Math.PI * 2 + Math.random() * 0.2;
-        const a2 = a1 + (Math.PI * 2 / arcCount) * (0.4 + Math.random() * 0.4);
-        baseCracks.push(makeArcCrack(cx, cy, r + Math.random() * 18 - 9, a1, a2));
-      }
-    }
-  }
-
   function makeCrack(x, y, angle, length, depth, maxDepth) {
     const segments = [];
     let cx = x, cy = y, a = angle;
@@ -960,32 +938,63 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     return segments;
   }
 
-  function allBaseSegs() { return baseCracks.flat(); }
+  function buildCrackSegs() {
+    const segs = [];
+    const cx = W * 0.5, cy = H * 0.42;
+    const mainCount = 11;
+    for (let i = 0; i < mainCount; i++) {
+      const baseAngle = (i / mainCount) * Math.PI * 2;
+      const angle = baseAngle + (Math.random() - 0.5) * 0.35;
+      const length = Math.min(W, H) * 0.38 + Math.random() * Math.min(W, H) * 0.22;
+      segs.push(...makeCrack(cx, cy, angle, length, 0, 2));
+    }
+    for (let ring = 0; ring < 3; ring++) {
+      const r = (ring + 1) * Math.min(W, H) * 0.12;
+      const arcCount = 5 + ring * 3;
+      for (let j = 0; j < arcCount; j++) {
+        const a1 = (j / arcCount) * Math.PI * 2 + Math.random() * 0.2;
+        const a2 = a1 + (Math.PI * 2 / arcCount) * (0.4 + Math.random() * 0.4);
+        segs.push(...makeArcCrack(cx, cy, r + Math.random() * 18 - 9, a1, a2));
+      }
+    }
+    return segs;
+  }
+
+  // ── BATCH SEGMENT DRAW — one path for N segments, one stroke ─
+  function batchSegs(segs, count) {
+    ctx.beginPath();
+    const n = count !== undefined ? Math.min(count, segs.length) : segs.length;
+    for (let i = 0; i < n; i++) {
+      const s = segs[i];
+      ctx.moveTo(s.x1, s.y1);
+      ctx.lineTo(s.x2, s.y2);
+    }
+  }
 
   // ── IMPACT GLOW ─────────────────────────────────────────────
   function drawImpact(t) {
     const cx = W * 0.5, cy = H * 0.42;
+    ctx.shadowColor = `rgb(${tc().impactRgb})`; ctx.shadowBlur = 12;
     [18, 36, 58].forEach((r, i) => {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(0,201,177,${(0.25 - i * 0.07) * t})`;
+      ctx.strokeStyle = `rgba(${tc().impactRgb},${(0.25 - i * 0.07) * t})`;
       ctx.lineWidth = 1;
-      ctx.shadowColor = '#00c9b1'; ctx.shadowBlur = 12;
-      ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.stroke();
     });
     ctx.beginPath();
     ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(103,232,249,${0.9 * t})`;
-    ctx.shadowColor = '#67e8f9'; ctx.shadowBlur = 20;
-    ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = `rgba(${tc().glowRgb},${0.9 * t})`;
+    ctx.shadowColor = `rgb(${tc().glowRgb})`; ctx.shadowBlur = 20;
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
   // ── PARTICLES ───────────────────────────────────────────────
-  const particles = [];
-  function initParticles() {
-    particles.length = 0;
-    const segs = allBaseSegs();
-    if (!segs.length) return;
+  let particles = [];
+  function initParticles(segs) {
+    particles = [];
+    if (!segs || !segs.length) return;
     for (let k = 0; k < 55; k++) {
       const seg = segs[Math.floor(Math.random() * segs.length)];
       const t = Math.random();
@@ -1000,13 +1009,15 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     }
   }
 
-  // ── CLICK CRACKS & AUTO CRACKS (separate pools) ─────────────
+  // ── CLICK & AUTO CRACK POOLS ─────────────────────────────────
   const clickCracks = [];
   const autoCracks  = [];
-  let clickCount = 0;
-  const MAX_AUTO     = 6;
-  const AUTO_INTERVAL = 3200;
-  let lastAutoSpawn  = 0;
+  let clickCount    = 0;
+  const MAX_AUTO       = 6;
+  const AUTO_INTERVAL  = 2800;
+  const CRACK_LIFE     = 9000;
+  const CRACK_FADE_START = 5500;
+  let lastAutoSpawn    = 0;
 
   function spawnCrackAt(x, y, pool, branchCount, lenMin, lenMax) {
     const baseAngle = Math.random() * Math.PI * 2;
@@ -1020,11 +1031,12 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
   function spawnAutoCrack(ts) {
     for (let i = autoCracks.length - 1; i >= 0; i--) {
-      if (ts - autoCracks[i].born > 9000) autoCracks.splice(i, 1);
+      if (ts - autoCracks[i].born > CRACK_LIFE) autoCracks.splice(i, 1);
     }
     if (autoCracks.length >= MAX_AUTO) return;
-    const segs = allBaseSegs();
-    if (!segs.length) return;
+    const gen = generations[generations.length - 1];
+    if (!gen || !gen.segs.length) return;
+    const segs = gen.segs;
     const originSeg = segs[Math.floor(Math.random() * segs.length)];
     const t = Math.random();
     const ox = originSeg.x1 + (originSeg.x2 - originSeg.x1) * t;
@@ -1039,105 +1051,106 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     if (clickCount === 7) triggerBreach();
   });
 
-  // ── DRAW HELPER — renders one crack pool, prunes expired ─────
+  // ── POOL DRAW — batched, single shadow pass per crack ────────
   function drawPool(pool, ts, rgb, shadowRgb) {
     for (let i = pool.length - 1; i >= 0; i--) {
       const cc = pool[i];
       const age = ts - cc.born;
-      if (age > 9000) { pool.splice(i, 1); continue; }
-      const ep  = 1 - Math.pow(1 - Math.min(age / 600, 1), 2);
+      if (age > CRACK_LIFE) { pool.splice(i, 1); continue; }
+      const ep    = 1 - Math.pow(1 - Math.min(age / 600, 1), 2);
       const drawN = Math.floor(cc.segs.length * ep);
-      const fade  = age > 6000 ? Math.max(0, 1 - (age - 6000) / 3000) : 1;
+      const fade  = age > CRACK_FADE_START ? Math.max(0, 1 - (age - CRACK_FADE_START) / (CRACK_LIFE - CRACK_FADE_START)) : 1;
+      if (drawN === 0 || fade <= 0.01) continue;
 
-      for (let j = 0; j < drawN; j++) {
-        const s = cc.segs[j];
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
-        ctx.strokeStyle = `rgba(${rgb},${0.7 * fade})`;
-        ctx.lineWidth = 1;
-        ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 10;
-        ctx.stroke(); ctx.shadowBlur = 0;
-      }
+      batchSegs(cc.segs, drawN);
+      ctx.strokeStyle = `rgba(${rgb},${0.75 * fade})`;
+      ctx.lineWidth = 1;
+      ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 10;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
 
       const ringAge = Math.min(age / 400, 1);
       [12, 26, 44].forEach((r, ri) => {
         const rA = Math.max(0, (0.6 - ri * 0.15) * (1 - ringAge) * fade);
+        if (rA <= 0.01) return;
         ctx.beginPath(); ctx.arc(cc.x, cc.y, r * ringAge, 0, Math.PI * 2);
         ctx.strokeStyle = `rgba(${shadowRgb},${rA})`;
-        ctx.lineWidth = 1;
-        ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 8;
-        ctx.stroke(); ctx.shadowBlur = 0;
+        ctx.lineWidth = 1; ctx.shadowColor = `rgb(${shadowRgb})`; ctx.shadowBlur = 8;
+        ctx.stroke();
       });
+      ctx.shadowBlur = 0;
     }
   }
 
   // ── THEME COLORS ──────────────────────────────────────────────
   const THEMES = {
-    dark: {
-      bg0: 'rgba(8,13,24,.85)', bg1: 'rgba(5,8,15,0)',
-      crackRgb: '0,201,177', glowRgb: '103,232,249',
-      particleRgb: '103,232,249', impactRgb: '0,201,177',
-    },
-    light: {
-      bg0: 'rgba(240,248,255,.7)', bg1: 'rgba(220,235,250,0)',
-      crackRgb: '0,120,100', glowRgb: '0,160,140',
-      particleRgb: '0,150,130', impactRgb: '0,130,110',
-    },
-    retro: {
-      bg0: 'rgba(10,0,20,.88)', bg1: 'rgba(5,0,10,0)',
-      crackRgb: '255,0,200', glowRgb: '180,0,255',
-      particleRgb: '255,50,220', impactRgb: '255,0,180',
-    },
+    dark:  { bg0: 'rgba(8,13,24,.85)', bg1: 'rgba(5,8,15,0)', crackRgb: '0,201,177', glowRgb: '103,232,249', particleRgb: '103,232,249', impactRgb: '0,201,177' },
+    light: { bg0: 'rgba(240,248,255,.7)', bg1: 'rgba(220,235,250,0)', crackRgb: '0,120,100', glowRgb: '0,160,140', particleRgb: '0,150,130', impactRgb: '0,130,110' },
+    retro: { bg0: 'rgba(10,0,20,.88)', bg1: 'rgba(5,0,10,0)', crackRgb: '255,0,200', glowRgb: '180,0,255', particleRgb: '255,50,220', impactRgb: '255,0,180' },
   };
   let currentTheme = 'dark';
   function tc() { return THEMES[currentTheme] || THEMES.dark; }
 
-  // ── CONTINUOUS BASE CRACK GENERATIONS ─────────────────────────
-  const CYCLE_DUR   = 18000; // 18s per generation
-  const FADE_IN     = 2800;
-  const FADE_OUT    = 3500;
-  let generations   = [];   // [{segs, born}]
-  let lastCycle     = 0;
+  // ── GENERATION SYSTEM ─────────────────────────────────────────
+  // New gen spawns before the old one fully fades → cracks always visible.
+  // MIN_BASE_ALPHA: base cracks never drop below this floor alpha.
+  const CYCLE_DUR      = 18000;
+  const FADE_IN        = 2800;
+  const FADE_OUT       = 3500;
+  const MIN_BASE_ALPHA = 0.28;
+  let generations      = [];
+  let lastCycle        = 0;
 
   function addGeneration(ts) {
-    buildBaseCracks();
-    generations.push({ segs: allBaseSegs(), born: ts });
-    // prune fully-faded generations
+    const segs = buildCrackSegs();
+    generations.push({ segs, born: ts });
     generations = generations.filter(g => ts - g.born < CYCLE_DUR + FADE_OUT + 500);
+    if (generations.length === 1) initParticles(segs);
+  }
+
+  function genAlpha(gen, ts) {
+    const age = ts - gen.born;
+    if (age > CYCLE_DUR + FADE_OUT) return 0;
+    const fadeIn  = Math.min(age / FADE_IN, 1);
+    const fadeOut = age > CYCLE_DUR ? Math.max(0, 1 - (age - CYCLE_DUR) / FADE_OUT) : 1;
+    return Math.max(MIN_BASE_ALPHA * fadeIn, fadeIn * fadeOut);
   }
 
   function drawGenerations(ts) {
     for (const gen of generations) {
-      const age   = ts - gen.born;
-      const fadeIn  = Math.min(age / FADE_IN,  1);
-      const fadeOut = age > CYCLE_DUR ? Math.max(0, 1 - (age - CYCLE_DUR) / FADE_OUT) : 1;
-      const a = fadeIn * fadeOut;
+      const a = genAlpha(gen, ts);
       if (a <= 0.01) continue;
-
       const pulse = 0.72 + 0.28 * Math.sin(ts * 0.0008 + gen.born * 0.001);
 
-      for (let i = 0; i < gen.segs.length; i++) {
-        const s = gen.segs[i];
-        const segA = (0.45 + (i / gen.segs.length) * 0.35) * a;
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
-        ctx.strokeStyle = `rgba(${tc().crackRgb},${segA * 0.95})`;
-        ctx.lineWidth = 1; ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 8;
-        ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
-        ctx.strokeStyle = `rgba(${tc().glowRgb},${segA * 0.3})`;
-        ctx.lineWidth = 0.5; ctx.shadowBlur = 4;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
+      // Pass 1: main crack lines — all segments in one draw call
+      batchSegs(gen.segs);
+      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.52 * a})`;
+      ctx.lineWidth = 1;
+      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
 
-      // glow pulse overlay on a subset of segments
+      // Pass 2: thin glow layer — same segs, lighter
+      batchSegs(gen.segs);
+      ctx.strokeStyle = `rgba(${tc().glowRgb},${0.18 * a})`;
+      ctx.lineWidth = 0.5;
+      ctx.shadowColor = `rgb(${tc().glowRgb})`; ctx.shadowBlur = 4;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Pass 3: wide pulsing glow — 30-segment subset only
       const glowN = Math.min(gen.segs.length, 30);
+      const step  = Math.max(1, Math.floor(gen.segs.length / glowN));
+      ctx.beginPath();
       for (let i = 0; i < glowN; i++) {
-        const s = gen.segs[Math.floor(i * (gen.segs.length / glowN))];
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2);
-        ctx.strokeStyle = `rgba(${tc().crackRgb},${0.1 * pulse * a})`;
-        ctx.lineWidth = 3; ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 18;
-        ctx.stroke(); ctx.shadowBlur = 0;
+        const s = gen.segs[i * step];
+        if (s) { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); }
       }
+      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.11 * pulse * a})`;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 18;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
     }
   }
 
@@ -1148,10 +1161,9 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     if (!startTime) {
       startTime = ts;
       lastCycle  = ts;
-      addGeneration(ts); // first generation on init
+      addGeneration(ts);
     }
 
-    // Cycle: spawn new generation every CYCLE_DUR
     if (ts - lastCycle > CYCLE_DUR) {
       lastCycle = ts;
       addGeneration(ts);
@@ -1167,30 +1179,26 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Continuous multi-generation cracks
     drawGenerations(ts);
-
-    // Click cracks (accent) — separate pool
-    drawPool(clickCracks, ts, tc().glowRgb,   tc().glowRgb);
-    // Ambient auto cracks — independent cap
-    drawPool(autoCracks,  ts, tc().crackRgb,  tc().glowRgb);
-
+    drawPool(clickCracks, ts, tc().glowRgb,  tc().glowRgb);
+    drawPool(autoCracks,  ts, tc().crackRgb, tc().glowRgb);
     drawImpact(p);
 
-    // Drift particles
+    // Drift particles — set shadow once for whole batch
     if (p > 0.6) {
       const pa = (p - 0.6) / 0.4;
+      ctx.shadowColor = `rgb(${tc().particleRgb})`; ctx.shadowBlur = 6;
       particles.forEach(pt => {
         pt.phase += pt.speed * 0.02;
+        ctx.globalAlpha = pt.alpha * pa * 0.7;
         ctx.beginPath();
         ctx.arc(pt.x + Math.sin(pt.phase) * 2, pt.y + Math.cos(pt.phase * 0.7) * 1.5, pt.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${tc().particleRgb},${pt.alpha * pa * 0.7})`;
-        ctx.shadowColor = `rgb(${tc().particleRgb})`; ctx.shadowBlur = 6;
-        ctx.fill(); ctx.shadowBlur = 0;
+        ctx.fillStyle = `rgb(${tc().particleRgb})`;
+        ctx.fill();
       });
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
     }
 
-    // Auto-spawn ambient cracks after reveal
     if (p >= 1 && ts - lastAutoSpawn > AUTO_INTERVAL) {
       lastAutoSpawn = ts;
       spawnAutoCrack(ts);
@@ -1199,11 +1207,18 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     requestAnimationFrame(draw);
   }
 
+  // ── FULL REBUILD (resize / theme change) ─────────────────────
+  function rebuildAll() {
+    const ts = performance.now();
+    generations = [];
+    lastCycle   = ts;
+    addGeneration(ts);
+    initParticles(generations[0]?.segs || []);
+  }
+
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
     resize();
-    buildBaseCracks();
-    initParticles();
     requestAnimationFrame(draw);
   }
   if (document.readyState === 'complete') { init(); } else { window.addEventListener('load', init); }
@@ -1223,9 +1238,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
       themeBtn.textContent = THEME_LABELS[currentTheme];
       themeBtn.style.color = currentTheme === 'retro' ? '#ff00cc' : currentTheme === 'light' ? '#0d6b59' : '#00c9b1';
       themeBtn.style.borderColor = themeBtn.style.color.replace(')', ',.35)').replace('rgb', 'rgba');
-      // Rebuild cracks immediately for new theme
-      generations = [];
-      addGeneration(performance.now());
+      rebuildAll();
     });
   }
 })();
