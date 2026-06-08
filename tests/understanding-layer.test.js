@@ -123,3 +123,68 @@ test('renderScenario contains trace verdict explanation and all 3 scenario parag
     expect(html).toContain(UL.esc(p));
   });
 });
+
+// ── Sprint 2: Tasks 10/11/12/14 ───────────────────────────────────────────────
+
+test('applyFilters by kind MESSAGE returns only MESSAGE events', () => {
+  const filtered = UL.applyFilters(TRACE.events, { kinds: ['MESSAGE'] });
+  const expected = TRACE.events.filter(e => e.kind === 'MESSAGE');
+  expect(filtered.length).toBe(expected.length);
+  expect(filtered.length).toBeGreaterThan(0);
+  filtered.forEach(e => expect(e.kind).toBe('MESSAGE'));
+});
+
+test('applyFilters by actor bash returns only events with from===bash OR to===bash', () => {
+  const filtered = UL.applyFilters(TRACE.events, { actors: ['bash'] });
+  expect(filtered.length).toBeGreaterThan(0);
+  filtered.forEach(e => {
+    expect(e.from === 'bash' || e.to === 'bash').toBe(true);
+  });
+});
+
+test('applyFilters by query reproduce.py returns matching events', () => {
+  const filtered = UL.applyFilters(TRACE.events, { query: 'reproduce.py' });
+  expect(filtered.length).toBeGreaterThan(0);
+  filtered.forEach(e => {
+    const q = 'reproduce.py';
+    const inId = e.id.toLowerCase().includes(q);
+    const inFrom = e.from.toLowerCase().includes(q);
+    const inTo = e.to.toLowerCase().includes(q);
+    const inContent = e.parts.some(p => p.content && p.content.toLowerCase().includes(q));
+    expect(inId || inFrom || inTo || inContent).toBe(true);
+  });
+});
+
+test('applyFilters with AND semantics: TOOL_CALL + bash + ls', () => {
+  const filtered = UL.applyFilters(TRACE.events, {
+    kinds: ['TOOL_CALL'],
+    actors: ['bash'],
+    query: 'ls'
+  });
+  // All must be TOOL_CALL, involve bash, and have 'ls' in content/id/from/to
+  filtered.forEach(e => {
+    expect(e.kind).toBe('TOOL_CALL');
+    expect(e.from === 'bash' || e.to === 'bash').toBe(true);
+    const q = 'ls';
+    const inId = e.id.toLowerCase().includes(q);
+    const inFrom = e.from.toLowerCase().includes(q);
+    const inTo = e.to.toLowerCase().includes(q);
+    const inContent = e.parts.some(p => p.content && p.content.toLowerCase().includes(q));
+    expect(inId || inFrom || inTo || inContent).toBe(true);
+  });
+  // May be 0 results (valid AND), just check no contradictions above
+});
+
+test('renderMinimap returns one dot per event and href="#e0"', () => {
+  const html = UL.renderMinimap(TRACE.events);
+  const dotMatches = html.match(/ul-mini-dot/g) || [];
+  expect(dotMatches.length).toBe(TRACE.events.length);
+  expect(html).toContain('href="#e0"');
+});
+
+test('_highlight wraps matched substring in <mark>', () => {
+  const text = UL.esc('python reproduce.py');
+  const result = UL._highlight(text, 'reproduce');
+  expect(result).toContain('<mark>');
+  expect(result).toContain('reproduce');
+});
