@@ -371,6 +371,119 @@
             border-radius: 4px;
             font-size: 11px;
         }
+
+        /* ── Mobile responsive ──────────────────────────────── */
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .terminal {
+                padding: 8px;
+            }
+
+            .ascii-art {
+                display: none;
+            }
+
+            .header h1 {
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+
+            .header p {
+                font-size: 11px;
+            }
+
+            /* Stack columns vertically */
+            .main-layout {
+                grid-template-columns: 1fr;
+                min-height: unset;
+                gap: 12px;
+            }
+
+            /* Editor shorter on mobile */
+            .editor-container {
+                min-height: 220px;
+            }
+
+            /* Metric cards: 2-column on tablet, 1-col on phone */
+            .metric-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .metric-val {
+                font-size: 18px;
+            }
+
+            /* Tabs: smaller text, keep scroll */
+            .tab-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
+            /* Tables: horizontal scroll instead of overflow */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            th, td {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            /* Button group wraps on narrow screens */
+            .button-group {
+                flex-wrap: wrap;
+            }
+
+            button {
+                flex: 1 1 auto;
+                padding: 7px 10px;
+                font-size: 11px;
+            }
+
+            /* Code preview narrower max-height on mobile */
+            pre.code-preview {
+                max-height: 180px;
+                font-size: 11px;
+            }
+
+            /* Dev-lens sub-tabs also need scroll */
+            #tab-devLens > div > div[style*="display: flex"] {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 12px;
+            }
+
+            .gutter {
+                width: 30px;
+                font-size: 11px;
+            }
+
+            .editor-container {
+                min-height: 180px;
+            }
+
+            .tab-btn {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
