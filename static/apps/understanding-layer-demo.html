@@ -307,6 +307,69 @@
     .phase-group.collapsed .tl-event { display: none; }
     .phase-header .ph-chevron { transition: transform .15s; }
     .phase-group.collapsed .ph-chevron { transform: rotate(-90deg); }
+
+    /* ── Task 17: Responsive layout ── */
+    .ul-legend-panel { width: min(320px, calc(100vw - 32px)); }
+
+    @media (max-width: 640px) {
+        body {
+            padding: 12px 8px;
+        }
+        .djc-app-bar {
+            font-size: 11px;
+        }
+        .djc-app-bar a {
+            font-size: 11px;
+        }
+        .djc-app-bar .djc-title {
+            font-size: 11px;
+        }
+        .summary-bar {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .summary-card {
+            min-width: 0;
+            width: 100%;
+        }
+        .ul-toolbar {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .ul-search {
+            width: 100%;
+        }
+        .ul-search-wrap {
+            flex: 1 1 100%;
+        }
+        .intent-box {
+            width: 100%;
+        }
+        .trace-ann-section,
+        .ul-intro {
+            width: 100%;
+        }
+        /* Tighten timeline rail on narrow screens */
+        .tl-rail {
+            left: 14px;
+        }
+        .tl-dot {
+            margin-left: 6px;
+        }
+        .tl-event {
+            gap: 8px;
+        }
+        .ul-minimap {
+            display: none;
+        }
+        /* Prevent horizontal scroll */
+        .part-content {
+            word-break: break-word;
+        }
+        .ul-diff {
+            max-width: calc(100vw - 32px);
+        }
+    }
     </style>
 </head>
 <body>

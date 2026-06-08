@@ -43,6 +43,82 @@
 
   const KIND_COLOR = { MESSAGE: '#3fb950', TOOL_CALL: '#58a6ff', TOOL_RESULT: '#8b949e' };
 
+  // ── Task 13: commentaryFor ────────────────────────────────────────────────
+  // Pure: returns commentary string for an event id, or undefined.
+  function commentaryFor(eventId) {
+    var commentary = ((global.UL_TRACE || {}).commentary) || {};
+    return commentary[eventId];
+  }
+
+  // ── Task 15: renderDiff ───────────────────────────────────────────────────
+  // Pure: converts a unified diff string to syntax-highlighted HTML.
+  function renderDiff(diffText) {
+    var lines = String(diffText).split('\n');
+    var linesHtml = lines.map(function (line) {
+      var cls;
+      if (/^diff --git/.test(line) || /^index /.test(line) || /^\+\+\+/.test(line) || /^---/.test(line)) {
+        cls = 'diff-meta';
+      } else if (/^@@/.test(line)) {
+        cls = 'diff-hunk';
+      } else if (/^\+/.test(line)) {
+        cls = 'diff-add';
+      } else if (/^-/.test(line)) {
+        cls = 'diff-del';
+      } else {
+        cls = 'diff-ctx';
+      }
+      return '<div class="diff-line ' + cls + '">' + esc(line) + '</div>';
+    }).join('');
+    return '<div class="ul-diff">' + linesHtml + '</div>';
+  }
+
+  // ── Task 16: markErrorChains ──────────────────────────────────────────────
+  // Pure: returns [{chainId, eventIds, tool}] for error→retry sequences.
+  function markErrorChains(events) {
+    // Build a map of event id → event for fast lookup
+    var byId = {};
+    events.forEach(function (ev) { byId[ev.id] = ev; });
+
+    var chains = [];
+    var chainId = 0;
+    var visited = new Set();
+
+    events.forEach(function (ev) {
+      // Find TOOL_RESULT events that are errors
+      if (ev.kind !== 'TOOL_RESULT' || !ev.isError || visited.has(ev.id)) return;
+
+      // Determine the tool that produced this error: it's ev.from
+      var tool = ev.from;
+
+      // Collect the contiguous run of events involving this same tool
+      // Walk backwards to find the start of the run (the originating TOOL_CALL)
+      // and forward to find the end (last result from same tool in this run).
+      // Strategy: gather all events in the same phase that involve this tool.
+      var phase = ev.phase;
+      var runEvents = events.filter(function (e) {
+        return e.phase === phase && (e.from === tool || e.to === tool);
+      });
+
+      if (runEvents.length < 2) return; // need at least call + error result
+
+      // Only include a chain if there's at least one error and at least one retry
+      // (i.e., more than one TOOL_CALL to the same tool in this run)
+      var callsInRun = runEvents.filter(function (e) { return e.kind === 'TOOL_CALL' && e.to === tool; });
+      var errorsInRun = runEvents.filter(function (e) { return e.kind === 'TOOL_RESULT' && e.isError && e.from === tool; });
+
+      if (callsInRun.length < 2 || errorsInRun.length < 1) return;
+
+      var ids = runEvents.map(function (e) { return e.id; });
+      // Avoid duplicate chains: skip if all ids already visited
+      if (ids.every(function (id) { return visited.has(id); })) return;
+
+      ids.forEach(function (id) { visited.add(id); });
+      chains.push({ chainId: 'chain-' + (++chainId), eventIds: ids, tool: tool });
+    });
+
+    return chains;
+  }
+
   // ── Annotation severity label map ─────────────────────────────────────────
   const SEV_LABEL = { 1: 'NOTE', 2: 'WARNING', 3: 'CRITICAL' };
 
@@ -113,9 +189,39 @@
     }).join('');
     var hasEvAnnotation = evAnnotations.length > 0;
 
+    // ── Task 13: per-event commentary callout ─────────────────────────────
+    var commentaryText = commentaryFor(ev.id);
+    var commentaryHtml = commentaryText
+      ? '<details class="ul-commentary">' +
+        '<summary>' + (global.UL_ICONS ? global.UL_ICONS.info : '') + ' Why this matters</summary>' +
+        '<div>' + esc(commentaryText) + '</div>' +
+        '</details>'
+      : '';
+
+    // ── Task 16: error chain class and label ─────────────────────────────
+    var inChain = opts.chainedIds && opts.chainedIds.has(ev.id);
+    var isChainFirst = opts.chainFirstIds && opts.chainFirstIds.has(ev.id);
+    var chainCountMap = opts.chainCountMap || {};
+    var chainLabelHtml = '';
+    if (isChainFirst) {
+      var chainId = null;
+      // Find which chain this event is first in
+      if (opts.chainsList) {
+        for (var ci = 0; ci < opts.chainsList.length; ci++) {
+          if (opts.chainsList[ci].eventIds[0] === ev.id) {
+            chainId = opts.chainsList[ci].chainId;
+            break;
+          }
+        }
+      }
+      var retryCount = chainId && chainCountMap[chainId] ? chainCountMap[chainId] : '';
+      chainLabelHtml = '<div class="error-chain-label">retry' + (retryCount ? ' ×' + retryCount : '') + '</div>';
+    }
+
     return '<div class="tl-event" id="' + esc(ev.id) + '" data-kind="' + esc(ev.kind) + '" data-from="' + esc(ev.from) + '" data-to="' + esc(ev.to) + '" data-phase="' + esc(ev.phase) + '">' +
       '<div class="tl-dot" style="background:' + dotColor + '"></div>' +
-      '<div class="tl-card' + (ev.isError ? ' error' : '') + (ev.fabricated ? ' fabricated' : '') + (hasEvAnnotation ? ' annotated' : '') + '">' +
+      '<div class="tl-card' + (ev.isError ? ' error' : '') + (ev.fabricated ? ' fabricated' : '') + (hasEvAnnotation ? ' annotated' : '') + (inChain ? ' in-error-chain' : '') + '">' +
+      chainLabelHtml +
       '<div class="card-header">' +
       '<span class="ev-kind-badge" style="background:' + kindColor + '22;color:' + kindColor + ';border:1px solid ' + kindColor + '55">' + esc(kindLabel) + '</span>' +
       '<span class="actor-badge" style="color:' + fromColor + '">' + esc(ev.from) + '</span>' +
@@ -123,7 +229,7 @@
       '<span class="actor-badge" style="color:' + toColor + '">' + esc(ev.to) + '</span>' +
       '<span class="ev-index">' + esc(ev.id) + '</span>' +
       '</div>' +
-      parent + parts + truncNote + annotationHtml +
+      parent + parts + truncNote + annotationHtml + commentaryHtml +
       '</div>' +
       '</div>';
   }
@@ -133,16 +239,40 @@
   function renderTimeline(events, opts) {
     opts = opts || {};
     var T = global.UL_TRACE;
+
+    // ── Task 16: compute error chains from the FULL trace (not just filtered)
+    // so chain membership is stable across filter changes.
+    var allEvents = T ? (T.events || []) : events;
+    var chains = markErrorChains(allEvents);
+    var chainedIds = new Set();
+    var chainFirstIds = new Set();
+    var chainCountMap = {};
+    chains.forEach(function (chain) {
+      chain.eventIds.forEach(function (id) { chainedIds.add(id); });
+      if (chain.eventIds.length > 0) chainFirstIds.add(chain.eventIds[0]);
+      // Count retries = number of TOOL_CALLs to the tool after the first one
+      var callCount = allEvents.filter(function (e) {
+        return chain.eventIds.indexOf(e.id) !== -1 && e.kind === 'TOOL_CALL' && e.to === chain.tool;
+      }).length;
+      chainCountMap[chain.chainId] = callCount > 1 ? callCount - 1 : 1;
+    });
+    var chainOpts = Object.assign({}, opts, {
+      chainedIds: chainedIds,
+      chainFirstIds: chainFirstIds,
+      chainCountMap: chainCountMap,
+      chainsList: chains
+    });
+
     if (!T || !T.phases || !T.phases.length) {
       // Fallback: no phases defined, render flat
-      return '<div class="tl-rail"></div>' + events.map(function (e) { return renderEventCard(e, opts); }).join('');
+      return '<div class="tl-rail"></div>' + events.map(function (e) { return renderEventCard(e, chainOpts); }).join('');
     }
     var groups = groupByPhase(events, T.phases);
     var icons = global.UL_ICONS;
     var groupsHtml = groups.map(function (g) {
       // Task 10/11/12: skip empty phase groups (filtered views)
       if (g.events.length === 0) return '';
-      var eventsHtml = g.events.map(function (e) { return renderEventCard(e, opts); }).join('');
+      var eventsHtml = g.events.map(function (e) { return renderEventCard(e, chainOpts); }).join('');
       var count = g.events.length;
       return '<div class="phase-group" data-phase-id="' + esc(g.phase.id) + '">' +
         '<div class="phase-header">' +
@@ -242,12 +372,15 @@
 
   // ── Task 9: renderIntent ──────────────────────────────────────────────────
   function renderIntent(intent) {
+    var diffContent = (intent.kind === 'diff' && intent.raw)
+      ? renderDiff(intent.raw)
+      : '<pre style="margin-top:8px;font-size:12px;font-family:\'SF Mono\',\'Fira Code\',monospace;color:#a5d6ff;white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #21262d;border-radius:4px;padding:10px;overflow:auto;">' + esc(intent.raw) + '</pre>';
     return '<div class="intent-box">' +
       '<span class="intent-label">INTENT</span>' +
       '<span style="font-size:13px;color:#e6edf3;">' + esc(intent.plain) + '</span>' +
       '<details class="ul-intent-diff" style="margin-top:10px;">' +
       '<summary style="cursor:pointer;font-size:12px;color:#58a6ff;font-weight:600;">Gold patch (diff)</summary>' +
-      '<pre style="margin-top:8px;font-size:12px;font-family:\'SF Mono\',\'Fira Code\',monospace;color:#a5d6ff;white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #21262d;border-radius:4px;padding:10px;overflow:auto;">' + esc(intent.raw) + '</pre>' +
+      diffContent +
       '</details>' +
       '<div style="margin-top:10px;font-size:12px;color:#8b949e;line-height:1.5;">' +
       '<span style="font-weight:600;color:#e6edf3;">Issue: </span>' + esc(intent.issue) +
@@ -606,7 +739,23 @@
         '.ul-minimap{position:fixed;left:8px;top:80px;bottom:80px;width:14px;display:flex;flex-direction:column;gap:3px;overflow:hidden;z-index:40;}',
         '.ul-mini-dot{flex:1;min-height:3px;max-height:8px;border-radius:2px;opacity:.55;transition:opacity .15s;text-decoration:none;display:block;}',
         '.ul-mini-dot:hover,.ul-mini-dot.active{opacity:1;transform:scaleX(1.6);}',
-        '@media(max-width:900px){.ul-minimap{display:none;}}'
+        '@media(max-width:900px){.ul-minimap{display:none;}}',
+        // Task 13: Commentary callout
+        '.ul-commentary{margin-top:8px;font-size:12px}',
+        '.ul-commentary summary{color:#58a6ff;cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px}',
+        '.ul-commentary summary::-webkit-details-marker{display:none}',
+        '.ul-commentary>div{color:#c9d1d9;margin-top:6px;padding-left:18px;border-left:2px solid #30363d}',
+        // Task 15: Diff visualization
+        '.ul-diff{font-family:\'SF Mono\',\'Fira Code\',monospace;font-size:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;overflow:auto;margin-top:6px}',
+        '.diff-line{padding:0 10px;white-space:pre}',
+        '.diff-add{background:#1f3a1f;color:#3fb950}',
+        '.diff-del{background:#3a1f1f;color:#f85149}',
+        '.diff-hunk{color:#58a6ff}',
+        '.diff-meta{color:#8b949e}',
+        '.diff-ctx{color:#c9d1d9}',
+        // Task 16: Error chain
+        '.tl-card.in-error-chain{box-shadow:-3px 0 0 #f8514944}',
+        '.error-chain-label{font-size:10px;color:#f85149;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}'
       ].join('');
       document.head && document.head.appendChild(styleEl);
     }
@@ -685,6 +834,12 @@
     _wire: _wire,
     _wireGlossary: _wireGlossary,
     _applyAndRender: _applyAndRender,
+    // Task 13
+    commentaryFor: commentaryFor,
+    // Task 15
+    renderDiff: renderDiff,
+    // Task 16
+    markErrorChains: markErrorChains,
   };
   global.UL = UL;
   if (typeof module !== 'undefined') module.exports = UL;

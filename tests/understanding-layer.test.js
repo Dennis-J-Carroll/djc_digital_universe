@@ -199,3 +199,53 @@ test('groupByPhase never drops events from a filtered subset (regression)', () =
     expect(placed).toBe(filtered.length);
   });
 });
+
+// ── Sprint 2: Tasks 13/15/16/17 ───────────────────────────────────────────────
+
+// Task 13: Per-event commentary
+test('commentaryFor("e22") returns a non-empty string', () => {
+  const text = UL.commentaryFor('e22');
+  expect(typeof text).toBe('string');
+  expect(text.length).toBeGreaterThan(0);
+});
+
+test('renderEventCard for e22 contains "Why this matters" and the commentary text', () => {
+  const e22 = TRACE.events.find(e => e.id === 'e22');
+  const html = UL.renderEventCard(e22);
+  expect(html).toContain('Why this matters');
+  const commentary = UL.commentaryFor('e22');
+  // The text is esc()d so check against the escaped form
+  expect(html).toContain(UL.esc(commentary));
+});
+
+test('renderEventCard for e2 (no commentary) does NOT contain "Why this matters"', () => {
+  const e2 = TRACE.events.find(e => e.id === 'e2');
+  const html = UL.renderEventCard(e2);
+  expect(html).not.toContain('Why this matters');
+});
+
+// Task 15: Diff visualization
+test('renderDiff produces diff-add, diff-del, diff-hunk classes for unified diff input', () => {
+  const input = "@@ -1 +1 @@\n+added\n-removed\n unchanged";
+  const html = UL.renderDiff(input);
+  expect(html).toContain('diff-add');
+  expect(html).toContain('added');
+  expect(html).toContain('diff-del');
+  expect(html).toContain('removed');
+  expect(html).toContain('diff-hunk');
+  expect(html).toContain('ul-diff');
+});
+
+test('renderIntent contains ul-diff and diff-add when intent.kind is "diff"', () => {
+  const html = UL.renderIntent(TRACE.intent);
+  expect(html).toContain('ul-diff');
+  expect(html).toContain('diff-add');
+});
+
+// Task 16: Error chain grouping
+test('markErrorChains returns at least one chain including e14', () => {
+  const chains = UL.markErrorChains(TRACE.events);
+  expect(chains.length).toBeGreaterThan(0);
+  const chainWithE14 = chains.find(c => c.eventIds.includes('e14'));
+  expect(chainWithE14).toBeDefined();
+});
