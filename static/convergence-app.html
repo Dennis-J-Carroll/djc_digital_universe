@@ -437,8 +437,8 @@
   /* ====== REACTIVE CRT — custom properties ====== */
   /* Breathing animation for max-coldness state */
   @keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50%       { transform: scale(1.0018); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%       { transform: translate(-50%, -50%) scale(1.0018); }
   }
   .breathe-active { animation: breathe 6s ease-in-out infinite; }
 
