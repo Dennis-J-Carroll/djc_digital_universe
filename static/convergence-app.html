@@ -498,7 +498,8 @@ const state = {
   historyIndex: -1,
   isTyping: false,
   startTime: Date.now(),
-  bootComplete: false
+  bootComplete: false,
+  crtLevel: 0
 };
 
 // ============ TIMER MANAGEMENT ============
@@ -524,7 +525,9 @@ const $terminalWindow = document.getElementById('terminalWindow');
 function scrollToBottom() { $terminalBody.scrollTop = $terminalBody.scrollHeight; }
 function randomDelay(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function maybeGlitch() {
-  if (Math.random() < 0.05) {
+  const t = (state.crtLevel || 0) / 6;
+  const chance = 0.02 + t * 0.16;
+  if (Math.random() < chance) {
     $terminalWindow.classList.add('glitch');
     setTimeout(() => $terminalWindow.classList.remove('glitch'), 150);
   }
@@ -597,6 +600,41 @@ function typeWriteToOutput(text, className, speedMin, speedMax, onComplete) {
   $output.appendChild(div);
   typeWrite(div, text, speedMin, speedMax, onComplete);
   return div;
+}
+
+// ============ REACTIVE CRT ============
+function updateCRTState(coldness, candor) {
+  const cold = Math.min(coldness, 6);
+  const t = cold / 6;
+
+  const glow  = (4  + t * 14).toFixed(1) + 'px';
+  const glow2 = (8  + t * 28).toFixed(1) + 'px';
+  const alpha  = (0.40 + t * 0.50).toFixed(3);
+  const alpha2 = (0.25 + t * 0.35).toFixed(3);
+  const scanline = (0.025 + t * 0.060).toFixed(4);
+
+  const root = document.documentElement;
+  root.style.setProperty('--phosphor-glow',   glow);
+  root.style.setProperty('--phosphor-glow2',  glow2);
+  root.style.setProperty('--phosphor-alpha',  alpha);
+  root.style.setProperty('--phosphor-alpha2', alpha2);
+  root.style.setProperty('--scanline-opacity', scanline);
+
+  if (cold >= 5) {
+    $terminalWindow.classList.add('breathe-active');
+  } else {
+    $terminalWindow.classList.remove('breathe-active');
+  }
+
+  state.crtLevel = cold;
+}
+
+function triggerCandorFlash() {
+  $terminalWindow.classList.remove('cooling-flash');
+  // Force reflow so re-adding the class restarts the animation
+  void $terminalWindow.offsetWidth;
+  $terminalWindow.classList.add('cooling-flash');
+  setTimeout(() => $terminalWindow.classList.remove('cooling-flash'), 400);
 }
 
 // ============ SCREEN EFFECTS ============
@@ -883,9 +921,17 @@ function chooseOption(h, opt, block, btn) {
   appendText('Elias: "' + opt.label + '"', 'elias-text');
 
   // update temperature model
-  if (opt.tone === 'crack') { state.candor += 1; state.coldness = Math.max(0, state.coldness - 1); }
-  else if (opt.tone === 'rationalize') { state.candor += 0.5; state.coldness += 0.5; }
-  else { state.coldness += 1; } // deny / deflect
+  if (opt.tone === 'crack') {
+    state.candor += 1;
+    state.coldness = Math.max(0, state.coldness - 1);
+    triggerCandorFlash();
+  } else if (opt.tone === 'rationalize') {
+    state.candor += 0.5;
+    state.coldness += 0.5;
+  } else {
+    state.coldness += 1; // deny / deflect
+  }
+  updateCRTState(state.coldness, state.candor);
 
   // CONVERGENCE reacts
   setNamedTimer('reactPause', () => {
