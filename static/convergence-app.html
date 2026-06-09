@@ -602,6 +602,33 @@ function typeWriteToOutput(text, className, speedMin, speedMax, onComplete) {
   return div;
 }
 
+// ============ STATUS BAR ============
+function updateStatusBar() {
+  // Phase pips — one pip per phase (1–4)
+  const phase = Math.max(1, state.phase);
+  const pips = Array.from({ length: 4 }, (_, i) => i < phase ? '▣' : '░').join('');
+  document.getElementById('phasePips').textContent = pips;
+
+  // Temperature bar — coldness 0..6 mapped to 0..5 blocks
+  const filled = Math.min(5, Math.round((state.coldness / 6) * 5));
+  const tempStr = '▓'.repeat(filled) + '░'.repeat(5 - filled);
+  const tempEl = document.getElementById('tempBar');
+  tempEl.textContent = tempStr;
+  tempEl.className = state.coldness <= 1 ? 'temp-calm'
+                   : state.coldness <= 3 ? 'temp-rising'
+                   : 'temp-cold';
+}
+
+function startStatusTimer() {
+  setInterval(() => {
+    const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+    const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const ss = String(elapsed % 60).padStart(2, '0');
+    const el = document.getElementById('statusTimer');
+    if (el) el.textContent = mm + ':' + ss;
+  }, 1000);
+}
+
 // ============ REACTIVE CRT ============
 function updateCRTState(coldness, candor) {
   const cold = Math.min(coldness, 6);
@@ -728,6 +755,8 @@ function showOpening() {
               $input.focus();
               appendText('', '');
               appendText("Type 'begin' to proceed. Type 'help' for commands.", 'muted-text');
+              updateStatusBar();
+              startStatusTimer();
             }
           );
         }, 700);
@@ -870,6 +899,7 @@ function presentHinge() {
     state.phase = h.phase;
     phaseFlash();
     unlockLogsForPhase(h.phase);
+    updateStatusBar();
   }
 
   state.hingeOpen = false;
@@ -935,6 +965,7 @@ function chooseOption(h, opt, block, btn) {
     state.coldness += 1; // deny / deflect
   }
   updateCRTState(state.coldness, state.candor);
+  updateStatusBar();
 
   // CONVERGENCE reacts
   setNamedTimer('reactPause', () => {
