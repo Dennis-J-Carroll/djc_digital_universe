@@ -391,6 +391,8 @@
     .ascii-art { font-size: 9px; }
     .choice { font-size: 15px; }
     .gloss-text { font-size: 13px; }
+    .status-bar-strip { padding: 0 8px; font-size: 11px; }
+    .snd-toggle { font-size: 11px; padding: 1px 4px; }
   }
 
   /* ====== STATUS BAR ====== */
@@ -413,6 +415,7 @@
 
   .temp-calm  { color: #5A8C5A; }
   .temp-rising { color: var(--warn); }
+  /* temp-cold = max coldness state; red signals system strain, not literal cold */
   .temp-cold  { color: #cc6655; }
 
   .snd-toggle {
