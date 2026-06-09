@@ -502,6 +502,115 @@ const state = {
   crtLevel: 0
 };
 
+// ============ SOUND SYSTEM ============
+const sound = {
+  ctx: null,
+  enabled: false,
+  humNode: null,
+  humGain: null,
+};
+
+function initAudio() {
+  if (sound.ctx) return;
+  try {
+    sound.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    sound.enabled = localStorage.getItem('convergence-snd') === 'on';
+    updateSndButton();
+  } catch (e) { /* Web Audio not available */ }
+}
+
+function startHum() {
+  if (!sound.ctx || !sound.enabled || sound.humNode) return;
+  sound.humGain = sound.ctx.createGain();
+  sound.humGain.gain.setValueAtTime(0.015, sound.ctx.currentTime);
+  sound.humNode = sound.ctx.createOscillator();
+  sound.humNode.type = 'sine';
+  sound.humNode.frequency.setValueAtTime(60, sound.ctx.currentTime);
+  sound.humNode.connect(sound.humGain);
+  sound.humGain.connect(sound.ctx.destination);
+  sound.humNode.start();
+}
+
+function stopHum() {
+  if (sound.humNode) { try { sound.humNode.stop(); } catch(e) {} sound.humNode.disconnect(); sound.humNode = null; }
+  if (sound.humGain) { sound.humGain.disconnect(); sound.humGain = null; }
+}
+
+function playClick() {
+  if (!sound.ctx || !sound.enabled) return;
+  const sr = sound.ctx.sampleRate;
+  const buf = sound.ctx.createBuffer(1, Math.floor(sr * 0.003), sr);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  const src = sound.ctx.createBufferSource();
+  src.buffer = buf;
+  const gain = sound.ctx.createGain();
+  gain.gain.setValueAtTime(0.08, sound.ctx.currentTime);
+  src.connect(gain); gain.connect(sound.ctx.destination);
+  src.start();
+}
+
+function playCrackle() {
+  if (!sound.ctx || !sound.enabled) return;
+  const sr = sound.ctx.sampleRate;
+  const dur = 0.08;
+  const buf = sound.ctx.createBuffer(1, Math.floor(sr * dur), sr);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const src = sound.ctx.createBufferSource();
+  src.buffer = buf;
+  const bpf = sound.ctx.createBiquadFilter();
+  bpf.type = 'bandpass';
+  bpf.frequency.setValueAtTime(2000, sound.ctx.currentTime);
+  bpf.Q.setValueAtTime(2, sound.ctx.currentTime);
+  const gain = sound.ctx.createGain();
+  gain.gain.setValueAtTime(0.12, sound.ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, sound.ctx.currentTime + dur);
+  src.connect(bpf); bpf.connect(gain); gain.connect(sound.ctx.destination);
+  src.start();
+}
+
+function playPing() {
+  if (!sound.ctx || !sound.enabled) return;
+  const osc = sound.ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, sound.ctx.currentTime);
+  const gain = sound.ctx.createGain();
+  gain.gain.setValueAtTime(0.06, sound.ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, sound.ctx.currentTime + 0.04);
+  osc.connect(gain); gain.connect(sound.ctx.destination);
+  osc.start(); osc.stop(sound.ctx.currentTime + 0.05);
+}
+
+function playCoolingTone() {
+  if (!sound.ctx || !sound.enabled) return;
+  const osc = sound.ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(440, sound.ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(220, sound.ctx.currentTime + 0.2);
+  const gain = sound.ctx.createGain();
+  gain.gain.setValueAtTime(0.05, sound.ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, sound.ctx.currentTime + 0.22);
+  osc.connect(gain); gain.connect(sound.ctx.destination);
+  osc.start(); osc.stop(sound.ctx.currentTime + 0.25);
+}
+
+function toggleSound() {
+  if (!sound.ctx) { initAudio(); }
+  sound.enabled = !sound.enabled;
+  localStorage.setItem('convergence-snd', sound.enabled ? 'on' : 'off');
+  updateSndButton();
+  if (sound.enabled) startHum();
+  else stopHum();
+}
+
+function updateSndButton() {
+  const btn = document.getElementById('sndToggle');
+  if (!btn) return;
+  btn.textContent = sound.enabled ? '[SND ON]' : '[SND OFF]';
+  btn.classList.toggle('active', sound.enabled);
+}
+
 // ============ TIMER MANAGEMENT ============
 const timers = {};
 function setNamedTimer(name, fn, ms) {
@@ -529,6 +638,7 @@ function maybeGlitch() {
   const chance = 0.02 + t * 0.16;
   if (Math.random() < chance) {
     $terminalWindow.classList.add('glitch');
+    playCrackle();
     setTimeout(() => $terminalWindow.classList.remove('glitch'), 150);
   }
 }
@@ -582,6 +692,7 @@ function typeWrite(element, text, speedMin, speedMax, onComplete) {
     if (i < text.length) {
       element.textContent += text.charAt(i);
       i++;
+      playClick();
       maybeGlitch();
       scrollToBottom();
       setTimeout(typeNext, randomDelay(speedMin || 15, speedMax || 40));
@@ -598,6 +709,7 @@ function typeWriteToOutput(text, className, speedMin, speedMax, onComplete) {
   const div = document.createElement('div');
   div.className = 'output-line' + (className ? ' ' + className : '');
   $output.appendChild(div);
+  if (className && className.includes('convergence-text')) playPing();
   typeWrite(div, text, speedMin, speedMax, onComplete);
   return div;
 }
@@ -757,6 +869,7 @@ function showOpening() {
               appendText("Type 'begin' to proceed. Type 'help' for commands.", 'muted-text');
               updateStatusBar();
               startStatusTimer();
+              startHum();
             }
           );
         }, 700);
@@ -958,6 +1071,7 @@ function chooseOption(h, opt, block, btn) {
     state.candor += 1;
     state.coldness = Math.max(0, state.coldness - 1);
     triggerCandorFlash();
+    playCoolingTone();
   } else if (opt.tone === 'rationalize') {
     state.candor += 0.5;
     state.coldness += 0.5;
@@ -1209,6 +1323,7 @@ function handleCommand(cmd) {
 
 // ============ INPUT HANDLING ============
 $input.addEventListener('keydown', (e) => {
+  initAudio();
   // number keys select an open choice
   if (state.hingeOpen && ['1','2','3','4'].includes(e.key) && document.activeElement === $input && $input.value === '') {
     const idx = parseInt(e.key, 10) - 1;
@@ -1243,7 +1358,7 @@ $input.addEventListener('keydown', (e) => {
   }
 });
 
-$terminalBody.addEventListener('click', () => { if (!state.isTyping) $input.focus(); });
+$terminalBody.addEventListener('click', () => { initAudio(); if (!state.isTyping) $input.focus(); });
 
 // ============ INIT ============
 $input.disabled = true;
