@@ -1098,6 +1098,47 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// ============ RESTART ============
+function doRestart(fast) {
+  clearAllTimers();
+  stopHum();
+
+  // Reset all game state
+  state.phase = 0;
+  state.hingeIndex = 0;
+  state.hingeOpen = false;
+  state.coldness = 0;
+  state.candor = 0;
+  state.logsUnlocked = [];
+  state.finished = false;
+  state.commandHistory = [];
+  state.historyIndex = -1;
+  state.isTyping = false;
+  state.startTime = Date.now();
+  state.bootComplete = false;
+  state.crtLevel = 0;
+  state.currentHinge = null;
+  state.currentHingeBlock = null;
+
+  // Reset CRT to calm state
+  updateCRTState(0, 0);
+  $terminalWindow.classList.remove('breathe-active', 'cooling-flash', 'glitch');
+  updateStatusBar();
+
+  // Clear terminal output
+  $output.innerHTML = '';
+  $input.disabled = true;
+  $input.value = '';
+
+  if (fast) {
+    state.phase = 1;
+    state.bootComplete = true;
+    showOpening();
+  } else {
+    runBootSequence();
+  }
+}
+
 // ============ ENDING (withheld) ============
 function runEnding() {
   state.finished = true;
@@ -1281,6 +1322,7 @@ function doHelp() {
     'status    Display system status',
     'logs      View retrieved data fragments',
     'exit      Attempt to leave',
+    'restart   Restart from boot  (restart --fast skips boot)',
     'clear     Clear the screen',
     'help      Show this message',
     '',
@@ -1297,7 +1339,7 @@ function doUnknown() {
 }
 
 // ============ COMMAND PARSER ============
-const commands = ['begin', 'help', 'status', 'logs', 'exit', 'clear'];
+const commands = ['begin', 'help', 'status', 'logs', 'exit', 'clear', 'restart'];
 function autocomplete(partial) {
   partial = partial.toLowerCase();
   const m = commands.filter(c => c.startsWith(partial));
@@ -1317,6 +1359,8 @@ function handleCommand(cmd) {
     case 'logs': doLogs(); break;
     case 'exit': doExit(); break;
     case 'clear': doClear(); break;
+    case 'restart': doRestart(false); break;
+    case 'restart --fast': doRestart(true); break;
     default: doUnknown();
   }
 }
