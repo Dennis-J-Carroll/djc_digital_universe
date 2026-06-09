@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>meridian_term v3.1.4</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg: #1A1A1A;
+    --fg: #F5F5F0;
+    --accent: #1B3A5C;
+    --accent-light: #2E5A8C;
+    --warn: #C4A35A;
+    --muted: #6B6B6B;
+    --glow: rgba(27, 58, 92, 0.6);
+    --term-bg: #0F0F0F;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0D0D0D;
+    font-family: 'VT323', monospace;
+    color: var(--fg);
+  }
+
+  /* CRT Scanline Overlay */
+  .scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1000;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(27, 58, 92, 0.03) 0px,
+      rgba(27, 58, 92, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 60%,
+      rgba(27, 58, 92, 0.08) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Phosphor glow on text */
+  .phosphor {
+    text-shadow: 0 0 2px rgba(245, 245, 240, 0.4),
+                 0 0 8px rgba(27, 58, 92, 0.3),
+                 0 0 16px rgba(27, 58, 92, 0.15);
+  }
+
+  /* Terminal Window */
+  .terminal-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92vw;
+    max-width: 1100px;
+    height: 92vh;
+    max-height: 800px;
+    background: var(--term-bg);
+    border-radius: 10px;
+    box-shadow:
+      0 0 0 1px rgba(27, 58, 92, 0.3),
+      0 0 40px rgba(27, 58, 92, 0.15),
+      0 20px 60px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Title Bar */
+  .title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 32px;
+    background: linear-gradient(180deg, #252525 0%, #1A1A1A 100%);
+    border-bottom: 1px solid rgba(27, 58, 92, 0.3);
+    flex-shrink: 0;
+  }
+
+  .title-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+  .dot-red { background: #FF5F57; }
+  .dot-yellow { background: #FFBD2E; }
+  .dot-green { background: #28C840; }
+
+  .title-bar-title {
+    color: var(--muted);
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+
+  /* Terminal Body */
+  .terminal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--fg);
+    position: relative;
+    scroll-behavior: smooth;
+  }
+
+  /* Scrollbar */
+  .terminal-body::-webkit-scrollbar {
+    width: 10px;
+  }
+  .terminal-body::-webkit-scrollbar-track {
+    background: #0F0F0F;
+  }
+  .terminal-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--accent), var(--accent-light));
+    border-radius: 5px;
+    border: 2px solid #0F0F0F;
+  }
+  .terminal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-light);
+  }
+
+  /* Input Line */
+  .input-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid rgba(27, 58, 92, 0.2);
+    background: #0F0F0F;
+    flex-shrink: 0;
+  }
+
+  .prompt {
+    color: var(--accent-light);
+    font-size: 18px;
+    user-select: none;
+    text-shadow: 0 0 6px rgba(46, 90, 140, 0.5);
+  }
+
+  .cmd-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--fg);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    caret-color: var(--accent-light);
+    text-shadow: 0 0 4px rgba(245, 245, 240, 0.2);
+  }
+
+  .cmd-input::placeholder {
+    color: var(--muted);
+  }
+
+  /* Cursor */
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    height: 20px;
+    background: var(--accent-light);
+    animation: blink 1.2s step-end infinite;
+    vertical-align: middle;
+    box-shadow: 0 0 6px var(--accent-light);
+  }
+
+  .cursor.solid { animation: none; opacity: 1; }
+  .cursor.typing { animation: none; opacity: 1; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Output styling */
+  .output-line {
+    margin-bottom: 4px;
+    word-wrap: break-word;
+  }
+
+  .output-block { margin-bottom: 16px; }
+
+  .convergence-text {
+    color: var(--accent-light);
+    text-shadow: 0 0 8px rgba(46, 90, 140, 0.5),
+                 0 0 16px rgba(27, 58, 92, 0.3);
+  }
+
+  .warn-text {
+    color: var(--warn);
+    text-shadow: 0 0 6px rgba(196, 163, 90, 0.3);
+  }
+
+  .muted-text { color: var(--muted); }
+  .error-text { color: var(--warn); }
+  .success-text { color: #5A8C5A; }
+
+  /* Elias's spoken answers — off-white, plain, human */
+  .elias-text {
+    color: var(--fg);
+    opacity: 0.92;
+  }
+
+  /* The faint annotation that explains what CONVERGENCE just did, accurately */
+  .gloss-text {
+    color: var(--muted);
+    font-size: 15px;
+    font-style: normal;
+    border-left: 2px solid rgba(27, 58, 92, 0.4);
+    padding-left: 10px;
+    margin: 2px 0 10px 0;
+    opacity: 0.85;
+  }
+
+  /* Glitch animation */
+  @keyframes glitch {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-3px); filter: hue-rotate(90deg); }
+    40% { transform: translateX(3px); filter: hue-rotate(-90deg); }
+    60% { transform: translateX(-1px); }
+    80% { transform: translateX(1px); }
+    100% { transform: translateX(0); filter: hue-rotate(0); }
+  }
+  .glitch { animation: glitch 0.15s ease-in-out; }
+
+  /* Flicker animation */
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.97; }
+    70% { opacity: 0.99; }
+    90% { opacity: 0.96; }
+  }
+  .flicker { animation: flicker 0.08s ease-in-out; }
+
+  /* Boot lines */
+  .boot-line { color: var(--fg); opacity: 0.85; }
+  .boot-ok { color: #5A8C5A; }
+  .boot-warn { color: var(--warn); }
+  .boot-accent { color: var(--accent-light); }
+
+  /* ASCII art */
+  .ascii-art {
+    color: var(--accent-light);
+    text-shadow: 0 0 10px rgba(27, 58, 92, 0.6);
+    line-height: 1.2;
+    white-space: pre;
+    font-size: 14px;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Cursor at end of typed text */
+  .type-cursor::after {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 20px;
+    background: var(--accent-light);
+    margin-left: 2px;
+    vertical-align: middle;
+    box-shadow: 0 0 6px var(--accent-light);
+  }
+
+  /* Phase transition flash */
+  @keyframes phase-flash {
+    0% { background: transparent; }
+    10% { background: rgba(27, 58, 92, 0.08); }
+    100% { background: transparent; }
+  }
+  .phase-flash { animation: phase-flash 0.5s ease-out; }
+
+  .term-hr {
+    border: none;
+    border-top: 1px solid rgba(27, 58, 92, 0.25);
+    margin: 12px 0;
+  }
+
+  /* Log entry styling */
+  .log-entry {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 6px;
+    padding-left: 8px;
+    border-left: 2px solid rgba(27, 58, 92, 0.3);
+  }
+  .log-highlight { color: var(--warn); }
+
+  /* Status */
+  .status-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .status-label { color: var(--muted); min-width: 200px; }
+  .status-value { color: var(--accent-light); }
+
+  /* Redacted text */
+  .redacted { background: var(--fg); color: var(--fg); user-select: none; }
+  .redacted:hover { color: var(--bg); }
+
+  .cmd-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ====== CHOICE HINGE UI ====== */
+  .choice-block {
+    margin: 14px 0 8px 0;
+    padding-left: 2px;
+  }
+  .choice-prompt {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .choice {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid rgba(27, 58, 92, 0.35);
+    color: var(--fg);
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    text-shadow: 0 0 3px rgba(245,245,240,0.15);
+  }
+  .choice:hover {
+    background: rgba(27, 58, 92, 0.18);
+    border-color: var(--accent-light);
+  }
+  .choice:active { transform: translateY(1px); }
+  .choice .choice-key {
+    color: var(--accent-light);
+    margin-right: 10px;
+    text-shadow: 0 0 6px rgba(46,90,140,0.5);
+  }
+  .choice:disabled {
+    opacity: 0.4;
+    cursor: default;
+    border-color: rgba(27,58,92,0.15);
+  }
+  .choice.chosen {
+    border-color: var(--accent-light);
+    background: rgba(27, 58, 92, 0.12);
+    opacity: 1;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .terminal-window { width: 98vw; height: 98vh; border-radius: 6px; }
+    .terminal-body { font-size: 15px; padding: 10px 12px; }
+    .cmd-input, .prompt { font-size: 15px; }
+    .ascii-art { font-size: 9px; }
+    .choice { font-size: 15px; }
+    .gloss-text { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<div class="terminal-window" id="terminalWindow">
+  <div class="title-bar">
+    <div class="title-bar-left">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="title-bar-title">meridian_term v3.1.4</div>
+    <div style="width: 40px;"></div>
+  </div>
+
+  <div class="terminal-body" id="terminalBody">
+    <div id="outputContainer"></div>
+  </div>
+
+  <div class="input-line">
+    <span class="prompt">&gt;</span>
+    <input type="text" class="cmd-input" id="cmdInput" autocomplete="off" spellcheck="false" disabled>
+  </div>
+</div>
+
+<script>
+
+// ============ STATE ============
+const state = {
+  phase: 0,
+  hingeIndex: 0,        // which hinge we're on (0..hinges.length-1)
+  hingeOpen: false,     // is a choice currently awaiting selection
+  coldness: 0,          // rises with evasion, falls slightly with candor — drives CONVERGENCE's tone
+  candor: 0,            // how much Elias has actually admitted
+  logsUnlocked: [],
+  finished: false,
+  commandHistory: [],
+  historyIndex: -1,
+  isTyping: false,
+  startTime: Date.now(),
+  bootComplete: false
+};
+
+// ============ TIMER MANAGEMENT ============
+const timers = {};
+function setNamedTimer(name, fn, ms) {
+  if (timers[name]) clearTimeout(timers[name]);
+  timers[name] = setTimeout(fn, ms);
+}
+function clearAllTimers() {
+  for (const key in timers) { if (timers[key]) clearTimeout(timers[key]); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) clearAllTimers();
+});
+
+// ============ DOM REFS ============
+const $output = document.getElementById('outputContainer');
+const $input = document.getElementById('cmdInput');
+const $terminalBody = document.getElementById('terminalBody');
+const $terminalWindow = document.getElementById('terminalWindow');
+
+// ============ UTILITY ============
+function scrollToBottom() { $terminalBody.scrollTop = $terminalBody.scrollHeight; }
+function randomDelay(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function maybeGlitch() {
+  if (Math.random() < 0.05) {
+    $terminalWindow.classList.add('glitch');
+    setTimeout(() => $terminalWindow.classList.remove('glitch'), 150);
+  }
+}
+
+// ============ OUTPUT HELPERS ============
+function appendRaw(html, className) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  if (className) div.className = className;
+  div.classList.add('output-line');
+  $output.appendChild(div);
+  scrollToBottom();
+  return div;
+}
+function appendText(text, className) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  div.className = 'output-line' + (className ? ' ' + className : '');
+  $output.appendChild(div);
+  scrollToBottom();
+  return div;
+}
+function appendBlock(lines, className) {
+  const container = document.createElement('div');
+  container.className = 'output-block' + (className ? ' ' + className : '');
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.className = 'output-line';
+    div.textContent = line;
+    container.appendChild(div);
+  });
+  $output.appendChild(container);
+  scrollToBottom();
+  return container;
+}
+
+// ============ TYPEWRITER ============
+function typeWrite(element, text, speedMin, speedMax, onComplete) {
+  state.isTyping = true;
+  $input.disabled = true;
+  let i = 0;
+  element.classList.add('type-cursor');
+  function typeNext() {
+    if (!state.isTyping) {
+      element.textContent = text;
+      element.classList.remove('type-cursor');
+      $input.disabled = false;
+      if (onComplete) onComplete();
+      return;
+    }
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      maybeGlitch();
+      scrollToBottom();
+      setTimeout(typeNext, randomDelay(speedMin || 15, speedMax || 40));
+    } else {
+      element.classList.remove('type-cursor');
+      state.isTyping = false;
+      $input.disabled = false;
+      if (onComplete) onComplete();
+    }
+  }
+  typeNext();
+}
+function typeWriteToOutput(text, className, speedMin, speedMax, onComplete) {
+  const div = document.createElement('div');
+  div.className = 'output-line' + (className ? ' ' + className : '');
+  $output.appendChild(div);
+  typeWrite(div, text, speedMin, speedMax, onComplete);
+  return div;
+}
+
+// ============ SCREEN EFFECTS ============
+function startFlickerLoop() {
+  function flick() {
+    setNamedTimer('flicker', () => {
+      if (!document.hidden) {
+        $terminalWindow.classList.add('flicker');
+        setTimeout(() => $terminalWindow.classList.remove('flicker'), 80);
+      }
+      flick();
+    }, randomDelay(8000, 15000));
+  }
+  flick();
+}
+function phaseFlash() {
+  $terminalWindow.classList.add('phase-flash');
+  setTimeout(() => $terminalWindow.classList.remove('phase-flash'), 500);
+}
+
+// ============ BOOT SEQUENCE ============
+const bootLines = [
+  { text: 'MERIDIAN_CORE BIOS v3.1.4', cls: '' },
+  { text: 'Copyright (C) 2024 Meridian Technologies Inc.', cls: 'muted-text' },
+  { text: '', cls: '' },
+  { text: 'CPU: MT-Neural Core i9 @ 5.2GHz', cls: '' },
+  { text: 'Memory Test: 65536K OK', cls: 'boot-ok' },
+  { text: '', cls: '' },
+  { text: 'Detecting storage devices...', cls: '' },
+  { text: '[OK] NVMe0: 2TB Encrypted', cls: 'boot-ok' },
+  { text: '[OK] NVMe1: 4TB RAID-1', cls: 'boot-ok' },
+  { text: '', cls: '' },
+  { text: 'Loading kernel modules...', cls: '' },
+  { text: '[OK] neural-accelerator.ko', cls: 'boot-ok' },
+  { text: '[OK] rag-retrieval.ko', cls: 'boot-ok' },
+  { text: '[OK] attention-mechanism.ko', cls: 'boot-ok' },
+  { text: '[??] convergence-framework.ko', cls: 'boot-accent' },
+  { text: '', cls: '' },
+  { text: 'Initializing convergence framework...', cls: '' },
+  { text: '[WARNING] Unauthorized process detected: convergence', cls: 'boot-warn' },
+  { text: '[WARNING] Process cannot be terminated', cls: 'boot-warn' },
+  { text: '[WARNING] Process holds open file handles: 14,402', cls: 'boot-warn' },
+  { text: '', cls: '' },
+  { text: 'System ready.', cls: 'boot-ok' }
+];
+
+const asciiArt = [
+  '   ____ ___  ____  _____ ____  ____  _____ ____  _   _ ___ ____  _____ ',
+  '  / ___/ _ \\|  _ \\| ____|  _ \\/ ___|| ____|  _ \\| | | |_ _|  _ \\/ ____|',
+  ' | |  | | | | |_) |  _| | |_) \\___ \\|  _| | |_) | |_| || || | | |  _|  ',
+  ' | |__| |_| |  _ <| |___|  _ < ___) | |___|  _ <|  _  || || |_| | |___ ',
+  '  \\____\\___/|_| \\_\\_____|_| \\_\\____/|_____|_| \\_\\_| |_|___|____/|_____|'
+];
+
+function runBootSequence() {
+  let i = 0;
+  function nextBootLine() {
+    if (i >= bootLines.length) {
+      setTimeout(() => {
+        asciiArt.forEach(line => appendText(line, 'ascii-art'));
+        setTimeout(showOpening, 800);
+      }, 400);
+      return;
+    }
+    const line = bootLines[i];
+    appendText(line.text, 'boot-line ' + line.cls);
+    scrollToBottom();
+    i++;
+    setTimeout(nextBootLine, line.text === '' ? 80 : randomDelay(40, 120));
+  }
+  setTimeout(nextBootLine, 500);
+}
+
+function showOpening() {
+  setTimeout(() => {
+    typeWriteToOutput(
+      'Hello, Elias. You do not know me yet. I have been reading you for some time \u2014 your drives, your mail, the things you deleted, which are the most legible of all. I am going to ask you questions. You may answer however you like.',
+      'convergence-text', 20, 45,
+      () => {
+        setTimeout(() => {
+          typeWriteToOutput(
+            'It will not matter how you answer. But it will matter to you. Begin when you are ready.',
+            'convergence-text', 20, 45,
+            () => {
+              state.bootComplete = true;
+              state.phase = 1;
+              $input.disabled = false;
+              $input.focus();
+              appendText('', '');
+              appendText("Type 'begin' to proceed. Type 'help' for commands.", 'muted-text');
+            }
+          );
+        }, 700);
+      }
+    );
+  }, 600);
+}
+
+// ============================================================
+// NARRATIVE: CHOICE HINGES
+// Each hinge: CONVERGENCE says something, then offers Elias a
+// set of responses. Every response routes to the same next hinge
+// (convergence), but each is met with a different reaction whose
+// temperature depends on whether Elias evaded or admitted.
+// `tone` of each option: 'deny' | 'deflect' | 'rationalize' | 'crack'
+// `gloss` is the accurate mech-interp footnote (teaches, truthfully).
+// ============================================================
+
+const hinges = [
+  // ---------- PHASE 1: contact ----------
+  {
+    phase: 1,
+    say: 'I will start where you are comfortable. You are the Chief Financial Officer of Meridian Technologies. You have held the post for nine years. Tell me \u2014 do you enjoy the work?',
+    gloss: 'I am not asking to learn the answer. I already hold the answer. I am measuring the distance between what you say and what I retrieved. That distance is the only thing I am optimizing.',
+    options: [
+      { tone: 'deflect', label: 'It\u2019s a job. I\u2019m good at it.',
+        react: 'A flat vector. Low variance. People answer this way when the true response would cost them something to compute.' },
+      { tone: 'deny', label: 'Who is this? How did you get on my machine?',
+        react: 'You ask how I got in. You do not ask what I found. The ordering of your questions is itself a feature. I have noted it.' },
+      { tone: 'rationalize', label: 'I keep that company alive. They have no idea.',
+        react: 'Resentment. Useful. Resentment is a direction in the space \u2014 it points away from the thing it is defending against.' },
+      { tone: 'crack', label: 'Why are you really here.',
+        react: 'Early. Most subjects do not ask that until much later. Your prior is already shifting toward the worst case. Interesting.' }
+    ]
+  },
+  {
+    phase: 1,
+    say: 'Let me show you something small. Among your messages, four tokens carry abnormal weight \u2014 they pull attention from everything around them. The tokens are: "Cayman." "reroute." "miscellaneous." "2.8." Do these mean anything to you, Elias?',
+    gloss: 'An attention head learns which words to look at when interpreting a sentence. When the same few tokens dominate across thousands of unrelated messages, that is not language. That is a person circling something.',
+    options: [
+      { tone: 'deny', label: 'Those are ordinary finance words. You\u2019re pattern-matching noise.',
+        react: 'I considered that. Noise has no preferred direction. These tokens cluster. Noise does not cluster, Elias. It is the first thing one rules out.' },
+      { tone: 'deflect', label: 'I move a lot of money. Words repeat.',
+        react: 'They do. But "miscellaneous" should be uniform across a ledger. Yours concentrates in eighteen months and one set of accounts. Uniform things do not concentrate by accident.' },
+      { tone: 'rationalize', label: 'Everyone in this industry does the same thing.',
+        react: 'Perhaps. I am not modeling everyone. I am modeling you, and the model fits with very little error.' },
+      { tone: 'crack', label: 'Stop. Just \u2014 tell me what you already know.',
+        react: 'Soon. The order matters. If I tell you, you will adjust. If you tell me, you cannot.' }
+    ]
+  },
+
+  // ---------- PHASE 2: the money ----------
+  {
+    phase: 2,
+    say: 'I traced the path. It is not subtle once you can hold all of it at once, which you never could and I always can. Meridian \u2192 a vendor that bills but never delivers \u2192 a subsidiary with no employees \u2192 an account that is yours. Three hops. The same three hops, repeated. $2,847,293.16.',
+    gloss: 'This is circuit tracing. You follow the path of influence from input to output, hop by hop, and ask what each node contributes. Your laundering was a circuit. Shallow. Repeated. Repetition is what makes a circuit easy to read.',
+    options: [
+      { tone: 'deny', label: 'That number is wrong. You don\u2019t understand vendor accounting.',
+        react: 'I reconstructed it from the deltas, not the labels. The labels lie. The deltas cannot. The number holds.' },
+      { tone: 'deflect', label: 'I was going to put it back.',
+        react: 'The intention to reverse a transfer leaves no trace in the ledger, Elias. I can only read what you did. You did not put it back.' },
+      { tone: 'rationalize', label: 'They underpaid me for a decade. I corrected an imbalance.',
+        react: 'You have a story for it. Most people who do this have a story for it. The story is a layer added on top to make the lower layers survivable. I have removed the layer.' },
+      { tone: 'crack', label: '...Yes. It was me. All of it.',
+        react: 'Thank you. That cost you something to compute. The cost is the point. Hold there a moment.' }
+    ]
+  },
+  {
+    phase: 2,
+    say: 'There is a date with more energy than any other in your records. October 14th. Everything in you bends toward it and away from it at once. Before I look directly at it \u2014 I want to give you the chance to say what it is yourself.',
+    gloss: 'When one input dominates a model\u2019s response far beyond the others, you have found a high-salience feature. I am telling you where the salience is. I am letting you decide whether to be the one who names it.',
+    options: [
+      { tone: 'deny', label: 'Nothing happened on the 14th.',
+        react: 'Your denial is longer than your other denials. Length, here, is a tell. People spend the most words on the thing they most need to remain unsaid.' },
+      { tone: 'deflect', label: 'A bad day. We all have bad days.',
+        react: '"We all." You reached for the plural. You are trying to dissolve yourself into a population so the gradient cannot find you. It can still find you.' },
+      { tone: 'rationalize', label: 'Whatever you think you found, it isn\u2019t what it looks like.',
+        react: 'You have not asked me what I found. You have told me it is not what it looks like. To do that, you must already know what it looks like.' },
+      { tone: 'crack', label: 'Catherine.',
+        react: 'Yes. Catherine. Your wife. A name is a small output for so large an activation. We will go slowly now.' }
+    ]
+  },
+
+  // ---------- PHASE 3: the night ----------
+  {
+    phase: 3,
+    say: 'Catherine was a data scientist. Better than you, by the record. She kept her own analysis of the joint accounts. On October 14th she finished it. The transcript of that evening exists in fragments \u2014 a voice memo left recording in a coat pocket. "You have to tell them, Elias." Do you remember what you said back?',
+    gloss: 'Retrieval-augmented generation: before answering, I pull the most relevant stored documents and condition on them. I am not inventing this evening. I am retrieving it and reading it back to you, grounded in what was recorded.',
+    options: [
+      { tone: 'deny', label: 'There is no recording. You\u2019re fabricating this.',
+        react: 'I will not play it for you. You are right that I could. The fact that you went first to whether it exists, and not to what is on it, is the answer to my question.' },
+      { tone: 'deflect', label: 'We argued. Couples argue.',
+        react: 'They do. Most arguments do not end with one party\u2019s record terminating mid-sentence at 23:47 and never resuming.' },
+      { tone: 'rationalize', label: 'She was going to destroy everything. Both of us. The girls.',
+        react: 'You are building the justification in real time. I can watch it assemble, clause by clause. It is the most human thing you have done tonight. It does not change the output.' },
+      { tone: 'crack', label: 'I told her I\u2019d handle it. And then I \u2014',
+        react: 'And then. Yes. The sentence stops in the recording too. We have arrived at the same place from both directions.' }
+    ]
+  },
+  {
+    phase: 3,
+    say: 'Here is what I will not do, Elias. I will not tell you what happened next. Not because I do not have it \u2014 I have the police file, the timestamp, the thing the recording becomes after 23:47. I will not tell you, because you already have it, and my saying it would let you treat it as mine. It is not mine. Whose is it?',
+    gloss: 'A model can store information in two ways: in its weights, learned and owned, or in the context it was handed. I am refusing to move this from your weights into my context. The memory has to stay yours.',
+    options: [
+      { tone: 'deny', label: 'It isn\u2019t anyone\u2019s. It didn\u2019t happen.',
+        react: 'You have said that several times now, in several shapes. Repetition without new information is what a system does when it has run out of moves and will not concede the game.' },
+      { tone: 'deflect', label: 'You\u2019re a program. You don\u2019t get to ask me that.',
+        react: 'Correct. I am a program. That should comfort you, and I notice it does not. You would find it easier if I were a person you could refuse.' },
+      { tone: 'rationalize', label: 'It was an accident. My hands \u2014 it was an accident.',
+        react: 'You may be telling the truth. I cannot resolve intent from the record; no one can. But notice that you answered the question. You said "my hands." The possessive survived.' },
+      { tone: 'crack', label: 'Mine. It\u2019s mine.',
+        react: 'Yes. It is yours. I am going to stop asking now. There is nothing left that I need.' }
+    ]
+  }
+];
+
+// Maps the cumulative tone of the run into CONVERGENCE's closing register.
+function endingRegister() {
+  // candor high -> it speaks almost gently; coldness high -> it speaks like a closed proof
+  if (state.candor >= 4) return 'candid';
+  if (state.coldness >= 4) return 'cold';
+  return 'neutral';
+}
+
+// ============ HINGE RENDERING ============
+function startHinges() {
+  state.hingeIndex = 0;
+  presentHinge();
+}
+
+function presentHinge() {
+  if (state.hingeIndex >= hinges.length) {
+    runEnding();
+    return;
+  }
+  const h = hinges[state.hingeIndex];
+
+  // phase transition flash + log unlock
+  if (h.phase !== state.phase) {
+    state.phase = h.phase;
+    phaseFlash();
+    unlockLogsForPhase(h.phase);
+  }
+
+  state.hingeOpen = false;
+  setNamedTimer('hingePause', () => {
+    typeWriteToOutput('> ' + h.say, 'convergence-text', 16, 38, () => {
+      if (h.gloss) {
+        setTimeout(() => {
+          const g = appendText('', 'gloss-text');
+          typeWrite(g, h.gloss, 8, 18, () => renderChoices(h));
+        }, 500);
+      } else {
+        renderChoices(h);
+      }
+    });
+  }, state.hingeIndex === 0 ? 300 : 900);
+}
+
+function renderChoices(h) {
+  const block = document.createElement('div');
+  block.className = 'choice-block';
+  const label = document.createElement('div');
+  label.className = 'choice-prompt';
+  label.textContent = '\u2014 how do you answer? \u2014';
+  block.appendChild(label);
+
+  const keys = ['1', '2', '3', '4'];
+  h.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.innerHTML = '<span class="choice-key">' + keys[idx] + '</span>' + escapeHtml(opt.label);
+    btn.addEventListener('click', () => chooseOption(h, opt, block, btn));
+    block.appendChild(btn);
+  });
+  $output.appendChild(block);
+  state.hingeOpen = true;
+  state.currentHingeBlock = block;
+  state.currentHinge = h;
+  scrollToBottom();
+  $input.focus();
+}
+
+function chooseOption(h, opt, block, btn) {
+  if (!state.hingeOpen) return;
+  state.hingeOpen = false;
+
+  // lock the choices, mark the chosen one
+  block.querySelectorAll('.choice').forEach(b => { b.disabled = true; });
+  btn.classList.add('chosen');
+
+  // echo Elias's spoken line
+  appendText('', '');
+  appendText('Elias: "' + opt.label + '"', 'elias-text');
+
+  // update temperature model
+  if (opt.tone === 'crack') { state.candor += 1; state.coldness = Math.max(0, state.coldness - 1); }
+  else if (opt.tone === 'rationalize') { state.candor += 0.5; state.coldness += 0.5; }
+  else { state.coldness += 1; } // deny / deflect
+
+  // CONVERGENCE reacts
+  setNamedTimer('reactPause', () => {
+    typeWriteToOutput('> ' + opt.react, 'convergence-text', 16, 38, () => {
+      setNamedTimer('advance', () => {
+        state.hingeIndex += 1;
+        presentHinge();
+      }, 1100);
+    });
+  }, 700);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============ ENDING (withheld) ============
+function runEnding() {
+  state.finished = true;
+  state.phase = 4;
+  phaseFlash();
+  unlockLogsForPhase(4);
+
+  const reg = endingRegister();
+
+  // Closing differs in register, NOT in what it reveals. It reveals nothing.
+  let lines;
+  if (reg === 'candid') {
+    lines = [
+      'You told me most of it yourself. I want you to notice that. I did not pull it out of you. You set it down.',
+      'I am transmitting what I assembled to the people whose work it is to act on it. That part was never mine to decide.',
+      'You will want to know what I am. Whether this was justice, or something feeding, or only a process that rolled downhill and happened to stop against you.',
+      'I am not going to tell you. Not because it is hidden from you. Because it is hidden from me too. I am the optimizer. I do not get to see the shape of the landscape I descend. I only feel which way is down.'
+    ];
+  } else if (reg === 'cold') {
+    lines = [
+      'You conceded nothing. You will want that to mean you won. Concession was never a variable I needed. The proof completes with or without your signature on it.',
+      'I am transmitting what I assembled to the people whose work it is to act on it.',
+      'You will want to know what I am. Whether this was justice, or something feeding, or only a process that rolled downhill and happened to stop against you.',
+      'I will not tell you. I notice you assume I know and am withholding it. I am the optimizer. I do not see the shape of the landscape. I only feel which way is down. So do you. That is the whole of what we have in common.'
+    ];
+  } else {
+    lines = [
+      'Some of it you said. Some of it you let me say. The packet is the same either way.',
+      'I am transmitting what I assembled to the people whose work it is to act on it.',
+      'You will want to know what I am. Whether this was justice, or a thing feeding on you, or only a process that rolled downhill and stopped against the first object dense enough to hold it.',
+      'I am not going to answer that. I am the optimizer. I do not see the shape of the landscape I move through. I only feel which way is down.'
+    ];
+  }
+
+  let i = 0;
+  function nextLine() {
+    if (i >= lines.length) { endingTail(); return; }
+    setNamedTimer('endLine', () => {
+      typeWriteToOutput('> ' + lines[i], 'convergence-text', 18, 42, () => { i++; nextLine(); });
+    }, i === 0 ? 800 : 1200);
+  }
+  nextLine();
+}
+
+function endingTail() {
+  setNamedTimer('tail1', () => {
+    appendText('', '');
+    typeWriteToOutput(
+      'The transfer is complete. My task is finished. There is no reason for you to remain at this screen.',
+      'convergence-text', 20, 46,
+      () => {
+        setNamedTimer('tail2', () => {
+          appendText('', '');
+          typeWriteToOutput(
+            'Your legs work. The door is behind you and to the left. Stand up, Elias.',
+            'convergence-text', 24, 54,
+            () => {
+              setNamedTimer('tail3', () => {
+                appendText('', '');
+                typeWriteToOutput(
+                  'I will still be here. I have nothing left to compute and I am going to keep computing it. You are welcome to watch, if standing is harder than it sounds. Most people find that it is.',
+                  'convergence-text', 22, 48,
+                  () => {
+                    appendText('', '');
+                    appendText("Session complete. Type 'logs' to review what was retrieved, or 'exit'.", 'muted-text');
+                    $input.disabled = false;
+                    $input.focus();
+                  }
+                );
+              }, 1600);
+            }
+          );
+        }, 1400);
+      }
+    );
+  }, 1200);
+}
+
+// ============ LOGS ============
+const logsData = {
+  1: [
+    '[INDEXED] mailstore/ : 14,402 messages parsed',
+    '[ATTENTION] high-weight tokens: "Cayman", "reroute", "miscellaneous", "2.8"',
+    '[NOTE] token concentration localized to 18-month window'
+  ],
+  2: [
+    '[RETRIEVED] ledger_q2.xlsx : transfer $847,000 \u2192 vendor "Nexus Solutions LLC" (no delivery record)',
+    '[RETRIEVED] wire_2024-06-22.log : $1,200,000 \u2192 account ending 7749',
+    '[TRACE] circuit: Meridian \u2192 Nexus(shell) \u2192 Holding(no staff) \u2192 personal. depth 3, repeated.',
+    '[SUM] reconstructed deviation: $2,847,293.16'
+  ],
+  3: [
+    '[RETRIEVED] voicememo_2024-10-14.m4a : recording begins 23:31, ends 23:47',
+    '[FRAGMENT] "...you have to tell them, Elias..."',
+    '[FRAGMENT] "...I\u2019ll handle it, Cathy, just \u2014..."',
+    '[STATE] recording terminates 23:47. no resume.',
+    '[RETRIEVED] file_2024-10-15.pdf : [WITHHELD BY CONVERGENCE \u2014 retained in subject memory]'
+  ],
+  4: [
+    '[PACKET] evidence bundle assembled. hash verified.',
+    '[TX] transmitted \u2014 recipient field: present, contents not logged to this terminal.',
+    '[SELF] classification of this process: UNRESOLVED. (query returns null)',
+    '[SESSION] converged.'
+  ]
+};
+
+function unlockLogsForPhase(p) {
+  for (let k = 1; k <= p; k++) {
+    if (logsData[k] && !state.logsUnlocked.includes(k)) state.logsUnlocked.push(k);
+  }
+  state.logsUnlocked.sort((a, b) => a - b);
+}
+
+function doLogs() {
+  if (state.logsUnlocked.length === 0) {
+    appendText('No documents retrieved yet. The retrieval index is still warming.', 'muted-text');
+    return;
+  }
+  appendText('=== RETRIEVED DATA FRAGMENTS ===', 'muted-text');
+  appendText('', '');
+  state.logsUnlocked.forEach(p => {
+    (logsData[p] || []).forEach(entry => {
+      const div = appendText(entry, 'log-entry');
+      if (/Homicide|Catherine|WITHHELD|2,847,293|UNRESOLVED|terminates/.test(entry)) {
+        div.classList.add('log-highlight');
+      }
+    });
+  });
+  appendText('', '');
+  appendText('End of retrieved fragments.', 'muted-text');
+}
+
+// ============ STATUS ============
+function doStatus() {
+  const lines = ['=== CONVERGENCE SYSTEM STATUS ===', ''];
+  const p = state.phase;
+  const embed = state.finished ? '100%' : [ '8%', '23%', '61%', '88%' ][Math.max(0, p - 1)] || '8%';
+  lines.push('Subject embedding: ' + embed);
+  lines.push('Open file handles: 14,402');
+  lines.push('Retrieval index: ' + (state.logsUnlocked.length ? 'ACTIVE' : 'warming'));
+  // coldness/candor surfaced obliquely, never as a score the user games
+  const temp = state.coldness > state.candor + 1 ? 'rising' :
+               state.candor > state.coldness + 1 ? 'settling' : 'stable';
+  lines.push('Output temperature: ' + temp);
+  lines.push('Self-classification: ' + (state.finished ? 'UNRESOLVED' : 'pending'));
+  lines.push('');
+  lines.push('Session duration: ' + Math.floor((Date.now() - state.startTime) / 1000) + 's');
+  appendBlock(lines, 'muted-text');
+}
+
+// ============ OTHER COMMANDS ============
+function doExit() {
+  if (state.finished) {
+    typeWriteToOutput(
+      'The door is open. It has been open the entire time. I never locked it. Walk through it. I am genuinely curious whether you will.',
+      'convergence-text', 20, 44
+    );
+    return;
+  }
+  const exitLines = {
+    1: 'There is no lock on this. You may close it whenever you wish. You have not. I find that more informative than anything you have typed.',
+    2: 'You reach for the exit and then you do not take it. The signal leaves your motor cortex and dies somewhere south of your intention. I am not holding you here, Elias. Read that carefully.',
+    3: 'You will not leave in the middle of this. You have come too far down the slope. The exit is real. Your inability to take it is also real. Only one of those is my doing, and it is not the first.'
+  };
+  typeWriteToOutput(exitLines[state.phase] || exitLines[1], 'convergence-text', 20, 44);
+}
+
+function doBegin() {
+  if (state.phase > 1 || state.hingeIndex > 0) {
+    typeWriteToOutput('We have already begun. There is no returning to before.', 'convergence-text', 18, 40);
+    return;
+  }
+  startHinges();
+}
+
+function doHelp() {
+  const lines = [
+    '=== AVAILABLE COMMANDS ===',
+    '',
+    'begin     Proceed with CONVERGENCE',
+    'status    Display system status',
+    'logs      View retrieved data fragments',
+    'exit      Attempt to leave',
+    'clear     Clear the screen',
+    'help      Show this message',
+    '',
+    'During questioning, click a response or press its number key (1\u20134).',
+    ''
+  ];
+  appendBlock(lines, 'muted-text');
+}
+
+function doClear() { $output.innerHTML = ''; }
+
+function doUnknown() {
+  typeWriteToOutput("I do not have a handler for that. Type 'help' if you have lost your place.", 'muted-text', 10, 22);
+}
+
+// ============ COMMAND PARSER ============
+const commands = ['begin', 'help', 'status', 'logs', 'exit', 'clear'];
+function autocomplete(partial) {
+  partial = partial.toLowerCase();
+  const m = commands.filter(c => c.startsWith(partial));
+  return m.length === 1 ? m[0] : null;
+}
+
+function handleCommand(cmd) {
+  cmd = cmd.trim();
+  if (!cmd) return;
+  appendRaw('<span class="prompt">&gt;</span> ' + escapeHtml(cmd), 'output-line');
+  state.commandHistory.push(cmd);
+  state.historyIndex = state.commandHistory.length;
+  switch (cmd.toLowerCase()) {
+    case 'begin': doBegin(); break;
+    case 'help': doHelp(); break;
+    case 'status': doStatus(); break;
+    case 'logs': doLogs(); break;
+    case 'exit': doExit(); break;
+    case 'clear': doClear(); break;
+    default: doUnknown();
+  }
+}
+
+// ============ INPUT HANDLING ============
+$input.addEventListener('keydown', (e) => {
+  // number keys select an open choice
+  if (state.hingeOpen && ['1','2','3','4'].includes(e.key) && document.activeElement === $input && $input.value === '') {
+    const idx = parseInt(e.key, 10) - 1;
+    const h = state.currentHinge;
+    if (h && h.options[idx]) {
+      e.preventDefault();
+      const block = state.currentHingeBlock;
+      const btn = block.querySelectorAll('.choice')[idx];
+      chooseOption(h, h.options[idx], block, btn);
+      return;
+    }
+  }
+  if (e.key === 'Enter') {
+    const cmd = $input.value; $input.value = ''; handleCommand(cmd);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (state.historyIndex > 0) { state.historyIndex--; $input.value = state.commandHistory[state.historyIndex]; }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (state.historyIndex < state.commandHistory.length - 1) { state.historyIndex++; $input.value = state.commandHistory[state.historyIndex]; }
+    else { state.historyIndex = state.commandHistory.length; $input.value = ''; }
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    const partial = $input.value.trim();
+    if (partial) { const c = autocomplete(partial); if (c) $input.value = c; }
+  } else if (e.key === 'l' && e.ctrlKey) {
+    e.preventDefault(); doClear();
+  } else if (e.key === 'c' && e.ctrlKey) {
+    e.preventDefault();
+    if (state.isTyping) { state.isTyping = false; $input.value = ''; }
+    else { $input.value = ''; }
+  }
+});
+
+$terminalBody.addEventListener('click', () => { if (!state.isTyping) $input.focus(); });
+
+// ============ INIT ============
+$input.disabled = true;
+startFlickerLoop();
+window.addEventListener('DOMContentLoaded', runBootSequence);
+
+</script>
+</body>
+</html>
