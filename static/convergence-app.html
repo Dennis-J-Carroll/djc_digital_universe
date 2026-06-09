@@ -392,6 +392,59 @@
     .choice { font-size: 15px; }
     .gloss-text { font-size: 13px; }
   }
+
+  /* ====== STATUS BAR ====== */
+  .status-bar-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 26px;
+    background: #0f0f0f;
+    border-bottom: 1px solid rgba(27, 58, 92, 0.2);
+    flex-shrink: 0;
+    font-size: 13px;
+    font-family: 'VT323', monospace;
+    color: var(--muted);
+    gap: 12px;
+  }
+
+  .sb-phase, .sb-temp, .sb-timer { letter-spacing: 0.5px; }
+
+  .temp-calm  { color: #5A8C5A; }
+  .temp-rising { color: var(--warn); }
+  .temp-cold  { color: #cc6655; }
+
+  .snd-toggle {
+    background: transparent;
+    border: 1px solid rgba(27, 58, 92, 0.3);
+    color: var(--muted);
+    font-family: 'VT323', monospace;
+    font-size: 13px;
+    padding: 1px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    margin-left: auto;
+  }
+  .snd-toggle:hover { border-color: var(--accent-light); color: var(--accent-light); }
+  .snd-toggle.active { color: var(--accent-light); border-color: var(--accent-light); }
+
+  /* ====== REACTIVE CRT — custom properties ====== */
+  /* Breathing animation for max-coldness state */
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.0018); }
+  }
+  .breathe-active { animation: breathe 6s ease-in-out infinite; }
+
+  /* Candor cooling flash */
+  @keyframes cooling-flash {
+    0%   { filter: brightness(1); }
+    30%  { filter: brightness(0.78); }
+    100% { filter: brightness(1); }
+  }
+  .cooling-flash { animation: cooling-flash 0.35s ease-out forwards; }
 </style>
 </head>
 <body>
@@ -407,6 +460,13 @@
     </div>
     <div class="title-bar-title">meridian_term v3.1.4</div>
     <div style="width: 40px;"></div>
+  </div>
+
+  <div class="status-bar-strip" id="statusBarStrip">
+    <span class="sb-phase">PHASE <span id="phasePips">▣░░░</span></span>
+    <span class="sb-temp">TEMP <span id="tempBar" class="temp-calm">▓░░░░</span></span>
+    <span class="sb-timer" id="statusTimer">00:00</span>
+    <button class="snd-toggle" id="sndToggle" onclick="toggleSound()">[SND OFF]</button>
   </div>
 
   <div class="terminal-body" id="terminalBody">
