@@ -1478,7 +1478,7 @@ class SecurityVisitor(ast.NodeVisitor):
     def _snippet(self, node):
         start = max(0, node.lineno - 1)
         end = min(len(self.source_lines), getattr(node, 'end_lineno', node.lineno))
-        return '\n'.join(self.source_lines[start:end])[:120]
+        return '\\n'.join(self.source_lines[start:end])[:120]
 
     def _add(self, rule_id, severity, category, cwe, message, node, remediation, confidence="HIGH"):
         self.findings.append({
@@ -1648,11 +1648,11 @@ class ModernizationChecker:
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                     and node.func.attr == 'has_key'):
                 self.hints.append({'type': 'py2_has_key', 'line': node.lineno,
-                                   'message': "Python 2 `.has_key()` removed in Python 3 — use the `in` operator.",
+                                   'message': "Python 2 \`.has_key()\` removed in Python 3 — use the \`in\` operator.",
                                    'example': "'key' in d  instead of  d.has_key('key')"})
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'xrange':
                 self.hints.append({'type': 'py2_xrange', 'line': node.lineno,
-                                   'message': "Python 2 `xrange()` removed in Python 3 — use `range()`.",
+                                   'message': "Python 2 \`xrange()\` removed in Python 3 — use \`range()\`.",
                                    'example': "range(n)  instead of  xrange(n)"})
 
     def _check_ospath(self, tree):
@@ -1706,7 +1706,7 @@ class ModernizationChecker:
                     if alias.name in _TYPING_BUILTIN_MAP:
                         self.hints.append({
                             'type': 'use_builtin_generics', 'line': node.lineno,
-                            'message': f"Use built-in `{_TYPING_BUILTIN_MAP[alias.name]}` instead of `typing.{alias.name}` (Python 3.9+)",
+                            'message': f"Use built-in \`{_TYPING_BUILTIN_MAP[alias.name]}\` instead of \`typing.{alias.name}\` (Python 3.9+)",
                             'example': f'list[int] instead of List[int]'})
 
     def _check_elif_chains(self, tree):
@@ -1725,7 +1725,7 @@ class ModernizationChecker:
                     if len(compared_vars) == 1:
                         self.hints.append({'type': 'use_match_case', 'line': node.lineno,
                                            'message': f"Consider match/case instead of if/elif chain on '{next(iter(compared_vars))}' (Python 3.10+)",
-                                           'example': 'match status:\n    case "a": ...'})
+                                           'example': 'match status:\\n    case "a": ...'})
 
     def _get_elif_chain(self, node):
         chain = [node]
@@ -1875,23 +1875,23 @@ CONCEPT_CARDS = {
         "practice": "Rewrite a for-append loop that squares positive numbers as a comprehension.",
     },
     "generators": {
-        "what": "A function using `yield` that produces values lazily, one at a time.",
+        "what": "A function using \`yield\` that produces values lazily, one at a time.",
         "why": "Constant memory for large/infinite sequences; values computed on demand.",
-        "how": "Use `yield` in a function; iterate with for or next().",
+        "how": "Use \`yield\` in a function; iterate with for or next().",
         "common_mistakes": "Reusing an exhausted generator — they iterate only once.",
         "practice": "Write a generator that yields the Fibonacci sequence.",
     },
     "context_managers": {
-        "what": "An object used with `with` that sets up and tears down a resource.",
+        "what": "An object used with \`with\` that sets up and tears down a resource.",
         "why": "Guarantees cleanup (closing files, releasing locks) even on exceptions.",
-        "how": "Use `with open(...) as f:` or implement __enter__/__exit__ or @contextmanager.",
-        "common_mistakes": "Manually closing resources instead of using `with`.",
+        "how": "Use \`with open(...) as f:\` or implement __enter__/__exit__ or @contextmanager.",
+        "common_mistakes": "Manually closing resources instead of using \`with\`.",
         "practice": "Write a context manager that times the code inside its block.",
     },
     "async_programming": {
-        "what": "Coroutines defined with `async def` and awaited with `await`.",
+        "what": "Coroutines defined with \`async def\` and awaited with \`await\`.",
         "why": "Efficient concurrency for I/O-bound work without threads.",
-        "how": "Define `async def`, `await` coroutines, run with asyncio.run().",
+        "how": "Define \`async def\`, \`await\` coroutines, run with asyncio.run().",
         "common_mistakes": "Calling a coroutine without awaiting it — it never runs.",
         "practice": "Write an async function that awaits asyncio.sleep then returns a value.",
     },
@@ -1913,7 +1913,7 @@ CONCEPT_CARDS = {
         "what": "try/except blocks that catch and respond to errors.",
         "why": "Lets programs recover gracefully instead of crashing.",
         "how": "Catch specific exceptions; use else/finally where appropriate.",
-        "common_mistakes": "Bare `except:` hides bugs — catch specific exception types.",
+        "common_mistakes": "Bare \`except:\` hides bugs — catch specific exception types.",
         "practice": "Wrap a risky call so a ValueError is caught and logged.",
     },
 }
