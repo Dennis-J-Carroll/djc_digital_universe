@@ -179,8 +179,8 @@ const featuredProjects = [
   },
   {
     title: "repo-tester",
-    description: "GitHub repository safety scanner — detects malicious code patterns, supply chain risks, and repo health issues. Runs three parallel scanners: malicious pattern detection (obfuscation, backdoors, credential theft), supply chain analysis via OSV database, and repo health metrics.",
-    tech: ["Python", "Security", "AST Analysis", "OSV API", "CLI"],
+    description: "GitHub repository safety scanner — detects malicious code patterns, supply chain risks, and repo health issues. Runs three parallel scanners: malicious pattern detection (obfuscation, backdoors, credential theft), supply chain analysis via OSV database, and repo health metrics. v2.0.1 on PyPI: pip install repo-tester.",
+    tech: ["Python", "Security", "AST Analysis", "OSV API", "PyPI", "CLI"],
     github: "https://github.com/Dennis-J-Carroll/repo-tester"
   }
 ];
