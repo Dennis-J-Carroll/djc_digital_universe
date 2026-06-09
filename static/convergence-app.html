@@ -640,13 +640,16 @@ function triggerCandorFlash() {
 // ============ SCREEN EFFECTS ============
 function startFlickerLoop() {
   function flick() {
+    const t = (state.crtLevel || 0) / 6;
+    const minMs = Math.round(14000 - t * 12000);
+    const maxMs = Math.round(18000 - t * 15000);
     setNamedTimer('flicker', () => {
       if (!document.hidden) {
         $terminalWindow.classList.add('flicker');
         setTimeout(() => $terminalWindow.classList.remove('flicker'), 80);
       }
       flick();
-    }, randomDelay(8000, 15000));
+    }, randomDelay(minMs, maxMs));
   }
   flick();
 }
