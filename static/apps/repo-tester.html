@@ -219,8 +219,8 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--verdict-ok);
-      box-shadow: 0 0 6px rgba(34,197,94,0.5);
+      background: var(--dot-color, var(--verdict-ok));
+      box-shadow: 0 0 6px var(--dot-glow, rgba(34,197,94,0.5));
       animation: pulse 2s ease-in-out infinite;
     }
     @keyframes pulse {
@@ -682,8 +682,15 @@
     let currentScan = null;
 
     // ═══════════════════════════════════════════════════════════════
-    //  DEMO DATA — Simulated scan results
-    //  In production, this would call the Python backend
+    //  BACKEND CONFIG
+    //  Real scans hit the FastAPI service on Render (server.py /scan).
+    //  Append ?demo=1 to the URL to force the offline simulated scanner.
+    // ═══════════════════════════════════════════════════════════════
+    const API_URL = 'https://repo-tester-api.onrender.com';
+    const DEMO_MODE = new URLSearchParams(location.search).has('demo');
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DEMO DATA — Simulated scan results (offline fallback / ?demo=1)
     // ═══════════════════════════════════════════════════════════════
     function generateDemoScan(url) {
       const repoName = url.replace('https://github.com/', '').replace(/\.git$/, '');
@@ -701,7 +708,7 @@
         { severity: 'HIGH', title: 'Possible env-var exfiltration', detail: 'POSTs data including environment variables to remote endpoint', verdict: 'bad', scanner: 'malicious' },
         { severity: 'MEDIUM', title: 'Unpinned dependency: requests', detail: 'Version >=2.0 allows unexpected upgrades', verdict: 'warn', scanner: 'supply_chain' },
         { severity: 'MEDIUM', title: 'Unpinned dependency: urllib3', detail: 'Version >=1.0 allows unexpected upgrades', verdict: 'warn', scanner: 'supply_chain' },
-        { severity: 'HIGH', title: 'Known CVEs in idna', detail: '3 vulnerabilities: GHSA-xxx, GHSA-yyy (+1 more)', verdict: 'bad', scanner: 'supply_chain' },
+        { severity: 'HIGH', title: 'Known CVEs in idna', detail: '3 vulnerabilities: GHSA-9hjg-9r4m-mvj7, GHSA-9wx4-h78v-vm56 (+1 more)', verdict: 'bad', scanner: 'supply_chain' },
         { severity: 'HIGH', title: 'Possible typosquat: numpi ≈ numpy', detail: 'Package name is very close to popular package numpy', verdict: 'bad', scanner: 'supply_chain' },
         { severity: 'LOW', title: 'Repo not updated in 45 days', detail: 'Inactive repos may have unpatched vulnerabilities', verdict: 'warn', scanner: 'health' },
         { severity: 'INFO', title: 'No SECURITY.md', detail: 'No security policy documented', verdict: 'ok', scanner: 'health' },
@@ -719,6 +726,15 @@
           line_number: 10 + Math.floor(rng() * 50),
         });
       }
+
+      // Deduplicate: same title = one finding (avoids "duplicate finding" confusion)
+      const seen = new Set();
+      const unique = [];
+      for (const f of findings) {
+        if (!seen.has(f.title)) { seen.add(f.title); unique.push(f); }
+      }
+      findings.length = 0;
+      findings.push(...unique);
 
       const hasTyposquat = repoName.includes('numpi') || repoName.includes('reques') || repoName.includes('djano');
       if (hasTyposquat) {
@@ -820,7 +836,7 @@
               <div class="card-value" style="color:${v.bad > 0 ? 'var(--severity-critical)' : v.warn > 0 ? 'var(--verdict-warn)' : 'var(--verdict-ok)'};">
                 ${v.bad > 0 ? 'ACTION REQUIRED' : v.warn > 0 ? 'REVIEW NEEDED' : 'CLEAN'}
               </div>
-              <div class="card-subtitle">${totalFindings} findings | ${new Date(data.scanned_at).toLocaleTimeString()}</div>
+              <div class="card-subtitle">${totalFindings} ${pluralize(totalFindings, 'finding')} | ${new Date(data.scanned_at).toLocaleTimeString()}</div>
             </div>
           </div>
 
@@ -882,20 +898,26 @@
           <div class="card" style="margin-bottom:1rem">
             <div class="card-header">
               <span class="card-title">Library Practice Targets</span>
+              <span style="font-size:11px;color:var(--text-dim)">Most-declared dependencies in this repo</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:0.75rem;padding:0.5rem;background:var(--bg-panel);border-radius:4px;border-left:3px solid var(--accent-blue)">
+              These are the libraries your code depends on most frequently across dependency files (requirements.txt, pyproject.toml, etc.). High concentration in a single library increases supply-chain blast radius — a CVE here affects more of your codebase.
             </div>
             <div class="bar-chart">
               ${data.library_targets.map(t => {
                 const maxCount = Math.max(...data.library_targets.map(x => x.count));
                 const width = Math.round((t.count / maxCount) * 100);
                 const color = t.count >= 3 ? 'var(--severity-high)' : t.count >= 2 ? 'var(--verdict-warn)' : 'var(--accent-blue)';
+                const note = t.count >= 3 ? 'high concentration — review for CVEs' : t.count >= 2 ? 'moderate concentration' : 'normal';
                 return `
                   <div class="bar-row">
-                    <span class="bar-label">${t.name}</span>
+                    <span class="bar-label" title="${t.note}">${t.name}</span>
                     <div class="bar-visual">
                       <div class="bar-fill" style="width:${width}%;background:${color}"></div>
-                      <span class="bar-value">${t.count}x</span>
+                      <span class="bar-value">${t.count} ${pluralize(t.count, 'file')}</span>
                     </div>
                   </div>
+                  <div style="font-size:10px;color:var(--text-dim);margin-left:66px;margin-bottom:4px">${note}</div>
                 `;
               }).join('')}
             </div>
@@ -915,12 +937,31 @@
         </div>
       `;
 
-      document.getElementById('status-text').textContent = `SCANNED — ${data.repo_name} — ${totalFindings} findings`;
+      document.getElementById('status-text').textContent = `SCANNED — ${data.repo_name} — ${totalFindings} ${pluralize(totalFindings, 'finding')}`;
+
+      // Status dot color matches scan result (red=bad, yellow=warn, green=ok)
+      const dot = document.querySelector('.status-dot');
+      if (v.bad > 0) {
+        dot.style.setProperty('--dot-color', 'var(--verdict-bad)');
+        dot.style.setProperty('--dot-glow', 'rgba(220,38,38,0.5)');
+      } else if (v.warn > 0) {
+        dot.style.setProperty('--dot-color', 'var(--verdict-warn)');
+        dot.style.setProperty('--dot-glow', 'rgba(234,179,8,0.5)');
+      } else {
+        dot.style.setProperty('--dot-color', 'var(--verdict-ok)');
+        dot.style.setProperty('--dot-glow', 'rgba(34,197,94,0.5)');
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════
     //  INSIGHT GENERATOR
     // ═══════════════════════════════════════════════════════════════
+    function pluralize(n, word) {
+      if (n === 1) return word;
+      const irregulars = { dependency: 'dependencies', finding: 'findings', file: 'files', 'package name': 'package names', 'dependency file': 'dependency files' };
+      return irregulars[word] || word + 's';
+    }
+
     function generateInsights(data) {
       const insights = [];
       const s = data.summary;
@@ -928,7 +969,7 @@
       const findings = data.findings;
 
       if (v.bad > 0) {
-        insights.push(`<strong style="color:var(--severity-critical)">${v.bad} findings require immediate action</strong> — these represent confirmed security risks (malicious patterns, known CVEs, or exposed secrets).`);
+        insights.push(`<strong style="color:var(--severity-critical)">${v.bad} ${pluralize(v.bad, 'finding')} ${v.bad === 1 ? 'requires' : 'require'} immediate action</strong> — ${v.bad === 1 ? 'this represents a confirmed security risk' : 'these represent confirmed security risks'} (malicious patterns, known CVEs, or exposed secrets).`);
       }
 
       const curlPipeFindings = findings.filter(f => f.title.includes('curl pipe'));
@@ -938,12 +979,12 @@
       }
 
       if (s.CRITICAL > 0) {
-        insights.push(`<strong>Dynamic code execution found:</strong> ${s.CRITICAL} CRITICAL finding(s) for eval()/exec()/compile(). Context matters — ${data.repo_type ? 'your ' + data.repo_type + ' repo may have legitimate template compilation, but' : 'if these are in template engines (jinja2, tornado), they are'} ok. If in install scripts, they are <strong>bad</strong>.`);
+        insights.push(`<strong>Dynamic code execution found:</strong> ${s.CRITICAL} CRITICAL ${pluralize(s.CRITICAL, 'finding')} for eval()/exec()/compile(). Context matters — ${data.repo_type ? 'your ' + data.repo_type + ' repo may have legitimate template compilation, but' : 'if these are in template engines (jinja2, tornado), they are'} ok. If in install scripts, they are <strong>bad</strong>.`);
       }
 
       const typosquats = findings.filter(f => f.title.includes('typosquat'));
       if (typosquats.length > 0) {
-        insights.push(`<strong>Typosquatting risk:</strong> ${typosquats.length} package name(s) closely match popular packages. This is the #1 supply chain attack vector. <strong>Fix:</strong> Verify these dependencies are intentional, not typos.`);
+        insights.push(`<strong>Typosquatting risk:</strong> ${typosquats.length} ${pluralize(typosquats.length, 'package name')} closely ${typosquats.length === 1 ? 'matches' : 'match'} a popular package. This is the #1 supply chain attack vector. <strong>Fix:</strong> Verify ${typosquats.length === 1 ? 'this dependency is' : 'these dependencies are'} intentional, not typos.`);
       }
 
       if (s.HIGH > 0) {
@@ -955,7 +996,7 @@
 
       const unpinned = findings.filter(f => f.title.includes('Unpinned'));
       if (unpinned.length > 0) {
-        insights.push(`<strong>${unpinned.length} unpinned dependencies</strong> allow silent upgrades. Following your CodeHealth methodology — this is "expected noise" for some domains (${data.repo_type || 'your repo type'} baseline: ~3-8/100 files), but each unpinned dep is a future CVE waiting to happen. <strong>Fix:</strong> Use == pins or lockfiles.`);
+        insights.push(`<strong>${unpinned.length} unpinned ${pluralize(unpinned.length, 'dependency')}</strong> ${unpinned.length === 1 ? 'allows' : 'allow'} silent upgrades. Following your CodeHealth methodology — this is "expected noise" for some domains (${data.repo_type || 'your repo type'} baseline: ~3-8/100 files), but each unpinned dep is a future CVE waiting to happen. <strong>Fix:</strong> Use == pins or lockfiles.`);
       }
 
       const secrets = findings.filter(f => f.title.includes('Secret'));
@@ -964,7 +1005,13 @@
       }
 
       if (v.ok > 0) {
-        insights.push(`<strong>${v.ok} finding(s) marked OK</strong> — these are known-legitimate patterns (template engine exec, framework dynamic imports, or informational items). The context-aware detection correctly identified them as non-issues.`);
+        insights.push(`<strong>${v.ok} ${pluralize(v.ok, 'finding')} marked OK</strong> — these are known-legitimate patterns (template engine exec, framework dynamic imports, or informational items). The context-aware detection correctly identified them as non-issues.`);
+      }
+
+      // Library targets insight — gives the "so what" to the bar chart
+      if (data.library_targets.length > 0) {
+        const top = data.library_targets[0];
+        insights.push(`<strong>Highest dependency concentration: ${top.name}</strong> — declared in ${top.count} ${pluralize(top.count, 'dependency file')}. For a ${data.repo_type || 'general'} repo, ${top.count >= 3 ? 'this concentration is high — a CVE in ' + top.name + ' would have broad impact. Prioritize keeping this pinned and monitored.' : 'this is normal concentration. Ensure it stays pinned to a specific version.'}`);
       }
 
       insights.push(`<strong>Flag density: ${data.flag_density}/100 files</strong> — ${data.flag_density > 10 ? 'Above normal. Review findings carefully.' : data.flag_density > 5 ? 'Moderate. Some cleanup recommended.' : 'Within normal range. Good hygiene.'}`);
@@ -987,19 +1034,39 @@
       }
 
       btn.disabled = true;
-      document.getElementById('status-text').innerHTML = '<span style="color:var(--verdict-warn)">SCANNING...</span>';
+      const status = document.getElementById('status-text');
+      status.innerHTML = '<span style="color:var(--verdict-warn)">SCANNING... (cold start may take ~50s)</span>';
 
-      // Simulate processing time
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+      try {
+        let data;
+        if (DEMO_MODE) {
+          await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+          data = generateDemoScan(url);
+        } else {
+          const res = await fetch(API_URL + '/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          });
+          if (!res.ok) {
+            let msg = `Scan failed (HTTP ${res.status})`;
+            try { const e = await res.json(); if (e.detail) msg = e.detail; } catch {}
+            throw new Error(msg);
+          }
+          data = await res.json();
+        }
 
-      const data = generateDemoScan(url);
-      scanHistory.push(data);
-      currentScan = data;
-
-      renderDashboard(data);
-      btn.disabled = false;
-      input.value = '';
-      input.focus();
+        scanHistory.push(data);
+        currentScan = data;
+        renderDashboard(data);
+        status.innerHTML = '<span style="color:var(--verdict-ok)">DONE</span>';
+        input.value = '';
+      } catch (err) {
+        status.innerHTML = `<span style="color:var(--verdict-bad)">ERROR — ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        input.focus();
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════
