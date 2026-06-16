@@ -34,16 +34,92 @@
       letter-spacing: 1px;
     }
     #nav-btns button:hover { border-color: #00c9b1; color: #00c9b1; }
+
+    /* Educational drawer */
+    #info-toggle {
+      position: fixed; top: 10px; left: 10px; z-index: 20;
+      background: #0d0d12; border: 1px solid #00c9b1; color: #00c9b1;
+      font: 12px monospace; padding: 7px 12px; cursor: pointer;
+      letter-spacing: 0.5px; border-radius: 4px;
+    }
+    #info-toggle:hover { background: #00c9b1; color: #07070a; }
+
+    #info-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 30;
+      width: 340px; max-width: 88vw;
+      background: rgba(8, 9, 14, 0.97);
+      border-right: 1px solid #00c9b1;
+      padding: 18px 20px 28px; overflow-y: auto;
+      transform: translateX(-105%); transition: transform 0.28s ease;
+      font: 13px/1.6 monospace; color: #cdd2da;
+    }
+    #info-drawer.open { transform: translateX(0); }
+    #info-drawer h1 { color: #00c9b1; font-size: 18px; margin: 6px 0 10px; }
+    #info-drawer h2 { color: #00c9b1; font-size: 13px; margin: 20px 0 8px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.85; }
+    #info-drawer .lede { color: #e6e9ef; margin-bottom: 4px; }
+    #info-drawer dt { color: #00c9b1; margin-top: 8px; }
+    #info-drawer dd { margin: 2px 0 0; padding-left: 0; color: #aab1bd; }
+    #info-drawer ol { margin: 0; padding-left: 18px; }
+    #info-drawer #head-list li { margin-bottom: 8px; color: #aab1bd; }
+    #info-drawer #head-list li.active { color: #e6e9ef; }
+    #info-drawer #head-list li.active strong { color: #00c9b1; }
+    #info-drawer kbd { background: #1a1d26; border: 1px solid #333; border-radius: 3px; padding: 0 4px; color: #cdd2da; }
+    #info-drawer .controls { color: #8a909b; }
+    #info-drawer .paper-link {
+      display: inline-block; margin-top: 18px; color: #00c9b1;
+      border: 1px solid #00c9b1; padding: 7px 12px; border-radius: 4px; text-decoration: none;
+    }
+    #info-drawer .paper-link:hover { background: #00c9b1; color: #07070a; }
+    #info-close {
+      position: absolute; top: 12px; right: 12px;
+      background: none; border: none; color: #666; font-size: 16px; cursor: pointer;
+    }
+    #info-close:hover { color: #00c9b1; }
+
+    @media (max-width: 640px) {
+      #info-drawer { width: 100%; max-width: 100%; }
+      #drop-hint { display: none; }
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+  <button id="info-toggle" aria-label="What am I seeing?">? What am I seeing</button>
+  <aside id="info-drawer" aria-hidden="true">
+    <button id="info-close" aria-label="Close">✕</button>
+    <h1>Attn Flow</h1>
+    <p class="lede">Particles are <strong>probability mass</strong> drifting toward the tokens each attention head is reading. Brighter tokens pull harder; the bar under a token is how much attention it receives.</p>
+
+    <h2>The vocabulary</h2>
+    <dl>
+      <dt>Token</dt><dd>A chunk of text GPT-2 reads — here, words like <em>India</em>, <em>France</em>, <em>Paris</em>.</dd>
+      <dt>Logit</dt><dd>The raw score the model assigns each possible next token before normalizing.</dd>
+      <dt>Probability</dt><dd>Logits squashed to 0–1 so they sum to one. The flowing particles stand in for where this mass is being pulled.</dd>
+    </dl>
+
+    <h2>The six heads</h2>
+    <ol id="head-list">
+      <li data-head="0"><strong>L7·H0</strong> — Pre-crossover. Broad context pull, no decision yet.</li>
+      <li data-head="1"><strong>L8·H11</strong> — Retrieval A. The final token reaches back through <em>India</em> to <em>France</em>.</li>
+      <li data-head="2"><strong>L9·H8</strong> — The override head. Attends to <em>India</em> AND <em>Paris</em> at once — frequency contamination. This is the mechanism.</li>
+      <li data-head="3"><strong>L9·H0</strong> — Induction. Structural copy: <em>capital→capital</em>, <em>of→of</em>.</li>
+      <li data-head="4"><strong>L10·H0</strong> — Global context. Almost everything drifts to the first token.</li>
+      <li data-head="5"><strong>L11·H2</strong> — Previous-token. Clean diagonal streaming, each token to the one before it.</li>
+    </ol>
+
+    <h2>Controls</h2>
+    <p class="controls">Cycle heads: <kbd>◀</kbd> <kbd>▶</kbd> or h/H · Pause: <kbd>space</kbd> · Theme: <kbd>t</kbd> · Glyph: <kbd>g</kbd> · Speed: <kbd>+</kbd>/<kbd>-</kbd> · Reset: <kbd>r</kbd>. On touch, use the buttons at the bottom.</p>
+
+    <a class="paper-link" href="/research/frequency-wins/">Read the paper · Frequency Wins →</a>
+  </aside>
   <div id="drop-hint">drop extract_attn JSON to load real data</div>
   <div id="drop-overlay">DROP TO LOAD</div>
   <div id="nav-btns">
     <button id="btn-prev">◀ prev head</button>
     <button id="btn-pause">pause</button>
     <button id="btn-next">next head ▶</button>
+    <button id="btn-theme">theme</button>
+    <button id="btn-reset">reset</button>
   </div>
 
 <script>
@@ -455,6 +531,7 @@ function switchHead(delta) {
   curHead = (curHead + delta + data.heads.length) % data.heads.length;
   dens.fill(0);
   resetParticles();
+  highlightHead();
 }
 
 // ── Keyboard ─────────────────────────────────────────────────
@@ -468,6 +545,7 @@ document.addEventListener("keydown", e => {
       e.preventDefault();
       break;
     case "r": resetParticles(); break;
+    case "?": toggleDrawer(); break;
     case "t": themeId = (themeId + 1) % THEME_NAMES.length; break;
     case "g": rampId  = (rampId  + 1) % RAMPS.length; break;
     case "+": case "=": speed = Math.min(4.0, +(speed + 0.15).toFixed(2)); break;
@@ -482,6 +560,35 @@ document.getElementById("btn-pause").addEventListener("click", () => {
   paused = !paused;
   document.getElementById("btn-pause").textContent = paused ? "resume" : "pause";
 });
+
+// ── Educational drawer ───────────────────────────────────────
+const drawer  = document.getElementById("info-drawer");
+const headLis = Array.from(document.querySelectorAll("#head-list li"));
+
+function highlightHead() {
+  headLis.forEach((li) =>
+    li.classList.toggle("active", Number(li.dataset.head) === curHead)
+  );
+}
+
+function toggleDrawer(open) {
+  const show = open ?? !drawer.classList.contains("open");
+  drawer.classList.toggle("open", show);
+  drawer.setAttribute("aria-hidden", show ? "false" : "true");
+  if (show) highlightHead();
+}
+
+document.getElementById("info-toggle").addEventListener("click", () => toggleDrawer());
+document.getElementById("info-close").addEventListener("click", () => toggleDrawer(false));
+headLis.forEach((li) =>
+  li.addEventListener("click", () => switchHead(Number(li.dataset.head) - curHead))
+);
+
+// Touch buttons for theme + reset
+document.getElementById("btn-theme").addEventListener("click", () => {
+  themeId = (themeId + 1) % THEME_NAMES.length;
+});
+document.getElementById("btn-reset").addEventListener("click", () => resetParticles());
 
 // ── File drop (load real data from extract_attn.py) ──────────
 //
