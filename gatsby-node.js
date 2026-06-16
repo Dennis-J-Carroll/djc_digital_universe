@@ -61,6 +61,16 @@ exports.createSchemaCustomization = ({ actions }) => {
       featuredImage: File @fileByRelativePath
       author: String
       modified: Date @dateformat
+      series: String
+      seriesNumber: Int
+      seriesPrev: String
+      seriesNext: String
+      tags: [String]
+      cardTitle: String
+      cardDescription: String
+      tagline: String
+      highlights: [String]
+      order: Int
     }
   `
 
