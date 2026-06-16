@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'gatsby'
+import { graphql, Link } from 'gatsby'
 import Layout from '../../components/layout/layout'
 import Seo from '../../components/shared/seo'
 import { motion } from 'framer-motion'
@@ -29,58 +29,11 @@ const ExternalLinkIcon = () => (
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const trilogy = {
+const trilogyMeta = {
   title: "The Frequency Prior Trilogy",
   description: "Three papers on how GPT-2 Small encodes, amplifies, and yields to training-frequency priors — and what that reveals about the limits of mechanistic intervention.",
   model: "GPT-2 Small (124M parameters)",
   platform: "TransformerLens — all results from real-model inference",
-  papers: [
-    {
-      number: 1,
-      title: "Frequency Wins",
-      slug: "/research/frequency-wins/",
-      status: "live",
-      tagline: "Diagnosing the lesion",
-      description: "Ask GPT-2 for the capital of India with worked examples in context, and the correct answer leads through layer eight — then gets overwritten by Mumbai at layer nine. A frequency prior, amplified by an identified retrieval circuit, beats in-context evidence at scale.",
-      highlights: [
-        "ICL accuracy peaks at n=1 (79%), degrades monotonically to 55% at n=5",
-        "Circuit: heads L9H8, L8H11, L10H0 do both retrieval and frequency amplification",
-        "Two failure modes: late-override (Australia, Canada) vs. early-dominance (India, Switzerland, South Africa)",
-        "Scale sweep: persistent errors dissolve at GPT-2 XL — capacity, not architecture",
-      ],
-      tags: ["mechanistic-interpretability", "gpt-2", "in-context-learning", "frequency-prior"],
-    },
-    {
-      number: 2,
-      title: "Steering the Prior",
-      slug: "/research/steering-the-prior/",
-      status: "live",
-      tagline: "Why activation steering mostly fails",
-      description: "Paper 1 diagnosed the lesion. This paper administered the indicated treatment and reports the trial honestly. The mechanistically-derived steering vector corrects one country in five, at triple the tolerable dose, while a black-box learned vector quietly fixes the cases the interpretable one cannot.",
-      highlights: [
-        "Difference-of-means vector at L8 resid_post: stable, real, nearly orthogonal to embeddings",
-        "Corrects Switzerland at α=3.0 — 3× outside the safe operating window",
-        "Hypothesis inverted: late-override countries resist; early-dominance partially yields",
-        "Learned vector (same norm, same hook) corrects Australia and Canada at safe doses",
-      ],
-      tags: ["activation-steering", "negative-results", "residual-stream", "interpretability"],
-    },
-    {
-      number: 3,
-      title: "Frequency in All Directions",
-      slug: "/research/frequency-direction/",
-      status: "coming-soon",
-      tagline: "Does the mechanism generalize?",
-      description: "A task battery spanning languages, currencies, chemical elements, and authors — and an unplanned discovery that complicates the taxonomy. The question is now whether there is a frequency prior direction in GPT-2's residual stream at all, or only a family of mode-specific directions.",
-      highlights: [
-        "Languages and currencies replicate the inverted ICL gradient from Paper 1",
-        "New attractor class discovered: morphological/demonym (Brazil → \"Brazilian\")",
-        "Transfer test: do Paper 2 steering vectors carry over across domains?",
-        "Three attractor classes: semantic-prominence, morphological, exemplar-copy",
-      ],
-      tags: ["generalization", "in-context-learning", "mechanistic-interpretability"],
-    },
-  ],
 }
 
 const tool = {
@@ -104,7 +57,21 @@ const stagger = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const ResearchPage = ({ location }) => {
+const ResearchPage = ({ data, location }) => {
+  const papers = (data?.allMdx?.nodes ?? [])
+    .map((node) => ({
+      id: node.id,
+      number: node.frontmatter.seriesNumber,
+      title: node.frontmatter.cardTitle || node.frontmatter.title,
+      slug: `/research${node.fields.slug}`,
+      status: node.frontmatter.status || "live",
+      tagline: node.frontmatter.tagline,
+      description: node.frontmatter.cardDescription || node.frontmatter.description,
+      highlights: node.frontmatter.highlights || [],
+      tags: node.frontmatter.tags || [],
+    }))
+    .sort((a, b) => (a.number ?? 99) - (b.number ?? 99));
+
   return (
     <Layout location={location}>
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '7rem 1.5rem 5rem' }}>
@@ -135,7 +102,7 @@ const ResearchPage = ({ location }) => {
             color: 'var(--text-primary)',
             marginBottom: '1.25rem',
           }}>
-            {trilogy.title}
+            {trilogyMeta.title}
           </h1>
           <p style={{
             fontSize: '1.05rem',
@@ -144,10 +111,10 @@ const ResearchPage = ({ location }) => {
             maxWidth: '680px',
             marginBottom: '1rem',
           }}>
-            {trilogy.description}
+            {trilogyMeta.description}
           </p>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #888)' }}>
-            Model: {trilogy.model} · Platform: {trilogy.platform}
+            Model: {trilogyMeta.model} · Platform: {trilogyMeta.platform}
           </p>
         </motion.div>
 
@@ -158,11 +125,11 @@ const ResearchPage = ({ location }) => {
           animate="visible"
           style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '4rem' }}
         >
-          {trilogy.papers.map((paper) => {
+          {papers.map((paper) => {
             const isLive = paper.status === 'live'
             const card = (
               <motion.div
-                key={paper.number}
+                key={paper.id}
                 variants={fadeUp}
                 transition={{ duration: 0.5 }}
                 style={{
@@ -316,11 +283,11 @@ const ResearchPage = ({ location }) => {
             )
 
             return isLive ? (
-              <Link key={paper.number} to={paper.slug} style={{ textDecoration: 'none', display: 'block' }}>
+              <Link key={paper.id} to={paper.slug} style={{ textDecoration: 'none', display: 'block' }}>
                 {card}
               </Link>
             ) : (
-              <div key={paper.number}>{card}</div>
+              <div key={paper.id}>{card}</div>
             )
           })}
         </motion.div>
@@ -441,5 +408,32 @@ export const Head = ({ location }) => (
     description="The Frequency Prior Trilogy — three mechanistic interpretability papers on how GPT-2 Small encodes and amplifies training-frequency priors, and the limits of activation steering as a corrective."
   />
 )
+
+export const query = graphql`
+  query {
+    allMdx(
+      filter: { internal: { contentFilePath: { regex: "/src/research/" } } }
+      sort: { frontmatter: { order: ASC } }
+    ) {
+      nodes {
+        id
+        fields {
+          slug
+        }
+        frontmatter {
+          cardTitle
+          title
+          tagline
+          cardDescription
+          description
+          status
+          seriesNumber
+          tags
+          highlights
+        }
+      }
+    }
+  }
+`
 
 export default ResearchPage
