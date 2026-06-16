@@ -7,6 +7,15 @@ seriesNumber: 1
 seriesPrev: null
 seriesNext: "/research/steering-the-prior/"
 tags: ["mechanistic-interpretability", "gpt-2", "in-context-learning", "activation-patching", "logit-lens"]
+cardTitle: "Frequency Wins"
+tagline: "Diagnosing the lesion"
+order: 1
+cardDescription: "Ask GPT-2 for the capital of India with worked examples in context, and the correct answer leads through layer eight — then gets overwritten by Mumbai at layer nine. A frequency prior, amplified by an identified retrieval circuit, beats in-context evidence at scale."
+highlights:
+  - "ICL accuracy peaks at n=1 (79%), degrades monotonically to 55% at n=5"
+  - "Circuit: heads L9H8, L8H11, L10H0 do both retrieval and frequency amplification"
+  - "Two failure modes: late-override (Australia, Canada) vs. early-dominance (India, Switzerland, South Africa)"
+  - "Scale sweep: persistent errors dissolve at GPT-2 XL — capacity, not architecture"
 ---
 
 *Paper 1 of the Frequency Prior Trilogy. Model: GPT-2 Small (124M parameters, 12 layers, 12 heads, 768-d residual stream). Platform: TransformerLens — all results from real-model inference.*

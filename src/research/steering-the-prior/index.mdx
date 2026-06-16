@@ -7,6 +7,15 @@ seriesNumber: 2
 seriesPrev: "/research/frequency-wins/"
 seriesNext: "/research/frequency-direction/"
 tags: ["mechanistic-interpretability", "activation-steering", "gpt-2", "residual-stream", "negative-results"]
+cardTitle: "Steering the Prior"
+tagline: "Why activation steering mostly fails"
+order: 2
+cardDescription: "Paper 1 diagnosed the lesion. This paper administered the indicated treatment and reports the trial honestly. The mechanistically-derived steering vector corrects one country in five, at triple the tolerable dose, while a black-box learned vector quietly fixes the cases the interpretable one cannot."
+highlights:
+  - "Difference-of-means vector at L8 resid_post: stable, real, nearly orthogonal to embeddings"
+  - "Corrects Switzerland at α=3.0 — 3× outside the safe operating window"
+  - "Hypothesis inverted: late-override countries resist; early-dominance partially yields"
+  - "Learned vector (same norm, same hook) corrects Australia and Canada at safe doses"
 ---
 
 *Paper 2 of the Frequency Prior Trilogy. Model: GPT-2 Small (124M parameters, 12 layers, 12 heads, 768-d residual stream). Platform: TransformerLens — all results from real-model inference.*
