@@ -69,8 +69,7 @@ const ResearchPage = ({ data, location }) => {
       description: node.frontmatter.cardDescription || node.frontmatter.description,
       highlights: node.frontmatter.highlights || [],
       tags: node.frontmatter.tags || [],
-    }))
-    .sort((a, b) => (a.number ?? 99) - (b.number ?? 99));
+    }));
 
   return (
     <Layout location={location}>
