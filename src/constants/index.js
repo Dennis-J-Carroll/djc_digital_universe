@@ -2,6 +2,7 @@
 export const NAV_LINKS = [
   { id: "home", label: "Home", path: "/" },
   { id: "apps", label: "Apps & Projects", path: "/apps" },
+  { id: "research", label: "Research", path: "/research" },
   { id: "stories", label: "Stories & More", path: "/stories" },
   { id: "about", label: "About", path: "/about" },
   { id: "contact", label: "Contact", path: "/contact" }
@@ -52,6 +53,7 @@ export const SITE_CONFIG = {
 export const QUICK_LINKS = [
   { label: "Home", url: "/" },
   { label: "Apps & Projects", url: "/apps" },
+  { label: "Research", url: "/research" },
   { label: "Creative Writing", url: "/stories" },
   { label: "About", url: "/about" },
   { label: "Contact", url: "/contact" }

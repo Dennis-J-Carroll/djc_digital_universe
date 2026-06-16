@@ -1,0 +1,90 @@
+---
+title: "Frequency in All Directions"
+description: "Does the frequency-override mechanism from the capital-city task generalize across domains? A task battery spanning languages, currencies, chemical elements, and authors — and an unplanned discovery that complicates the taxonomy."
+date: "2026-06-15"
+series: "The Frequency Prior Trilogy"
+seriesNumber: 3
+seriesPrev: "/research/steering-the-prior/"
+seriesNext: null
+status: "coming-soon"
+tags: ["mechanistic-interpretability", "gpt-2", "generalization", "in-context-learning"]
+cardTitle: "Frequency in All Directions"
+tagline: "Does the mechanism generalize?"
+order: 3
+cardDescription: "A task battery spanning languages, currencies, chemical elements, and authors — and an unplanned discovery that complicates the taxonomy. The question is now whether there is a frequency prior direction in GPT-2's residual stream at all, or only a family of mode-specific directions."
+highlights:
+  - "Languages and currencies replicate the inverted ICL gradient from Paper 1"
+  - "New attractor class discovered: morphological/demonym (Brazil → \"Brazilian\")"
+  - "Transfer test: do Paper 2 steering vectors carry over across domains?"
+  - "Three attractor classes: semantic-prominence, morphological, exemplar-copy"
+---
+
+*Paper 3 of the Frequency Prior Trilogy. In progress.*
+
+---
+
+## Coming Soon
+
+The third paper in the series is in progress. Papers 1 and 2 are live now.
+
+---
+
+## What This Paper Is Investigating
+
+[*Steering the Prior*](/research/steering-the-prior/) ended with a sharper question than Paper 3 was originally designed with. The learned steering vector corrected two of five error countries — but the interpretable, mechanistically-derived vector could not find the right direction by group averaging. The failure mode taxonomy predicts intervention response, but two failure modes required two different corrective directions.
+
+The question is now: **is there a "frequency prior direction" in GPT-2's residual stream at all, or only a family of mode-specific directions, one per attractor class?**
+
+A task battery can test this directly.
+
+---
+
+## The Battery
+
+Four domains, each with 8–12 items, swept across n = 0–5 in-context examples:
+
+- **Languages** — what language does country X speak?
+- **Currencies** — what currency does country Y use?
+- **Chemical elements** — what is the chemical symbol for element Z?
+- **Authors** — who wrote book W?
+
+Each domain has its own "famous-vs-factual" competition: the euro competes with the złoty for Poland, "Spanish" competes with "Portuguese" for Brazil.
+
+---
+
+## Pilot Findings
+
+A pilot run on GPT-2 Small surfaced three results:
+
+**Languages and currencies replicate.** Both domains show the inverted ICL gradient from Paper 1. Currency errors include Poland → "euro" and Hungary → "euro." The mechanism appears domain-general.
+
+**Elements and authors hit the capacity floor.** Elements trigger exemplar-copy collapse (everything → "O", the first exemplar's answer at n≥1). Authors produce complete copy collapse (everything → "George", from 1984 → George Orwell). These are not over-conditioning failures — they are the regime where retrieval is impossible and the ICL machinery degenerates into copying.
+
+**An unplanned discovery: the demonym attractor.** The pilot was designed to find semantic competitors. What appeared instead was a morphological pattern: Brazil → "Brazilian", Egypt → "Egyptian" (languages); Norway → "Norwegian", Sweden → "Swedish", Denmark → "Danish" (currencies). The model errors to the country-derived adjective — a *morphological* frequency attractor distinct from both Paper 1's semantic-prominence attractor and the hypothesized cross-item attractors.
+
+---
+
+## Three Attractor Classes
+
+The pilot established a taxonomy neither paper had anticipated:
+
+**1. Semantic-prominence** — a competing fact-like token with higher training frequency. The original Paper 1 mechanism: Mumbai over New Delhi, euro over złoty.
+
+**2. Morphological/demonym** — a derivational surface pattern. The token is not even the right kind of answer (an adjective, not a noun), but the completion format makes it the most probable continuation.
+
+**3. Exemplar-copy** — induction-head parroting when the task is at or below the capacity floor. When retrieval is impossible, the model copies the most recent example's answer. Classes 1 and 2 are the Paper 3 study objects. Class 3 is the floor condition.
+
+---
+
+## What's Being Tested
+
+- Frequency verification (OpenWebText counts) for all semantic-prominence competitors
+- Logit-lens crossover typing (early-dominance vs. late-override) per domain
+- Transfer test: do the Paper 2 steering vectors (derived on capitals) carry over to semantic-prominence errors in the language and currency domains?
+- Characterization of the learned steering vector's geometry — what direction gradient descent found that group averaging missed
+
+The transfer test is the Paper 2 bridge: if the capital-domain steering vector corrects currency-domain euro-override errors, there is a shared direction. If it doesn't, the direction is mode-specific and the "family of directions" hypothesis holds.
+
+---
+
+*Check back for updates. [Frequency Wins](/research/frequency-wins/) and [Steering the Prior](/research/steering-the-prior/) are live now.*

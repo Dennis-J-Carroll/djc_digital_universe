@@ -30,12 +30,30 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 
   if (node.internal.type === "Mdx") {
     const value = createFilePath({ node, getNode })
-    
+
     createNodeField({
       name: "slug",
       node,
       value,
     })
+
+    // Reading time for research papers
+    const parent = node.parent ? getNode(node.parent) : null
+    if (parent && parent.sourceInstanceName === "research" && node.internal.contentFilePath) {
+      const fs = require("fs")
+      try {
+        const raw = fs.readFileSync(node.internal.contentFilePath, "utf8")
+        const body = raw.replace(/^---[\s\S]*?---/, "") // strip frontmatter
+        const words = body.split(/\s+/).filter(Boolean).length
+        createNodeField({
+          name: "timeToRead",
+          node,
+          value: Math.max(1, Math.round(words / 200)),
+        })
+      } catch (e) {
+        createNodeField({ name: "timeToRead", node, value: 1 })
+      }
+    }
   }
 }
 
@@ -61,6 +79,16 @@ exports.createSchemaCustomization = ({ actions }) => {
       featuredImage: File @fileByRelativePath
       author: String
       modified: Date @dateformat
+      series: String
+      seriesNumber: Int
+      seriesPrev: String
+      seriesNext: String
+      tags: [String]
+      cardTitle: String
+      cardDescription: String
+      tagline: String
+      highlights: [String]
+      order: Int
     }
   `
 
@@ -77,6 +105,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
 
   // Define templates
   const projectTemplate = path.resolve("./src/templates/project-detail.js")
+  const researchTemplate = path.resolve("./src/templates/research-paper.js")
   console.log("Project template path:", projectTemplate)
   
   // Query for MDX nodes to use in creating pages
@@ -140,15 +169,20 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       case 'stories':
         pagePath = `/stories/${slug}`;
         break;
+      case 'research':
+        pagePath = `/research${slug}`;
+        break;
       default:
         pagePath = slug;
     }
-    
+
     console.log("Creating page with path:", pagePath)
-    
+
+    const template = sourceInstanceName === 'research' ? researchTemplate : projectTemplate;
+
     createPage({
       path: pagePath,
-      component: `${projectTemplate}?__contentFilePath=${node.internal.contentFilePath}`,
+      component: `${template}?__contentFilePath=${node.internal.contentFilePath}`,
       context: {
         id: node.id,
         slug: slug,

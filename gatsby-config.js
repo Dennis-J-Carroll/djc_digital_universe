@@ -38,12 +38,26 @@ module.exports = {
         path: `${__dirname}/src/stories`,
       },
     },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `research`,
+        path: `${__dirname}/src/research`,
+      },
+    },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
         extensions: ['.mdx', '.md'],
+        mdxOptions: {
+          remarkPlugins: [require('remark-gfm').default],
+          rehypePlugins: [
+            require('rehype-slug').default,
+            [require('rehype-autolink-headings').default, { behavior: 'wrap' }],
+          ],
+        },
         gatsbyRemarkPlugins: [
           {
             resolve: `gatsby-remark-images`,

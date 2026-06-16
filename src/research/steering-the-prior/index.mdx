@@ -1,0 +1,215 @@
+---
+title: "Steering the Prior: Why Activation Steering Mostly Fails to Correct Frequency Bias in GPT-2"
+description: "Paper 1 diagnosed the lesion. This paper administered the indicated treatment and reports the trial honestly. The mechanistically-derived steering vector corrects one country in five, at triple the tolerable dose, while a black-box learned vector quietly fixes the cases the interpretable one cannot."
+date: "2026-06-15"
+series: "The Frequency Prior Trilogy"
+seriesNumber: 2
+seriesPrev: "/research/frequency-wins/"
+seriesNext: "/research/frequency-direction/"
+tags: ["mechanistic-interpretability", "activation-steering", "gpt-2", "residual-stream", "negative-results"]
+cardTitle: "Steering the Prior"
+tagline: "Why activation steering mostly fails"
+order: 2
+cardDescription: "Paper 1 diagnosed the lesion. This paper administered the indicated treatment and reports the trial honestly. The mechanistically-derived steering vector corrects one country in five, at triple the tolerable dose, while a black-box learned vector quietly fixes the cases the interpretable one cannot."
+highlights:
+  - "Difference-of-means vector at L8 resid_post: stable, real, nearly orthogonal to embeddings"
+  - "Corrects Switzerland at α=3.0 — 3× outside the safe operating window"
+  - "Hypothesis inverted: late-override countries resist; early-dominance partially yields"
+  - "Learned vector (same norm, same hook) corrects Australia and Canada at safe doses"
+---
+
+*Paper 2 of the Frequency Prior Trilogy. Model: GPT-2 Small (124M parameters, 12 layers, 12 heads, 768-d residual stream). Platform: TransformerLens — all results from real-model inference.*
+
+---
+
+## I. The Hook
+
+In *Frequency Wins*, I traced a specific failure through GPT-2 Small's twelve layers: ask it for the capital of India with worked examples in context, and the correct answer — New Delhi — leads the residual stream race through layer eight, then gets overwritten at layer nine by Mumbai, a city the model saw more often in training. The diagnosis was precise enough to suggest a treatment. If the failure is a frequency prior overwhelming a factual signal at a known layer, then mechanistic interpretability makes a concrete promise: derive a direction in activation space that separates correct retrieval from frequency override, add it to the residual stream just before the damage happens, and the bias should yield.
+
+This paper reports what happened when I kept that promise. The short version: **the treatment mostly fails, and the ways it fails are more informative than the success would have been.**
+
+Five findings, stated upfront:
+
+**One.** The steering vector itself is well-behaved. Derived as a difference of means between correct-retrieval and frequency-override residual states at layer 8, it is stable under leave-one-out ablation (cosine similarity 0.91–0.98 between variants) and nearly orthogonal to the static embedding directions an earlier experiment had tested (|cos| ≤ 0.10). It is a real, reproducible object. It just doesn't do what the naive theory says it should.
+
+**Two.** Across nine steering strengths and five error countries, the vector corrects exactly one: Switzerland, at a dose (α = 3.0) that costs 35.7% extra perplexity on neutral text and drags control-country accuracy from 100% to 71.4%. The safe operating window — under 10% perplexity increase, zero control damage — ends at α = 1.0. The corrective dose is three times outside it. By the success criterion I pre-registered, the method fails.
+
+**Three.** The hypothesis structure inverted. I predicted the late-override countries (Australia, Canada) would be the easy cases and the early-dominance countries (India, Switzerland, South Africa) would be the hard ones. The opposite happened: the late-override group never corrects at any tested dose, and the one success is an early-dominance country.
+
+**Four.** The failure is in the direction, not the location. A vector *learned* by gradient descent at the same injection point, constrained to the same norm, corrects exactly the two late-override countries the difference-of-means vector could not touch — under leave-one-out evaluation. Group means miss a correcting direction that gradient search finds. Meanwhile, ablating the three retrieval heads destroys retrieval entirely: every country's predicted capital collapses to "London." The bias and the capability are causally inseparable at the head level, confirming Paper 1's inference by direct intervention.
+
+**Five.** The logit lens shows the correction mechanism is failure-mode-specific. At the corrective dose, Switzerland's layer-9 crossover *vanishes* — steering genuinely prevents the frequency jump. Australia and Canada's crossovers merely shift. India's is untouched. And South Africa's competitor leads from layer zero — the bias is in the embedding itself, upstream of anything a layer-8 intervention can reach.
+
+A negative result this structured is worth publishing because the steering literature is mostly a catalogue of successes on style, sentiment, and refusal behavior. Factual token competition appears to be a different kind of target, and the reasons why are mechanistically legible.
+
+---
+
+## II. Background
+
+### What Paper 1 established
+
+*Frequency Wins* documented three things this paper depends on. First, a behavioral curve: ICL for capital retrieval peaks at one example (79% accuracy) and degrades monotonically after (55% at five). Second, a circuit: attention heads L9H8, L8H11, and L10H0 perform factual retrieval *and* amplify training-frequency priors — the same components, doing both jobs. Third, a taxonomy of failure: **late-override** cases (Australia, Canada), where the capital leads the rank race until layers 9–11, and **early-dominance** cases (India, Switzerland, South Africa), where the competitor leads from layer 9 regardless of context.
+
+### The steering literature promises yes
+
+Activation steering has accumulated an encouraging record. Activation addition (Turner et al., 2023) shifted sentiment and topic. Contrastive activation addition (Rimsky et al., 2023) steered refusal, sycophancy, and corrigibility in Llama-2. Inference-time intervention (Li et al., 2023) improved TruthfulQA scores. The shared recipe: find a direction that separates the behavior you want from the behavior you have, add it during inference, done.
+
+But those targets are diffuse, high-level behavioral properties — tone, stance, willingness. The intervention target here is different in kind: a competition between two specific tokens, resolved by a specific circuit, at a specific layer. Whether the recipe transfers from "be more honest" to "say Canberra, not Sydney" is exactly the question.
+
+---
+
+## III. Methods
+
+### Vector derivation
+
+The steering vector is a difference of group means in the residual stream at the output of layer 8 (`blocks.8.hook_resid_post`) — the boundary where Paper 1 located the decisive crossover. For seven control countries and five error countries:
+
+> **v = mean(control states) − mean(error states)**
+
+No normalization: the raw norm (‖v‖ = 21.66, about 17% of the mean layer-8 residual norm of 127.4) defines the natural unit. Steering strength α is expressed in multiples of the full inter-group distance.
+
+### Leave-one-out evaluation
+
+Every error-country evaluation uses a leave-one-out (LOO) vector derived from the other four. A country is only ever steered by a vector that has never seen its own activations. The same LOO discipline applies to the learned-vector baseline.
+
+### Honest-methodology notes
+
+The entropy gate inherited from Paper 1 (< 3.0 bits = suspect) proved miscalibrated: confidently correct controls like Greece → Athens legitimately produce 1.29 bits. The gate is retained at 1.0 bits; the 3.5–11 bit range from Paper 1 should be read as typical, not universal. "New Delhi" is scored on its first subword token (" New"); the one run where steered output was "Delhi" is scored as an error — defensible but borderline, and all India results carry that asterisk.
+
+---
+
+## IV. The Vector Is Real
+
+Leave-one-out stability: the five LOO variants agree with the full vector at cosine similarity 0.912 (dropping India) to 0.977 (dropping South Africa). No single country dominates the direction. This passed a pre-registered gate (all cosines > 0.9) before any behavioral testing.
+
+Novelty: the difference-of-means vector is nearly orthogonal to all five static embedding directions — embedding(capital) − embedding(famous city) — tested in an earlier experiment (cosines: India +0.102, Australia +0.004, Canada −0.036, Switzerland −0.021, South Africa −0.039). Whatever this vector encodes, it is a property of the layer-8 residual stream, not a recycled token embedding.
+
+---
+
+## V. The Dose-Response Curve Says Mostly No
+
+### One success, four refusals
+
+| Country | Failure mode | Minimum corrective α |
+|---|---|---|
+| Switzerland | early dominance | **3.0** |
+| India | early dominance | none |
+| South Africa | early dominance | none |
+| Australia | late override | none |
+| Canada | late override | none |
+
+Switzerland flips to Bern at α = 3.0 — a real correction, with output entropy at 7.6 bits (the model is genuinely redistributing mass). Its capital probability rises smoothly with dose, peaking before the flip and collapsing into noise by α = 4.0: a narrow corrective window, not a threshold crossed with room to spare.
+
+### The hypothesis inversion
+
+The pre-registered prediction was that late-override countries would correct at low doses. Instead they are the *most* resistant group. A static offset added at layer 8 is *input* to exactly the late layers that perform the override — whatever those layers do to the capital signal that was already winning, they do to the steering vector too. Steering upstream of a process that overwrites decisions just gives it more to overwrite.
+
+### Controls degrade before errors correct
+
+Control-country accuracy holds at 100% through α = 1.0, drops to 88.6% at α = 1.5, 71.4% at α = 3.0, and 48.6% at α = 4.0. The dose that fixes Switzerland breaks two of seven controls.
+
+---
+
+## VI. The Price of Pushing
+
+| α | Neutral-text perplexity | Increase | Last-token KL |
+|---|---|---|---|
+| 0 | 40.78 | — | 0 |
+| 0.5 | 41.20 | +1.0% | 0.003 |
+| 1.0 | 42.35 | +3.8% | 0.011 |
+| 1.5 | 43.95 | +7.8% | 0.024 |
+| 2.0 | 46.30 | +13.5% | 0.038 |
+| 3.0 | 55.35 | **+35.7%** | 0.079 |
+| 4.0 | 73.98 | +81.4% | 0.138 |
+
+The usable window — under 10% perplexity increase *and* intact controls — closes at α = 1.0. Within that window, steering corrects nothing. Outside it, it corrects one country at a cost no deployment would accept.
+
+---
+
+## VII. It's the Direction, Not the Address
+
+### Head scaling: the circuit cannot be dialed down
+
+Scaling the output of the three retrieval heads (L9H8, L8H11, L10H0) by factors from 1.0 down to 0 corrects nothing at any setting. At full ablation, every error country — and this is the model that knew Sydney, Toronto, Mumbai — predicts "London" (India: "Paris"). The heads were not adding bias to an otherwise clean retrieval; they were *doing the retrieval*. Paper 1 inferred a shared circuit from correlational evidence; this is the interventional confirmation.
+
+### The learned vector: same norm, same hook, different direction, different result
+
+Optimize a vector by gradient descent on the capital-vs-famous logit margin, at the same injection point, projected to the same norm budget — evaluated leave-one-out.
+
+**It corrects Australia (→ Canberra) and Canada (→ Ottawa).** Exactly the two countries the difference-of-means vector could never touch, at a perturbation magnitude comparable to α = 1.0 — inside the safe window.
+
+The difference of means aggregates over two failure modes with apparently incompatible corrective directions, and the blend serves neither. The "interpretability pays rent" hypothesis — the circuit-derived vector should match or beat a black-box learned one — is falsified at this resolution. Knowing *where* to intervene came from the circuit analysis; knowing *what direction* to push required optimization.
+
+### Method comparison
+
+| Method | Error-country accuracy (n=1, held-out) | Inside safe window? |
+|---|---|---|
+| Prompting (n=1) | 0% | — |
+| Difference-of-means steering, best α | 20% (α=3.0) | no |
+| Head scaling, any s | 0% | — |
+| Learned vector, norm-matched, LOO | **40%** | yes (by norm) |
+
+---
+
+## VIII. What the Logit Lens Sees Under Steering
+
+| Country | Failure mode | Crossover depth, base → steered | Verdict |
+|---|---|---|---|
+| Switzerland | early dominance | 0.75 → none | **prevented** |
+| Australia | late override | 1.0 → 0.917 | moved |
+| Canada | late override | 1.0 → 0.75 | moved (earlier!) |
+| India | early dominance | 0.75 → 0.75 | unchanged |
+| South Africa | early dominance | 0.0 → 0.0 | unchanged |
+
+**Switzerland's correction is the real thing.** Under steering, Zurich never takes the lead at any layer: the crossover does not move, it *disappears*. Prevention, not damage control.
+
+**The late-override cases wobble without flipping.** Canada's crossover even moves *earlier* — the perturbation disturbs late-layer processing without producing the desired outcome.
+
+**South Africa's crossover depth is 0.0.** Johannesburg leads Pretoria at the *embedding layer*, before a single block has run. No layer-8 intervention can reach a competition that was lost before the network started computing. This corroborates Paper 1's finding that South Africa's frequency prior lives in the embedding geometry — and explains why it was the most scale-robust error until capacity dissolved it.
+
+---
+
+## IX. What This Means
+
+### For the steering literature
+
+**Steering efficacy is not a property of the technique but of the geometry of the target.** Behaviors that are linearly separable as group means steer well. A failure spread across two mechanisms with incompatible corrective directions does not, even when each mechanism is individually well-characterized. "Does activation steering work?" is underspecified; "does the failure you are correcting have a single direction?" is the operative question.
+
+### For the trilogy
+
+Paper 1 ended with frequency bias as an architectural property that scale dissolves. This paper adds: at fixed scale, the bias is also *intervention-resistant* in a structured way. The failure-mode taxonomy is not just descriptive — it predicts intervention response:
+- Early dominance: preventable at cost (Switzerland)
+- Late override: needs a learned direction (Australia, Canada)
+- Embedding-level: unreachable from the residual stream (South Africa)
+
+Paper 3 inherits a sharper question: not "does the frequency direction generalize across domains?" but "is there a frequency direction at all, or only a family of mode-specific ones?"
+
+### The honest framing
+
+It would be easy to title this paper around Switzerland and bury the other four countries in a table. The accurate summary is the inverse: under pre-registered criteria the method failed, one narrow success notwithstanding, and the failure decomposed into mechanistically distinct, individually legible reasons. That decomposition is the contribution.
+
+---
+
+## X. Limitations
+
+*Scale.* Everything here is GPT-2 Small. Whether steering resistance shows the same capacity-relativity as the bias itself is untested.
+
+*Sample size.* Five error countries, seven controls. The LOO discipline protects against memorization, not against the smallness of the world.
+
+*Single hook geometry.* Last-token injection at one layer. Multi-layer or attention-targeted steering might behave differently; the learned-vector result already shows the search space contains better points than the group-mean heuristic found.
+
+*The learned vector is under-analyzed.* What direction it found — its geometry relative to the circuit and to the embedding directions — is the obvious next experiment, deferred to Paper 3's transfer tests.
+
+---
+
+## XI. Conclusion
+
+Paper 1 diagnosed a disease and named the lesion: a frequency prior, amplified by an identified retrieval circuit, overwriting a correct answer at a known layer. This paper administered the indicated treatment: the mechanistically-derived steering vector is real, stable, and novel — and it corrects one case in five, at triple the tolerable dose, while a black-box learned vector quietly fixes the cases the interpretable one cannot. The bias is not one thing. It is an embedding-level rigging (South Africa), a mid-network resolution (India, Switzerland), and a late-layer override (Australia, Canada), and no single direction in activation space treats all three.
+
+The promise of mechanistic interpretability was never that understanding guarantees control. This series now has a clean instance of the gap: enough understanding to predict, locate, and watch the failure happen — and a demonstration that the obvious control derived from that understanding is not enough. Closing that gap, rather than assuming it closed, is the work.
+
+---
+
+*Previous: [Frequency Wins](/research/frequency-wins/) · Next: [Frequency in All Directions](/research/frequency-direction/) (coming soon)*
+
+*Code: `new_experiments/steering/`. Scripts: `steering_common.py`, `derive_vector.py`, `dose_response.py`, `side_effects.py`, `baselines.py`, `steered_logit_lens.py`. Results: `steering_results/`.*
