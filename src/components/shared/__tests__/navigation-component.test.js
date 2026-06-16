@@ -38,6 +38,7 @@ describe("Navigation Component", () => {
     render(<Navigation />)
     expect(screen.getByText("Home")).toBeInTheDocument()
     expect(screen.getByText("Apps & Projects")).toBeInTheDocument()
+    expect(screen.getByText("Research")).toBeInTheDocument()
     expect(screen.getByText("Stories & More")).toBeInTheDocument()
     expect(screen.getByText("About")).toBeInTheDocument()
     expect(screen.getByText("Contact")).toBeInTheDocument()
@@ -52,20 +53,22 @@ describe("Navigation Component", () => {
     render(<Navigation />)
     const homeLink = screen.getByRole("link", { name: /Home/i })
     const appsLink = screen.getByRole("link", { name: /Apps & Projects/i })
+    const researchLink = screen.getByRole("link", { name: /Research/i })
     const storiesLink = screen.getByRole("link", { name: /Stories & More/i })
     const aboutLink = screen.getByRole("link", { name: /About/i })
     const contactLink = screen.getByRole("link", { name: /Contact/i })
 
     expect(homeLink).toHaveAttribute("href", "/")
     expect(appsLink).toHaveAttribute("href", "/apps")
+    expect(researchLink).toHaveAttribute("href", "/research")
     expect(storiesLink).toHaveAttribute("href", "/stories")
     expect(aboutLink).toHaveAttribute("href", "/about")
     expect(contactLink).toHaveAttribute("href", "/contact")
   })
 
-  it("has exactly 5 navigation items", () => {
+  it("has exactly 6 navigation items", () => {
     render(<Navigation />)
     const navItems = screen.getAllByRole("listitem")
-    expect(navItems).toHaveLength(5)
+    expect(navItems).toHaveLength(6)
   })
 })
