@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attn Flow · Attention Field Visualizer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #07070a; overflow: hidden; }
+    canvas { display: block; width: 100%; height: 100%; }
+
+    #drop-hint {
+      position: fixed; bottom: 10px; right: 14px;
+      font: 10px/1 monospace; color: #333; pointer-events: none; letter-spacing: 0.5px;
+    }
+    #drop-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,201,177,0.06);
+      border: 2px solid #00c9b1;
+      display: none; align-items: center; justify-content: center;
+      font: bold 22px monospace; color: #00c9b1; pointer-events: none;
+      letter-spacing: 3px;
+    }
+    #drop-overlay.active { display: flex; }
+
+    /* nav buttons (prev / next head) for mouse/touch users */
+    #nav-btns {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px;
+    }
+    #nav-btns button {
+      background: #111; border: 1px solid #333; color: #888;
+      font: 11px monospace; padding: 4px 14px; cursor: pointer;
+      letter-spacing: 1px;
+    }
+    #nav-btns button:hover { border-color: #00c9b1; color: #00c9b1; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="drop-hint">drop extract_attn JSON to load real data</div>
+  <div id="drop-overlay">DROP TO LOAD</div>
+  <div id="nav-btns">
+    <button id="btn-prev">◀ prev head</button>
+    <button id="btn-pause">pause</button>
+    <button id="btn-next">next head ▶</button>
+  </div>
+
+<script>
+// ============================================================
+//  ATTN FLOW  ·  browser port of flow_attn.c
+//  Particles drift through a field derived from real attention
+//  weights. Each particle is pulled toward the tokens that its
+//  nearest source token attends to — high attention = gravity.
+//
+//  Demo data: GPT-2 Small on
+//  "The capital of France is Paris. The capital of India is"
+//  Six heads spanning L7–L11, telling the mechanism story from
+//  Paper 1 ("Frequency Wins").
+//
+//  Keys: h/H or ◀▶ arrows — cycle heads
+//        space            — pause / resume
+//        t                — cycle theme (NOVA / EMBER / MATRIX / ICE)
+//        g                — cycle glyph ramp
+//        r                — reset particles
+//        + / -            — speed
+//  Drop a JSON file from extract_attn.py to load real data.
+// ============================================================
+
+const NP = 1200;   // particle count — same as flow_attn.c
+
+// ── Glyph ramps ──────────────────────────────────────────────
+const RAMPS = [
+  " .:-=+*#%@",
+  " .,:;ox%#@",
+  " `'^~ilwW@",
+];
+const RAMP_NAMES = ["CLASSIC", "SLIM", "THIN"];
+
+// ── Color themes (6 stops: cold → hot) ──────────────────────
+const THEMES = {
+  NOVA:  ["#03030e","#0d0829","#2d1060","#7a1070","#c83800","#ffcc00"],
+  EMBER: ["#0e0300","#3a0800","#881a00","#d04800","#ff9a00","#ffee88"],
+  MATRIX:["#000e00","#002800","#005000","#00aa00","#00ee44","#aaffcc"],
+  ICE:   ["#000614","#001840","#004898","#0080c8","#44c0f0","#cceeff"],
+};
+const THEME_NAMES = ["NOVA","EMBER","MATRIX","ICE"];
+
+// ── Cell sizing ───────────────────────────────────────────────
+const CW = 10;   // character cell width  (px)
+const CH = 18;   // character cell height (px)
+
+// ── Demo data ─────────────────────────────────────────────────
+//
+//  Prompt: "The capital of France is Paris. The capital of India is"
+//  Tokens:  The | capital | of | France | is | Paris | . | The | capital | of | India | is
+//  Index:    0       1      2      3      4      5     6    7       8      9    10     11
+//
+//  These synthetic attention matrices are mechanistically grounded
+//  in the Paper 1 findings (logit lens, causal patching, exp08 data).
+//  Load real data from extract_attn.py to see actual GPT-2 weights.
+
+function makeCausal(n, scoreFn, temp) {
+  // Build a causal (lower-triangular) attention matrix.
+  // scoreFn(from, to) → raw score; temp controls sharpness.
+  return Array.from({length: n}, (_, i) => {
+    const scores = Array.from({length: n}, (_, j) =>
+      j <= i ? scoreFn(i, j) : -1e9
+    );
+    const maxS = Math.max(...scores);
+    const exps  = scores.map(s => Math.exp((s - maxS) / temp));
+    const sum   = exps.reduce((a, b) => a + b, 0);
+    return exps.map(e => e / sum);
+  });
+}
+
+const N = 12;
+// Token position aliases
+const F = 3,  // France
+      P = 5,  // Paris
+      C = 8,  // capital (2nd occurrence)
+      O = 9,  // of (2nd)
+      IN= 10, // India
+      FN= 11; // final "is"
+
+const DEMO_TOKENS = [
+  "The","capital","of","France","is","Paris","·","The","capital","of","India","is"
+];
+
+const DEMO_HEADS = [
+  // ── L7·H0  Pre-crossover — broad context pull ────────────
+  {
+    label: "L7·H0", desc: "Pre-crossover  —  broad context",
+    attn: makeCausal(N, (i,j) => {
+      if (i===FN) {
+        if (j===IN) return 1.5;  // reads India
+        if (j===F)  return 1.2;  // reads France
+        if (j===P)  return 1.0;  // reads Paris
+        if (j===1||j===C) return 0.8;
+        return 0.0;
+      }
+      if (i===IN) { if (j===F) return 1.0; return -0.4; }
+      return j===i-1 ? 0.3 : -0.8;
+    }, 1.2),
+  },
+
+  // ── L8·H11  Retrieval A — India→France mapping ──────────
+  {
+    label: "L8·H11", desc: "Retrieval A  —  final token → India → France",
+    attn: makeCausal(N, (i,j) => {
+      if (i===FN) {
+        if (j===IN) return 3.5;  // STRONG pull to India
+        if (j===C)  return 1.5;  // capital
+        if (j===F)  return 1.0;  // France
+        return -1.5;
+      }
+      if (i===IN) {
+        if (j===F)  return 2.5;  // India maps to France
+        if (j===1)  return 1.5;  // capital (1st)
+        if (j===C)  return 1.5;  // capital (2nd)
+        return -0.5;
+      }
+      if (i===C)  { if (j===1) return 3.0; return -1.5; }   // induction: cap→cap
+      return j===i-1 ? 0.5 : -1.2-(i-j)*0.08;
+    }, 0.5),
+  },
+
+  // ── L9·H8  THE override head — split: India AND Paris ───
+  // This is the head Paper 1 identifies as the crossover layer.
+  // The final token attends to India AND Paris simultaneously —
+  // the same circuit pulling toward both the capital AND the
+  // high-frequency city. Frequency wins.
+  {
+    label: "L9·H8", desc: "Override head  —  India ⟷ Paris split  [the mechanism]",
+    attn: makeCausal(N, (i,j) => {
+      if (i===FN) {
+        if (j===IN) return 2.5;  // India (target country)
+        if (j===P)  return 2.3;  // Paris ← contamination from examples!
+        if (j===F)  return 1.5;  // France
+        if (j===C)  return 0.8;
+        return -2.0;
+      }
+      if (i===IN) {
+        if (j===F)  return 2.5;  // India references France
+        if (j===P)  return 1.8;  // India→Paris cross-association (the error source)
+        return -0.8;
+      }
+      if (i===P) { if (j===F) return 3.0; return -1.0; } // Paris→France
+      return j===i-1 ? 0.3 : -1.8-(i-j)*0.1;
+    }, 0.55),
+  },
+
+  // ── L9·H0  Induction — structural replication ───────────
+  // "capital" at position 8 attends hard to "capital" at 1.
+  // "of" at 9 attends to "of" at 2. India references France.
+  // Creates narrow, high-contrast jets between matching tokens.
+  {
+    label: "L9·H0", desc: "Induction  —  structure replication",
+    attn: makeCausal(N, (i,j) => {
+      if (i===C)  { if (j===1) return 5.5; return -3.5; }   // capital→capital
+      if (i===O)  { if (j===2) return 5.5; return -3.5; }   // of→of
+      if (i===IN) { if (j===F) return 4.5; return -2.5; }   // India→France
+      if (i===FN) { if (j===IN)return 3.0; if (j===C) return 1.5; return -3.0; }
+      return j===i-1 ? 0.3 : -2.0;
+    }, 0.4),
+  },
+
+  // ── L10·H0  Global context — BOS attractor ───────────────
+  // Almost everything attends toward position 0 ("The").
+  // Creates a broad leftward convergent field. Visually calm.
+  {
+    label: "L10·H0", desc: "Global context  —  BOS attractor",
+    attn: makeCausal(N, (i,j) => {
+      if (j===0) return 2.0;            // everyone drifts to "The"
+      if (j===i-1) return 0.5;          // mild prev-token
+      if (i===FN) {
+        if (j===IN) return 2.2;
+        if (j===P)  return 1.0;
+      }
+      return -0.5-(i-j)*0.04;
+    }, 0.9),
+  },
+
+  // ── L11·H2  Previous-token — streaming diagonal ──────────
+  // Each position attends almost entirely to the token before it.
+  // Creates clean diagonal streaming lines across the field.
+  {
+    label: "L11·H2", desc: "Previous-token  —  streaming diagonal lines",
+    attn: makeCausal(N, (i,j) => {
+      if (j===i-1) return 4.5;
+      if (j===i)   return 0.5;    // BOS self-attends
+      return -3.0-(i-j)*0.3;
+    }, 0.35),
+  },
+];
+
+// ── Simulation state ─────────────────────────────────────────
+let data     = { tokens: DEMO_TOKENS, heads: DEMO_HEADS };
+let curHead  = 0;
+let rampId   = 0;
+let themeId  = 0;
+let speed    = 1.0;
+let paused   = false;
+let frame    = 0;
+
+// ── Canvas & grid ────────────────────────────────────────────
+const canvas = document.getElementById("canvas");
+const ctx    = canvas.getContext("2d");
+
+let W, H, COLS, ROWS;
+let tokPx = [];   // pixel x centres of each token
+let tokPy = 0;    // pixel y of token row
+let particles = [];
+let dens;         // Float32Array[ROWS * COLS]
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  COLS = Math.floor(W / CW);
+  ROWS = Math.floor(H / CH);
+  dens = new Float32Array(COLS * ROWS);
+  placeTokens();
+  resetParticles();
+}
+
+function placeTokens() {
+  const n    = data.tokens.length;
+  const step = W / (n + 1);
+  tokPx = data.tokens.map((_, i) => step * (i + 1));
+  tokPy = (ROWS - 4) * CH;          // pixel y of label row
+}
+
+function resetParticles() {
+  const bottom = H - 5 * CH;
+  particles = Array.from({length: NP}, () => ({
+    x: Math.random() * W,
+    y: CH + Math.random() * (bottom - CH),
+  }));
+  if (dens) dens.fill(0);
+}
+
+// ── Attention field ──────────────────────────────────────────
+function attnAngle(x, y) {
+  const n    = data.tokens.length;
+  const attn = data.heads[curHead].attn;
+
+  // Nearest source token by x
+  let src = 0, bestD = Math.abs(x - tokPx[0]);
+  for (let i = 1; i < n; i++) {
+    const d = Math.abs(x - tokPx[i]);
+    if (d < bestD) { bestD = d; src = i; }
+  }
+
+  // Weighted pull toward attended tokens
+  let fx = 0, fy = 0;
+  for (let j = 0; j < n; j++) {
+    const w = attn[src][j];
+    fx += w * (tokPx[j] - x);
+    fy += w * (tokPy    - y);
+  }
+  return (fx === 0 && fy === 0) ? 0 : Math.atan2(fy, fx);
+}
+
+// ── Color helpers ────────────────────────────────────────────
+function hexToRGB(hex) {
+  return [
+    parseInt(hex.slice(1,3),16),
+    parseInt(hex.slice(3,5),16),
+    parseInt(hex.slice(5,7),16),
+  ];
+}
+
+function densColor(d) {
+  const stops  = THEMES[THEME_NAMES[themeId]];
+  const nStops = stops.length - 1;
+  const t      = Math.min(d / 6.0, 1.0);
+  const fi     = t * nStops;
+  const lo     = Math.min(Math.floor(fi), nStops - 1);
+  const frac   = fi - lo;
+  const [r1,g1,b1] = hexToRGB(stops[lo]);
+  const [r2,g2,b2] = hexToRGB(stops[lo + 1]);
+  const r = Math.round(r1 + (r2-r1)*frac);
+  const g = Math.round(g1 + (g2-g1)*frac);
+  const b = Math.round(b1 + (b2-b1)*frac);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  const ramp = RAMPS[rampId];
+  const rLen = ramp.length - 1;
+  const fieldRows = ROWS - 5;
+
+  // ── density field as character grid ──
+  ctx.font         = `${CH - 3}px monospace`;
+  ctx.textBaseline = "top";
+
+  for (let row = 1; row < fieldRows; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const d = dens[row * COLS + col];
+      if (d < 0.06) continue;
+      const n  = Math.min(d / 6.0, 1.0);
+      const gi = Math.min(Math.floor(n * rLen), rLen);
+      ctx.fillStyle = densColor(d);
+      ctx.fillText(ramp[gi], col * CW, row * CH);
+    }
+  }
+
+  // ── tokens ──
+  const n    = data.tokens.length;
+  const attn = data.heads[curHead].attn;
+
+  // incoming attention mass per token (column sums)
+  const colSum = new Float32Array(n);
+  for (let s = 0; s < n; s++)
+    for (let j = 0; j < n; j++)
+      colSum[j] += attn[s][j];
+
+  ctx.font         = `bold ${CH - 5}px monospace`;
+  ctx.textBaseline = "top";
+
+  for (let i = 0; i < n; i++) {
+    const bright = colSum[i] > (2.0 / n);
+    const label  = data.tokens[i];
+    const lw     = ctx.measureText(label).width;
+    const lx     = tokPx[i] - lw / 2;
+
+    // tick mark
+    ctx.fillStyle = "#333";
+    ctx.fillText("|", tokPx[i] - 3, tokPy - CH);
+
+    // token label
+    ctx.fillStyle = bright ? "#00c9b1" : "#666";
+    ctx.fillText(label, lx, tokPy + 2);
+
+    // attention mass bar
+    if (bright) {
+      const barW = Math.min(Math.floor(colSum[i] / n * 36), 12);
+      if (barW > 0) {
+        ctx.fillStyle = "#00c9b133";
+        ctx.fillRect(tokPx[i] - barW/2, tokPy + CH + 4, barW, 2);
+        ctx.fillStyle = "#00c9b1";
+        ctx.fillRect(tokPx[i] - barW/2, tokPy + CH + 4, barW * 0.6, 2);
+      }
+    }
+  }
+
+  // ── HUD ──
+  const head = data.heads[curHead];
+  ctx.font         = `bold ${CH - 5}px monospace`;
+  ctx.textBaseline = "top";
+
+  ctx.fillStyle = "#00c9b1";
+  ctx.fillText(
+    `ATTN FLOW  ${head.label}  [${curHead+1}/${data.heads.length}]  ${head.desc}`,
+    8, 4
+  );
+
+  ctx.fillStyle = "#3a3a3a";
+  ctx.font      = `${CH - 7}px monospace`;
+  ctx.fillText(
+    `h/H ◀▶:head  spc:pause  t:theme  g:glyph  +/-:speed  r:reset  drop JSON for real data`,
+    8, CH + 4
+  );
+
+  if (paused) {
+    ctx.fillStyle = "#ffcc00";
+    ctx.font      = `bold ${CH - 3}px monospace`;
+    const pw = ctx.measureText("[PAUSED]").width;
+    ctx.fillText("[PAUSED]", W - pw - 12, 4);
+  }
+
+  ctx.fillStyle = "#222";
+  ctx.font      = `${CH - 8}px monospace`;
+  ctx.fillText(`frame ${frame}  speed ${speed.toFixed(2)}`, W - 160, CH + 4);
+}
+
+// ── Simulation step ──────────────────────────────────────────
+function step() {
+  // Fade density trails (0.88 per frame — same as C version)
+  for (let i = 0; i < dens.length; i++) dens[i] *= 0.88;
+
+  const bottom = H - 5 * CH;
+
+  for (const p of particles) {
+    const a = attnAngle(p.x, p.y);
+    p.x += Math.cos(a) * 1.1 * speed;
+    p.y += Math.sin(a) * 0.55 * speed;   // y scaled ~0.5 — cells are taller than wide
+
+    // Respawn out-of-bounds particles
+    if (p.x < 0 || p.x >= W || p.y < CH || p.y >= bottom) {
+      p.x = Math.random() * W;
+      p.y = CH + Math.random() * (bottom - CH);
+      continue;
+    }
+
+    const cx = Math.floor(p.x / CW);
+    const cy = Math.floor(p.y / CH);
+    if (cx >= 0 && cx < COLS && cy >= 0 && cy < ROWS)
+      dens[cy * COLS + cx] += 1.0;
+  }
+}
+
+// ── Main loop ────────────────────────────────────────────────
+function loop() {
+  if (!paused) { step(); frame++; }
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ── Head switch helper ────────────────────────────────────────
+function switchHead(delta) {
+  curHead = (curHead + delta + data.heads.length) % data.heads.length;
+  dens.fill(0);
+  resetParticles();
+}
+
+// ── Keyboard ─────────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  switch (e.key) {
+    case "h": case "ArrowRight": switchHead(+1);  break;
+    case "H": case "ArrowLeft":  switchHead(-1);  break;
+    case " ":
+      paused = !paused;
+      document.getElementById("btn-pause").textContent = paused ? "resume" : "pause";
+      e.preventDefault();
+      break;
+    case "r": resetParticles(); break;
+    case "t": themeId = (themeId + 1) % THEME_NAMES.length; break;
+    case "g": rampId  = (rampId  + 1) % RAMPS.length; break;
+    case "+": case "=": speed = Math.min(4.0, +(speed + 0.15).toFixed(2)); break;
+    case "-": case "_": speed = Math.max(0.1, +(speed - 0.15).toFixed(2)); break;
+  }
+});
+
+// ── Button controls ──────────────────────────────────────────
+document.getElementById("btn-prev").addEventListener("click",  () => switchHead(-1));
+document.getElementById("btn-next").addEventListener("click",  () => switchHead(+1));
+document.getElementById("btn-pause").addEventListener("click", () => {
+  paused = !paused;
+  document.getElementById("btn-pause").textContent = paused ? "resume" : "pause";
+});
+
+// ── File drop (load real data from extract_attn.py) ──────────
+//
+//  extract_attn.py normally writes a flat text file for the C version.
+//  To load data into this browser app, run it with --json flag or
+//  wrap the output:
+//
+//    {
+//      "tokens": ["The", " capital", ...],
+//      "heads": [
+//        { "layer": 9, "head": 8, "attn": [[...], ...] },
+//        ...
+//      ]
+//    }
+//
+const overlay = document.getElementById("drop-overlay");
+
+document.addEventListener("dragover",  e => { e.preventDefault(); overlay.classList.add("active"); });
+document.addEventListener("dragleave", ()=> overlay.classList.remove("active"));
+document.addEventListener("drop", e => {
+  e.preventDefault();
+  overlay.classList.remove("active");
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const raw = JSON.parse(ev.target.result);
+      data = {
+        tokens: raw.tokens,
+        heads: raw.heads.map(h => ({
+          label: `L${h.layer}·H${h.head}`,
+          desc:  `Layer ${h.layer}  Head ${h.head}`,
+          attn:  h.attn,
+        })),
+      };
+      curHead = 0;
+      placeTokens();
+      resetParticles();
+    } catch(err) {
+      console.error("Failed to parse dropped file:", err);
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ── Init ─────────────────────────────────────────────────────
+window.addEventListener("resize", resize);
+resize();
+loop();
+</script>
+</body>
+</html>

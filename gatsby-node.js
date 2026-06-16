@@ -77,6 +77,7 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
 
   // Define templates
   const projectTemplate = path.resolve("./src/templates/project-detail.js")
+  const researchTemplate = path.resolve("./src/templates/research-paper.js")
   console.log("Project template path:", projectTemplate)
   
   // Query for MDX nodes to use in creating pages
@@ -140,15 +141,20 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       case 'stories':
         pagePath = `/stories/${slug}`;
         break;
+      case 'research':
+        pagePath = `/research${slug}`;
+        break;
       default:
         pagePath = slug;
     }
-    
+
     console.log("Creating page with path:", pagePath)
-    
+
+    const template = sourceInstanceName === 'research' ? researchTemplate : projectTemplate;
+
     createPage({
       path: pagePath,
-      component: `${projectTemplate}?__contentFilePath=${node.internal.contentFilePath}`,
+      component: `${template}?__contentFilePath=${node.internal.contentFilePath}`,
       context: {
         id: node.id,
         slug: slug,
