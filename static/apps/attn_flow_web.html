@@ -546,6 +546,7 @@ document.addEventListener("keydown", e => {
       break;
     case "r": resetParticles(); break;
     case "?": toggleDrawer(); break;
+    case "Escape": toggleDrawer(false); break;
     case "t": themeId = (themeId + 1) % THEME_NAMES.length; break;
     case "g": rampId  = (rampId  + 1) % RAMPS.length; break;
     case "+": case "=": speed = Math.min(4.0, +(speed + 0.15).toFixed(2)); break;
