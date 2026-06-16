@@ -112,9 +112,10 @@ const ResearchPage = ({ data, location }) => {
           }}>
             {trilogyMeta.description}
           </p>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #888)' }}>
-            Model: {trilogyMeta.model} · Platform: {trilogyMeta.platform}
-          </p>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #888)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <span>Model: {trilogyMeta.model}</span>
+            <span>Platform: {trilogyMeta.platform}</span>
+          </div>
         </motion.div>
 
         {/* Paper cards */}
