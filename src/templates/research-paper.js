@@ -328,6 +328,24 @@ const ResearchPaperTemplate = ({ data, children, pageContext }) => {
           border-bottom-color: var(--primary-color);
         }
 
+        .research-content img {
+          max-width: 100%;
+          height: auto;
+          display: block;
+          border-radius: 8px;
+          border: 1px solid rgba(120, 180, 255, 0.12);
+        }
+        .research-content figure {
+          margin: 2rem 0;
+        }
+        .research-content figcaption {
+          margin-top: 0.6rem;
+          font-size: 0.82rem;
+          color: var(--text-muted, #888);
+          text-align: center;
+          line-height: 1.5;
+        }
+
         /* Responsive tables */
         @media (max-width: 640px) {
           .research-content table {

@@ -242,6 +242,16 @@ The mean cross-country alignment of the capital-minus-famous direction vector is
 
 Persistent errors fall monotonically — 5 → 4 → 3 → 0. The inverted ICL gradient passes through three regimes: over-conditioning at Small and Medium, constructive ICL at Large (sign flips to −18.8%), saturation at XL.
 
+<figure>
+  <img src="/research/scale_headline.png" alt="Capital-city accuracy across GPT-2 sizes: persistent errors at Small dissolve by XL." />
+  <figcaption>Accuracy on the held-out capital-city set across the four GPT-2 sizes. The errors that persist in Small are resolved by XL — capacity, not architecture.</figcaption>
+</figure>
+
+<figure>
+  <img src="/research/scale_trajectory_4sizes.png" alt="Per-country logit trajectories across GPT-2 Small, Medium, Large, and XL." />
+  <figcaption>Logit-lens trajectories for the override cases across four model sizes. Late-override countries straighten out as scale increases.</figcaption>
+</figure>
+
 ### A hierarchy of robustness
 
 The persistent-error sets are cleanly nested:
