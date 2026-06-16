@@ -53,6 +53,10 @@ module.exports = {
         extensions: ['.mdx', '.md'],
         mdxOptions: {
           remarkPlugins: [require('remark-gfm')],
+          rehypePlugins: [
+            require('rehype-slug').default,
+            [require('rehype-autolink-headings').default, { behavior: 'wrap' }],
+          ],
         },
         gatsbyRemarkPlugins: [
           {

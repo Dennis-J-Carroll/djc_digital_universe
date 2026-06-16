@@ -192,6 +192,22 @@ const ResearchPaperTemplate = ({ data, children, pageContext }) => {
           color: var(--primary-color);
         }
 
+        .research-content h2 a,
+        .research-content h3 a {
+          color: inherit;
+          text-decoration: none;
+          border-bottom: none;
+          position: relative;
+        }
+        .research-content h2 a:hover::before,
+        .research-content h3 a:hover::before {
+          content: "#";
+          position: absolute;
+          left: -1.1rem;
+          color: var(--primary-color);
+          opacity: 0.6;
+        }
+
         .research-content p {
           margin: 0 0 1.25rem;
           color: var(--text-secondary, rgba(255,255,255,0.8));

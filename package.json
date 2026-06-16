@@ -33,6 +33,8 @@
     "react-helmet": "^6.1.0",
     "react-syntax-highlighter": "^15.6.1",
     "react-tsparticles": "^2.12.2",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.4",
     "tsparticles": "^2.12.0",
