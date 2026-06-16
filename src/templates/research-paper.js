@@ -3,6 +3,13 @@ import { graphql, Link } from "gatsby"
 import Layout from "../components/layout/layout"
 import Seo from "../components/shared/seo"
 
+const ClockIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: "-2px", marginRight: "0.3rem" }}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+)
+
 const ResearchPaperTemplate = ({ data, children, pageContext }) => {
   const { mdx } = data
   const { frontmatter } = mdx
@@ -64,6 +71,11 @@ const ResearchPaperTemplate = ({ data, children, pageContext }) => {
           {frontmatter.date && (
             <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #888)" }}>
               {frontmatter.date}
+            </span>
+          )}
+          {mdx.fields?.timeToRead && (
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #888)", display: "inline-flex", alignItems: "center" }}>
+              <ClockIcon />{mdx.fields.timeToRead} min read
             </span>
           )}
           {isComingSoon && (
@@ -347,6 +359,7 @@ export const query = graphql`
       }
       fields {
         slug
+        timeToRead
       }
     }
   }

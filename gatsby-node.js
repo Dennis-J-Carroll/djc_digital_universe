@@ -30,12 +30,30 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 
   if (node.internal.type === "Mdx") {
     const value = createFilePath({ node, getNode })
-    
+
     createNodeField({
       name: "slug",
       node,
       value,
     })
+
+    // Reading time for research papers
+    const parent = node.parent ? getNode(node.parent) : null
+    if (parent && parent.sourceInstanceName === "research" && node.internal.contentFilePath) {
+      const fs = require("fs")
+      try {
+        const raw = fs.readFileSync(node.internal.contentFilePath, "utf8")
+        const body = raw.replace(/^---[\s\S]*?---/, "") // strip frontmatter
+        const words = body.split(/\s+/).filter(Boolean).length
+        createNodeField({
+          name: "timeToRead",
+          node,
+          value: Math.max(1, Math.round(words / 200)),
+        })
+      } catch (e) {
+        createNodeField({ name: "timeToRead", node, value: 1 })
+      }
+    }
   }
 }
 
