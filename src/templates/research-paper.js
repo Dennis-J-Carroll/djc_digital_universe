@@ -200,7 +200,9 @@ const ResearchPaperTemplate = ({ data, children, pageContext }) => {
           position: relative;
         }
         .research-content h2 a:hover::before,
-        .research-content h3 a:hover::before {
+        .research-content h2 a:focus-visible::before,
+        .research-content h3 a:hover::before,
+        .research-content h3 a:focus-visible::before {
           content: "#";
           position: absolute;
           left: -1.1rem;

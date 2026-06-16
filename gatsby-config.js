@@ -52,7 +52,7 @@ module.exports = {
       options: {
         extensions: ['.mdx', '.md'],
         mdxOptions: {
-          remarkPlugins: [require('remark-gfm')],
+          remarkPlugins: [require('remark-gfm').default],
           rehypePlugins: [
             require('rehype-slug').default,
             [require('rehype-autolink-headings').default, { behavior: 'wrap' }],
