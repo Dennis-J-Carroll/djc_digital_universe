@@ -1,90 +1,195 @@
 ---
-title: "Frequency in All Directions"
-description: "Does the frequency-override mechanism from the capital-city task generalize across domains? A task battery spanning languages, currencies, chemical elements, and authors — and an unplanned discovery that complicates the taxonomy."
-date: "2026-06-15"
+title: "Frequency in All Directions: How GPT-2's Frequency Prior Generalizes Past Capitals — and Where It Splits"
+description: "Is the frequency prior a single direction in GPT-2's activation space, or a family of them? A task battery across languages and currencies says neither — the prior is clustered, the one direction that generalizes is morphological, and scale cures only half the phenomenon."
+date: "2026-06-18"
 series: "The Frequency Prior Trilogy"
 seriesNumber: 3
 seriesPrev: "/research/steering-the-prior/"
 seriesNext: null
-status: "coming-soon"
-tags: ["mechanistic-interpretability", "gpt-2", "generalization", "in-context-learning"]
+status: "live"
+tags: ["mechanistic-interpretability", "gpt-2", "generalization", "in-context-learning", "residual-stream"]
 cardTitle: "Frequency in All Directions"
-tagline: "Does the mechanism generalize?"
+tagline: "Is there a frequency direction?"
 order: 3
-cardDescription: "A task battery spanning languages, currencies, chemical elements, and authors — and an unplanned discovery that complicates the taxonomy. The question is now whether there is a frequency prior direction in GPT-2's residual stream at all, or only a family of mode-specific directions."
+cardDescription: "Two more domains, the full GPT-2 family, and one question: is there a single frequency direction in the residual stream? No — the prior is clustered, the one direction that bridges domains is the morphological (demonym) attractor, and scale cures frequency bias but not frequency absence."
 highlights:
-  - "Languages and currencies replicate the inverted ICL gradient from Paper 1"
-  - "New attractor class discovered: morphological/demonym (Brazil → \"Brazilian\")"
-  - "Transfer test: do Paper 2 steering vectors carry over across domains?"
-  - "Three attractor classes: semantic-prominence, morphological, exemplar-copy"
+  - "The phenomenon generalizes: languages and currencies replicate the inverted ICL gradient"
+  - "No single frequency direction — the prior is structured/clustered (subspace energy 0.45)"
+  - "The demonym (morphological) attractor is the bridge across anti-aligned semantic domains"
+  - "Scale splits the prior: frequency bias clears by 345M; frequency absence survives to 1.5B"
 ---
 
-*Paper 3 of the Frequency Prior Trilogy. In progress.*
-
----
-
-## Coming Soon
-
-The third paper in the series is in progress. Papers 1 and 2 are live now.
+*Paper 3 of the Frequency Prior Trilogy. Model: GPT-2 Small (124M) primary; Medium / Large / XL for the scale ladder. Platform: TransformerLens — all results from real-model inference.*
 
 ---
 
-## What This Paper Is Investigating
+## I. The Hook
 
-[*Steering the Prior*](/research/steering-the-prior/) ended with a sharper question than Paper 3 was originally designed with. The learned steering vector corrected two of five error countries — but the interpretable, mechanistically-derived vector could not find the right direction by group averaging. The failure mode taxonomy predicts intervention response, but two failure modes required two different corrective directions.
+*[Frequency Wins](/research/frequency-wins/)* found a specific bug: ask GPT-2 Small for the capital of India with worked examples in context, and the correct token, New Delhi, leads the residual-stream race until layer eight, then loses at layer nine to Mumbai — a city the model saw more often in training. *[Steering the Prior](/research/steering-the-prior/)* tried to fix that bug with a single activation direction and mostly couldn't. Both papers were about **capitals**, a dozen countries, one template.
 
-The question is now: **is there a "frequency prior direction" in GPT-2's residual stream at all, or only a family of mode-specific directions, one per attractor class?**
+This paper asks the question those two leave hanging: **is the frequency prior a thing GPT-2 *has*, or a thing it *does* in one corner of its knowledge?** If it is a thing the model has — a "frequency direction" in activation space — then the bias should look the same across unrelated factual domains, the correcting directions should align, and the phenomenon should generalize. If it is a thing the model does, the domains should each have their own version with no shared geometry.
 
-A task battery can test this directly.
+The answer is neither clean option, and the shape of the in-between is the contribution.
 
----
+**Five findings, stated upfront:**
 
-## The Battery
+**One — the phenomenon generalizes.** Inverted in-context learning is not capitals-specific. Ask for a country's official language or currency and accuracy again peaks at one in-context example and degrades with more (languages: 44% at n=1 → 11% at n=5). The same two-mode logit-lens structure from Paper 1 reproduces in both new domains: some errors are decided in the embedding (crossover at relative depth ≈0.08), others are late overrides (≈0.92).
 
-Four domains, each with 8–12 items, swept across n = 0–5 in-context examples:
+**Two — there is a second attractor, and it is morphological.** Paper 1's attractor was a competing *fact* of higher frequency (Mumbai over New Delhi). The new domains surface a different one: the **demonym**. The model answers "Brazil → Brazilian," "Norway → Norwegian" — the country-derived adjective, not a competing fact. Across 17 typed errors the demonym is the single largest error channel (8 of 17), larger than semantic-prominence (4) and exemplar-copy (0). It is a surface/derivational pattern, mechanistically distinct from the frequency-of-fact attractor.
 
-- **Languages** — what language does country X speak?
-- **Currencies** — what currency does country Y use?
-- **Chemical elements** — what is the chemical symbol for element Z?
-- **Authors** — who wrote book W?
+**Three — there is no single frequency direction (the centerpiece).** Derive the layer-8 difference-of-means correcting vector for each domain — capitals, languages, currencies, demonym — using Paper 2's exact protocol, and measure their geometry. The three *semantic-prominence* vectors do not share an axis: capitals and currencies are near-orthogonal (−0.13), and languages and currencies are actively **anti-aligned (−0.39)**. Shared-subspace energy across all four is 0.45 (1.0 = collinear, 0.25 = mutually orthogonal). The prior is **structured/clustered**, not monolithic and not purely per-domain.
 
-Each domain has its own "famous-vs-factual" competition: the euro competes with the złoty for Poland, "Spanish" competes with "Portuguese" for Brazil.
+**Four — the demonym vector is the bridge, and this reconciles Paper 2.** The one direction that aligns with everything is the morphological one: the demonym vector sits at +0.52 with languages and +0.57 with currencies — the two domains that are mutually anti-aligned. The most *shared* direction in the space is the one Paper 1 never described. And because the semantic-prominence vectors do **not** share an axis, there is no single "frequency direction" to steer — which is exactly why Paper 2's one capitals vector failed to generalize. Behavioral transfer (a demoted secondary here) confirms the mess: the capitals vector corrects currencies better (50%) than the *native* currencies vector does (which backfires, 12.5% → 0%), so transfer does not track cosine alignment either.
 
----
+**Five — scale splits the prior into two failure modes.** Paper 1 showed the capitals bias dissolves with scale — gone by GPT-2 XL. Run currencies up the same ladder (Small → Medium → Large → XL) and the count of persistently-erroring items goes 7 → 2 → 3 → 1. Most of the bias clears by **Medium (345M)** — *earlier* than capitals' 1.5B, refuting the prediction registered in the design. But one item never clears at any scale, **including 1.5B**: Bulgaria → lev. The survivors are exactly the currencies whose correct token is near-absent from training (lev, forint, koruna — 0 to 578× frequency skew against the attractor). Capacity cures frequency **bias** (a retrievable answer losing to a more famous token); it cannot cure frequency **absence** (an answer the model effectively never saw).
 
-## Pilot Findings
-
-A pilot run on GPT-2 Small surfaced three results:
-
-**Languages and currencies replicate.** Both domains show the inverted ICL gradient from Paper 1. Currency errors include Poland → "euro" and Hungary → "euro." The mechanism appears domain-general.
-
-**Elements and authors hit the capacity floor.** Elements trigger exemplar-copy collapse (everything → "O", the first exemplar's answer at n≥1). Authors produce complete copy collapse (everything → "George", from 1984 → George Orwell). These are not over-conditioning failures — they are the regime where retrieval is impossible and the ICL machinery degenerates into copying.
-
-**An unplanned discovery: the demonym attractor.** The pilot was designed to find semantic competitors. What appeared instead was a morphological pattern: Brazil → "Brazilian", Egypt → "Egyptian" (languages); Norway → "Norwegian", Sweden → "Swedish", Denmark → "Danish" (currencies). The model errors to the country-derived adjective — a *morphological* frequency attractor distinct from both Paper 1's semantic-prominence attractor and the hypothesized cross-item attractors.
+A structured result like this is worth publishing because it converts a one-line summary ("models are biased toward frequent tokens") into a geometry with named parts and a capacity law with two regimes — both legible by intervention, both reconciling the two prior papers rather than contradicting them.
 
 ---
 
-## Three Attractor Classes
+## II. Background
 
-The pilot established a taxonomy neither paper had anticipated:
+*Frequency Wins* documented, for capital retrieval in GPT-2 Small: an inverted-ICL behavioral curve (accuracy peaks at one in-context example, ~79%, then degrades); a retrieval circuit (heads L9H8, L8H11, L10H0) that performs factual recall *and* amplifies training-frequency priors with the same components; a logit-lens taxonomy splitting errors into **late-override** (capital leads until L9–L11, then loses) and **early-dominance** (competitor leads from L9 regardless of context); and a scale result — by GPT-2 XL every capitals error resolves, framing over-conditioning as capacity relative to task difficulty.
 
-**1. Semantic-prominence** — a competing fact-like token with higher training frequency. The original Paper 1 mechanism: Mumbai over New Delhi, euro over złoty.
+*Steering the Prior* tried to correct the bias with a single difference-of-means direction at layer 8. It mostly failed: across nine doses and five error countries the vector safely corrected none inside the pre-registered side-effect budget (one success, Switzerland, only at α=3.0 for +35.7% perplexity). The vector was a real, stable object (leave-one-out cosine 0.91–0.98, near-orthogonal to static embedding directions) — it just did not do what the naive theory promised. Paper 2 left an explicit gap: **a shared direction can exist in the representation even where steering along it is unsafe.** That gap is this paper's opening.
 
-**2. Morphological/demonym** — a derivational surface pattern. The token is not even the right kind of answer (an adjective, not a noun), but the completion format makes it the most probable continuation.
-
-**3. Exemplar-copy** — induction-head parroting when the task is at or below the capacity floor. When retrieval is impossible, the model copies the most recent example's answer. Classes 1 and 2 are the Paper 3 study objects. Class 3 is the floor condition.
+This paper answers two questions. **Does the bias generalize?** We test official languages and currencies — same "famous competitor" structure (Switzerland's currency is the franc, but *euro* is everywhere in training), different content. **Is there a frequency direction?** Answered at the representation level, independent of whether steering works: derive each domain's correcting vector and measure cross-domain cosine and shared-subspace structure against a pre-registered grid — *monolithic* (one direction, demonym included) / *structured-clustered* (semantic vectors align, demonym separate) / *per-domain* (nothing shared).
 
 ---
 
-## What's Being Tested
+## III. The Task Battery
 
-- Frequency verification (OpenWebText counts) for all semantic-prominence competitors
-- Logit-lens crossover typing (early-dominance vs. late-override) per domain
-- Transfer test: do the Paper 2 steering vectors (derived on capitals) carry over to semantic-prominence errors in the language and currency domains?
-- Characterization of the learned steering vector's geometry — what direction gradient descent found that group averaging missed
+Two new domains, each mirroring the capitals structure — a query whose correct answer competes with a higher-frequency attractor:
 
-The transfer test is the Paper 2 bridge: if the capital-domain steering vector corrects currency-domain euro-override errors, there is a shared direction. If it doesn't, the direction is mode-specific and the "family of directions" hypothesis holds.
+- **Languages:** `The official language of {country} is`. Candidates chosen so the official language differs from the country demonym (Brazil = Portuguese ≠ Brazilian), which is what makes the demonym attractor *visible* rather than confounded with the answer. 9 candidates, 4 controls.
+- **Currencies:** `The currency of {country} is the`. Non-euro Europe, where *euro* is the semantic attractor and the demonym (Swiss, Norwegian) the morphological one. 8 candidates, 4 controls.
+
+For every candidate we record **both** a semantic competitor and a demonym, so each error is scored against each attractor class. The **demonym** is treated as a cross-cutting fourth domain: its item pool is the union of language and currency candidates whose demonym differs from the answer (n=17), against the union of controls.
+
+Two domains from the pilot — chemical elements and book authors — are **excluded**: both collapse to exemplar-copy (every query returns the first in-context answer) because Small is below their retrieval capacity floor. They are cited as capacity-floor evidence later, not run as battery domains.
+
+A methods note on scoring: "krona"/"koruna" share the first subword token " k," so routing is read off the *distinct* competitor (euro) and demonym tokens, not the aliased answer first-token — the same care Paper 1 took scoring "New Delhi" on " New." And Small barely retrieves non-major currencies, so the clean control pool is peso/yuan-heavy by necessity; the currencies domain being demonym-dominated across the board is itself a finding, not a bank defect.
 
 ---
 
-*Check back for updates. [Frequency Wins](/research/frequency-wins/) and [Steering the Prior](/research/steering-the-prior/) are live now.*
+## IV. The Phenomenon Generalizes
+
+**Languages replicate cleanly.** Candidate accuracy peaks at one in-context example (44%) and degrades monotonically to 11% at five — the inverted-ICL signature, in a domain with no geography in it. Controls (Portugal → Portuguese, etc.) sit at 100% at n=1. The dominant error channel at n=1 is the *demonym* (44%), not the semantic competitor (11%).
+
+**Currencies replicate, demonym-dominated.** After the control fix, controls reach 100% at n=1; candidate routing at n=1 splits demonym 50% / euro-competitor 38%. Candidate *accuracy* stays low because Small barely retrieves the correct currencies at all — which the scale ladder turns into the paper's sharpest result.
+
+**Frequency skew is necessary but not sufficient — again.** OpenWebText counts (30k docs) confirm the attractors are frequency-driven: euro outweighs every correct currency by 57.8× (franc) to 578× (forint), and koruna has **zero** attestations. In languages, English/Spanish skew runs 9.4× (Egypt) to 66.8× (Pakistan). But Brazil is the Paper-1-style necessary-not-sufficient case: Spanish outweighs Portuguese 6.8× yet Spanish is *not* the error — the demonym is. Skew sets up the trap; it does not determine which token springs it.
+
+---
+
+## V. Typing the Errors — the Demonym Attractor
+
+Logit-lens typing of all 17 replicating candidate errors at n=1:
+
+| Class | Count |
+|---|---:|
+| demonym (morphological) | **8** |
+| correct (no error at n=1) | 5 |
+| semantic-prominence | 4 |
+| exemplar-copy | 0 |
+
+Zero mismatches against behavioral top-1. The **demonym** — a derivational surface pattern absent from Paper 1's account — is the largest error channel in the generalized phenomenon.
+
+**Paper 1's two modes reproduce in new domains.** Brazil and Bulgaria cross over at relative depth ≈0.08 — the attractor is baked into the token embedding, an early-dominance case. Switzerland (languages) and Egypt cross at ≈0.92 — late override, the answer leads most of the stack and loses at the top. The early/late split Paper 1 found in geography is a general property of how these errors resolve, not a capitals quirk.
+
+**Some answers were never in the race.** Hungary (forint) and Bulgaria (lev) have final answer-ranks of 785 and 1285 — the correct token barely exists in vocabulary geometry. The attractor doesn't out-compete the answer so much as the answer was never present. This ties directly to the frequency voids above and foreshadows the scale ladder.
+
+---
+
+## VI. Is There a Frequency Direction? (Centerpiece)
+
+Layer-8 difference-of-means vectors, pairwise cosine:
+
+|            | capitals | languages | currencies | demonym |
+|------------|---------:|----------:|-----------:|--------:|
+| capitals   |   1.00   |   0.42    |   −0.13    |  0.25   |
+| languages  |   0.42   |   1.00    |   **−0.39**|  0.52   |
+| currencies |  −0.13   |  −0.39    |    1.00    |  0.57   |
+| demonym    |   0.25   |   0.52    |    0.57    |  1.00   |
+
+**Shared-subspace energy = 0.45** (top singular direction; 0.25 = orthogonal floor for four vectors, 1.0 = collinear).
+
+Read against the pre-registered grid, this is the **structured/clustered** branch:
+
+- The three **semantic-prominence** vectors do *not* share one axis. Capitals/currencies are near-orthogonal (−0.13); languages/currencies are actively **anti-aligned (−0.39)**. There is no single direction that means "prefer the frequent token" across factual domains.
+- The **demonym** vector is the bridge: +0.52 to languages, +0.57 to currencies — the two domains most anti-aligned with each other. The morphological attractor is the most shared direction in the space, joining domains it was never built to join.
+- The signal is residual-stream geometry, not embeddings: cos(vector, embedding answer−competitor) ≈ 0 (languages 0.027, currencies 0.052).
+- The vectors are stable (leave-one-out cosine: languages 0.978/0.989, currencies 0.989/0.991, demonym 0.968/0.977), all tighter than Paper 2's capitals vector. The demonym vector's smaller norm (14.1 vs 23.6/26.1) reflects a more diffuse, cross-domain contrast.
+
+**This is the representational explanation for Paper 2.** Paper 2 asked one capitals direction to generalize and it could not. The geometry says why: there is no single frequency direction to carry. What *is* shared is morphology — a direction Paper 2 never isolated and would not have predicted.
+
+---
+
+## VII. Scale Splits the Prior Into Two Failure Modes
+
+Run the currencies battery up the GPT-2 family. Persistent errors = items that error at any n ≥ 1 (same definition each rung, internally comparable):
+
+| Model | Params | Persistent errors | Items |
+|---|---:|---:|---|
+| small  | 124M | **7/8** | Bulgaria, Czechia, Denmark, Hungary, Norway, Poland, Sweden |
+| medium | 345M | **2/8** | Bulgaria, Hungary |
+| large  | 774M | **3/8** | Bulgaria, Czechia, Hungary |
+| xl     | 1.5B | **1/8** | **Bulgaria** |
+
+**The pre-registered prediction was that currencies would clear *later* than capitals' 1.5B. It clears *earlier* — and the residual is more interesting than the prediction.**
+
+- **Frequency bias is cheap to fix.** The euro-attractor cases with a retrievable answer (Denmark, Norway, Poland, Sweden) all resolve by **Medium (345M)** and stay resolved. Ordinary frequency competition — a real answer losing to a more famous token — dissolves well before capitals did.
+- **Frequency absence is not fixable by capacity.** What survives is exactly the frequency-void set: **Bulgaria → lev** errors at *every* scale including 1.5B; **Hungary → forint** (578× euro skew) clears only at XL; **Czechia → koruna** (zero OpenWebText attestations) is non-monotonic, regressing at Large. Scale cannot teach a token the model essentially never saw.
+- **For void items the model gets *more confidently wrong* with scale.** The euro-competitor crossover migrates *earlier*: Bulgaria from relative depth 0.42 (Medium) to **0.00** (Large) — euro is committed in the embedding itself. A bigger model, lacking the correct token, simply locks onto the frequent one sooner.
+
+The non-monotonic count (Medium 2 → Large 3) is driven by these flaky void items and fp16 at the larger rungs, not a real capacity reversal; XL settles to the single irreducible void.
+
+This **subdivides Paper 1's "capacity dissolves the prior."** The capitals phenomenon was the curable kind (a retrievable capital losing to a famous city). Frequency *absence* — lev, forint, koruna — is the floor capacity cannot lift, because the failure is missing knowledge, not mis-weighted knowledge.
+
+---
+
+## VIII. Behavioral Transfer (Honest Secondary)
+
+Best correction rate (candidate becoming top-1), layer-8 last-token injection, α swept 0–4:
+
+| domain | source vector | best rate | best α |
+|---|---|---:|---:|
+| currencies | capitals (cross-domain) | 0.50 | 3.0 |
+| currencies | currencies (native) | 0.125 → **0.00** | degrades with α |
+| languages | capitals (cross-domain) | 0.556 | 3.0 |
+| languages | languages (native) | 0.667 | 1.0 |
+
+Consistent with Paper 2: single-vector steering is weak, domain-local, and can hurt (currencies' native vector backfires to 0%). The surprise: the **capitals** vector transfers to currencies (50% @ α=3) *better* than the native currencies vector — while the geometry has capitals/currencies near-orthogonal (−0.13). **Behavioral transfer does not track cosine alignment.** Caveat: this audit measures entropy only; high-α corrections carry the perplexity cost Paper 2 documented (~+35% at α=3), not re-measured here. This is reported as a secondary, exactly as the design pre-committed — its mostly-negative result is information, not failure.
+
+**Excluded domains as capacity-floor evidence.** Elements and authors collapse to exemplar-copy at Small — every query returns the first in-context answer. This is the exemplar-copy class of the taxonomy with zero battery instances *above* the floor, and it marks the lower boundary of where the frequency phenomenon can even be observed: below a domain's retrieval capacity, there is no prior to override because there is no retrieval.
+
+---
+
+## IX. What This Means
+
+**For the picture of frequency bias.** "Models prefer frequent tokens" resolves into a structured object. There are (at least) two attractors — a competing *fact* of higher frequency (Paper 1) and a *morphological* surface form (this paper) — and they have different geometry: the semantic ones are domain-specific and even anti-aligned, while the morphological one is the shared direction across them. And there are two *capacity regimes*: bias (curable) and absence (not). A theory of over-conditioning needs all four boxes.
+
+**For the trilogy.** The three papers compose. Paper 1 diagnosed the bug and its circuit on capitals. Paper 2 tried to steer it and found one direction insufficient. Paper 3 explains *why* one direction was insufficient (the prior is clustered, not monolithic), generalizes the phenomenon beyond capitals, names the morphological attractor that turns out to be the most shared direction, and subdivides Paper 1's scale law into curable bias vs. irreducible absence. Nothing in Paper 3 contradicts Papers 1–2; it supplies the representational and capacity structure they implied.
+
+**The honest framing.** The headline is a *negative* about a single frequency direction and a *refuted prediction* about the scale ladder. Both are sharper than the positive versions would have been. "There is one frequency direction" would have been a tidy mechanism; "there are several, and the one that generalizes is the morphological one nobody was looking for" is the actual shape of the representation. "Currencies clear later than capitals" would have confirmed a monotone difficulty story; "currencies clear *earlier*, except where the answer is missing entirely" is the finer law.
+
+---
+
+## X. Limitations
+
+1. **Small item counts.** 8–17 items per domain; case-study mechanistic work, not a population estimate. Geometry and taxonomy claims are about mechanism, not prevalence.
+2. **First-token scoring and aliasing.** Routing read off distinct competitor/demonym tokens; currency answers with shared first subwords are scored conservatively.
+3. **Sparse currency knowledge at Small.** The control pool is peso/yuan-heavy out of necessity; the domain is demonym-dominated, which doubles as a finding but limits the semantic-prominence sample in currencies.
+4. **Transfer audit is entropy-only.** Perplexity side-effects at high α are inherited from Paper 2, not re-measured per item here.
+5. **Scale ladder at fp16 for Large/XL.** The non-monotonic Medium→Large count is partly numerical; the qualitative two-regime split (bias clears, void does not) is robust to it.
+6. **One model family.** GPT-2 only. Whether the demonym-as-bridge geometry holds in Pythia/Llama is future work.
+
+---
+
+## XI. Conclusion
+
+Is there a frequency direction? **No — there are several, and they do not share an axis.** The frequency prior in GPT-2 is structured and clustered (shared-subspace energy 0.45): the domain-specific *semantic* attractors are mutually near-orthogonal to anti-aligned, while a *morphological* attractor — the demonym, undescribed before this paper — is the direction that bridges them. That clustering is the representational reason Paper 2's single steering vector could not generalize. And the scale ladder splits Paper 1's capacity law in two: frequency **bias**, a retrievable answer losing to a more famous token, dissolves with scale (currencies clear by 345M); frequency **absence**, an answer the model never learned, survives to 1.5B and beyond. The phenomenon generalizes past capitals — but only the curable half of it scales away.
+
+---
+
+*The Frequency Prior Trilogy is complete. Start at [Frequency Wins](/research/frequency-wins/), or read [Steering the Prior](/research/steering-the-prior/). All results from real-model inference via TransformerLens — not simulation.*
