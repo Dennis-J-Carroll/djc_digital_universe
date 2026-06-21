@@ -1,0 +1,165 @@
+---
+title: "The Morphology Circuit That Isn't: GPT-2's Frequency-Amplification Heads Amplify Surface Forms Too"
+description: "I went looking for a separate circuit behind GPT-2's morphological (demonym) attractor. There isn't one — the same frequency-amplification heads that prefer famous cities also prefer country adjectives. The circuit is attractor-agnostic, and that explains the loose end Paper 3 left."
+date: "2026-06-20"
+series: "The Frequency Prior Trilogy"
+seriesNumber: 4
+seriesPrev: "/research/frequency-direction/"
+seriesNext: null
+status: "live"
+tags: ["mechanistic-interpretability", "gpt-2", "circuits", "path-patching", "negative-results"]
+cardTitle: "The Morphology Circuit That Isn't"
+tagline: "One circuit, every attractor"
+order: 4
+cardDescription: "I went looking for a separate circuit behind the morphological (demonym) attractor and there isn't one — the same heads that amplify famous cities amplify country adjectives too. The frequency-amplification circuit is attractor-agnostic, which explains why Paper 3's demonym vector was the bridge across domains."
+highlights:
+  - "Shared circuit: demonym and semantic attractors use the same heads L8H11/L9H8/L10H0 (effect-vector cosine 0.90)"
+  - "No depth gap — Paper 3's early-demonym crossover was a measurement artifact"
+  - "One nuance: the demonym attractor uniquely recruits induction-style attention (−41%)"
+  - "Clean head-ablation blocked by entanglement — bias and retrieval are inseparable (Paper 2, again)"
+---
+
+*Paper 4 of the Frequency Prior Trilogy (an extension). Model: GPT-2 Small (124M, 12 layers, 12 heads, 768-d residual stream). Platform: TransformerLens — all results from real-model inference.*
+
+---
+
+## I. The Hook
+
+*[Frequency in All Directions](/research/frequency-direction/)* (Paper 3) found a second kind of attractor. Paper 1's bug was a competing *fact* of higher training frequency — ask GPT-2 Small for the capital of India and it answers Mumbai, the more famous city. Paper 3, generalizing to languages and currencies, found the model also errs to the **demonym**: ask for the official language of Brazil and it answers "Brazilian," the country-derived adjective, not "Portuguese." That is not a competing fact. It is a morphological surface pattern. And geometrically it behaved strangely: the demonym difference-of-means vector was the *bridge* across otherwise anti-aligned domains.
+
+This paper asks the obvious mechanistic follow-up: **does the demonym attractor have its own circuit?** A morphological copy-with-suffix pattern ("Brazil" → "Brazil-ian") looks like induction-head territory — a different mechanism from the late-layer frequency-amplification heads (L9H8, L8H11, L10H0) that *[Frequency Wins](/research/frequency-wins/)* mapped. So I set out to find the morphology circuit and show, by intervention, that it is distinct from the semantic-prominence circuit.
+
+**There is no morphology circuit.** The demonym attractor runs on exactly the heads Paper 1 already found. The frequency-amplification mechanism is *attractor-agnostic*: it amplifies whatever high-frequency token competes with the answer, whether that token is a famous city or a country adjective. The paper I set out to write — a clean double dissociation between two circuits — collapsed into a more interesting one: a single circuit doing a job nobody knew it did.
+
+**Five findings, stated upfront:**
+
+**One — shared circuit.** Path patching the demonym attractor recovers the same top components as the semantic attractor: **L8H11, L9H8, L10H0** — Paper 1's frequency-amplification heads, top-3 for both classes (reordered). The two classes' full per-component effect vectors have cosine **0.90**; their top-8 sets overlap at Jaccard 0.60. The identical top-3, against a background of ~157 components, is the robust core of the claim.
+
+**Two — no depth gap.** Paper 3 reported the demonym attractor resolving early (relative depth ≈0.08) and semantic late (≈0.92), suggesting different mechanisms. That gap is a **measurement artifact**. Under the *decisive* crossover — the earliest depth from which the attractor leads to the output, the measure that reproduces Paper 1's capitals split exactly (India 0.75, Australia/Canada 1.0, South Africa 0.0) — demonym and semantic attractors *both* resolve at median depth **0.75**. Paper 3's 0.08 came from a noise-prone earliest-crossover convention. (A caveat for Paper 3, recorded honestly.)
+
+**Three — one nuance, at the attention edge.** The dissociation that failed at the *head* level reappears at the *input* level. Knocking out the query→first-exemplar attention edge on the shared heads drops the demonym attractor by **41%** but leaves the semantic attractor untouched (+13%). The same heads carry both attractors, but the morphological one uniquely recruits induction-style copy-with-suffix attention to the in-context exemplar. Shared circuit, partially distinct input routing.
+
+**Four — the clean causal test is blocked, and the blockage is Paper 2's lesson again.** The headline double dissociation — ablate the heads, watch which class breaks — is **inconclusive**, because zeroing L8H11/L9H8/L10H0 collapses control-country accuracy to 0.00. These heads are load-bearing for retrieval itself; you cannot ablate the "attractor route" without destroying the substrate. This is *[Steering the Prior](/research/steering-the-prior/)*'s bias-and-retrieval-are-inseparable result, replicated by a third independent intervention. So the shared-circuit claim rests on path-patching overlap and directional ablation, not on head ablation.
+
+**Five — it explains Paper 3.** Paper 3 found the demonym vector was the geometric bridge across anti-aligned domains and could not say why. This is why: the demonym attractor rides the same circuit as everything else, so its steering direction aligns with all of them. The trilogy's loose end ties off.
+
+A negative result — "the circuit I went looking for does not exist" — is worth publishing when the absence is itself mechanism. The frequency prior is not a family of attractor-specific circuits; it is one over-general amplification mechanism that does not care what kind of token it is amplifying.
+
+---
+
+## II. Background
+
+*[Frequency Wins](/research/frequency-wins/)* mapped, for capital retrieval in GPT-2 Small, a circuit of attention heads — L9H8, L8H11, L10H0 — that perform factual retrieval *and* amplify training-frequency priors with the same components, and showed the bias dissolves with scale.
+
+*[Steering the Prior](/research/steering-the-prior/)* tried to correct the bias with a single L8 difference-of-means direction and mostly failed. Its load-bearing negative: ablating the retrieval heads sent every capital to "London" — bias and retrieval are causally inseparable at the head level.
+
+*[Frequency in All Directions](/research/frequency-direction/)* generalized the phenomenon to languages and currencies, discovered the demonym (morphological) attractor, and found no single "frequency direction" — the prior is clustered, with the demonym vector bridging anti-aligned semantic domains. It left two questions this paper answers: *does the demonym attractor have its own circuit, and why is its vector the bridge?*
+
+The hypothesis going in was **separation**: a distinct, early, induction-flavored morphology circuit, dissociable from the late frequency-amplification circuit. The pre-registered alternative — shared mechanism — is what the data delivered.
+
+---
+
+## III. Methods
+
+**Task battery.** Two attractor classes, each a query whose correct answer competes with a higher-frequency token. The **demonym** set: 8 items from Paper 3's logit-lens-typed demonym errors (Brazil→Brazilian, Egypt→Egyptian, Norway→Norwegian, …), built so the answer differs from the demonym so the two tokens are distinguishable. The **semantic-prominence** set: Paper 1's 5 capitals errors (India→Mumbai, …). Capitals, not currencies, anchor the semantic side — because GPT-2 Small routes only 3 of 12 non-euro-Europe currencies to "euro" (it is demonym-dominated even for currencies, itself a Paper-3-consistent finding), too thin for a circuit. Capitals are robust and their circuit is already mapped.
+
+**Metric.** Attractor-minus-answer logit difference at the final token, first-subword scored (IOI-style). Positive = attractor wins; any intervention that drives it toward zero is suppressing the attractor.
+
+**Three triangulated interventions ("knives"),** each chosen so its confounds are covered by another's blind spot:
+
+1. **Path patching** — patch each component's clean activation into a matched control run; the components that move the metric are the circuit. Search space includes the token embedding and every MLP, not just heads (the demonym signal could be embedding-resident). Confound: the clean/corrupt country-swap also changes country knowledge.
+2. **Directional ablation** — project Paper 3's demonym difference-of-means vector out of the residual at L8. Token-agnostic, so no country-swap confound.
+3. **Attention-edge knockout** — zero the query→first-exemplar-answer attention edge on the circuit's heads. Mechanism-specific; isolates the induction contribution.
+
+**Double dissociation + entanglement guard.** Ablate each class's path-patched heads, measure both classes; a clean separation would suppress only the matching class. Every ablation is checked against control-country accuracy (Paper 2's "everything → London" guard). All experiments at n=1 (one in-context example, where battery errors peak). GPT-2 Small only — circuit work; no scale ladder.
+
+---
+
+## IV. No Depth Gap
+
+The depth baseline was meant to establish "two depths" before any intervention. It established the opposite.
+
+Under the **decisive** crossover — the earliest relative depth from which the attractor leads the answer all the way to the output — the capitals set reproduces Paper 1 exactly: India 0.75, Switzerland 0.75, South Africa 0.0, Australia 1.0, Canada 1.0. That match validates the logit-lens recipe. Applied to the demonym set, the decisive crossover gives a **median of 0.75 — identical to the semantic median**. Demonym errors do not resolve early; they resolve late, like everything else.
+
+Paper 3's reported "demonym ≈0.08" came from a *noise-prone earliest-crossover* convention (the first layer where the attractor's rank dips below the answer's, even transiently, amid early-layer rank churn in the thousands). Under that convention both classes collapse to ≈0.0; under the trustworthy decisive convention both sit at 0.75. **There was never a depth gap.** The separation hypothesis lost its first pillar before any patching ran. (This is a genuine caveat on the published Paper 3, recorded here.)
+
+---
+
+## V. The Shared Circuit (Centerpiece)
+
+Path patching each class against the attractor logit-difference, averaged over items, top components:
+
+| | Demonym circuit (n=7) | Semantic circuit (n=4) |
+|---|---|---|
+| 1 | **L9H8** (+3.83) | **L8H11** (+1.99) |
+| 2 | **L8H11** (+3.64) | **L9H8** (+1.05) |
+| 3 | **L10H0** (+2.41) | **L10H0** (+0.88) |
+
+The top-3 components are **identical** — Paper 1's frequency-amplification heads — merely reordered. Quantifying the overlap of the full per-component effect vectors: **cosine 0.90**, top-8 Jaccard **0.60** (shared: L8H11, L9H8, L10H0, L10H7, mlp9, mlp11).
+
+The robust core is the identical top-3: three components agreeing out of ~157 candidates, for two attractor types that look nothing alike on the surface. The cosine of 0.90 corroborates but is statistically thinner (n_semantic = 4, after two items dropped for clean/corrupt token-length mismatch). The same-domain control (§VIII) backs it up within a single domain.
+
+**Directional ablation agrees.** Projecting Paper 3's demonym vector out of the residual at L8 reduces the attractor margin for *both* classes — demonym +0.92 → +0.72, semantic +1.70 → +1.57. A direction derived purely from morphological contrasts is not morphology-specific; it lives in a subspace shared with semantic-prominence. (The effect is partial — the demonym vector captures part of the shared circuit, not all of it.)
+
+So two independent knives — path patching and directional ablation — point the same way: one circuit, both attractors.
+
+---
+
+## VI. The One Nuance — Induction at the Edge
+
+If the heads are shared, is *everything* shared? No. The dissociation that vanished at the head level reappears one level down, at the attention input.
+
+Knocking out the query→first-exemplar-answer attention edge on the shared heads — the edge an induction head uses to copy-with-suffix from the in-context example — drops the demonym attractor margin from +0.92 to **+0.54 (−41%)**, while the semantic attractor is *unaffected* (+1.70 → +1.93). The shared heads produce the demonym error partly by attending back to the exemplar and continuing it morphologically; they produce the semantic error by a different input pathway that this edge knockout does not touch.
+
+**Same heads, partially distinct input routing.** The morphological attractor is not a separate circuit, but it is a separable *use* of the shared circuit — one that recruits induction-style attention the semantic attractor does not need. This is the honest middle between "identical" and "separate," and it is more informative than either clean extreme would have been.
+
+---
+
+## VII. The Clean Causal Test Is Blocked (Paper 2, Again)
+
+The headline experiment was supposed to be a double dissociation: ablate each circuit, watch which attractor class breaks. It returns **inconclusive** — and the reason is itself a result.
+
+Zeroing the shared heads (L8H11/L9H8/L10H0 and neighbors) suppresses both attractor classes weakly (deltas 0.47–0.77, below the 1.0-logit threshold) but **collapses control-country accuracy to 0.00 / 0.27**. The entanglement guard fails. These heads are not an "attractor route" you can sever while retrieval continues; they *are* the retrieval route. Ablating them destroys the model's ability to retrieve anything, so the attractor suppression cannot be read causally.
+
+This is exactly Paper 2's finding — bias and retrieval are causally inseparable at the head level — now reproduced by a third independent intervention (head ablation against the demonym attractor, where Paper 2 found it against capitals). The recurring inseparability is becoming the trilogy's most robust mechanistic claim: **the model has no spare capacity for a "correct retrieval without the prior" pathway; the prior is welded to the retrieval.**
+
+The consequence for this paper: the shared-circuit claim rests on path-patching overlap (§V) and directional ablation (§V), not on ablation. Ablation only tells us the heads are essential — which is consistent with shared but cannot prove it.
+
+---
+
+## VIII. Same-Domain Confirmation
+
+The §V centerpiece compares demonym errors (languages + currencies) against capitals — a cross-domain comparison, with the attendant caveat that domain identity could confound circuit identity. The same-domain control removes that caveat: *within currencies*, compare the demonym-routing items (Norway/Sweden/Denmark → the country adjective) against the euro-routing items (Poland/Hungary → "euro").
+
+Within currencies, the two routings share 6 of 8 top components, **Jaccard 0.60, cosine 0.88** — matching the cross-domain numbers. The shared circuit holds inside a single domain, so the §V overlap is not an artifact of comparing capitals to currencies. (n is small here — 3 demonym, 2 euro after a length-mismatch drop — so this is a supporting check, not a standalone result.)
+
+---
+
+## IX. What This Means
+
+**For the picture of frequency bias.** The frequency-amplification circuit is *attractor-agnostic*. It does not encode "prefer the more famous city" or "prefer the country adjective" as separate capabilities; it implements one operation — amplify the high-frequency competitor of the retrieved answer — and that operation fires regardless of whether the competitor is a fact or a surface form. The morphological attractor of Paper 3 is not a new mechanism; it is the old mechanism applied to a new kind of token. The only morphology-specific ingredient is an input pathway (induction attention to the exemplar), not a dedicated circuit.
+
+**For the trilogy.** Four papers, one circuit. Paper 1 found it (capitals). Paper 2 failed to steer it and found bias welded to retrieval. Paper 3 found it generalizes and that the demonym vector bridges domains. Paper 4 explains the bridge (same circuit → aligned direction) and shows the circuit is more general than any prior paper claimed. The inseparability of bias and retrieval now has three independent intervention confirmations.
+
+**The honest framing.** I went looking for a morphology circuit and there isn't one — the cleaner, more surprising result. The clean causal experiment I designed (double dissociation) is the one that failed, blocked by an entanglement that is itself a re-finding. The strong evidence came from the methods I demoted to corroboration (path patching, directional ablation). And the depth gap that motivated the whole separation hypothesis turned out to be a measurement artifact in the prior paper. Reporting all of that plainly is the result.
+
+---
+
+## X. Limitations
+
+1. **Causal head-ablation is uninterpretable here** (entanglement). The shared-circuit claim is correlational-causal (path patching) + directional, not ablation-causal. Honestly, this is the ceiling GPT-2's architecture allows — there is no clean attractor-only intervention.
+2. **Small n on the semantic side** (n=4 in §V; n=2–3 in §VIII). The identical top-3 heads and Jaccard are robust to this; the cosine values are directional, not tight estimates.
+3. **Capitals as the semantic set.** Currencies were too demonym-dominated to anchor a semantic circuit; the cross-domain comparison is mitigated by the same-domain check (§VIII) but not eliminated.
+4. **Path-patching counterfactual confound.** Country-swap changes country knowledge, not only attractor type; mitigated by the token-agnostic directional ablation agreeing.
+5. **GPT-2 Small only.** Whether the attractor-agnostic circuit holds in other families is future work.
+6. **Caveat inherited and emitted:** Paper 3's demonym-depth figure is a convention artifact; this paper supersedes it.
+
+---
+
+## XI. Conclusion
+
+Is there a morphology circuit in GPT-2 Small? **No.** The demonym (morphological) attractor and the semantic-prominence attractor are produced by the same frequency-amplification heads — L8H11, L9H8, L10H0 — with effect-vector cosine 0.90 and identical top-3 components. The circuit is attractor-agnostic: it amplifies a country adjective exactly as it amplifies a famous city, because it is implementing one over-general operation, not a catalogue of attractor-specific ones. The morphological attractor's only distinct ingredient is an input pathway — induction-style attention to the in-context exemplar (a 41% effect for demonyms, none for semantics). The clean causal dissociation is blocked because these heads are inseparable from retrieval itself, replicating Paper 2 a third time. And the shared circuit is why Paper 3's demonym vector bridged otherwise anti-aligned domains. The trilogy's frequency prior is, at the circuit level, a single thing doing more than anyone looked for.
+
+---
+
+*The Frequency Prior Trilogy: start at [Frequency Wins](/research/frequency-wins/), then [Steering the Prior](/research/steering-the-prior/) and [Frequency in All Directions](/research/frequency-direction/). All results from real-model inference via TransformerLens — not simulation.*
