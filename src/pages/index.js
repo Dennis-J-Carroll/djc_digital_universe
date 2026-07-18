@@ -243,10 +243,6 @@ const IndexPage = ({ location }) => {
         viewport={{ once: true, margin: "-10%" }}
         variants={containerVariants}
       >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl" />
-        </div>
-
         <div className="max-w-6xl mx-auto relative z-10">
           <motion.div
             className="text-center mb-16"
