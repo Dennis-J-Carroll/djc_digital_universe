@@ -42,14 +42,9 @@ const Layout = ({ children, pageContext, location }) => {
   }
 
   useEffect(() => {
-    // Initialize theme from localStorage or default to dark
+    // Site is locked to dark theme — see THEME.md for how to bring other themes back
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      // Only add if no theme class exists
-      const hasTheme = document.body.className.includes('-theme');
-      if (!hasTheme) {
-        document.body.classList.add(savedTheme + '-theme');
-      }
+      document.body.classList.add('dark-theme');
     }
 
     // Initialize animations

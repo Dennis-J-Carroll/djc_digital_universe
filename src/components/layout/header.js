@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { Link } from "gatsby"
 import { gsap } from "gsap"
-import { NAV_LINKS as ALL_NAV_LINKS, THEMES } from "../../constants"
+import { NAV_LINKS as ALL_NAV_LINKS } from "../../constants"
 
 // Contact is an inline section on the homepage — exclude from global nav
 const NAV_LINKS = ALL_NAV_LINKS.filter(l => l.id !== 'contact');
@@ -99,9 +99,7 @@ const Header = ({ siteTitle }) => {
     );
 
     if (typeof window !== 'undefined') {
-      const initialTheme = localStorage.getItem('theme') || 'dark';
-      document.body.classList.add(initialTheme + '-theme');
-      setCurrentTheme(initialTheme);
+      document.body.classList.add('dark-theme');
       window.addEventListener("scroll", handleScroll);
       handleScroll();
     }
@@ -111,17 +109,7 @@ const Header = ({ siteTitle }) => {
     };
   }, [handleScroll]);
 
-  const handleThemeChange = (themeId) => {
-    if (typeof window !== 'undefined') {
-      THEMES.forEach(t => document.body.classList.remove(t.id + '-theme'));
-      document.body.classList.add(themeId + '-theme');
-      setCurrentTheme(themeId);
-      localStorage.setItem('theme', themeId);
-      handleScroll();
-    }
-  };
-
-  const isLightBg = currentTheme === 'light' || currentTheme === 'tokyo-afternoon';
+  const isLightBg = false;
 
   const iconStyle = {
     color: isLightBg && isScrolled ? "var(--primary-color)" : "var(--text-secondary)",
@@ -135,19 +123,6 @@ const Header = ({ siteTitle }) => {
     background: isLightBg ? "rgba(200, 195, 185, 0.45)" : "rgba(15, 20, 30, 0.5)",
     backdropFilter: "blur(8px)",
     border: isLightBg ? "1px solid rgba(100, 90, 70, 0.2)" : "1px solid rgba(120, 180, 255, 0.1)",
-  };
-
-  const themeSelectStyle = {
-    background: isLightBg ? "rgba(230, 220, 205, 0.8)" : "rgba(15, 20, 30, 0.6)",
-    backdropFilter: "blur(8px)",
-    border: isLightBg ? "1px solid rgba(100, 90, 70, 0.25)" : "1px solid rgba(120, 180, 255, 0.2)",
-    borderRadius: "8px",
-    color: "var(--text-secondary)",
-    fontSize: "0.8rem",
-    padding: "0.35rem 0.6rem",
-    cursor: "pointer",
-    outline: "none",
-    transition: "border-color 0.2s ease",
   };
 
   return (
@@ -292,19 +267,6 @@ const Header = ({ siteTitle }) => {
                 </a>
               ))}
             </div>
-
-            <select
-              value={currentTheme}
-              onChange={(e) => handleThemeChange(e.target.value)}
-              aria-label="Select theme"
-              style={themeSelectStyle}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--primary-color)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(120,180,255,0.2)"; }}
-            >
-              {THEMES.map((theme) => (
-                <option key={theme.id} value={theme.id}>{theme.name}</option>
-              ))}
-            </select>
           </div>
         )}
 
@@ -403,11 +365,10 @@ const Header = ({ siteTitle }) => {
             </Link>
           ))}
 
-          {/* Socials + theme row */}
+          {/* Socials row */}
           <div style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
             marginTop: "1rem",
             paddingTop: "1rem",
             borderTop: "1px solid rgba(120,180,255,0.1)",
@@ -427,17 +388,6 @@ const Header = ({ siteTitle }) => {
                 </a>
               ))}
             </div>
-
-            <select
-              value={currentTheme}
-              onChange={(e) => { handleThemeChange(e.target.value); }}
-              aria-label="Select theme"
-              style={{ ...themeSelectStyle, fontSize: "0.9rem", padding: "0.5rem 0.75rem" }}
-            >
-              {THEMES.map((theme) => (
-                <option key={theme.id} value={theme.id}>{theme.name}</option>
-              ))}
-            </select>
           </div>
         </div>
       )}
