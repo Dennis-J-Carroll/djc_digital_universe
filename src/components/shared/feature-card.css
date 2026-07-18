@@ -200,6 +200,20 @@ body.light-theme .feature-card-description {
   width: 100%;
 }
 
+/* Centered variant — for a card standing alone rather than in a grid */
+.feature-card-content.centered {
+  text-align: center;
+}
+
+.feature-card-content.centered .feature-card-icon {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feature-card-content.centered .feature-card-links {
+  justify-content: center;
+}
+
 /* Multi-link CTA row (used when a card offers more than one destination) */
 .feature-card-links {
   display: flex;

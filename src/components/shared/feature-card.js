@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "gatsby";
 import "./feature-card.css";
 
-const FeatureCard = ({ title, description, icon, link, links }) => {
+const FeatureCard = ({ title, description, icon, link, links, centered }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
@@ -26,9 +26,9 @@ const FeatureCard = ({ title, description, icon, link, links }) => {
       />
       
       {/* Card content */}
-      <div className="feature-card-content">
+      <div className={`feature-card-content ${centered ? 'centered' : ''}`}>
         {icon && (
-          <motion.div 
+          <motion.div
             initial={{ rotate: 0 }}
             animate={{ rotate: isHovered ? 5 : 0 }}
             className={`feature-card-icon ${isHovered ? 'hovered' : ''}`}
