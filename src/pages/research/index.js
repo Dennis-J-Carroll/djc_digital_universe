@@ -30,18 +30,27 @@ const ExternalLinkIcon = () => (
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const trilogyMeta = {
-  title: "The Frequency Prior Trilogy",
-  description: "Three papers on how GPT-2 Small encodes, amplifies, and yields to training-frequency priors — and what that reveals about the limits of mechanistic intervention.",
+  title: "The Frequency Prior Series",
+  description: "A paper series on how GPT-2 Small encodes, amplifies, and yields to training-frequency priors — and what that reveals about the limits of mechanistic intervention, from attention heads down to SAE features.",
   model: "GPT-2 Small (124M parameters)",
   platform: "TransformerLens — all results from real-model inference",
 }
 
-const tool = {
-  title: "Attn Flow",
-  path: "/apps/attn_flow_web.html",
-  description: "Browser-native attention flow visualizer ported from a C terminal tool. Watch probability mass move through GPT-2's residual stream in real time — particle simulation showing token competition at each layer, color-coded by token identity.",
-  tags: ["Canvas 2D", "GPT-2", "Visualization", "No-install"],
-}
+const tools = [
+  {
+    title: "The Frequency Prior Explorer",
+    path: "/apps/frequency-prior-explorer/",
+    description: "Interactive companion app for the whole series. Walk the Resolution Ladder — heads → directions → SAE features — run simulated causal interventions on real measured data, trace logit-lens trajectories per country, and browse every verified Paper 5 finding with plain-language explainers.",
+    tags: ["React", "Recharts", "SAE Features", "Interactive", "No-install"],
+    featured: true,
+  },
+  {
+    title: "Attn Flow",
+    path: "/apps/attn_flow_web.html",
+    description: "Browser-native attention flow visualizer ported from a C terminal tool. Watch probability mass move through GPT-2's residual stream in real time — particle simulation showing token competition at each layer, color-coded by token identity.",
+    tags: ["Canvas 2D", "GPT-2", "Visualization", "No-install"],
+  },
+]
 
 // ── Animation variants ────────────────────────────────────────────────────────
 
@@ -310,69 +319,100 @@ const ResearchPage = ({ data, location }) => {
             color: 'var(--text-muted, #888)',
             marginBottom: '1rem',
           }}>
-            Companion Tool
+            Companion Tools
           </p>
-          <a
-            href={tool.path}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: 'none', display: 'block' }}
-          >
-            <div
-              style={{
-                background: 'var(--card-bg)',
-                border: '1px solid rgba(120, 180, 255, 0.15)',
-                borderRadius: '12px',
-                padding: '1.5rem 2rem',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(120, 180, 255, 0.35)'
-                e.currentTarget.style.boxShadow = '0 6px 24px rgba(120, 180, 255, 0.07)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(120, 180, 255, 0.15)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', gap: '1rem', flexWrap: 'wrap' }}>
-                <h3 style={{
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  margin: 0,
-                }}>
-                  {tool.title}
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.83rem', color: 'var(--text-secondary, #aaa)' }}>
-                  Open app <ExternalLinkIcon />
-                </div>
-              </div>
-              <p style={{
-                fontSize: '0.9rem',
-                color: 'var(--text-secondary, rgba(255,255,255,0.7))',
-                lineHeight: '1.6',
-                marginBottom: '0.85rem',
-              }}>
-                {tool.description}
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {tool.tags.map(tag => (
-                  <span key={tag} style={{
-                    fontSize: '0.72rem',
-                    padding: '0.15rem 0.55rem',
-                    borderRadius: '4px',
-                    background: 'rgba(120, 180, 255, 0.07)',
-                    color: 'var(--text-secondary, #aaa)',
-                    border: '1px solid rgba(120, 180, 255, 0.13)',
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {tools.map((tool) => (
+              <a
+                key={tool.title}
+                href={tool.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none', display: 'block' }}
+              >
+                <div
+                  style={{
+                    background: 'var(--card-bg)',
+                    border: tool.featured
+                      ? '1px solid rgba(0, 201, 177, 0.3)'
+                      : '1px solid rgba(120, 180, 255, 0.15)',
+                    borderRadius: '12px',
+                    padding: '1.5rem 2rem',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = tool.featured
+                      ? 'rgba(0, 201, 177, 0.55)'
+                      : 'rgba(120, 180, 255, 0.35)'
+                    e.currentTarget.style.boxShadow = tool.featured
+                      ? '0 6px 24px rgba(0, 201, 177, 0.1)'
+                      : '0 6px 24px rgba(120, 180, 255, 0.07)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = tool.featured
+                      ? 'rgba(0, 201, 177, 0.3)'
+                      : 'rgba(120, 180, 255, 0.15)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <h3 style={{
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: 'var(--text-primary)',
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                    }}>
+                      {tool.title}
+                      {tool.featured && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: '600',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '4px',
+                          background: 'rgba(0, 201, 177, 0.12)',
+                          color: 'var(--primary-color)',
+                          border: '1px solid rgba(0, 201, 177, 0.25)',
+                        }}>
+                          New
+                        </span>
+                      )}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.83rem', color: 'var(--text-secondary, #aaa)' }}>
+                      Open app <ExternalLinkIcon />
+                    </div>
+                  </div>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: 'var(--text-secondary, rgba(255,255,255,0.7))',
+                    lineHeight: '1.6',
+                    marginBottom: '0.85rem',
                   }}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </a>
+                    {tool.description}
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    {tool.tags.map(tag => (
+                      <span key={tag} style={{
+                        fontSize: '0.72rem',
+                        padding: '0.15rem 0.55rem',
+                        borderRadius: '4px',
+                        background: 'rgba(120, 180, 255, 0.07)',
+                        color: 'var(--text-secondary, #aaa)',
+                        border: '1px solid rgba(120, 180, 255, 0.13)',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </motion.div>
 
         {/* Code note */}
@@ -405,7 +445,7 @@ export const Head = ({ location }) => (
     title="Research"
     pathname={location.pathname}
     pageType="collection"
-    description="The Frequency Prior Trilogy — three mechanistic interpretability papers on how GPT-2 Small encodes and amplifies training-frequency priors, and the limits of activation steering as a corrective."
+    description="The Frequency Prior Series — mechanistic interpretability papers on how GPT-2 Small encodes and amplifies training-frequency priors, from attention heads down to SAE features, with an interactive explorer app."
   />
 )
 
