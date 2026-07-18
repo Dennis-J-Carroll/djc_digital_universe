@@ -278,6 +278,7 @@ const IndexPage = ({ location }) => {
                 title="The Frequency Prior Series"
                 description="How GPT-2 encodes and yields to training-frequency priors — traced from attention heads down to SAE features. Every result from real-model inference, now explorable in an interactive companion app."
                 icon={<FrequencyIcon />}
+                centered
                 links={[
                   { url: "/research", text: "Read the Research →", internal: true, primary: true },
                   { url: "/apps/frequency-prior-explorer/", text: "Launch the Explorer", internal: false }
