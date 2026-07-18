@@ -56,6 +56,10 @@ const Layout = ({ children, pageContext, location }) => {
     }
   }, []);
 
+  // Homepage sections are full-bleed (each constrains its own inner content),
+  // so <main> must not cage them to the global 1200px max-width.
+  const isHomePage = location?.pathname === "/";
+
   return (
     <>
       <Helmet>
@@ -83,7 +87,7 @@ const Layout = ({ children, pageContext, location }) => {
         <Header siteTitle={siteTitle} currentSection={getCurrentSection()} />
 
         <ErrorBoundary>
-          <main id="main-content" className="relative z-10" style={{ paddingTop: '8rem' }}>{children}</main>
+          <main id="main-content" className={`relative z-10${isHomePage ? " home-full-bleed" : ""}`} style={{ paddingTop: '8rem' }}>{children}</main>
         </ErrorBoundary>
 
         <Footer siteTitle={siteTitle} />

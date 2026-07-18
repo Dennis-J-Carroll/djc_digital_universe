@@ -260,7 +260,7 @@ const IndexPage = ({ location }) => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
               Latest Research
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed text-balance">
               Mechanistic interpretability papers, traced from attention heads down to SAE features.
             </p>
           </motion.div>
@@ -316,7 +316,7 @@ const IndexPage = ({ location }) => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
               Featured Apps
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed text-balance">
               Three standalone interactive apps — open them in any browser, no install required.
             </p>
           </motion.div>
@@ -360,7 +360,7 @@ const IndexPage = ({ location }) => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
               Get In Touch
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed text-balance">
               Have a question, want to collaborate, or just want to say hello? I'd love to hear from you.
             </p>
           </motion.div>

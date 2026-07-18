@@ -34,6 +34,12 @@ main {
   z-index: 10;
 }
 
+/* Homepage sections are full-bleed; each section constrains its own
+   inner content (max-w-6xl mx-auto), so main must span the viewport */
+main.home-full-bleed {
+  max-width: none;
+}
+
 /* Form input styles - ensure dark theme styling */
 input,
 textarea,
