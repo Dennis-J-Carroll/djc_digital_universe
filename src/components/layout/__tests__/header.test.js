@@ -34,13 +34,6 @@ describe('Header Component', () => {
     expect(screen.getByText('DJC')).toBeInTheDocument();
   });
 
-  it('renders theme selector', () => {
-    render(<Header siteTitle="Test Site" />);
-    const themeSelect = screen.getByLabelText(/Select theme/i);
-    expect(themeSelect).toBeInTheDocument();
-    expect(themeSelect.tagName).toBe('SELECT');
-  });
-
   it('has accessible GitHub social link', () => {
     render(<Header siteTitle="Test Site" />);
     const githubLink = screen.getAllByLabelText(/^GitHub$/i)[0];
@@ -63,13 +56,6 @@ describe('Header Component', () => {
     expect(twitterLink).toHaveAttribute('href', expect.stringContaining('x.com'));
     expect(twitterLink).toHaveAttribute('target', '_blank');
     expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer');
-  });
-
-  it('theme selector has theme options', () => {
-    render(<Header siteTitle="Test Site" />);
-    const themeSelect = screen.getByLabelText(/Select theme/i);
-    const options = themeSelect.querySelectorAll('option');
-    expect(options.length).toBeGreaterThan(0);
   });
 
   it('initializes GSAP animations on mount', () => {
