@@ -342,46 +342,6 @@ const IndexPage = ({ location }) => {
         </div>
       </motion.section>
 
-      {/* Research Pointer Section */}
-      <motion.section
-        className="research-pointer py-20 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-gray-900/90 to-black relative overflow-hidden"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-      >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl" />
-        </div>
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <motion.span
-            className="inline-block text-sm uppercase tracking-widest text-teal-400 mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            Research
-          </motion.span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            The Frequency Prior Series
-          </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed mb-10">
-            Mechanistic interpretability papers on how GPT-2 encodes and yields to
-            training-frequency priors — traced from attention heads down to SAE features.
-            Every result from real-model inference, now explorable in an interactive companion app.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/research" className="glow-on-hover btn btn-primary-enhanced">
-              Read the Research →
-            </Link>
-            <a href="/apps/frequency-prior-explorer/" className="glow-on-hover btn btn-secondary">
-              Launch the Explorer
-            </a>
-          </div>
-        </div>
-      </motion.section>
-
       {/* Contact Section */}
       <motion.section
         id="contact"
