@@ -913,7 +913,6 @@ body.tokyo-afternoon-theme .blog-post-card p {
 /* Contact Section Styles */
 .contact-section {
   padding: 6rem 2rem;
-  background: linear-gradient(to bottom, #0f1419, #0a0e14);
   position: relative;
   overflow: hidden;
 }
