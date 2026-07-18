@@ -38,7 +38,7 @@ const ResearchPaperTemplate = ({ data, children, pageContext }) => {
           </Link>
           <span>›</span>
           <span style={{ color: "var(--primary-color)", opacity: 0.7 }}>
-            {frontmatter.series || "The Frequency Prior Trilogy"}
+            {frontmatter.series || "The Frequency Prior Series"}
           </span>
           {frontmatter.seriesNumber && (
             <>
