@@ -200,6 +200,25 @@ body.light-theme .feature-card-description {
   width: 100%;
 }
 
+/* Multi-link CTA row (used when a card offers more than one destination) */
+.feature-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 480px) {
+  .feature-card-links {
+    flex-direction: column;
+  }
+
+  .feature-card-links a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 /* Hover state for the card - enhanced */
 .feature-card:hover {
   transform: translateY(-10px);
