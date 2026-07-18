@@ -52,9 +52,9 @@ describe('Research Hub Page', () => {
     expect(screen.getByTestId('layout')).toBeInTheDocument();
   });
 
-  it('shows the trilogy title', () => {
+  it('shows the series title', () => {
     render(<ResearchPage data={mockData} location={mockLocation} />);
-    expect(screen.getByText(/The Frequency Prior Trilogy/i)).toBeInTheDocument();
+    expect(screen.getByText(/The Frequency Prior Series/i)).toBeInTheDocument();
   });
 
   it('renders a card per paper using cardTitle', () => {

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "gatsby";
 import "./feature-card.css";
 
-const FeatureCard = ({ title, description, icon, link }) => {
+const FeatureCard = ({ title, description, icon, link, links }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
@@ -47,16 +48,40 @@ const FeatureCard = ({ title, description, icon, link }) => {
         </p>
         
         {link && (
-          <motion.a 
-            href={link.url} 
+          <motion.a
+            href={link.url}
             className="read-more-link"
-            whileHover={{ 
+            whileHover={{
               x: 5,
               textShadow: "0 0 8px rgba(0, 128, 128, 0.7)"
             }}
           >
             {link.text || "View More →"}
           </motion.a>
+        )}
+
+        {links && links.length > 0 && (
+          <div className="feature-card-links">
+            {links.map((item, i) =>
+              item.internal ? (
+                <Link
+                  key={i}
+                  to={item.url}
+                  className={`glow-on-hover btn ${item.primary ? "btn-primary-enhanced" : "btn-secondary"}`}
+                >
+                  {item.text}
+                </Link>
+              ) : (
+                <a
+                  key={i}
+                  href={item.url}
+                  className={`glow-on-hover btn ${item.primary ? "btn-primary-enhanced" : "btn-secondary"}`}
+                >
+                  {item.text}
+                </a>
+              )
+            )}
+          </div>
         )}
       </div>
     </motion.div>
