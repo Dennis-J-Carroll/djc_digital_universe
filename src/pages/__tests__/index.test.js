@@ -26,6 +26,13 @@ jest.mock("../../components/shared/space-background", () => {
   }
 })
 
+// Mock InteractiveCube component
+jest.mock("../../components/shared/interactive-cube", () => {
+  return function InteractiveCube() {
+    return <div data-testid="interactive-cube" />
+  }
+})
+
 // Mock HeroText component
 jest.mock("../../components/shared/hero-text", () => {
   return function HeroText({ title, description }) {

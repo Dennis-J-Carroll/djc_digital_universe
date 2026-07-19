@@ -7,6 +7,7 @@ import FeatureCard from "../components/shared/feature-card"
 import { motion } from "framer-motion"
 
 const SpaceBackground = lazy(() => import("../components/shared/space-background"))
+const InteractiveCube = lazy(() => import("../components/shared/interactive-cube"))
 
 // App preview icons — abstract hints of each app's aesthetic
 const HypersphereIcon = () => (
@@ -199,36 +200,16 @@ const IndexPage = ({ location }) => {
                 </Link>
               </motion.div>
 
-              {/* Scroll Indicator */}
+              {/* Interactive cube — drag to spin */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
                 className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
               >
-                <motion.div
-                  animate={{
-                    y: [0, 10, 0],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="w-6 h-10 border-2 border-teal-500/50 rounded-full flex justify-center p-1"
-                >
-                  <motion.div
-                    animate={{
-                      height: ["20%", "30%", "20%"],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="w-1 bg-teal-500 rounded-full"
-                  />
-                </motion.div>
+                <Suspense fallback={null}>
+                  <InteractiveCube />
+                </Suspense>
               </motion.div>
             </div>
           </div>
