@@ -951,7 +951,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     for (let i = 0; i < mainCount; i++) {
       const baseAngle = (i / mainCount) * Math.PI * 2;
       const angle = baseAngle + (Math.random() - 0.5) * 0.35;
-      const length = Math.max(W, H) * 0.45 + Math.random() * Math.max(W, H) * 0.3;
+      const length = Math.max(W, H) * 0.4 + Math.random() * Math.max(W, H) * 0.2;
       segs.push(...makeCrack(cx, cy, angle, length, 0, 2));
     }
     for (let ring = 0; ring < 3; ring++) {
@@ -964,14 +964,14 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
       }
     }
     // Secondary bursts spread across the whole viewport so the effect
-    // reads everywhere, not just around the center
+    // reads everywhere, not just around the center — kept sparse on
+    // purpose (density costs GPU)
     const bursts = [
       [W * 0.12, H * 0.16], [W * 0.86, H * 0.20],
-      [W * 0.25, H * 0.58], [W * 0.74, H * 0.62],
       [W * 0.14, H * 0.86], [W * 0.84, H * 0.84],
     ];
     for (const [bx, by] of bursts) {
-      const branches = 4 + Math.floor(Math.random() * 2);
+      const branches = 3;
       const baseAngle = Math.random() * Math.PI * 2;
       for (let i = 0; i < branches; i++) {
         const angle = baseAngle + (i / branches) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
@@ -1122,6 +1122,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   const MIN_BASE_ALPHA = 0.28;
   let generations      = [];
   let lastCycle        = 0;
+  let lastFrame        = 0;
 
   function addGeneration(ts) {
     const segs = buildCrackSegs();
@@ -1146,31 +1147,31 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
       // Pass 1: main crack lines — all segments in one draw call
       batchSegs(gen.segs);
-      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.52 * a})`;
+      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.36 * a})`;
       ctx.lineWidth = 1;
-      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 8;
+      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 6;
       ctx.stroke();
       ctx.shadowBlur = 0;
 
       // Pass 2: thin glow layer — same segs, lighter
       batchSegs(gen.segs);
-      ctx.strokeStyle = `rgba(${tc().glowRgb},${0.18 * a})`;
+      ctx.strokeStyle = `rgba(${tc().glowRgb},${0.12 * a})`;
       ctx.lineWidth = 0.5;
       ctx.shadowColor = `rgb(${tc().glowRgb})`; ctx.shadowBlur = 4;
       ctx.stroke();
       ctx.shadowBlur = 0;
 
       // Pass 3: wide pulsing glow — 30-segment subset only
-      const glowN = Math.min(gen.segs.length, 30);
+      const glowN = Math.min(gen.segs.length, 20);
       const step  = Math.max(1, Math.floor(gen.segs.length / glowN));
       ctx.beginPath();
       for (let i = 0; i < glowN; i++) {
         const s = gen.segs[i * step];
         if (s) { ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); }
       }
-      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.11 * pulse * a})`;
+      ctx.strokeStyle = `rgba(${tc().crackRgb},${0.08 * pulse * a})`;
       ctx.lineWidth = 3;
-      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 18;
+      ctx.shadowColor = `rgb(${tc().crackRgb})`; ctx.shadowBlur = 12;
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
@@ -1180,6 +1181,10 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   const REVEAL_DUR = 2400;
 
   function draw(ts) {
+    requestAnimationFrame(draw);
+    if (ts - lastFrame < 33) return; // ~30fps cap — halves GPU load, invisible for slow cracks
+    lastFrame = ts;
+
     if (!startTime) {
       startTime = ts;
       lastCycle  = ts;
@@ -1222,8 +1227,6 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
       lastAutoSpawn = ts;
       spawnAutoCrack(ts);
     }
-
-    requestAnimationFrame(draw);
   }
 
   // ── FULL REBUILD (resize / theme change) ─────────────────────
