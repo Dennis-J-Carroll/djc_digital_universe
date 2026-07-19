@@ -162,7 +162,7 @@ const IndexPage = ({ location }) => {
         <Suspense fallback={null}>
           <SpaceBackground />
         </Suspense>
-        <div className="min-h-screen bg-gradient-to-b from-gray-900/90 via-gray-900/70 to-gray-900/90 text-white w-full">
+        <div className="min-h-screen text-white w-full">
           <div className="home-container max-w-6xl mx-auto px-4 py-12 relative z-10">
             {/* Hero Content */}
             <div className="flex flex-col min-h-[80vh] justify-center">

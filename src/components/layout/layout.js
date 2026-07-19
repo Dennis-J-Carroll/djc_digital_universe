@@ -71,7 +71,7 @@ const Layout = ({ children, pageContext, location }) => {
       {/* Interactive Cursor Effect */}
       <InteractiveCursor />
 
-      <div className="site-wrapper min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      <div className={`site-wrapper min-h-screen bg-gradient-to-b from-gray-900 to-black text-white${isHomePage ? " home-dark-bg" : ""}`}>
         {/* Skip to main content link for accessibility */}
         <a href="#main-content" className="skip-link">
           Skip to main content

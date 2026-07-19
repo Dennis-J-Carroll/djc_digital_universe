@@ -21,7 +21,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  background-color: var(--background-dark);
+  background-color: var(--bg-primary, #0a0e14);
   color: var(--text-primary);
   line-height: 1.6;
 }
@@ -39,6 +39,12 @@ main {
    inner content (max-w-6xl mx-auto), so main must span the viewport */
 main.home-full-bleed {
   max-width: none;
+}
+
+/* Homepage uses one flat dark background everywhere — no per-section
+   gradients or hero overlay tint, so no visible seams between sections */
+.site-wrapper.home-dark-bg {
+  background: var(--bg-primary, #0a0e14);
 }
 
 /* Form input styles - ensure dark theme styling */
