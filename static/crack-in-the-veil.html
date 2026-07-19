@@ -963,16 +963,20 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
         segs.push(...makeArcCrack(cx, cy, r + Math.random() * 18 - 9, a1, a2));
       }
     }
-    // Satellite bursts near the edges so the corners aren't bare
-    const satellites = [
-      [W * 0.12, H * 0.18], [W * 0.88, H * 0.22],
-      [W * 0.15, H * 0.82], [W * 0.85, H * 0.78],
+    // Secondary bursts spread across the whole viewport so the effect
+    // reads everywhere, not just around the center
+    const bursts = [
+      [W * 0.12, H * 0.16], [W * 0.86, H * 0.20],
+      [W * 0.25, H * 0.58], [W * 0.74, H * 0.62],
+      [W * 0.14, H * 0.86], [W * 0.84, H * 0.84],
     ];
-    for (const [sx, sy] of satellites) {
-      for (let i = 0; i < 3; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const length = Math.min(W, H) * 0.22 + Math.random() * Math.min(W, H) * 0.18;
-        segs.push(...makeCrack(sx, sy, angle, length, 0, 2));
+    for (const [bx, by] of bursts) {
+      const branches = 4 + Math.floor(Math.random() * 2);
+      const baseAngle = Math.random() * Math.PI * 2;
+      for (let i = 0; i < branches; i++) {
+        const angle = baseAngle + (i / branches) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        const length = Math.min(W, H) * 0.20 + Math.random() * Math.min(W, H) * 0.22;
+        segs.push(...makeCrack(bx, by, angle, length, 0, 2));
       }
     }
     return segs;
