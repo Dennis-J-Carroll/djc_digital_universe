@@ -237,7 +237,7 @@ const IndexPage = ({ location }) => {
 
       {/* Research Pointer Section */}
       <motion.section
-        className="research-pointer py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-gray-900/90 to-black relative overflow-hidden"
+        className="research-pointer py-24 px-4 md:px-8 lg:px-16 relative overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-10%" }}
@@ -287,17 +287,12 @@ const IndexPage = ({ location }) => {
 
       {/* Featured Work Section */}
       <motion.section
-        className="featured-work py-24 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-black via-gray-900/95 to-gray-900/90 relative overflow-hidden"
+        className="featured-work py-24 px-4 md:px-8 lg:px-16 relative overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-10%" }}
         variants={containerVariants}
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-0 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl" />
-        </div>
 
         <div className="max-w-6xl mx-auto relative z-10">
           <motion.div

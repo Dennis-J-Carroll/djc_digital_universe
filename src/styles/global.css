@@ -3,11 +3,12 @@
 
 /* CSS Variables — canonical values live in futuristic-ui.css :root */
 
-/* Reset and base styles */
+/* Reset and base styles — margins/paddings are already zeroed by Tailwind's
+   preflight (@layer base). An unlayered * { margin: 0 } outranks layered
+   utilities like mx-auto, which silently disabled every Tailwind spacing
+   utility site-wide. */
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
