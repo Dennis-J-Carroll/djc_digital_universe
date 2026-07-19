@@ -10,6 +10,18 @@
     />
     <script type="module" crossorigin src="./assets/index-B4Xn68nc.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-7agWfgXB.css">
+    <style>
+      /* The tab strip's content width breathes ±2px across its overflow
+         threshold, so the horizontal scrollbar kept mounting/unmounting —
+         a 10px layout jump each time. Scroll still works (drag/touch),
+         just don't render the bar. */
+      nav.overflow-x-auto {
+        scrollbar-width: none;
+      }
+      nav.overflow-x-auto::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
