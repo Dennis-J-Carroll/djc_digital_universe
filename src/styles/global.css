@@ -41,9 +41,9 @@ main.home-full-bleed {
   max-width: none;
 }
 
-/* Homepage uses one flat dark background everywhere — no per-section
-   gradients or hero overlay tint, so no visible seams between sections */
-.site-wrapper.home-dark-bg {
+/* One flat dark background site-wide — no per-page gradients,
+   so no visible seams as sections scroll by */
+.site-wrapper {
   background: var(--bg-primary, #0a0e14);
 }
 

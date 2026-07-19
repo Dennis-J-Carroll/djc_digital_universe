@@ -71,14 +71,17 @@ const Layout = ({ children, pageContext, location }) => {
       {/* Interactive Cursor Effect */}
       <InteractiveCursor />
 
-      <div className={`site-wrapper min-h-screen bg-gradient-to-b from-gray-900 to-black text-white${isHomePage ? " home-dark-bg" : ""}`}>
+      <div className="site-wrapper min-h-screen text-white">
         {/* Skip to main content link for accessibility */}
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
 
-        {/* Lazy load space background for better performance */}
-        {getCurrentSection() !== "home" && (
+        {/* Lazy load space background for better performance — every page
+            except the homepage, which mounts its own inside the hero.
+            (getCurrentSection() must not gate this: it has no /research case,
+            so the research page was silently losing the particle canvas.) */}
+        {!isHomePage && (
           <Suspense fallback={<div className="space-background-placeholder" />}>
             <SpaceBackground />
           </Suspense>
