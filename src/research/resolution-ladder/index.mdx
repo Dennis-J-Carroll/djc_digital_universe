@@ -1,0 +1,217 @@
+---
+title: "The Resolution Ladder: Where GPT-2's Frequency Bias Finally Comes Apart — and Where It Still Won't"
+description: "Twice this series tried to separate frequency bias from factual retrieval and twice it failed — at the head level and at the direction level. This paper tries the last knife: pretrained SAE features. The surgery works — for exactly one slice of the problem. The bias is not one phenomenon at one resolution; it comes apart rung by rung, and the hardest case has now survived every rung."
+date: "2026-07-17"
+series: "The Frequency Prior Series"
+seriesNumber: 5
+seriesPrev: "/research/morphology-circuit/"
+seriesNext: null
+status: "live"
+tags: ["mechanistic-interpretability", "gpt-2", "sparse-autoencoders", "sae-features", "causal-ablation", "negative-results"]
+cardTitle: "The Resolution Ladder"
+tagline: "The bias comes apart — one rung at a time"
+order: 5
+cardDescription: "Heads couldn't separate bias from retrieval (Papers 2, 4). Directions couldn't either (Papers 2, 3). SAE features — the finest lens available — finally do it: currency-demonym errors sign-flip under a 3-feature ablation with zero collateral. But only that slice. The semantic early-dominance cases survive every resolution tried across five papers, and India actively backfires under the fix."
+highlights:
+  - "First bias–retrieval separation in the series: currency-demonym errors sign-flip under 3-feature SAE ablation (Denmark, Sweden, Norway genuinely corrected)"
+  - "The separation is scoped: currencies-only — the same features have literally zero effect on language-domain demonyms"
+  - "Semantic early-dominance is unreached at every rung — heads, directions, features — and India backfires (+0.96) under the intervention meant to fix it"
+  - "The causal features are not the geometric direction (avg |cos| ≈ 0.12): levers and signatures are different objects"
+---
+
+*Paper 5 of the Frequency Prior Series. Model: GPT-2 Small (124M, 12 layers, 768-d residual stream). SAEs: pretrained `gpt2-small-res-jb` (SAELens), ~24,576 features per layer. Platform: TransformerLens — all results from real-model inference. Every finding in this paper is also browsable interactively in [the Frequency Prior Explorer](/apps/frequency-prior-explorer/).*
+
+---
+
+## I. The Hook
+
+This series has hit the same wall twice. *[Steering the Prior](/research/steering-the-prior/)* (Paper 2) tried to remove the frequency bias by ablating the retrieval heads and sent every capital to "London" — bias and retrieval are inseparable at the **head** level. It then tried a single steering direction and mostly failed; *[Frequency in All Directions](/research/frequency-direction/)* (Paper 3) explained why — there is no single frequency direction, the prior is clustered geometry — so separation fails at the **direction** level too. *[The Morphology Circuit That Isn't](/research/morphology-circuit/)* (Paper 4) confirmed the wall a third time with a third intervention: the amplification heads are load-bearing for retrieval itself.
+
+One knife has not been tried. Sparse autoencoder features decompose each layer's residual stream into ~24,576 learned directions instead of one — the finest-grained causal handles currently available for this model. The question, pre-registered with four publishable outcomes before any experiment ran: **is the frequency override carried by identifiable SAE features that can be ablated without destroying retrieval?**
+
+The answer is the most structured result in the series. **The surgery works — for exactly one slice of the problem.**
+
+**Five findings, stated upfront:**
+
+**One — the first successful separation, anywhere in the series.** Delta-mode ablation of three L11 SAE features **sign-flips** the currency-demonym errors: Denmark, Sweden, and Norway — items where GPT-2 Small answers "Danish"/"Swedish"/"Norwegian" instead of the currency — are *genuinely corrected* (Denmark's attractor margin: +1.52 → −1.35). The effect is dose-monotone across five ablation strengths, cross-class collateral is zero (−0.009), control accuracy stays at 100% in every arm, and neutral-text perplexity is untouched. Five papers of interventions, and this is the first one that removes a bias while leaving retrieval standing.
+
+**Two — the scope *is* the finding.** The separation is **currencies-only**. The same demonym feature set has literally zero effect — exact-zero, not small — on the language-domain demonym items (Brazil, Egypt): the features do not fire on those prompts at all. And the semantic (capitals) side splits precisely along Paper 1's failure-mode taxonomy: **late-override** items (Australia, Canada) are moderately suppressed (mean −0.385, a real partial win), while **early-dominance** items net to zero — and inside that zero, **India backfires at +0.962**. Ablating the semantic bias feature makes India's Mumbai error *worse*.
+
+**Three — the sharpest negative: the semantic override is not feature-localizable at its anchor layer.** At L9 — the decisive depth where Paper 1's crossovers happen — the discovery scan found **no** semantic candidate feature at all. Not a thin set: an empty one. And it stays empty under an augmented scan that removes the control-diff filter which could have hidden entangled features (121 candidates causally tested, max effect 0.27, mostly ≈ 0). Whatever carries the semantic-prominence override at the layer where it acts, it is not a single SAE feature in this dictionary.
+
+**Four — the causal levers are not the geometric signature.** Paper 3 found the prior's geometry: clustered domain vectors, bridged by the demonym direction. The features that causally move the behavior are largely **orthogonal** to those directions — average |cosine| ≈ 0.12, roughly the random baseline. A feature can be a lever on a phenomenon whose geometric signature lives elsewhere. Selective couplings exist (feature 306 ↔ currencies vector: −0.447) but the levers and the directions are different objects.
+
+**Five — the pre-registered quantitative bar was not met, and that is reported plainly.** The formal dissociation verdict against the pre-registered 1.0-logit threshold is **inconclusive** — no arm's own-class mean clears 1.0 (best: −0.910). The qualitative evidence — sign-flips on the genuinely biased items, dose-monotonicity, zero cross-talk, bounded KL, intact controls — is the substantive headline, but the number I committed to in advance was not reached, and the honest framing keeps both statements side by side.
+
+The organizing picture is a **resolution ladder**: head → direction → feature, each rung a strictly finer lens on the same phenomenon. Each rung peels off the part of the bias that is separable at that resolution. Currency-demonym needed the feature rung. Semantic late-override partially yields at the same rung. Semantic early-dominance — India, Switzerland, South Africa — has now survived *every* rung, across five papers, and finer resolution does not merely fail on it: it backfires.
+
+---
+
+## II. Background
+
+Four papers, one circuit, two failed separations:
+
+*[Frequency Wins](/research/frequency-wins/)* mapped the frequency-amplification heads (L8H11, L9H8, L10H0) that override factual capitals with famous cities, split the errors into early-dominance and late-override modes, and showed the bias clears by 1.5B parameters.
+
+*[Steering the Prior](/research/steering-the-prior/)* delivered the head-level and direction-level negatives: ablating the heads collapses all retrieval; a single L8 steering direction cannot remove the bias without breaking the model.
+
+*[Frequency in All Directions](/research/frequency-direction/)* generalized the phenomenon to languages and currencies, found the demonym attractor, and showed the prior's geometry is clustered — anti-aligned domains (languages ↔ currencies cos ≈ −0.39) bridged by the demonym vector.
+
+*[The Morphology Circuit That Isn't](/research/morphology-circuit/)* showed demonym and semantic attractors ride the identical heads (effect-vector cosine 0.90), with the only dissociation one level down at the attention edge — and reconfirmed that head ablation cannot cut bias out of retrieval.
+
+Entanglement has recurred so consistently that it looks like a structural property of the architecture, not an accident of any one method. Paper 5 asks whether the finest available decomposition finally changes that — with all four outcomes pre-registered as publishable, including "features are entangled too" (a clean three-level impossibility) and "SAEs aren't faithful enough to test" (a methods note).
+
+---
+
+## III. Methods
+
+**SAEs and hook space.** Pretrained residual-stream SAEs (`gpt2-small-res-jb`) at `hook_resid_pre`, layers 6–11. One alignment fact does real work: `resid_pre` at layer 9 is the same activation as `resid_post` at layer 8 — Papers 2–4's hook space — so the L9 SAE reads exactly the stream the earlier papers steered.
+
+**Delta-mode ablation.** All causal claims use `r' = r − decode(acts) + decode(acts_mod)`, where `acts_mod` zeroes or scales the selected features. At scale 1 this is an exact identity; it only ever substitutes the SAE's own reconstruction of the targeted features, never the raw stream, so SAE lossiness is not directly load-bearing for the causal results. Full-reconstruction splicing is used in exactly one place: the fidelity gate.
+
+**Exp 5.0 — fidelity gate.** Splice `decode(encode(r))` at each layer; require winner-retention ≥ 0.8 and intact controls. Pre-registered tripwire for outcome 4.
+
+**Exp 5.1 — discovery.** Two stages per layer per class: an activation-difference shortlist against matched controls (top-40), then a **single-feature causal scan** — each candidate individually ablated, admitted only if it moves the attractor margin by ≥ 0.25 on ≥ 2 items. Leave-one-out variants guard against selection circularity. Exp 5.1b re-scans with the control filter removed, to check the filter wasn't hiding entangled features.
+
+**Exp 5.2 — the 2×2 grid.** At the gate-passing layer: ablate demonym features / semantic features × measure demonym items / semantic items, across dose scale ∈ `{1, .75, .5, .25, 0}`. Guards: control accuracy, neutral-text perplexity, and per-item KL divergence of the full output distribution. Two null arms — **activity-matched** random features (features that actually fire on the error prompts, excluding known hits), because uniformly-random features turn out to be dead on any given prompt and make delta-mode a no-op. The vacuous-null trap was caught in verification and the null redesigned; feature sparsity is prompt-local enough that a fair null must be activity-matched.
+
+**Exp 5.3 — geometry tie-back.** Cosines between causal features' decoder rows and Paper 3's domain vectors — L9 features against the original P3 bank, L11 features against a freshly derived L11 bank, because cosines only mean anything within one layer's space.
+
+**Metric throughout:** attractor-minus-answer logit difference at the final token (Papers 1–4's metric). All experiments at n=1. Every scan checkpointed; all numbers below recomputed from the result CSVs by an independent verification pass.
+
+---
+
+## IV. The Fidelity Gate — a Caveat Before Anything Else
+
+| Layer | Winner retention | Control acc | Gate (≥ 0.8) |
+|---|---:|---:|:---:|
+| 6 | 0.692 | 0.933 | fail |
+| 7 | 0.769 | 0.867 | fail |
+| 8 | 0.769 | 1.000 | fail |
+| 9 | 0.769 | 1.000 | fail |
+| 10 | 0.692 | 1.000 | fail |
+| 11 | **0.846** | 0.933 | **pass** |
+
+Full-reconstruction splicing fails the pre-registered floor at L6–L10; only **L11** passes. The verifier's ruling — proceed with caveat — rests on two facts: the L9 flips are confined to marginal items (base margins between 0.73 and 1.08; every item above 1.3 and all fifteen controls are stable), and delta-mode never splices the full reconstruction anyway. But it means the headline grid runs at L11, *above* the L8–L10 circuit of Papers 1 and 4 — a real limitation carried honestly through everything below. L9 results, where cited, wear this caveat.
+
+---
+
+## V. Discovery — Including an Empty Set That Matters
+
+| Layer | Class | Candidate features | Note |
+|---|---|---|---|
+| L9 | demonym | `{9823}` | fragile: needs both its supporting items; drops out under leave-one-out |
+| L9 | semantic | **none** | empty under the standard scan *and* the filter-free rescan (121 candidates causally tested) |
+| L11 | demonym | `{18106, 306, 7776}` | 306 survives a stricter criterion alone; 18106 is thin (2 items) |
+| L11 | semantic | `{12023}` | robust: present under every leave-one-out variant |
+
+Cross-class overlap is **zero at both layers** — no feature is a candidate for both attractor classes. That disjointness is a necessary condition for separation that heads (Paper 4: identical top-3) catastrophically failed.
+
+The L9-semantic empty set is the paper's sharpest negative. The one layer where the semantic override demonstrably acts — Paper 1's crossover depth — offers no single-feature handle on it, even when the filter that could structurally hide entangled features is removed. The semantic-prominence bias is not feature-localizable at its anchor layer, in this dictionary, by this method.
+
+---
+
+## VI. The Grid (Centerpiece)
+
+Mean effect at full ablation (scale 0), own-class vs cross-class:
+
+| Arm | Own-class Δ | Cross-class Δ | KL (mean) |
+|---|---:|---:|---:|
+| demonym (all 3 features) | **−0.910** | −0.009 | 0.046 |
+| demonym (robust subset) | −0.626 | −0.009 | 0.028 |
+| semantic (`{12023}`) | −0.149 | 0.000 | 0.043 |
+| null: 3 activity-matched random | 0.000 | −0.012 | 0.00004 |
+| null: feature 2075 | −0.011 | −0.013 | 0.040 |
+
+All real arms are dose-monotone and identity-exact at scale 1; control accuracy is 1.0 everywhere; neutral-text perplexity shift is ≈ 0 in every arm — the features simply do not fire on neutral text, a prompt-locality result in its own right.
+
+**Per-item, demonym arm** — where the headline lives and where it ends:
+
+| Item | Domain | Base Δ | Ablated Δ | Reading |
+|---|---|---:|---:|---|
+| Denmark | currencies | +1.516 | −1.345 | **sign-flip — corrected** |
+| Sweden | currencies | +0.163 | −1.430 | **sign-flip** |
+| Norway | currencies | +1.084 | −0.309 | **sign-flip** |
+| Hungary | currencies | +5.523 | +5.276 | weak (already euro-dominated, per Paper 3) |
+| Czechia | currencies | −1.296 | −2.413 | negative-base item (n=1 quirk from P3 screening) |
+| Switzerland (curr.) | currencies | −0.872 | −0.941 | negative-base item |
+| Brazil | languages | +0.543 | +0.543 | **exact-zero engagement** |
+| Egypt | languages | +0.729 | +0.729 | **exact-zero engagement** |
+
+Six of eight items are currencies; both language-domain items show *literally no response* — the features are inactive on those prompts. Excluding the two negative-base items (inherited from Paper 3's screening, not genuine errors at n=1) strengthens the currencies mean to **−1.016**. The separation is real, and it is a *currencies-domain* separation, not a demonym-class one. Paper 4 showed demonym and semantic attractors share one circuit; Paper 5 shows that even within the demonym class, the *feature-level implementation* fractures by domain.
+
+**The semantic arm splits exactly along Paper 1's failure modes:**
+
+| Failure mode | Items | Mean Δ |
+|---|---|---:|
+| late_override | Australia (−0.421), Canada (−0.348) | **−0.385** — real suppression |
+| early_dominance | India (**+0.962**), Switzerland (−0.772), S. Africa (−0.167) | +0.008 — net null hiding a backfire |
+
+Paper 1 typed these errors by *when* they resolve; Paper 2 found late-override steerable and early-dominance not; the same taxonomy now predicts feature-level separability. And India — the series' original bug, the case that started all five papers — gets **worse** when the semantic bias feature is removed. For early-dominance, finer resolution doesn't just fail to help; it points the wrong way.
+
+**The nulls earn their keep.** The 3-feature activity-matched null is a true null: nothing moves, KL ≈ 0.00004 — three orders of magnitude below the real arms, which also validates that delta-mode itself is inert when it should be. But the 1-feature null, **feature 2075**, is *not* null: KL 0.040 — real-arm magnitude — with near-zero logit-diff movement and intact controls. Something that perturbs the whole output distribution without touching this task's specific margin. Its geometry (below) makes it stranger.
+
+---
+
+## VII. Geometry — The Lever Is Not the Signature
+
+Are the causal features made of Paper 3's directions? **No.** Average |cosine| between demonym causal features and the demonym bank vector: **≈ 0.12** — indistinguishable from random. The features that ablate the behavior are not the direction that geometrically encodes the bias.
+
+What does exist is selective structure:
+
+| Pair | cos |
+|---|---:|
+| feature 306 ↔ currencies vector | **−0.447** |
+| feature 2075 ↔ languages vector | +0.369 |
+| feature 2075 ↔ feature 306 | +0.364 |
+
+The strongest causal feature (306) anti-aligns with the currencies domain vector specifically — consistent with its currencies-only causal footprint. And the anomalous 2075 couples to the languages domain and to 306, hinting at an upstream or shared role (an open thread, not a claim).
+
+Paper 3's bank geometry itself replicates at L11 in a freshly derived bank: languages ↔ currencies stays anti-aligned (−0.39 → −0.40), and the currencies ↔ demonym coupling *strengthens* with depth (0.57 → 0.72) — the two domains this paper found causally fused at the feature level are the two whose directions converge going up the stack.
+
+The second-order lesson: **causal isolation does not imply geometric identity.** A feature can be a working lever on a phenomenon whose difference-of-means signature lives elsewhere in the space. Papers 2 and 3 searched for the bias as a *direction*; this paper found handles that work while being orthogonal to that direction. Both objects are real. They are not the same object.
+
+---
+
+## VIII. The Resolution Ladder
+
+None of the four pre-registered outcomes fired cleanly. What happened is a refined outcome 2 — partial separation — but the partition is finer than "demonym separates, semantic doesn't":
+
+1. **Currency-demonym override** — separates at the feature rung. Sign-flips, dose-monotone, zero collateral. The series' first successful surgery.
+2. **Language-demonym override** — zero feature engagement. Same attractor class, different domain, no purchase at all.
+3. **Semantic late-override** (Australia, Canada) — partially separates at the feature rung (−0.385).
+4. **Semantic early-dominance** (India, Switzerland, South Africa) — separated by *nothing*: not heads (Papers 1/2/4), not directions (Papers 2/3), not features (this paper). India backfires under the attempt.
+
+Head → direction → feature is a strictly increasing sequence of resolutions on one phenomenon, and each rung peels off what is separable at that grain. The ladder's floor — early-dominance, the errors Paper 1 found baked into the embedding itself — has now survived every lens this program can build. Whether any decomposition reaches it (cross-layer feature circuits; attention-conditioned features) is the open question this paper leaves for a Paper 6.
+
+---
+
+## IX. What This Means
+
+**For the series' central claim.** "Bias and retrieval are inseparable" — the recurring wall of Papers 2 and 4 — was resolution-bounded, not absolute. At sufficient granularity, part of the bias *is* separable, cleanly, with a three-feature ablation. But the part that separates was never the hard part. The taxonomy Paper 1 introduced on day one — early-dominance vs late-override — turns out to be the load-bearing distinction at every subsequent level: it predicted steerability in Paper 2, and it predicts feature-separability here. The frequency prior is not one mechanism; it is a family of mechanisms that happen to share a circuit (Paper 4) while fracturing by domain and failure mode at the feature level (this paper).
+
+**For SAE methodology.** Two cautionary results worth carrying beyond this series. First, the vacuous-null trap: uniformly random SAE features are dead on any specific prompt, which silently turns delta-mode nulls into no-ops — null arms must be activity-matched. Second, the lever/signature distinction: finding a causally effective feature tells you nothing about whether it aligns with the phenomenon's difference-of-means geometry. Ours don't.
+
+**The honest framing.** The pre-registered quantitative verdict is inconclusive; the qualitative result — three genuine sign-flip corrections with zero collateral, against a true null at KL 0.00004 — is the strongest intervention result in the series. Both are true. The fidelity gate failed at five of six layers and forced the headline to a layer above the known circuit. The most confident finding is an empty set. This is what a qualified win looks like when the failure modes are characterized precisely instead of averaged away.
+
+---
+
+## X. Limitations
+
+1. **The headline lives at L11**, above the L8–L10 circuit of Papers 1/4 — the fidelity gate blocked the anchor layer, so the feature-level result cannot be tied to the shared-head circuit by construction (a forward pass from an L11 splice never reaches those heads).
+2. **The pre-registered 1.0-logit dissociation threshold was not met** by any arm; the sign-flip reading is the substantive result, the formal verdict is inconclusive.
+3. **Thin item counts.** 8 demonym / 5 semantic items; per-slice subsets are thinner still. The India backfire is one item — a large, verified one, but one.
+4. **Single-draw nulls.** Both null arms are one seed each; feature 2075's anomaly is suggestive, not established.
+5. **One SAE dictionary.** All feature identities are `gpt2-small-res-jb`-specific; the discovery outcome could differ under another release. No cross-release replication yet.
+6. **Two demonym items** (Czechia, Switzerland-currency) carry negative base margins inherited from Paper 3's screening; excluding them strengthens the headline, so no cherry-picking risk, but the 8-item set is honestly 6 clean + 2 idiosyncratic.
+7. **GPT-2 Small only** — the series' standing scope; Paper 1's scale ladder suggests the whole phenomenon dissolves by 1.5B anyway.
+
+---
+
+## XI. Conclusion
+
+Can SAE features do the surgery that heads and directions could not? **For one slice, yes — and the slice boundaries are the discovery.** Three L11 features carry the currency-demonym override separably: ablating them corrects Denmark, Sweden, and Norway outright, dose-monotonically, with zero cross-class collateral and untouched controls — the first successful bias–retrieval separation in five papers. The same features ignore language-domain demonyms entirely; the semantic override has no feature-level handle at all at its anchor layer; late-override capitals yield partially; and early-dominance capitals — the series' founding bug — resist a fifth paper's worth of instruments, with India backfiring under the finest one. The frequency prior is not one thing at one resolution. It is a ladder, each rung releasing what that grain can separate, with a floor that nothing yet reaches — and the features that work are orthogonal to the directions that describe, a reminder that in mechanistic interpretability the lever and the signature need not be the same object.
+
+---
+
+*The Frequency Prior Series: start at [Frequency Wins](/research/frequency-wins/), then [Steering the Prior](/research/steering-the-prior/), [Frequency in All Directions](/research/frequency-direction/), and [The Morphology Circuit That Isn't](/research/morphology-circuit/). Explore every finding in this paper interactively in [the Frequency Prior Explorer](/apps/frequency-prior-explorer/). All results from real-model inference via TransformerLens — not simulation.*
