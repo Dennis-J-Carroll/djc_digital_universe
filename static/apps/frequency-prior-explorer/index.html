@@ -11,14 +11,16 @@
     <script type="module" crossorigin src="./assets/index-B4Xn68nc.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-7agWfgXB.css">
     <style>
-      /* The tab strip's content width breathes ±2px across its overflow
-         threshold, so the horizontal scrollbar kept mounting/unmounting —
-         a 10px layout jump each time. Scroll still works (drag/touch),
-         just don't render the bar. */
-      nav.overflow-x-auto {
+      /* Several scroll containers (tab strip, chart panels) have content
+         that breathes +/-2px across its overflow threshold, so their
+         scrollbars kept mounting/unmounting — a 10px layout jump each
+         time. Hide scrollbars on every in-app scroller (scroll itself
+         still works via wheel/drag/touch); the page's own root
+         scrollbar stays visible. */
+      body * {
         scrollbar-width: none;
       }
-      nav.overflow-x-auto::-webkit-scrollbar {
+      body *::-webkit-scrollbar {
         display: none;
       }
     </style>
