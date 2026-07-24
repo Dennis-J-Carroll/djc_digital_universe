@@ -106,11 +106,13 @@ body {
   overflow: hidden;
 }
 #crack-canvas {
-  position: fixed; inset: 0; z-index: -1;
+  position: fixed; inset: 0; z-index: -2;
   width: 100%; height: 100%;
 }
+/* Fixed like the canvas so the veil dims the cracks identically at
+   every scroll position — no seam when the hero scrolls away. */
 .hero-overlay {
-  position: absolute; inset: 0;
+  position: fixed; inset: 0; z-index: -1;
   background: radial-gradient(ellipse at center, rgba(5,8,15,.45) 0%, rgba(5,8,15,.82) 70%, #05080f 100%);
   pointer-events: none;
 }
@@ -373,7 +375,7 @@ section[id] { scroll-margin-top: 130px; }
 .file-card:hover .file-link svg { transform: translateX(4px); }
 
 /* ── TERMINAL QUOTE ── */
-.terminal-section { background: #05080f; }
+.terminal-section { background: transparent; }
 .terminal {
   max-width: 760px; margin: 56px auto 0;
   background: rgba(9,13,24,.9);
@@ -1066,7 +1068,10 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
     spawnCrackAt(ox, oy, autoCracks, 2 + Math.floor(Math.random() * 3), 55, 205);
   }
 
-  document.getElementById('hero').addEventListener('click', e => {
+  // Whole page spawns cracks on click; skip real controls so links,
+  // buttons, and the modal keep working.
+  document.addEventListener('click', e => {
+    if (e.target.closest('a, button, .breach-overlay')) return;
     clickCount++;
     const rect = canvas.getBoundingClientRect();
     spawnCrackAt(e.clientX - rect.left, e.clientY - rect.top, clickCracks, 4 + Math.floor(Math.random() * 3), 60, 190);
