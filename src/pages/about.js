@@ -61,10 +61,10 @@ const MotionIcon = () => (
 const AboutPage = ({ location }) => {
   // Stats data
   const stats = [
-    { value: 25, suffix: "+", label: "Projects Completed", icon: null },
-    { value: 5, suffix: "+", label: "Years Experience", icon: null },
-    { value: 20, suffix: "+", label: "Technologies", icon: null },
-    { value: 24, suffix: "+", label: "Interactive Apps Built", icon: null }
+    { value: 26, suffix: "", label: "Interactive Apps in the Browser", icon: null },
+    { value: 5, suffix: "+", label: "Years Building", icon: null },
+    { value: 3, suffix: "", label: "Original Fictional Universes", icon: null },
+    { value: 317, suffix: "", label: "Tests Passing in GLASSPORT", icon: null }
   ]
 
 
@@ -223,62 +223,27 @@ const AboutPage = ({ location }) => {
           <motion.div className="content-card" variants={itemVariants}>
             <div className="content-grid">
               <div className="content-block">
-                <h3>The Mission</h3>
+                <h3>How I build</h3>
                 <p>
-                  With expertise in Python programming and data analysis, I enjoy tackling
-                  complex problems and turning data into actionable insights. My goal is to
-                  bridge the gap between technical complexity and practical solutions.
+                  Most of my tools run entirely in the browser — no backend, no install.
+                  If an idea about neural networks or Bayesian inference can't survive
+                  being made interactive, I don't trust that I understand it yet.
+                  Building the visualization is how I find out.
                 </p>
               </div>
               <div className="content-block">
-                <h3>The Passion</h3>
+                <h3>Why the fiction</h3>
                 <p>
-                  When I'm not coding, you might find me writing creative fiction or
-                  exploring new technological frontiers. I believe that creativity and
-                  technical skills complement each other beautifully.
+                  The worldbuilding is the same skill pointed elsewhere: take a system
+                  with rules, push it until it breaks, write down what happens.
+                  Three universes so far, each one built around a single broken premise.
                 </p>
               </div>
             </div>
           </motion.div>
         </motion.section>
 
-        {/* Data Science & Deep Learning Section */}
-        <motion.section
-          className="about-section interests-section"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <motion.h2 className="section-title" variants={itemVariants}>
-            Data Science & Deep Learning
-          </motion.h2>
-          <motion.div className="content-card" variants={itemVariants}>
-            <div className="interests-content">
-              <p>
-                My fascination with data science stems from its power to uncover hidden patterns
-                and transform raw information into actionable insights. I'm particularly drawn to
-                the intersection of statistical rigor and computational innovation—where Bayesian
-                inference meets modern machine learning architectures.
-              </p>
-              <p>
-                Deep learning captivates me because of its ability to learn representations directly
-                from data. From neural network theory to practical implementations with TensorFlow
-                and PyTorch, I enjoy exploring how these systems learn, adapt, and sometimes surprise us.
-                Whether it's building interactive visualizations to understand training dynamics or
-                implementing novel architectures, I find the blend of mathematics, intuition, and
-                engineering deeply rewarding.
-              </p>
-              <p>
-                Currently, I'm exploring areas like reinforcement learning, graph neural networks,
-                and the emerging field of mechanistic interpretability—understanding not just what
-                neural networks learn, but how and why they learn it.
-              </p>
-            </div>
-          </motion.div>
-        </motion.section>
-
-        {/* Currently Exploring Section */}
+        {/* Current Work Section */}
         <motion.section
           className="about-section"
           variants={containerVariants}
@@ -287,7 +252,7 @@ const AboutPage = ({ location }) => {
           viewport={{ once: true, margin: "-100px" }}
         >
           <motion.h2 className="section-title" variants={itemVariants}>
-            Currently Exploring
+            Current Work
           </motion.h2>
           <motion.div
             style={{
@@ -300,6 +265,13 @@ const AboutPage = ({ location }) => {
             variants={itemVariants}
           >
             {[
+              {
+                topic: 'GLASSPORT',
+                tag: 'IN THE WORKS',
+                detail: 'Wire-level observability and enforcement for MCP servers: passive stdio tap, behavioral detectors, data-exfiltration scanning, and SARIF export to the GitHub Security tab. Python 3.10+, zero runtime dependencies, 317 tests.',
+                link: 'https://github.com/Dennis-J-Carroll/glassport',
+                linkLabel: 'View on GitHub →',
+              },
               {
                 topic: 'Mechanistic Interpretability',
                 detail: 'Understanding how transformer attention heads and MLP blocks represent concepts',
@@ -325,8 +297,21 @@ const AboutPage = ({ location }) => {
                   padding: '1.25rem'
                 }}
               >
-                <h4 style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                <h4 style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                   {item.topic}
+                  {item.tag && (
+                    <span style={{
+                      fontSize: '0.6rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.08em',
+                      color: '#f5a623',
+                      border: '1px solid rgba(245,166,35,0.35)',
+                      borderRadius: '999px',
+                      padding: '0.15rem 0.5rem'
+                    }}>
+                      {item.tag}
+                    </span>
+                  )}
                 </h4>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: item.link ? '0.75rem' : 0 }}>
                   {item.detail}
@@ -338,7 +323,7 @@ const AboutPage = ({ location }) => {
                     rel="noopener noreferrer"
                     style={{ color: 'var(--primary-color)', fontSize: '0.8rem', fontWeight: 500 }}
                   >
-                    See experiment →
+                    {item.linkLabel || 'See experiment →'}
                   </a>
                 )}
               </div>
@@ -380,10 +365,8 @@ const AboutPage = ({ location }) => {
               </div>
             </div>
             <p className="website-description">
-              This website serves as a portfolio of my work in data science and project
-              development, as well as a platform for sharing my creative writing. Built
-              with modern web technologies, it showcases both my technical abilities and
-              my creative interests.
+              Gatsby and React render the shell; the experiments themselves are standalone
+              static apps, so each one loads without pulling in the rest of the site.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ display: 'inline-block' }}>
               <Link to="/contact" className="cta-button glow-on-hover">
