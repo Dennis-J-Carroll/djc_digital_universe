@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Visualization Lab - 3D Linear Algebra Explorer</title>
+    <title>Linear Algebra Learning Lab - Executable Matrix Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -225,6 +225,64 @@
         .quiz-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .anim-fade-in { animation: fadeInUp 0.4s ease forwards; }
+
+        /* Dense learning loop */
+        .matrix-status { min-height: 1.25rem; margin-top: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .matrix-status.valid { color: var(--accent-green); }
+        .matrix-status.invalid { color: #f87171; }
+        #calculatorGrid > * { min-width: 0; }
+        .dense-section-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .dense-section-header > .flex { flex-wrap: wrap; }
+        .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+        .stat-cell { min-width: 0; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(0,0,0,0.25); }
+        .stat-label { display: flex; align-items: center; gap: 0.35rem; color: var(--text-secondary); font-size: 0.7rem; line-height: 1; }
+        .stat-value { display: block; overflow: hidden; margin-top: 0.4rem; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
+        .concept-link { display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem; border: 1px solid var(--border-color); border-radius: 50%; color: var(--accent-cyan); font: 600 0.65rem/1 'JetBrains Mono', monospace; }
+        .concept-link:hover, .concept-link:focus-visible { border-color: var(--accent-cyan); background: rgba(0,212,255,0.1); outline: none; }
+        .property-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+        .property-badge { padding: 0.3rem 0.55rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; color: var(--text-secondary); font: 500 0.68rem/1 'JetBrains Mono', monospace; }
+        .property-badge.active { border-color: rgba(16,185,129,0.45); background: rgba(16,185,129,0.1); color: #6ee7b7; }
+        .learning-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: center; }
+        .learning-search { width: 100%; padding: 0.7rem 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.35); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+        .learning-search:focus { border-color: var(--accent-cyan); outline: none; box-shadow: 0 0 0 3px rgba(0,212,255,0.08); }
+        .guided-toggle { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text-secondary); font-size: 0.8rem; white-space: nowrap; }
+        .learning-progress { min-width: 7rem; color: var(--text-secondary); font: 500 0.75rem/1 'JetBrains Mono', monospace; text-align: right; }
+        .learning-progress-track { height: 4px; margin-top: 0.4rem; overflow: hidden; border-radius: 2px; background: rgba(255,255,255,0.1); }
+        .learning-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); transition: width 0.3s ease; }
+        .theory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .theory-card { scroll-margin-top: 4rem; border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; background: rgba(0,0,0,0.25); transition: border-color 0.2s ease, background 0.2s ease; }
+        .theory-card[open], .theory-card:focus-within { border-color: var(--border-color); background: rgba(0,0,0,0.38); }
+        .theory-card.visited .theory-check { border-color: var(--accent-green); background: var(--accent-green); color: var(--bg-primary); }
+        .theory-card summary { display: grid; grid-template-columns: auto 1fr auto; gap: 0.65rem; align-items: center; padding: 0.8rem; cursor: pointer; list-style: none; }
+        .theory-card summary::-webkit-details-marker { display: none; }
+        .theory-check { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border: 1px solid rgba(255,255,255,0.18); border-radius: 50%; color: transparent; font-size: 0.7rem; }
+        .theory-title { font-weight: 650; }
+        .theory-group { color: var(--text-secondary); font: 500 0.65rem/1 'JetBrains Mono', monospace; text-transform: uppercase; }
+        .theory-chevron { color: var(--text-secondary); transition: transform 0.2s ease; }
+        .theory-card[open] .theory-chevron { transform: rotate(90deg); }
+        .theory-body { padding: 0 0.85rem 0.9rem 2.75rem; }
+        .theory-definition { overflow-x: auto; padding: 0.65rem; border-left: 2px solid var(--accent-purple); border-radius: 0 8px 8px 0; background: rgba(168,85,247,0.07); }
+        .theory-intuition { margin-top: 0.7rem; color: #d1d5db; font-size: 0.85rem; line-height: 1.55; }
+        .theory-takeaway { margin-top: 0.55rem; color: var(--text-secondary); font-size: 0.78rem; line-height: 1.45; }
+        .example-list, .related-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+        .example-chip, .related-chip { padding: 0.38rem 0.55rem; border-radius: 7px; font: 500 0.7rem/1.2 'JetBrains Mono', monospace; cursor: pointer; }
+        .example-chip { border: 1px solid rgba(0,212,255,0.35); background: rgba(0,212,255,0.07); color: #67e8f9; }
+        .example-chip:hover, .example-chip:focus-visible { border-color: var(--accent-cyan); background: rgba(0,212,255,0.14); outline: none; }
+        .related-chip { border: 0; background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+        .related-chip:hover, .related-chip:focus-visible { color: var(--text-primary); outline: 1px solid var(--border-color); }
+        .empty-theory { grid-column: 1 / -1; padding: 2rem; color: var(--text-secondary); text-align: center; }
+        .share-status { min-height: 1rem; color: var(--accent-green); font-size: 0.7rem; text-align: right; }
+
+        @media (max-width: 767px) {
+            .learning-toolbar { grid-template-columns: 1fr; }
+            .learning-progress, .share-status { text-align: left; }
+            .theory-grid { grid-template-columns: 1fr; }
+            .theory-body { padding-left: 0.85rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
 
@@ -240,7 +298,7 @@
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
     <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
     <span style="color:#4b5563;flex-shrink:0;">|</span>
-    <span class="djc-title">Matrix Visualization Lab</span>
+    <span class="djc-title">Linear Algebra Learning Lab</span>
   </div>
   <a href="/" class="djc-logo">DJC</a>
 </div>
@@ -248,15 +306,15 @@
         <!-- Header -->
         <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl font-bold mb-3 gradient-text">
-                Matrix Visualization Lab
+                Linear Algebra Learning Lab
             </h1>
             <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                Explore linear transformations in 3D space. Visualize matrix operations, eigenvectors, and geometric
-                transformations interactively.
+                Learn linear algebra by running it. Edit a matrix, see the geometry and invariants update,
+                then launch executable examples from the concept library.
             </p>
         </header>
 
-        <div class="grid lg:grid-cols-5 gap-6">
+        <div id="calculatorGrid" class="grid lg:grid-cols-5 gap-6">
             <!-- Left Panel: Controls -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Matrix Input -->
@@ -264,10 +322,11 @@
                     <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                         <span class="text-cyan-400">[M]</span> Transformation Matrix
                     </h2>
-                    <textarea id="matrixInput" class="matrix-input w-full h-24"
-                        placeholder="Enter 3x3 matrix (rows separated by newlines)">1, 0, 0
+                    <textarea id="matrixInput" class="matrix-input w-full h-24" aria-describedby="matrixStatus"
+                        spellcheck="false" placeholder="Enter 3x3 matrix (rows separated by newlines)">1, 0, 0
 0, 1, 0
 0, 0, 1</textarea>
+                    <div id="matrixStatus" class="matrix-status valid" role="status">Valid 3×3 matrix · live properties shown below</div>
 
                     <div class="mt-4">
                         <label class="block text-sm text-gray-400 mb-2">Preset Transformations</label>
@@ -334,22 +393,37 @@
                     <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                         <span class="text-yellow-400">[=]</span> Properties
                     </h2>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Determinant:</span>
-                            <span id="determinant" class="font-mono text-cyan-400">1.000</span>
+                    <div class="stat-grid" aria-live="polite">
+                        <div class="stat-cell">
+                            <span class="stat-label">det(A) <button class="concept-link" data-concept="determinant" aria-label="Learn about determinant">?</button></span>
+                            <strong id="determinant" class="stat-value text-cyan-400">1.000</strong>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Trace:</span>
-                            <span id="trace" class="font-mono text-green-400">3.000</span>
+                        <div class="stat-cell">
+                            <span class="stat-label">tr(A) <button class="concept-link" data-concept="trace" aria-label="Learn about trace">?</button></span>
+                            <strong id="trace" class="stat-value text-green-400">3.000</strong>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Rank:</span>
-                            <span id="rank" class="font-mono text-purple-400">3</span>
+                        <div class="stat-cell">
+                            <span class="stat-label">rank / nullity <button class="concept-link" data-concept="rank-nullity" aria-label="Learn about rank and nullity">?</button></span>
+                            <strong id="rank" class="stat-value text-purple-400">3 / 0</strong>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Type:</span>
-                            <span id="matrixType" class="font-mono text-yellow-400">Identity</span>
+                        <div class="stat-cell">
+                            <span class="stat-label">condition κ₂ <button class="concept-link" data-concept="singular-values" aria-label="Learn about singular values and condition number">?</button></span>
+                            <strong id="conditionNumber" class="stat-value text-yellow-400">1.000</strong>
+                        </div>
+                        <div class="stat-cell" style="grid-column:1 / -1;">
+                            <span class="stat-label">singular values σ₁ ≥ σ₂ ≥ σ₃ <button class="concept-link" data-concept="singular-values" aria-label="Learn about singular values">?</button></span>
+                            <strong id="singularValues" class="stat-value">1.000 · 1.000 · 1.000</strong>
+                        </div>
+                    </div>
+                    <div id="propertyBadges" class="property-badges" aria-label="Matrix properties"></div>
+                    <div class="mt-3 flex justify-between items-end gap-2">
+                        <div>
+                            <span class="text-xs text-gray-500">Classification</span>
+                            <div id="matrixType" class="font-mono text-sm text-yellow-400">Identity</div>
+                        </div>
+                        <div>
+                            <button id="shareMatrixBtn" class="btn btn-outline text-xs" type="button">Share matrix</button>
+                            <div id="shareStatus" class="share-status" role="status"></div>
                         </div>
                     </div>
 
@@ -363,7 +437,7 @@
             <!-- Right Panel: 3D Visualization -->
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-card p-6">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="dense-section-header mb-4">
                         <h2 class="text-xl font-bold">Transformation Visualizer</h2>
                         <div class="flex gap-2 items-center">
                             <div class="view-toggle">
@@ -436,7 +510,7 @@
 
                 <!-- Decomposition Animations -->
                 <div class="glass-card p-6">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="dense-section-header mb-4">
                         <h2 class="text-xl font-bold flex items-center gap-2">
                             <span class="text-pink-400">[∑]</span> Decomposition
                         </h2>
@@ -458,10 +532,34 @@
             </div>
         </div>
 
+        <!-- Executable Theory Library -->
+        <section id="learn" class="glass-card p-6 mt-6" aria-labelledby="learnTitle">
+            <div class="mb-4">
+                <p class="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-1">Learn ↔ edit ↔ see</p>
+                <h2 id="learnTitle" class="text-2xl font-bold">Executable Linear Algebra</h2>
+                <p class="text-sm text-gray-400 mt-1">Open a concept, then load an example directly into the visualizer. Every definition is attached to something you can run.</p>
+            </div>
+            <div class="learning-toolbar">
+                <label>
+                    <span class="sr-only">Search concepts</span>
+                    <input id="theorySearch" class="learning-search" type="search" placeholder="Search determinant, spaces, eigenvectors…" autocomplete="off">
+                </label>
+                <label class="guided-toggle">
+                    <input id="guidedPathToggle" type="checkbox">
+                    Guided order
+                </label>
+                <div class="learning-progress" aria-live="polite">
+                    <span id="learnProgressText">0 / 0 explored</span>
+                    <div class="learning-progress-track"><div id="learnProgressFill" class="learning-progress-fill" style="width:0%"></div></div>
+                </div>
+            </div>
+            <div id="theoryGrid" class="theory-grid"></div>
+        </section>
+
         <!-- Quiz Mode -->
         <div class="container mx-auto px-4 md:px-8 max-w-7xl mt-6 mb-12">
             <div class="glass-card p-6">
-                <div class="flex justify-between items-center mb-4">
+                <div class="dense-section-header mb-4">
                     <h2 class="text-xl font-bold flex items-center gap-2">
                         <span class="text-yellow-400">[?]</span> Quiz Mode
                     </h2>
@@ -491,6 +589,355 @@
     </div>
 
     <script>
+        // ============ EXECUTABLE THEORY LIBRARY ============
+        const THEORY = [
+            {
+                id: 'linear-transformation',
+                group: 'Foundations',
+                title: 'Linear transformation',
+                tags: ['map', 'geometry', 'superposition'],
+                definitionTex: 'T(cu + dv) = cT(u) + dT(v)',
+                intuition: 'A linear map preserves vector addition and scalar multiplication. A matrix is its coordinate recipe: each column tells you where one basis vector lands.',
+                takeaway: 'Watch the transformed basis: those three output vectors determine the transformation everywhere.',
+                examples: [{ name: 'Shear space', matrix: [[1, 1, 0], [0, 1, 0], [0, 0, 1]], note: 'Parallel lines stay parallel while angles change.' }],
+                related: ['basis', 'linear-independence']
+            },
+            {
+                id: 'basis',
+                group: 'Foundations',
+                title: 'Basis & coordinates',
+                tags: ['coordinates', 'span', 'columns'],
+                definitionTex: 'v = c_1b_1 + c_2b_2 + c_3b_3',
+                intuition: 'A basis is a minimal coordinate system: independent vectors that span the space. The columns of A are T(e₁), T(e₂), and T(e₃).',
+                takeaway: 'Read a matrix by columns to see where the coordinate axes move.',
+                examples: [{ name: 'Read the columns', matrix: [[0, -1, 1], [1, 0, 1], [0, 0, 1]], note: 'Each column is the image of one standard basis vector.' }],
+                related: ['linear-transformation', 'linear-independence', 'rank-nullity']
+            },
+            {
+                id: 'linear-independence',
+                group: 'Foundations',
+                title: 'Linear independence',
+                tags: ['span', 'dependence', 'collapse'],
+                definitionTex: 'c_1v_1 + \\cdots + c_nv_n = 0 \\Rightarrow c_1=\\cdots=c_n=0',
+                intuition: 'Independent vectors contribute genuinely new directions. If one column can be built from the others, the transformation loses a dimension.',
+                takeaway: 'Dependent columns produce rank loss, a zero determinant, and visible geometric collapse.',
+                examples: [{ name: 'Dependent, no zeros', matrix: [[1, 2, 3], [2, 4, 6], [1, 1, 2]], note: 'The third column is the sum of the first two.' }],
+                related: ['basis', 'rank-nullity', 'determinant']
+            },
+            {
+                id: 'determinant',
+                group: 'Invariants',
+                title: 'Determinant',
+                tags: ['volume', 'orientation', 'invertibility', 'collapse'],
+                definitionTex: '\\det(A)=\\text{signed volume scale}',
+                intuition: 'The determinant is the signed volume scaling factor. Zero collapses space; a negative value reverses orientation.',
+                takeaway: 'Compare the unit cube with its cyan image while watching det(A).',
+                examples: [
+                    { name: 'Volume ×6', matrix: [[2, 0, 0], [0, 3, 0], [0, 0, 1]], note: 'The transformed cube has six times the volume.' },
+                    { name: 'Collapse to plane', matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 0]], note: 'Volume becomes zero and the map cannot be inverted.' },
+                    { name: 'Flip orientation', matrix: [[-1, 0, 0], [0, 1, 0], [0, 0, 1]], note: 'A reflection changes the determinant sign.' }
+                ],
+                related: ['inverse', 'rank-nullity', 'eigenvalues']
+            },
+            {
+                id: 'trace',
+                group: 'Invariants',
+                title: 'Trace',
+                tags: ['diagonal', 'eigenvalues', 'invariant'],
+                definitionTex: '\\operatorname{tr}(A)=\\sum_i a_{ii}=\\sum_i\\lambda_i',
+                intuition: 'Trace adds the diagonal entries and, over the complex numbers, also adds the eigenvalues. It stays unchanged under a change of basis.',
+                takeaway: 'Trace is algebraic, not a direct size measure: large off-diagonal entries do not affect it.',
+                examples: [{ name: 'Same trace, strong shear', matrix: [[1, 4, 0], [0, 1, 0], [0, 0, 1]], note: 'The geometry changes dramatically while trace remains 3.' }],
+                related: ['eigenvalues', 'similarity', 'determinant']
+            },
+            {
+                id: 'rank-nullity',
+                group: 'Spaces',
+                title: 'Rank–nullity',
+                tags: ['rank', 'nullity', 'kernel', 'image', 'column space'],
+                definitionTex: '\\operatorname{rank}(A)+\\operatorname{nullity}(A)=n',
+                intuition: 'Rank counts output directions; nullity counts input directions crushed to zero. For this 3×3 lab, they always add to three.',
+                takeaway: 'Rank 2 lands in a plane, rank 1 on a line, and rank 0 at the origin.',
+                examples: [
+                    { name: 'Rank 2 → plane', matrix: [[1, 0, 0], [0, 1, 0], [1, 1, 0]], note: 'One input direction belongs to the null space.' },
+                    { name: 'Rank 1 → line', matrix: [[1, 2, 3], [2, 4, 6], [-1, -2, -3]], note: 'All output columns point along one direction.' }
+                ],
+                related: ['linear-independence', 'determinant', 'singular-values']
+            },
+            {
+                id: 'inverse',
+                group: 'Matrix arithmetic',
+                title: 'Inverse',
+                tags: ['invertibility', 'undo', 'solve'],
+                definitionTex: 'A^{-1}A=AA^{-1}=I',
+                intuition: 'An inverse exactly undoes a transformation. It exists only when no information or dimension was lost.',
+                takeaway: 'Load the example, then use Matrix Operations → Inverse to inspect the undo map.',
+                examples: [{ name: 'Invertible mix', matrix: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], note: 'Its nonzero determinant guarantees a unique inverse.' }],
+                related: ['determinant', 'rank-nullity', 'singular-values']
+            },
+            {
+                id: 'eigenvalues',
+                group: 'Eigentheory',
+                title: 'Eigenvalues & eigenvectors',
+                tags: ['eigenvector', 'eigenvalue', 'direction', 'stretch'],
+                definitionTex: 'Av=\\lambda v,\\qquad v\\ne 0',
+                intuition: 'An eigenvector is a direction the transformation does not turn away from itself; its eigenvalue is the signed stretch along that direction.',
+                takeaway: 'Switch to 2D and enable eigenvectors to reveal the invariant directions of the upper-left 2×2 block.',
+                examples: [{ name: 'Expose two eigendirections', matrix: [[2, 1, 0], [1, 2, 0], [0, 0, 0.5]], note: 'The 2D eigendirections lie along y=x and y=−x.' }],
+                related: ['determinant', 'trace', 'diagonalization']
+            },
+            {
+                id: 'diagonalization',
+                group: 'Eigentheory',
+                title: 'Diagonalization',
+                tags: ['eigendecomposition', 'change of basis', 'powers'],
+                definitionTex: 'A=PDP^{-1}',
+                intuition: 'Diagonalization changes into an eigenvector basis, scales each coordinate independently, then changes back.',
+                takeaway: 'A full eigenbasis turns repeated matrix powers into easy scalar powers.',
+                examples: [{ name: 'Diagonalizable stretch', matrix: [[3, 1, 0], [0, 2, 0], [0, 0, 0.5]], note: 'Three independent eigendirections make A=PDP⁻¹ possible.' }],
+                related: ['eigenvalues', 'similarity', 'symmetric']
+            },
+            {
+                id: 'similarity',
+                group: 'Eigentheory',
+                title: 'Similar matrices',
+                tags: ['change of basis', 'invariants', 'coordinates'],
+                definitionTex: 'B=P^{-1}AP',
+                intuition: 'Similar matrices describe the same linear transformation in different coordinate systems.',
+                takeaway: 'Similarity preserves determinant, trace, rank, and eigenvalues—not the individual entries.',
+                examples: [{ name: 'One representation', matrix: [[2, 1, 0], [0, 3, 0], [0, 0, 1]], note: 'Its invariants survive every invertible change of basis.' }],
+                related: ['basis', 'trace', 'diagonalization']
+            },
+            {
+                id: 'orthogonal',
+                group: 'Special matrices',
+                title: 'Orthogonal matrix',
+                tags: ['rotation', 'reflection', 'isometry', 'inverse'],
+                definitionTex: 'Q^\\top Q=I\\quad\\Longleftrightarrow\\quad Q^{-1}=Q^\\top',
+                intuition: 'Orthogonal matrices preserve lengths, angles, and volumes. In 3D they are rotations, reflections, or combinations of both.',
+                takeaway: 'All singular values equal one; determinant distinguishes rotation (+1) from reflection (−1).',
+                examples: [
+                    { name: 'Rotate 45°', matrix: [[0.70710678, -0.70710678, 0], [0.70710678, 0.70710678, 0], [0, 0, 1]], note: 'Lengths and angles are unchanged.' },
+                    { name: 'Householder reflection', matrix: [[0, -1, 0], [-1, 0, 0], [0, 0, 1]], note: 'Still orthogonal, but determinant is −1.' }
+                ],
+                related: ['inverse', 'singular-values', 'qr']
+            },
+            {
+                id: 'symmetric',
+                group: 'Special matrices',
+                title: 'Symmetric matrix',
+                tags: ['transpose', 'real eigenvalues', 'orthogonal basis'],
+                definitionTex: 'A=A^\\top',
+                intuition: 'A real symmetric matrix has real eigenvalues and mutually orthogonal eigendirections. It can always be orthogonally diagonalized.',
+                takeaway: 'Symmetry makes eigentheory especially stable and geometric.',
+                examples: [{ name: 'Symmetric coupling', matrix: [[2, 1, 0], [1, 2, 1], [0, 1, 2]], note: 'Mirrored entries across the diagonal activate the Symmetric badge.' }],
+                related: ['eigenvalues', 'diagonalization', 'positive-definite']
+            },
+            {
+                id: 'positive-definite',
+                group: 'Special matrices',
+                title: 'Positive-definite matrix',
+                tags: ['quadratic form', 'energy', 'optimization', 'cholesky'],
+                definitionTex: 'x^\\top Ax>0\\quad\\text{for every }x\\ne 0',
+                intuition: 'A symmetric positive-definite matrix assigns positive energy in every direction. Its geometry is an ellipsoidal stretch with no flips or collapse.',
+                takeaway: 'All eigenvalues are positive, and Cholesky factorization is available.',
+                examples: [{ name: 'SPD correlation shape', matrix: [[2, 0.5, 0], [0.5, 1.5, 0.25], [0, 0.25, 1]], note: 'Every leading principal minor is positive.' }],
+                related: ['symmetric', 'singular-values', 'qr']
+            },
+            {
+                id: 'singular-values',
+                group: 'Decompositions',
+                title: 'Singular values & conditioning',
+                tags: ['svd', 'condition number', 'stability', 'stretch'],
+                definitionTex: '\\sigma_i=\\sqrt{\\lambda_i(A^\\top A)},\\qquad \\kappa_2=\\frac{\\sigma_1}{\\sigma_3}',
+                intuition: 'Singular values are the principal stretch factors. Their ratio measures sensitivity: a large condition number means some directions are amplified far more than others.',
+                takeaway: 'κ=1 is perfectly balanced; κ=∞ means at least one direction is completely lost.',
+                examples: [
+                    { name: 'Well-conditioned', matrix: [[0, -1, 0], [1, 0, 0], [0, 0, 1]], note: 'All singular values are one, so κ=1.' },
+                    { name: 'Ill-conditioned', matrix: [[100, 0, 0], [0, 1, 0], [0, 0, 0.01]], note: 'κ=10,000: outputs are extremely scale-sensitive.' }
+                ],
+                related: ['rank-nullity', 'orthogonal', 'svd']
+            },
+            {
+                id: 'qr',
+                group: 'Decompositions',
+                title: 'QR decomposition',
+                tags: ['gram-schmidt', 'orthogonal', 'least squares'],
+                definitionTex: 'A=QR',
+                intuition: 'QR separates a matrix into an orthogonal change of direction Q and an upper-triangular coordinate mix R.',
+                takeaway: 'Load the example, choose QR under Decomposition, and watch Gram–Schmidt construct Q.',
+                examples: [{ name: 'Run QR steps', matrix: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], note: 'The columns are independent and suitable for the step player.' }],
+                related: ['orthogonal', 'basis', 'svd']
+            },
+            {
+                id: 'svd',
+                group: 'Decompositions',
+                title: 'Singular value decomposition',
+                tags: ['svd', 'factorization', 'rotation', 'stretch'],
+                definitionTex: 'A=U\\Sigma V^\\top',
+                intuition: 'SVD expresses every matrix as rotate/reflect, axis-aligned stretch, then rotate/reflect again—even when the matrix is singular.',
+                takeaway: 'It is the universal geometric factorization and the source of the dashboard’s singular values.',
+                examples: [{ name: 'Run SVD steps', matrix: [[3, 1, 0], [1, 2, 0], [0, 0, 0.5]], note: 'Choose SVD under Decomposition after loading.' }],
+                related: ['singular-values', 'orthogonal', 'rank-nullity']
+            }
+        ];
+
+        const GUIDED_ORDER = [
+            'linear-transformation', 'basis', 'linear-independence', 'determinant',
+            'inverse', 'trace', 'rank-nullity', 'eigenvalues', 'symmetric',
+            'positive-definite', 'diagonalization', 'similarity', 'orthogonal',
+            'singular-values', 'qr', 'svd'
+        ];
+        const THEORY_PROGRESS_KEY = 'linearCalc.visitedConcepts.v1';
+        let visitedConcepts = new Set();
+
+        function getTheoryConcept(id) {
+            return THEORY.find(concept => concept.id === id);
+        }
+
+        function loadTheoryProgress() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(THEORY_PROGRESS_KEY) || '[]');
+                visitedConcepts = new Set(saved.filter(id => getTheoryConcept(id)));
+            } catch (error) {
+                visitedConcepts = new Set();
+            }
+        }
+
+        function saveTheoryProgress() {
+            try {
+                localStorage.setItem(THEORY_PROGRESS_KEY, JSON.stringify([...visitedConcepts]));
+            } catch (error) {
+                // Progress remains available for this session when storage is blocked.
+            }
+        }
+
+        function markConceptVisited(id) {
+            if (!getTheoryConcept(id) || visitedConcepts.has(id)) return;
+            visitedConcepts.add(id);
+            saveTheoryProgress();
+            const card = document.getElementById(`theory-${id}`);
+            if (card) card.classList.add('visited');
+            updateLearningProgress();
+        }
+
+        function updateLearningProgress() {
+            const explored = visitedConcepts.size;
+            document.getElementById('learnProgressText').textContent = `${explored} / ${THEORY.length} explored`;
+            document.getElementById('learnProgressFill').style.width = `${(explored / THEORY.length) * 100}%`;
+        }
+
+        function renderTheoryMath(container = document) {
+            container.querySelectorAll('[data-theory-tex]').forEach(element => {
+                try {
+                    katex.render(element.dataset.theoryTex, element, { displayMode: true, throwOnError: false });
+                } catch (error) {
+                    element.textContent = element.dataset.theoryTex;
+                }
+            });
+        }
+
+        function renderTheoryCards() {
+            const query = document.getElementById('theorySearch').value.trim().toLowerCase();
+            const guided = document.getElementById('guidedPathToggle').checked;
+            const concepts = THEORY
+                .filter(concept => [concept.title, concept.group, concept.intuition, ...concept.tags].join(' ').toLowerCase().includes(query))
+                .sort((a, b) => guided ? GUIDED_ORDER.indexOf(a.id) - GUIDED_ORDER.indexOf(b.id) : a.group.localeCompare(b.group) || a.title.localeCompare(b.title));
+            const grid = document.getElementById('theoryGrid');
+
+            if (!concepts.length) {
+                grid.innerHTML = '<div class="empty-theory">No concepts match that search. Try a property, space, or decomposition.</div>';
+                return;
+            }
+
+            grid.innerHTML = concepts.map(concept => `
+                <details id="theory-${concept.id}" class="theory-card${visitedConcepts.has(concept.id) ? ' visited' : ''}" data-concept-id="${concept.id}">
+                    <summary>
+                        <span class="theory-check" aria-hidden="true">✓</span>
+                        <span>
+                            <span class="theory-title">${concept.title}</span>
+                            <span class="theory-group">${concept.group}</span>
+                        </span>
+                        <span class="theory-chevron" aria-hidden="true">›</span>
+                    </summary>
+                    <div class="theory-body">
+                        <div class="theory-definition" data-theory-tex="${concept.definitionTex}">${concept.definitionTex}</div>
+                        <p class="theory-intuition">${concept.intuition}</p>
+                        <p class="theory-takeaway"><strong class="text-gray-300">Observe:</strong> ${concept.takeaway}</p>
+                        <div class="example-list" aria-label="${concept.title} examples">
+                            ${concept.examples.map((example, index) => `<button class="example-chip" type="button" data-example-concept="${concept.id}" data-example-index="${index}" title="${example.note}">▶ ${example.name}</button>`).join('')}
+                        </div>
+                        <div class="related-list" aria-label="Related concepts">
+                            ${concept.related.map(id => {
+                                const related = getTheoryConcept(id);
+                                return related ? `<button class="related-chip" type="button" data-related-concept="${id}">${related.title} →</button>` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                </details>
+            `).join('');
+            renderTheoryMath(grid);
+
+            grid.querySelectorAll('.theory-card').forEach(card => {
+                card.addEventListener('toggle', () => {
+                    if (card.open) markConceptVisited(card.dataset.conceptId);
+                });
+            });
+        }
+
+        function formatMatrixForInput(matrix) {
+            return matrix.map(row => row.map(value => Number(value.toFixed(6))).join(', ')).join('\n');
+        }
+
+        function loadExample(conceptId, exampleIndex) {
+            const concept = getTheoryConcept(conceptId);
+            const example = concept && concept.examples[exampleIndex];
+            if (!example) return;
+            const matrix = example.matrix.map(row => [...row]);
+            document.getElementById('matrixInput').value = formatMatrixForInput(matrix);
+            document.getElementById('presetSelect').value = '';
+            document.getElementById('tSlider').value = 1;
+            document.getElementById('tValueDisplay').textContent = '1.00';
+            targetMatrix = matrix;
+            currentMatrix = matrix.map(row => [...row]);
+            updateVisualization();
+            updateMatrixStatus(true, `${concept.title} · ${example.note}`);
+            markConceptVisited(conceptId);
+            syncMatrixToUrl(currentMatrix);
+            document.getElementById('visualization3d').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function focusConcept(id) {
+            if (!getTheoryConcept(id)) return;
+            const search = document.getElementById('theorySearch');
+            if (!document.getElementById(`theory-${id}`)) {
+                search.value = '';
+                renderTheoryCards();
+            }
+            const card = document.getElementById(`theory-${id}`);
+            card.open = true;
+            markConceptVisited(id);
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            card.querySelector('summary').focus({ preventScroll: true });
+        }
+
+        function initLearningLibrary() {
+            loadTheoryProgress();
+            renderTheoryCards();
+            updateLearningProgress();
+            document.getElementById('theorySearch').addEventListener('input', renderTheoryCards);
+            document.getElementById('guidedPathToggle').addEventListener('change', renderTheoryCards);
+            document.getElementById('theoryGrid').addEventListener('click', event => {
+                const exampleButton = event.target.closest('[data-example-concept]');
+                const relatedButton = event.target.closest('[data-related-concept]');
+                if (exampleButton) loadExample(exampleButton.dataset.exampleConcept, Number(exampleButton.dataset.exampleIndex));
+                if (relatedButton) focusConcept(relatedButton.dataset.relatedConcept);
+            });
+            document.querySelectorAll('[data-concept]').forEach(button => {
+                button.addEventListener('click', () => focusConcept(button.dataset.concept));
+            });
+        }
+
         // ============ THREE.JS SETUP ============
         let scene, camera, renderer, controls;
         let basisArrows = [], transformedArrows = [], eigenvectorArrows = [];
@@ -679,10 +1126,17 @@
         function parseMatrix(str) {
             try {
                 const rows = str.trim().split('\n');
-                return rows.map(row => row.split(',').map(n => parseFloat(n.trim())));
+                const matrix = rows.map(row => row.split(',').map(n => Number(n.trim())));
+                return isValidMatrix(matrix) ? matrix : null;
             } catch (e) {
                 return null;
             }
+        }
+
+        function isValidMatrix(matrix) {
+            return Array.isArray(matrix)
+                && matrix.length === 3
+                && matrix.every(row => Array.isArray(row) && row.length === 3 && row.every(Number.isFinite));
         }
 
         function multiplyMatrixVector(m, v) {
@@ -721,6 +1175,106 @@
 
         function trace3x3(m) {
             return m[0][0] + m[1][1] + m[2][2];
+        }
+
+        function transposeMatrix(matrix) {
+            return matrix[0].map((_, column) => matrix.map(row => row[column]));
+        }
+
+        function multiplyMatrices(a, b) {
+            return a.map((row, i) => b[0].map((_, j) =>
+                row.reduce((sum, _, k) => sum + a[i][k] * b[k][j], 0)
+            ));
+        }
+
+        function matrixRank(matrix) {
+            const reduced = matrix.map(row => [...row]);
+            const scale = Math.max(1, ...reduced.flat().map(Math.abs));
+            const tolerance = scale * 1e-10;
+            let rank = 0;
+
+            for (let column = 0; column < 3 && rank < 3; column++) {
+                let pivot = rank;
+                for (let row = rank + 1; row < 3; row++) {
+                    if (Math.abs(reduced[row][column]) > Math.abs(reduced[pivot][column])) pivot = row;
+                }
+                if (Math.abs(reduced[pivot][column]) <= tolerance) continue;
+                [reduced[rank], reduced[pivot]] = [reduced[pivot], reduced[rank]];
+                for (let row = rank + 1; row < 3; row++) {
+                    const factor = reduced[row][column] / reduced[rank][column];
+                    for (let j = column; j < 3; j++) reduced[row][j] -= factor * reduced[rank][j];
+                }
+                rank++;
+            }
+            return rank;
+        }
+
+        function isApproximatelyEqual(a, b, tolerance = 1e-8) {
+            return Math.abs(a - b) <= tolerance * Math.max(1, Math.abs(a), Math.abs(b));
+        }
+
+        function isIdentityMatrix(matrix) {
+            return matrix.every((row, i) => row.every((value, j) => isApproximatelyEqual(value, i === j ? 1 : 0)));
+        }
+
+        function isSymmetricMatrix(matrix) {
+            return matrix.every((row, i) => row.every((value, j) => isApproximatelyEqual(value, matrix[j][i])));
+        }
+
+        function isOrthogonalMatrix(matrix) {
+            return isIdentityMatrix(multiplyMatrices(transposeMatrix(matrix), matrix));
+        }
+
+        function symmetricEigenvalues3x3(matrix) {
+            const a = matrix.map(row => [...row]);
+            for (let iteration = 0; iteration < 32; iteration++) {
+                let p = 0, q = 1;
+                if (Math.abs(a[0][2]) > Math.abs(a[p][q])) [p, q] = [0, 2];
+                if (Math.abs(a[1][2]) > Math.abs(a[p][q])) [p, q] = [1, 2];
+                if (Math.abs(a[p][q]) < 1e-12) break;
+
+                const angle = 0.5 * Math.atan2(2 * a[p][q], a[q][q] - a[p][p]);
+                const cosine = Math.cos(angle);
+                const sine = Math.sin(angle);
+                const app = a[p][p];
+                const aqq = a[q][q];
+                const apq = a[p][q];
+
+                for (let k = 0; k < 3; k++) {
+                    if (k === p || k === q) continue;
+                    const akp = a[k][p];
+                    const akq = a[k][q];
+                    a[k][p] = a[p][k] = cosine * akp - sine * akq;
+                    a[k][q] = a[q][k] = sine * akp + cosine * akq;
+                }
+                a[p][p] = cosine * cosine * app - 2 * sine * cosine * apq + sine * sine * aqq;
+                a[q][q] = sine * sine * app + 2 * sine * cosine * apq + cosine * cosine * aqq;
+                a[p][q] = a[q][p] = 0;
+            }
+            return [a[0][0], a[1][1], a[2][2]].sort((x, y) => y - x);
+        }
+
+        function singularValues3x3(matrix) {
+            const gram = multiplyMatrices(transposeMatrix(matrix), matrix);
+            return symmetricEigenvalues3x3(gram).map(value => Math.sqrt(Math.max(0, value))).sort((a, b) => b - a);
+        }
+
+        function isPositiveDefiniteMatrix(matrix) {
+            if (!isSymmetricMatrix(matrix)) return false;
+            const minor1 = matrix[0][0];
+            const minor2 = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            return minor1 > 1e-10 && minor2 > 1e-10 && determinant3x3(matrix) > 1e-10;
+        }
+
+        function cleanNumber(value) {
+            return Math.abs(value) < 5e-10 ? 0 : value;
+        }
+
+        function formatMetric(value) {
+            if (!Number.isFinite(value)) return '∞';
+            const clean = cleanNumber(value);
+            if (Math.abs(clean) >= 10000 || (Math.abs(clean) > 0 && Math.abs(clean) < 0.001)) return clean.toExponential(2);
+            return clean.toFixed(3);
         }
 
         function calculateEigen2x2(m) {
@@ -773,26 +1327,53 @@
             document.getElementById('tDisplay').textContent = document.getElementById('tSlider').value;
         }
 
-        function updateProperties() {
-            const det = determinant3x3(currentMatrix);
-            const tr = trace3x3(currentMatrix);
+        function updateProperties(matrix = currentMatrix) {
+            const det = determinant3x3(matrix);
+            const tr = trace3x3(matrix);
+            const rank = matrixRank(matrix);
+            const singularValues = singularValues3x3(matrix);
+            const conditionNumber = singularValues[2] <= Math.max(1, singularValues[0]) * 1e-10
+                ? Infinity
+                : singularValues[0] / singularValues[2];
+            const symmetric = isSymmetricMatrix(matrix);
+            const orthogonal = isOrthogonalMatrix(matrix);
+            const positiveDefinite = isPositiveDefiniteMatrix(matrix);
+            const singular = rank < 3;
 
-            document.getElementById('determinant').textContent = det.toFixed(3);
-            document.getElementById('trace').textContent = tr.toFixed(3);
+            document.getElementById('determinant').textContent = formatMetric(det);
+            document.getElementById('trace').textContent = formatMetric(tr);
+            document.getElementById('rank').textContent = `${rank} / ${3 - rank}`;
+            document.getElementById('conditionNumber').textContent = formatMetric(conditionNumber);
+            document.getElementById('singularValues').textContent = singularValues.map(formatMetric).join(' · ');
 
             // Determine matrix type
             let type = 'General';
-            if (Math.abs(det - 1) < 0.001 && Math.abs(det) > 0.001) type = 'Orthogonal';
-            else if (Math.abs(det) < 0.001) type = 'Singular';
-            else if (det < 0) type = 'Reflection';
-            else if (det > 1.5) type = 'Scaling';
+            if (isIdentityMatrix(matrix)) type = 'Identity';
+            else if (rank === 0) type = 'Zero map';
+            else if (rank === 1) type = 'Rank-1 collapse';
+            else if (rank === 2) type = 'Rank-2 collapse';
+            else if (orthogonal && det < 0) type = 'Reflection / rotoreflection';
+            else if (orthogonal) type = 'Rotation / orthogonal';
+            else if (positiveDefinite) type = 'Symmetric positive-definite';
+            else if (symmetric) type = 'Symmetric';
+            else if (det < 0) type = 'Orientation-reversing';
 
             document.getElementById('matrixType').textContent = type;
-            document.getElementById('rank').textContent = Math.abs(det) > 0.001 ? '3' : '<3';
+            document.getElementById('propertyBadges').innerHTML = [
+                ['Symmetric', symmetric, 'symmetric'],
+                ['Orthogonal', orthogonal, 'orthogonal'],
+                ['Positive-definite', positiveDefinite, 'positive-definite'],
+                ['Singular', singular, 'rank-nullity']
+            ].map(([label, active, concept]) =>
+                `<button class="property-badge${active ? ' active' : ''}" type="button" data-concept="${concept}" aria-pressed="${active}">${active ? '✓ ' : ''}${label}</button>`
+            ).join('');
+            document.getElementById('propertyBadges').querySelectorAll('[data-concept]').forEach(button => {
+                button.addEventListener('click', () => focusConcept(button.dataset.concept));
+            });
 
             // Eigenvalues for 2x2
-            const m2x2 = [[currentMatrix[0][0], currentMatrix[0][1]],
-            [currentMatrix[1][0], currentMatrix[1][1]]];
+            const m2x2 = [[matrix[0][0], matrix[0][1]],
+            [matrix[1][0], matrix[1][1]]];
             const eigen = calculateEigen2x2(m2x2);
 
             const eigenSection = document.getElementById('eigenSection');
@@ -883,26 +1464,105 @@
             el.textContent = text;
         }
 
+        function updateMatrixStatus(valid, message) {
+            const status = document.getElementById('matrixStatus');
+            status.className = `matrix-status ${valid ? 'valid' : 'invalid'}`;
+            status.textContent = message;
+            document.getElementById('applyBtn').disabled = !valid;
+            document.getElementById('applyBtn').style.opacity = valid ? '1' : '0.5';
+        }
+
+        function syncMatrixToUrl(matrix) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('m', matrix.flat().map(value => Number(value.toFixed(6))).join(','));
+            history.replaceState(null, '', url);
+            return url.href;
+        }
+
+        function matrixFromUrl() {
+            const encoded = new URLSearchParams(window.location.search).get('m');
+            if (!encoded) return null;
+            const values = encoded.split(',').map(Number);
+            if (values.length !== 9 || !values.every(Number.isFinite)) return null;
+            return [values.slice(0, 3), values.slice(3, 6), values.slice(6, 9)];
+        }
+
+        function initializeMatrixFromUrl() {
+            const matrix = matrixFromUrl();
+            if (!matrix) return false;
+            currentMatrix = matrix.map(row => [...row]);
+            targetMatrix = matrix.map(row => [...row]);
+            document.getElementById('matrixInput').value = formatMatrixForInput(matrix);
+            document.getElementById('tSlider').value = 1;
+            document.getElementById('tValueDisplay').textContent = '1.00';
+            updateMatrixStatus(true, 'Loaded from shared URL · live properties shown below');
+            return true;
+        }
+
+        async function shareCurrentMatrix() {
+            const url = syncMatrixToUrl(currentMatrix);
+            const status = document.getElementById('shareStatus');
+            try {
+                await navigator.clipboard.writeText(url);
+                status.textContent = 'Link copied';
+            } catch (error) {
+                const temporary = document.createElement('textarea');
+                temporary.value = url;
+                temporary.setAttribute('readonly', '');
+                temporary.style.position = 'fixed';
+                temporary.style.opacity = '0';
+                document.body.appendChild(temporary);
+                temporary.select();
+                const copied = document.execCommand('copy');
+                temporary.remove();
+                status.textContent = copied ? 'Link copied' : 'Link added to address bar';
+            }
+            window.setTimeout(() => { status.textContent = ''; }, 2500);
+        }
+
+        function applyInputMatrix() {
+            const parsed = parseMatrix(document.getElementById('matrixInput').value);
+            if (!parsed) {
+                updateMatrixStatus(false, 'Enter exactly 3 rows × 3 finite numbers, separated by commas');
+                return;
+            }
+            targetMatrix = parsed.map(row => [...row]);
+            currentMatrix = parsed.map(row => [...row]);
+            document.getElementById('tSlider').value = 1;
+            document.getElementById('tValueDisplay').textContent = '1.00';
+            updateVisualization();
+            updateMatrixStatus(true, 'Applied · visualization and URL are in sync');
+            syncMatrixToUrl(currentMatrix);
+        }
+
         // ============ EVENT LISTENERS ============
-        document.getElementById('applyBtn').addEventListener('click', () => {
-            const input = document.getElementById('matrixInput').value;
-            const parsed = parseMatrix(input);
-            if (parsed && parsed.length === 3 && parsed[0].length === 3) {
-                targetMatrix = parsed;
-                currentMatrix = parsed;
-                updateVisualization();
+        document.getElementById('applyBtn').addEventListener('click', applyInputMatrix);
+        document.getElementById('shareMatrixBtn').addEventListener('click', shareCurrentMatrix);
+        document.getElementById('matrixInput').addEventListener('input', event => {
+            const parsed = parseMatrix(event.target.value);
+            if (parsed) {
+                updateProperties(parsed);
+                updateMatrixStatus(true, 'Valid draft · properties are live; Apply updates the visualization');
             } else {
-                alert('Please enter a valid 3x3 matrix');
+                updateMatrixStatus(false, 'Enter exactly 3 rows × 3 finite numbers, separated by commas');
+            }
+        });
+        document.getElementById('matrixInput').addEventListener('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                applyInputMatrix();
             }
         });
 
         document.getElementById('presetSelect').addEventListener('change', (e) => {
             if (presets[e.target.value]) {
                 const m = presets[e.target.value];
-                document.getElementById('matrixInput').value = m.map(row => row.map(n => n.toFixed(2)).join(', ')).join('\n');
+                document.getElementById('matrixInput').value = formatMatrixForInput(m);
                 targetMatrix = m;
                 document.getElementById('tSlider').value = 0;
                 document.getElementById('tValueDisplay').textContent = '0.00';
+                updateProperties(m);
+                updateMatrixStatus(true, 'Preset ready · properties are live; Apply or Animate to visualize');
             }
         });
 
@@ -933,6 +1593,7 @@
                 document.getElementById('tValueDisplay').textContent = t.toFixed(2);
                 currentMatrix = interpolateMatrix(identity, targetMatrix, t);
                 updateVisualization();
+                if (t === 1) syncMatrixToUrl(currentMatrix);
 
                 if (t < 1) {
                     requestAnimationFrame(animateStep);
@@ -1263,6 +1924,8 @@
 
         // ============ INITIALIZATION ============
         window.onload = function () {
+            initializeMatrixFromUrl();
+            initLearningLibrary();
             init3D();
             updateVisualization();
         };
