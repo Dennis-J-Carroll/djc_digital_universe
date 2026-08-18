@@ -1,4 +1,4 @@
-Using Node.js 20, Tailwind CSS v3.4.19, and Vite v7.2.4
+Using Node.js >=22.12.0, Tailwind CSS v3.4.19, and Vite v7.2.4
 
 Tailwind CSS has been set up with the shadcn theme
 
@@ -18,14 +18,15 @@ Usage:
   import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 
 Structure:
-  src/sections/        Page sections
-  src/hooks/           Custom hooks
-  src/types/           Type definitions
-  src/App.css          Styles specific to the Webapp
-  src/App.tsx          Root React component
-  src/index.css        Global styles
-  src/main.tsx         Entry point for rendering the Webapp
-  index.html           Entry point for the Webapp
-  tailwind.config.js   Configures Tailwind's theme, plugins, etc.
-  vite.config.ts       Main build and dev server settings for Vite
-  postcss.config.js    Config file for CSS post-processing tools
+  src/components/      Calculus Flow interface and reusable UI components
+  src/components/ui/   Shared shadcn-style UI primitives
+  src/hooks/           Canvas and responsive-layout hooks
+  src/lib/             Calculus functions, rendering, and derivative parsing
+  src/App.tsx          Root React component and application state
+  src/index.css        Global and application styles
+  src/main.tsx         React entry point
+  tests/               Node-based derivative parser tests
+  index.html           Vite HTML entry point
+  tailwind.config.js   Tailwind theme and plugin configuration
+  vite.config.ts       Vite build and development-server settings
+  postcss.config.js    CSS post-processing configuration

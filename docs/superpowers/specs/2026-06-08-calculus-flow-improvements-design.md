@@ -7,8 +7,8 @@
 ## Context
 
 Calculus Flow is a standalone React 19 + Vite + Tailwind CSS v3 canvas-based calculus
-visualizer. Its canonical source lives at `apps/calculus-flow/`. It has 5
-interactive modes: Riemann, Tangent, Area, FTC, Limits.
+visualizer. Its canonical source lives at `apps/calculus-flow/`. It has six
+interactive modes: Riemann, Tangent, Derivative Lab, Area, FTC, and Limits.
 
 The Gatsby portfolio site (`/`) uses React 18 — incompatible for direct component
 integration. The standalone app is delivered from Gatsby's static assets.
@@ -173,7 +173,9 @@ delivered directly from Gatsby's static assets.
 - [ ] Riemann animation: no console warnings about unused props
 - [ ] Limits mode: `(1+1/x)^x` preset loads without rendering artifacts
 - [ ] Tangent mode: secant point is draggable when `Show Secant` is on
-- [ ] Intuitive mode toggle: tips appear/disappear correctly in all 5 modes
+- [ ] Derivative Lab: chain-rule builder, step navigation, graph, and x scrubber work
+- [ ] Mode tabs expose all six modes, including Derivative Lab
+- [ ] Intuitive mode toggle: tips appear/disappear correctly in every supported canvas mode
 - [ ] Vite build succeeds: `npm run calc-flow:build`
 - [ ] Built `dist/index.html` uses relative asset paths (`./assets/...`)
 - [ ] Gatsby Apps page links directly to `/apps/calc-flow/`

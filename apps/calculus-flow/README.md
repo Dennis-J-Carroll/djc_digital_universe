@@ -13,9 +13,10 @@ The public route and deployed directory intentionally retain the shorter `calc-f
 
 ## Fresh-clone setup
 
-This nested package is not a root npm workspace, so the repository-root install does not install its dependencies. After cloning, and whenever `apps/calculus-flow/package-lock.json` changes, run:
+Calculus Flow requires Node.js 22.12.0 or newer. This nested package is not a root npm workspace, so the repository-root install does not install its dependencies. After cloning, and whenever `apps/calculus-flow/package-lock.json` changes, run:
 
 ```bash
+node --version
 npm ci --prefix apps/calculus-flow
 ```
 
