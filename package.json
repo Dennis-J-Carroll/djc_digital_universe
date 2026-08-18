@@ -65,7 +65,7 @@
   "license": "0BSD",
   "scripts": {
     "calc-flow:develop": "npm --prefix apps/calculus-flow run dev",
-    "calc-flow:test": "npm --prefix apps/calculus-flow test",
+    "calc-flow:test": "npm --prefix apps/calculus-flow test && node scripts/tests/calc-flow-deploy-guard.mjs",
     "calc-flow:build": "npm --prefix apps/calculus-flow run build",
     "calc-flow:deploy": "node scripts/deploy-calc-flow.mjs",
     "import": "node scripts/import-content.js",

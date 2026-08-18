@@ -6,18 +6,17 @@ import {
   mkdirSync,
   rmSync,
 } from 'node:fs'
-import { dirname, relative, resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { assertSafeCalcFlowDeploymentTarget } from './lib/calc-flow-deploy-guard.mjs'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const appRoot = resolve(repoRoot, 'apps/calculus-flow')
 const buildOutput = resolve(appRoot, 'dist')
 const deploymentTarget = resolve(repoRoot, 'static/apps/calc-flow')
-const expectedTargetPath = 'static/apps/calc-flow'
 
-if (relative(repoRoot, deploymentTarget).split('\\').join('/') !== expectedTargetPath) {
-  throw new Error(`Refusing to deploy outside ${expectedTargetPath}`)
-}
+assertSafeCalcFlowDeploymentTarget(repoRoot, deploymentTarget)
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const build = spawnSync(npmCommand, ['run', 'build'], {
@@ -41,9 +40,7 @@ if (!existsSync(resolve(buildOutput, 'index.html'))) {
   throw new Error(`Build output has no index.html: ${buildOutput}`)
 }
 
-if (existsSync(deploymentTarget) && lstatSync(deploymentTarget).isSymbolicLink()) {
-  throw new Error(`Refusing to replace symlinked deployment target: ${deploymentTarget}`)
-}
+assertSafeCalcFlowDeploymentTarget(repoRoot, deploymentTarget)
 
 rmSync(deploymentTarget, { recursive: true, force: true })
 mkdirSync(deploymentTarget, { recursive: true })

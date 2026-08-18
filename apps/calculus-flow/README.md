@@ -11,6 +11,14 @@ This directory is the canonical editable source for Calculus Flow, a standalone 
 
 The public route and deployed directory intentionally retain the shorter `calc-flow` name.
 
+## Fresh-clone setup
+
+This nested package is not a root npm workspace, so the repository-root install does not install its dependencies. After cloning, and whenever `apps/calculus-flow/package-lock.json` changes, run:
+
+```bash
+npm ci --prefix apps/calculus-flow
+```
+
 ## Root commands
 
 Run these from the repository root:

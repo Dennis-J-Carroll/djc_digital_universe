@@ -1,6 +1,6 @@
 # Calculus Flow — Improvements Design
 **Date:** 2026-06-08
-**Scope:** Bug pass + Intuitive Mode tooltip layer + iframe integration into Gatsby site
+**Scope:** Bug pass + Intuitive Mode tooltip layer + direct static delivery through Gatsby
 
 ---
 
@@ -11,7 +11,7 @@ visualizer. Its canonical source lives at `apps/calculus-flow/`. It has 5
 interactive modes: Riemann, Tangent, Area, FTC, Limits.
 
 The Gatsby portfolio site (`/`) uses React 18 — incompatible for direct component
-integration. The integration strategy is iframe embed.
+integration. The standalone app is delivered from Gatsby's static assets.
 
 ---
 
@@ -20,7 +20,7 @@ integration. The integration strategy is iframe embed.
 | Question | Decision |
 |----------|----------|
 | Scope | Bugs + highest-value features |
-| Integration | iframe embed into Gatsby |
+| Integration | Direct static delivery through Gatsby |
 | Intuitive Mode behavior | Canvas tooltip layer (callout bubbles on canvas) |
 | Commit strategy | 3 commits: bugs → intuitive mode → Gatsby integration |
 
@@ -131,49 +131,28 @@ each renderer knows where its elements are.
 
 ---
 
-## Section 3 — iframe Integration into Gatsby
+## Section 3 — Static Delivery Through Gatsby
 
 ### 3.1 Vite build config
 **File:** `apps/calculus-flow/vite.config.ts`
 **Change:** Set `base: './'` so all built asset paths are relative. This allows the
 built `dist/` to be served from any subdirectory.
 
-### 3.2 Build + copy
+### 3.2 Build + deploy
 ```bash
 npm run calc-flow:deploy
 ```
 
-The `static/` directory in Gatsby is served as-is at the site root. Files in
-`static/apps/calc-flow/` is available at `https://dennisjcarroll.com/apps/calc-flow/`.
+The deploy command builds the canonical source and synchronizes `dist/` to
+`static/apps/calc-flow/`. Gatsby serves that directory as-is at the public URL
+`https://dennisjcarroll.com/apps/calc-flow/`.
 
-### 3.3 Gatsby page
-**File:** `src/pages/calculus-flow.js`
+### 3.3 Portfolio discovery link
+**File:** `src/pages/apps.js`
 
-```jsx
-import React from 'react'
-
-// Gatsby 5 Head API — no react-helmet needed
-export const Head = () => (
-  <>
-    <title>Calculus Flow — Dennis Carroll</title>
-    <meta name="description" content="Interactive calculus visualizer: Riemann sums, tangent lines, area under curves, FTC, and limits." />
-  </>
-)
-
-export default function CalculusFlowPage() {
-  return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', margin: 0, padding: 0 }}>
-      <iframe
-        src="/apps/calc-flow/index.html"
-        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-        title="Calculus Flow"
-      />
-    </div>
-  )
-}
-```
-
-No Gatsby Layout wrapper — the app has its own navbar. The page is full-viewport.
+The Apps page links its Calculus Flow card directly to `/apps/calc-flow/`. There is
+no dedicated Gatsby page or wrapper; the standalone application is
+delivered directly from Gatsby's static assets.
 
 ---
 
@@ -183,21 +162,21 @@ No Gatsby Layout wrapper — the app has its own navbar. The page is full-viewpo
 |---|---------|---------------|
 | 1 | `fix(calc-flow): isAnimating prop, FTC y-range, Infinity preset, secant drag` | `CanvasBoard.tsx`, `canvasRenderers.ts`, `mathFunctions.ts`, `App.tsx` |
 | 2 | `feat(calc-flow): intuitive mode canvas tooltip layer` | `canvasRenderers.ts`, `CanvasBoard.tsx`, `App.tsx` |
-| 3 | `feat(site): add Calculus Flow page via iframe embed` | `apps/calculus-flow/vite.config.ts`, `static/apps/calc-flow/*`, `src/pages/calculus-flow.js` |
+| 3 | `chore(calc-flow): establish canonical app workflow` | `apps/calculus-flow/*`, `scripts/deploy-calc-flow.mjs`, `static/apps/calc-flow/*`, `src/pages/apps.js` |
 
 ---
 
 ## Testing Checklist
 
-- [ ] Vite dev server starts: `npm run dev` in app dir
+- [ ] Vite dev server starts: `npm run calc-flow:develop` from the repository root
 - [ ] FTC mode: antiderivative dot tracks correctly in lower panel
 - [ ] Riemann animation: no console warnings about unused props
 - [ ] Limits mode: `(1+1/x)^x` preset loads without rendering artifacts
 - [ ] Tangent mode: secant point is draggable when `Show Secant` is on
 - [ ] Intuitive mode toggle: tips appear/disappear correctly in all 5 modes
-- [ ] Vite build succeeds: `npm run build`
+- [ ] Vite build succeeds: `npm run calc-flow:build`
 - [ ] Built `dist/index.html` uses relative asset paths (`./assets/...`)
-- [ ] Gatsby dev server starts with new page: `gatsby develop`
+- [ ] Gatsby Apps page links directly to `/apps/calc-flow/`
 - [ ] `/apps/calc-flow/` renders the app correctly at full viewport
 - [ ] Mobile: canvas sizes correctly, touch drag works
 
