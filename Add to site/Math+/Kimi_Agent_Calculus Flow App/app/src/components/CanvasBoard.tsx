@@ -88,7 +88,6 @@ export default function CanvasBoard({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<string | null>(null);
-  const [fadeState, setFadeState] = useState<'in' | 'out'>('in');
   const canvasSizeRef = useRef({ width: 0, height: 0 });
   const trailRef = useRef<{ x: number; y: number; opacity: number }[]>([]);
   const isMobile = useIsMobile();
@@ -251,14 +250,9 @@ export default function CanvasBoard({
     isAnimating, intuitiveMode,
   ]);
 
-  // Animation frame for smooth rendering
+  // Coalesce state-driven redraws into one frame; stay idle when nothing changes.
   useEffect(() => {
-    let rafId: number;
-    const loop = () => {
-      render();
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
+    const rafId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(rafId);
   }, [render]);
 
@@ -273,15 +267,6 @@ export default function CanvasBoard({
     ro.observe(container);
     return () => ro.disconnect();
   }, [render]);
-
-  // Fade effect on mode change
-  useEffect(() => {
-    setFadeState('out');
-    const timer = setTimeout(() => {
-      setFadeState('in');
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [mode, preset.key]);
 
   // Get position from mouse or touch event
   const getCanvasPosFromMouse = (e: React.MouseEvent): [number, number] => {
@@ -304,7 +289,7 @@ export default function CanvasBoard({
   const startDrag = (px: number, _py: number) => {
     const cs = getCoordSystem();
     if (!cs) return;
-    const [mx, _my] = canvasToMath(cs, px, _py);
+    const [mx] = canvasToMath(cs, px, _py);
 
     if (mode === 'tangent') {
       // Check if near secant point
@@ -406,8 +391,31 @@ export default function CanvasBoard({
     doDrag(px, py);
   };
 
-  const handleTouchEnd = (_e: React.TouchEvent) => {
+  const handleTouchEnd = () => {
     endDrag();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    const delta = event.shiftKey ? 0.5 : 0.1;
+    const cs = getCoordSystem();
+    if (!cs) return;
+    event.preventDefault();
+
+    if (mode === 'tangent') {
+      onTangentXChange(Math.max(cs.xMin, Math.min(cs.xMax, tangentX + direction * delta)));
+    } else if (mode === 'area') {
+      if (event.shiftKey) {
+        onAreaBChange(Math.max(areaA + 0.1, Math.min(cs.xMax, areaB + direction * delta)));
+      } else {
+        onAreaAChange(Math.min(areaB - 0.1, Math.max(cs.xMin, areaA + direction * delta)));
+      }
+    } else if (mode === 'ftc') {
+      onFtcTChange(Math.max(cs.xMin, Math.min(cs.xMax, ftcT + direction * delta)));
+    } else if (mode === 'limits') {
+      onLimitXChange(Math.max(cs.xMin, Math.min(cs.xMax, limitX + direction * delta)));
+    }
   };
 
   // Update trail opacity
@@ -417,9 +425,10 @@ export default function CanvasBoard({
       trailRef.current = trailRef.current
         .map((t) => ({ ...t, opacity: t.opacity * 0.95 }))
         .filter((t) => t.opacity > 0.05);
+      render();
     }, 50);
     return () => clearInterval(interval);
-  }, [mode]);
+  }, [mode, render]);
 
   const modeBadge = {
     riemann: 'Riemann Sum',
@@ -429,10 +438,21 @@ export default function CanvasBoard({
     limits: 'Limits',
   }[mode];
 
+  const canvasDescription = {
+    riemann: `Riemann sum graph with ${riemannN} ${riemannType} rectangles. Use the labeled rectangle slider below the graph to change the approximation.`,
+    tangent: `Tangent graph at x ${tangentX.toFixed(2)}. Use left and right arrow keys to move tangent point.`,
+    area: `Area graph from a ${areaA.toFixed(2)} to b ${areaB.toFixed(2)}. Arrow keys move lower bound; Shift plus arrow keys move upper bound.`,
+    ftc: `Fundamental Theorem graph with upper bound t ${ftcT.toFixed(2)}. Use left and right arrow keys to change t.`,
+    limits: `Limit graph with approach point x ${limitX.toFixed(2)}. Use left and right arrow keys to move approach point.`,
+  }[mode];
+
   return (
     <div
       ref={containerRef}
       className="mx-auto relative canvas-container"
+      role="group"
+      aria-label={canvasDescription}
+      tabIndex={mode === 'riemann' ? -1 : 0}
       style={{
         maxWidth: 900,
         width: '100%',
@@ -446,10 +466,7 @@ export default function CanvasBoard({
         cursor: mode === 'tangent' || mode === 'area' || mode === 'ftc' || mode === 'limits'
           ? 'crosshair'
           : 'default',
-        opacity: fadeState === 'in' ? 1 : 0,
-        transition: fadeState === 'in'
-          ? 'opacity 200ms ease-out'
-          : 'opacity 150ms ease-in',
+        opacity: 1,
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -458,9 +475,11 @@ export default function CanvasBoard({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onKeyDown={handleKeyDown}
     >
       <canvas
         ref={canvasRef}
+        aria-hidden="true"
         style={{
           position: 'absolute',
           top: 0,

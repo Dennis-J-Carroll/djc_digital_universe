@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 interface ToggleSwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -5,10 +7,13 @@ interface ToggleSwitchProps {
 }
 
 export default function ToggleSwitch({ checked, onChange, label }: ToggleSwitchProps) {
+  const labelId = useId();
+
   return (
     <div className="flex items-center gap-2">
       {label && (
         <span
+          id={labelId}
           className="font-body text-[13px] font-medium select-none"
           style={{ color: '#e2e8f0' }}
         >
@@ -17,7 +22,7 @@ export default function ToggleSwitch({ checked, onChange, label }: ToggleSwitchP
       )}
       <button
         onClick={() => onChange(!checked)}
-        className="relative cursor-pointer outline-none inline-flex items-center justify-center"
+        className="relative cursor-pointer inline-flex items-center justify-center focus-ring"
         style={{
           width: 52,
           height: 28,
@@ -28,6 +33,8 @@ export default function ToggleSwitch({ checked, onChange, label }: ToggleSwitchP
           minHeight: 44,
         }}
         aria-checked={checked}
+        aria-labelledby={label ? labelId : undefined}
+        aria-label={label ? undefined : 'Toggle setting'}
         role="switch"
       >
         <div

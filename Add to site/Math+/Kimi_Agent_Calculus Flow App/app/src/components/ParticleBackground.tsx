@@ -38,11 +38,15 @@ const ParticleBackground = memo(function ParticleBackground() {
 
     resize();
 
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+
     // Initialize particles
-    const particleCount = Math.min(
-      80,
-      Math.max(60, Math.floor((window.innerWidth * window.innerHeight) / 15000))
-    );
+    const particleCount = reducedMotion
+      ? 20
+      : isMobile
+        ? 32
+        : Math.min(72, Math.max(48, Math.floor((window.innerWidth * window.innerHeight) / 18000)));
 
     particlesRef.current = Array.from({ length: particleCount }, () => ({
       x: Math.random() * window.innerWidth,
@@ -66,7 +70,7 @@ const ParticleBackground = memo(function ParticleBackground() {
     window.addEventListener('mouseleave', handleMouseLeave);
     window.addEventListener('resize', resize);
 
-    const animate = () => {
+    const drawFrame = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
       ctx.clearRect(0, 0, w, h);
@@ -131,16 +135,38 @@ const ParticleBackground = memo(function ParticleBackground() {
         }
       }
 
+    };
+
+    let lastFrame = 0;
+    const frameInterval = isMobile ? 1000 / 30 : 1000 / 45;
+    const animate = (time: number) => {
+      if (time - lastFrame >= frameInterval) {
+        lastFrame = time;
+        drawFrame();
+      }
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    rafRef.current = requestAnimationFrame(animate);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(rafRef.current);
+      } else if (!reducedMotion) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    drawFrame();
+    if (!reducedMotion) {
+      rafRef.current = requestAnimationFrame(animate);
+    }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
