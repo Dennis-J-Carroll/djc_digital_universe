@@ -23,6 +23,7 @@ import {
   type Expression,
   type FunctionShell,
 } from '@/lib/derivativeAst';
+import { getDerivativeAnimationFrame } from '@/lib/derivativeAnimation';
 
 const OUTER_SHELLS: FunctionShell[] = [power(2), power(3), power(5), sin(), exp(), ln()];
 const INNER_BLOCKS: { label: string; expression: Expression }[] = [
@@ -175,10 +176,10 @@ export default function DerivativePlayground() {
     const duration = 6000;
 
     const animate = (now: number) => {
-      const progress = Math.min((now - startedAt) / duration, 1);
-      setX(0.25 + progress * 2.25);
-      setStepIndex(Math.min(3, Math.floor(progress * 4)));
-      if (progress < 1) {
+      const frame = getDerivativeAnimationFrame(now - startedAt, duration, example.steps.length);
+      setX(frame.x);
+      setStepIndex(frame.stepIndex);
+      if (!frame.complete) {
         frameId = requestAnimationFrame(animate);
       } else {
         setPlaying(false);
@@ -187,7 +188,7 @@ export default function DerivativePlayground() {
 
     frameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId);
-  }, [playing, reducedMotion]);
+  }, [example.steps.length, playing, reducedMotion]);
 
   const chooseExample = (next: ChainRuleExample) => {
     setExample(next);
