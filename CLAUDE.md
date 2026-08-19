@@ -369,6 +369,7 @@ When text changes are finally needed:
 - avoid "passionate developer" language
 - avoid empty claims like "innovative solutions"
 - make every sentence earn its place
+- no emoji anywhere in the UI (site pages or standalone `static/apps/` HTML) — use SVG icons or plain geometric Unicode glyphs instead; see THEME.md's icon convention
 
 ## Anti-generic rule
 This site should not read like a template portfolio.

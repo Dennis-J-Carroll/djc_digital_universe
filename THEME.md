@@ -1,5 +1,14 @@
 # Theme system — currently locked to Dark
 
+## Icon convention: no emoji
+
+No emoji anywhere in the site UI or in standalone apps under `static/apps/` —
+use plain SVG icons or geometric Unicode glyphs (`◐ ○ ◑ ◈`, as in
+`src/constants/index.js`'s `THEMES` array) instead. Emoji render inconsistently
+across platforms/fonts and read as unprofessional in a technical portfolio.
+This applies to decorative icons, status indicators, and section markers
+alike — if something would reach for 🔊/✓/💡, reach for an inline SVG instead.
+
 As of 2026-07-18 the site is hardcoded to Dark theme only. The theme switcher
 (header dropdown, Light / Tokyo Afternoon / 80s Retro / Dark) has been
 removed. This doc explains why, what still exists to build on, and what a
