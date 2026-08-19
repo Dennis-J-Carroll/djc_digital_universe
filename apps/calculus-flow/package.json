@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --experimental-strip-types tests/derivativeAst.test.mjs",
+    "test": "node --experimental-strip-types tests/derivativeAst.test.mjs && node --experimental-strip-types tests/derivativeAnimation.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
