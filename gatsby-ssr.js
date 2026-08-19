@@ -18,6 +18,11 @@ exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyCompo
   // onload switches media to "all" so styles apply once the download completes.
   // noscript fallback covers JS-disabled browsers.
   setHeadComponents([
+    React.createElement("meta", {
+      key: "viewport",
+      name: "viewport",
+      content: "width=device-width, initial-scale=1",
+    }),
     React.createElement("link", {
       key: "font-preconnect-1",
       rel: "preconnect",
@@ -50,6 +55,13 @@ exports.onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyCompo
       rel: "stylesheet",
       href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap",
     })),
+    // Plausible: no cookies, ~1KB, defer keeps it off the critical render path.
+    React.createElement("script", {
+      key: "plausible-analytics",
+      defer: true,
+      "data-domain": "dennisjcarroll.com",
+      src: "https://plausible.io/js/script.js",
+    }),
   ])
 
   // Hidden static forms for Netlify Forms detection at build time.

@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             initAudio();
             const osc = _audioCtx.createOscillator(), gain = _audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(_audioCtx.destination);
             osc.type = 'sawtooth'; osc.frequency.value = 80+Math.random()*40;
             gain.gain.setValueAtTime(0.06, _audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime+dur);

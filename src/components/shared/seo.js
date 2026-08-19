@@ -1,19 +1,20 @@
 import React from "react"
-import { Helmet } from "react-helmet"
 import { useStaticQuery, graphql } from "gatsby"
 
 /**
- * SEO component that handles all the metadata for the site
+ * SEO component — renders directly into Gatsby's per-page Head export.
+ * Must NOT use react-helmet: Head renders each page in isolation via
+ * renderToStaticMarkup, so Helmet's side-effect singleton races across
+ * pages built concurrently and stamps the wrong page's tags onto the HTML.
  * @param {Object} props
  * @param {string} props.title - Page title
  * @param {string} props.description - Page description
- * @param {string} props.lang - Page language
  * @param {Object} props.meta - Additional meta tags
  * @param {string} props.pathname - The current page's pathname
  * @param {string} props.pageType - Type of page ('blog', 'project', etc.)
  * @param {Object} props.pageData - Additional data for structured data
  */
-const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) => {
+const Seo = ({ description, meta, title, pathname, pageType, pageData }) => {
   const { site } = useStaticQuery(
     graphql`
       query {
@@ -166,101 +167,45 @@ const Seo = ({ description, lang, meta, title, pathname, pageType, pageData }) =
     }
   };
 
-  return (
-    <Helmet
-      htmlAttributes={{
-        lang,
-      }}
-      title={title}
-      titleTemplate={defaultTitle ? `%s | ${defaultTitle}` : null}
-      meta={[
-        {
-          name: `description`,
-          content: metaDescription,
-        },
-        {
-          property: `og:title`,
-          content: composedTitle,
-        },
-        {
-          property: `og:description`,
-          content: metaDescription,
-        },
-        {
-          property: `og:type`,
-          content: pageType === 'blog' || pageType === 'story' ? 'article' : 'website',
-        },
-        {
-          property: `og:url`,
-          content: canonicalUrl,
-        },
-        {
-          property: `og:image`,
-          content: ogImage,
-        },
-        {
-          property: `og:image:width`,
-          content: `1200`,
-        },
-        {
-          property: `og:image:height`,
-          content: `630`,
-        },
-        {
-          property: `og:image:alt`,
-          content: metaDescription,
-        },
-        {
-          property: `og:locale`,
-          content: `en_US`,
-        },
-        {
-          name: `twitter:card`,
-          content: pageData?.image ? `summary_large_image` : `summary`,
-        },
-        {
-          name: `twitter:creator`,
-          content: `@denniscarrollj`,
-        },
-        {
-          name: `twitter:site`,
-          content: `@denniscarrollj`,
-        },
-        {
-          name: `twitter:title`,
-          content: composedTitle,
-        },
-        {
-          name: `twitter:description`,
-          content: metaDescription,
-        },
-        {
-          name: `twitter:image`,
-          content: ogImage,
-        },
-        {
-          name: `twitter:image:alt`,
-          content: metaDescription,
-        },
-        {
-          name: `keywords`,
-          content: `Dennis Carroll, Dennis J. Carroll, data scientist, machine learning engineer, Python, TensorFlow, PyTorch, Bayesian inference, deep learning, mechanistic interpretability, interactive visualization, React, Gatsby, portfolio`,
-        },
-      ].concat(meta)}
-    >
-      {/* Add canonical URL */}
-      {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+  const metaTags = [
+    { name: `description`, content: metaDescription },
+    { property: `og:title`, content: composedTitle },
+    { property: `og:description`, content: metaDescription },
+    { property: `og:type`, content: pageType === 'blog' || pageType === 'story' ? 'article' : 'website' },
+    { property: `og:url`, content: canonicalUrl },
+    { property: `og:image`, content: ogImage },
+    { property: `og:image:width`, content: `1200` },
+    { property: `og:image:height`, content: `630` },
+    { property: `og:image:alt`, content: metaDescription },
+    { property: `og:locale`, content: `en_US` },
+    { name: `twitter:card`, content: pageData?.image ? `summary_large_image` : `summary` },
+    { name: `twitter:creator`, content: `@denniscarrollj` },
+    { name: `twitter:site`, content: `@denniscarrollj` },
+    { name: `twitter:title`, content: composedTitle },
+    { name: `twitter:description`, content: metaDescription },
+    { name: `twitter:image`, content: ogImage },
+    { name: `twitter:image:alt`, content: metaDescription },
+    {
+      name: `keywords`,
+      content: `Dennis Carroll, Dennis J. Carroll, data scientist, machine learning engineer, Python, TensorFlow, PyTorch, Bayesian inference, deep learning, mechanistic interpretability, interactive visualization, React, Gatsby, portfolio`,
+    },
+  ].concat(meta)
 
-      {/* JSON-LD Structured Data for SEO */}
+  return (
+    <>
+      <title>{composedTitle}</title>
+      {metaTags.map((m, i) => (
+        <meta key={m.name || m.property || i} {...m} />
+      ))}
+      {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       <script type="application/ld+json">
         {JSON.stringify(generateStructuredData())}
       </script>
-    </Helmet>
+    </>
   )
 }
 
 Seo.defaultProps = {
-  lang: `en`,
   meta: [],
   description: ``,
   pathname: ``,
