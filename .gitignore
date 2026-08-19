@@ -59,6 +59,13 @@ variables.env
 .cache/
 public
 
+# AI tool session/cache state
+.agents/
+.antigravitycli/
+.benchmarks/
+.codex/
+.superpowers/
+
 # Mac files
 .DS_Store
 
