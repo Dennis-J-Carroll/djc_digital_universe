@@ -57,7 +57,7 @@ variables.env
 
 # gatsby files
 .cache/
-public
+/public
 
 # AI tool session/cache state
 .agents/
