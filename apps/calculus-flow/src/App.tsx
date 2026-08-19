@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { lazy, Suspense, useState, useCallback, useRef, useEffect } from 'react';
 import type { RiemannType } from '@/lib/mathFunctions';
 import { getFunctionPresets } from '@/lib/mathFunctions';
 import Navbar from '@/components/Navbar';
@@ -9,10 +9,12 @@ import FunctionPresets from '@/components/FunctionPresets';
 import CanvasBoard from '@/components/CanvasBoard';
 import Controls from '@/components/Controls';
 import AnalysisLog, { type LogEntry } from '@/components/AnalysisLog';
-import EducationalCards from '@/components/EducationalCards';
+import DeferredEducationalCards from '@/components/DeferredEducationalCards';
 import ToggleSwitch from '@/components/ToggleSwitch';
 
-export type CanvasMode = 'riemann' | 'tangent' | 'area' | 'ftc' | 'limits';
+const DerivativePlayground = lazy(() => import('@/components/DerivativePlayground'));
+
+export type CanvasMode = 'riemann' | 'tangent' | 'derivative' | 'area' | 'ftc' | 'limits';
 
 let logIdCounter = 0;
 
@@ -71,7 +73,9 @@ export default function App() {
 
   // Get current preset
   const presets = getFunctionPresets(activeMode);
-  const preset = presets.find((p) => p.key === activeFunctionKey) ?? presets[0];
+  const preset = presets.find((p) => p.key === activeFunctionKey)
+    ?? presets[0]
+    ?? getFunctionPresets('riemann')[0];
 
   // Helper: add log entry
   const addLog = useCallback((text: string, math?: string) => {
@@ -225,12 +229,15 @@ export default function App() {
           handleModeChange('tangent');
           break;
         case '3':
-          handleModeChange('area');
+          handleModeChange('derivative');
           break;
         case '4':
-          handleModeChange('ftc');
+          handleModeChange('area');
           break;
         case '5':
+          handleModeChange('ftc');
+          break;
+        case '6':
           handleModeChange('limits');
           break;
         case 'r':
@@ -298,6 +305,7 @@ export default function App() {
   const instructionText = {
     riemann: 'Drag the slider to change the number of rectangles. Compare left, right, and midpoint sums.',
     tangent: 'Drag the point along the curve to see the tangent line and its slope at each position.',
+    derivative: 'Build a nested function from pieces, then follow each chain-rule rate as it moves through the composition.',
     area: 'Drag the bounds to explore how the definite integral accumulates area under the curve.',
     ftc: 'Drag the upper bound to see how the derivative of the accumulated area equals the original function.',
     limits: 'Drag the point toward the limit to see how the function approaches its limiting value.',
@@ -449,6 +457,8 @@ export default function App() {
             addLog('Reset limits mode');
           },
         };
+      case 'derivative':
+        return null;
     }
   };
 
@@ -479,19 +489,22 @@ export default function App() {
     return (
       <div className="mx-auto px-3 sm:px-6" style={{ maxWidth: 900, marginTop: 12, marginBottom: 12 }}>
         <div className="flex items-center gap-3 sm:gap-4">
-          <span className="font-math text-[12px]" style={{ color: '#94a3b8', whiteSpace: 'nowrap' }}>
-            n =
-          </span>
+          <label htmlFor="riemann-rectangles" className="font-math text-[12px]" style={{ color: '#94a3b8', whiteSpace: 'nowrap' }}>
+            Rectangles
+          </label>
           <input
+            id="riemann-rectangles"
             type="range"
             min={2}
             max={100}
             value={riemannN}
             onInput={handleSliderInput}
+            aria-valuetext={`${riemannN} rectangles`}
             className="flex-1"
             style={{ touchAction: 'none' }}
           />
-          <span
+          <output
+            htmlFor="riemann-rectangles"
             className="font-math text-[14px] font-medium"
             style={{
               color: '#22d3ee',
@@ -500,7 +513,7 @@ export default function App() {
             }}
           >
             {riemannN}
-          </span>
+          </output>
         </div>
       </div>
     );
@@ -590,6 +603,8 @@ export default function App() {
       <div className="relative z-10">
         <Navbar />
 
+        <main>
+
         {/* Hero */}
         <section
           className="text-center mx-auto px-4 sm:px-6"
@@ -632,46 +647,49 @@ export default function App() {
         </section>
 
         {/* Controls Row */}
-        <div
-          className="flex flex-col sm:flex-row justify-between items-center gap-4 mx-auto px-4 sm:px-6"
-          style={{
-            maxWidth: 900,
-            marginBottom: 16,
-            opacity: 0,
-            animation: 'fade-in 0.4s ease-out 0.5s forwards',
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <ToggleSwitch
-              checked={intuitiveMode}
-              onChange={setIntuitiveMode}
-              label="Intuitive Mode"
-            />
-          </div>
-          <button
-            onClick={() => {
-              const el = document.getElementById('analysis-log');
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth' });
-                el.style.borderColor = '#22d3ee';
-                setTimeout(() => {
-                  el.style.borderColor = '#1a2248';
-                }, 1000);
-              }
+        {activeMode !== 'derivative' && (
+          <div
+            className="flex flex-col sm:flex-row justify-between items-center gap-4 mx-auto px-4 sm:px-6"
+            style={{
+              maxWidth: 900,
+              marginBottom: 16,
+              opacity: 0,
+              animation: 'fade-in 0.4s ease-out 0.5s forwards',
             }}
-            className="pill-inactive flex items-center gap-2"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-            </svg>
-            Analysis Log
-          </button>
-        </div>
+            <div className="flex items-center gap-3">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <ToggleSwitch
+                checked={intuitiveMode}
+                onChange={setIntuitiveMode}
+                label="Intuitive Mode"
+              />
+            </div>
+            <button
+              onClick={() => {
+                const el = document.getElementById('analysis-log');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                  el.focus({ preventScroll: true });
+                  el.style.borderColor = '#22d3ee';
+                  setTimeout(() => {
+                    el.style.borderColor = '#1a2248';
+                  }, 1000);
+                }
+              }}
+              className="pill-inactive flex items-center gap-2 focus-ring"
+            >
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              </svg>
+              Analysis Log
+            </button>
+          </div>
+        )}
 
         {/* Mode Tabs */}
         <div style={{ opacity: 0, animation: 'fade-in 0.4s ease-out 0.6s forwards' }}>
@@ -688,34 +706,41 @@ export default function App() {
         </div>
 
         {/* Instruction */}
-        <p
-          className="text-center font-body mx-auto px-4 sm:px-6"
-          style={{
-            maxWidth: 900,
-            fontSize: 13,
-            color: '#94a3b8',
-            marginBottom: 16,
-            opacity: 0,
-            animation: 'fade-in 0.3s ease-out 0.8s forwards',
-          }}
-        >
-          {instructionText}
-        </p>
+        {activeMode !== 'derivative' && (
+          <p
+            className="text-center font-body mx-auto px-4 sm:px-6"
+            style={{
+              maxWidth: 900,
+              fontSize: 13,
+              color: '#94a3b8',
+              marginBottom: 16,
+              opacity: 0,
+              animation: 'fade-in 0.3s ease-out 0.8s forwards',
+            }}
+          >
+            {instructionText}
+          </p>
+        )}
 
         {/* Riemann sub-tabs */}
-        {activeMode === 'riemann' && <RiemannSubTabs />}
+        {activeMode === 'riemann' && RiemannSubTabs()}
 
-        {/* Canvas */}
-        <div
-          className="mx-auto px-3 sm:px-6"
-          style={{
-            maxWidth: 900,
-            position: 'relative',
-            opacity: 0,
-            animation: 'fade-in 0.4s ease-out 0.9s forwards',
-          }}
-        >
-          <CanvasBoard
+        {/* Main interactive surface */}
+        {activeMode === 'derivative' ? (
+          <Suspense fallback={<p className="reference-loading">Loading derivative playground…</p>}>
+            <DerivativePlayground />
+          </Suspense>
+        ) : (
+          <div
+            className="mx-auto px-3 sm:px-6"
+            style={{
+              maxWidth: 900,
+              position: 'relative',
+              opacity: 0,
+              animation: 'fade-in 0.4s ease-out 0.9s forwards',
+            }}
+          >
+            <CanvasBoard
             mode={activeMode}
             preset={preset}
             riemannN={riemannN}
@@ -744,9 +769,9 @@ export default function App() {
             onSecantXChange={setSecantX}
             isAnimating={riemannAnimating}
             intuitiveMode={intuitiveMode}
-          />
-          {/* Big Idea overlay — 5 phases × 3s each */}
-          {bigIdeaActive && (() => {
+            />
+            {/* Big Idea overlay — 5 phases × 3s each */}
+            {bigIdeaActive && (() => {
             const phase = bigIdeaFrame < 180 ? 0 : bigIdeaFrame < 360 ? 1 : bigIdeaFrame < 540 ? 2 : bigIdeaFrame < 720 ? 3 : 4;
             const phaseProgress = (bigIdeaFrame % 180) / 180;
             const fadeIn = phaseProgress < 0.15 ? phaseProgress / 0.15 : phaseProgress > 0.85 ? (1 - phaseProgress) / 0.15 : 1;
@@ -791,38 +816,45 @@ export default function App() {
                 </div>
               </div>
             );
-          })()}
-        </div>
+            })()}
+          </div>
+        )}
 
         {/* Readout */}
-        <div style={{ opacity: 0, animation: 'fade-in 0.3s ease-out 1.0s forwards' }}>
-          <Readout />
-        </div>
+        {activeMode !== 'derivative' && (
+          <div style={{ opacity: 0, animation: 'fade-in 0.3s ease-out 1.0s forwards' }}>
+            {Readout()}
+          </div>
+        )}
 
         {/* Riemann Slider */}
         {activeMode === 'riemann' && (
           <div style={{ opacity: 0, animation: 'fade-in 0.3s ease-out 1.0s forwards' }}>
-            <RiemannSlider />
+            {RiemannSlider()}
           </div>
         )}
 
         {/* Action Controls */}
-        <div style={{ opacity: 0, animation: 'fade-in 0.3s ease-out 1.1s forwards' }}>
-          <Controls state={getControlsState()} />
-        </div>
+        {activeMode !== 'derivative' && (
+          <div style={{ opacity: 0, animation: 'fade-in 0.3s ease-out 1.1s forwards' }}>
+            <Controls state={getControlsState()!} />
+          </div>
+        )}
 
         {/* Analysis Log */}
-        <div
-          className="px-3 sm:px-6"
-          style={{
-            maxWidth: 900,
-            margin: '0 auto',
-            opacity: 0,
-            animation: 'fade-in 0.3s ease-out 1.2s forwards',
-          }}
-        >
-          <AnalysisLog entries={logEntries} />
-        </div>
+        {activeMode !== 'derivative' && (
+          <div
+            className="px-3 sm:px-6"
+            style={{
+              maxWidth: 900,
+              margin: '0 auto',
+              opacity: 0,
+              animation: 'fade-in 0.3s ease-out 1.2s forwards',
+            }}
+          >
+            <AnalysisLog entries={logEntries} />
+          </div>
+        )}
 
         {/* Educational Cards */}
         <div
@@ -834,8 +866,10 @@ export default function App() {
             animation: 'fade-in 0.3s ease-out 1.3s forwards',
           }}
         >
-          <EducationalCards />
+          <DeferredEducationalCards />
         </div>
+
+        </main>
 
         <Footer />
       </div>

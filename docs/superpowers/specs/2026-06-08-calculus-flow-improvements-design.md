@@ -1,17 +1,17 @@
 # Calculus Flow — Improvements Design
 **Date:** 2026-06-08
-**Scope:** Bug pass + Intuitive Mode tooltip layer + iframe integration into Gatsby site
+**Scope:** Bug pass + Intuitive Mode tooltip layer + direct static delivery through Gatsby
 
 ---
 
 ## Context
 
 Calculus Flow is a standalone React 19 + Vite + Tailwind CSS v3 canvas-based calculus
-visualizer. It lives at `Add to site/Math+/Kimi_Agent_Calculus Flow App/app/`. It has 5
-interactive modes: Riemann, Tangent, Area, FTC, Limits.
+visualizer. Its canonical source lives at `apps/calculus-flow/`. It has six
+interactive modes: Riemann, Tangent, Derivative Lab, Area, FTC, and Limits.
 
 The Gatsby portfolio site (`/`) uses React 18 — incompatible for direct component
-integration. The integration strategy is iframe embed.
+integration. The standalone app is delivered from Gatsby's static assets.
 
 ---
 
@@ -20,7 +20,7 @@ integration. The integration strategy is iframe embed.
 | Question | Decision |
 |----------|----------|
 | Scope | Bugs + highest-value features |
-| Integration | iframe embed into Gatsby |
+| Integration | Direct static delivery through Gatsby |
 | Intuitive Mode behavior | Canvas tooltip layer (callout bubbles on canvas) |
 | Commit strategy | 3 commits: bugs → intuitive mode → Gatsby integration |
 
@@ -29,7 +29,7 @@ integration. The integration strategy is iframe embed.
 ## Section 1 — Bug Fixes
 
 ### 1.1 `isAnimating` prop unused in CanvasBoard
-**File:** `app/src/components/CanvasBoard.tsx`
+**File:** `apps/calculus-flow/src/components/CanvasBoard.tsx`
 **Problem:** `isAnimating` is declared in `CanvasBoardProps` and passed from App but
 never destructured in the component function.
 **Fix:** Destructure it. Use it to gate the data callback throttle: during animation
@@ -37,7 +37,7 @@ skip `onRiemannDataChange` when n hasn't meaningfully changed (avoids flooding s
 with nearly-identical values at 60fps).
 
 ### 1.2 FTC lower-half y-range incorrect
-**File:** `app/src/lib/canvasRenderers.ts` → `renderFTC`
+**File:** `apps/calculus-flow/src/lib/canvasRenderers.ts` → `renderFTC`
 **Problem:** `lowerCs` uses the same `yMin/yMax` as `upperCs`. The antiderivative F(x)
 has a completely different value range than f(x). The dot on the lower panel renders at
 the wrong vertical position.
@@ -45,7 +45,7 @@ the wrong vertical position.
 `lowerCs` with the correct range. Import `getFunctionRange` from `mathFunctions`.
 
 ### 1.3 Limits `(1+1/x)^x` preset — `limitPoint: Infinity`
-**File:** `app/src/lib/mathFunctions.ts`
+**File:** `apps/calculus-flow/src/lib/mathFunctions.ts`
 **Problem:** `limitPoint: Infinity` causes the renderer to try to draw a vertical dashed
 line and label at `x = Infinity` — both silently fail or render off-screen.
 **Fix:** Set `limitPoint: 1000` (large proxy) and keep `limitValue: Math.E`. The label
@@ -53,7 +53,7 @@ string stays `x → ∞` (handled in App.tsx readout, already renders the `→` 
 Also guard `renderLimits`: skip the vertical dashed line if `limitPoint > cs.xMax`.
 
 ### 1.4 Secant line not draggable
-**File:** `app/src/App.tsx` + `app/src/components/CanvasBoard.tsx`
+**File:** `apps/calculus-flow/src/App.tsx` + `apps/calculus-flow/src/components/CanvasBoard.tsx`
 **Problem:** `const [secantX] = useState(3)` — no setter. User cannot reposition the
 secant point.
 **Fix:**
@@ -74,7 +74,7 @@ each renderer call. Each renderer calls `drawIntuitiveTips(ctx, cs, mode, params
 its final step when `intuitiveMode` is true.
 
 ### New helper: `drawTip`
-**File:** `app/src/lib/canvasRenderers.ts`
+**File:** `apps/calculus-flow/src/lib/canvasRenderers.ts`
 
 ```ts
 function drawTip(
@@ -131,51 +131,28 @@ each renderer knows where its elements are.
 
 ---
 
-## Section 3 — iframe Integration into Gatsby
+## Section 3 — Static Delivery Through Gatsby
 
 ### 3.1 Vite build config
-**File:** `app/vite.config.ts`
+**File:** `apps/calculus-flow/vite.config.ts`
 **Change:** Set `base: './'` so all built asset paths are relative. This allows the
 built `dist/` to be served from any subdirectory.
 
-### 3.2 Build + copy
+### 3.2 Build + deploy
 ```bash
-cd "Add to site/Math+/Kimi_Agent_Calculus Flow App/app"
-npm run build          # outputs to dist/
-cp -r dist/* static/calc-flow/    # in Gatsby root
+npm run calc-flow:deploy
 ```
 
-The `static/` directory in Gatsby is served as-is at the site root. Files in
-`static/calc-flow/` are available at `https://dennisjcarroll.com/calc-flow/`.
+The deploy command builds the canonical source and synchronizes `dist/` to
+`static/apps/calc-flow/`. Gatsby serves that directory as-is at the public URL
+`https://dennisjcarroll.com/apps/calc-flow/`.
 
-### 3.3 Gatsby page
-**File:** `src/pages/calculus-flow.js`
+### 3.3 Portfolio discovery link
+**File:** `src/pages/apps.js`
 
-```jsx
-import React from 'react'
-
-// Gatsby 5 Head API — no react-helmet needed
-export const Head = () => (
-  <>
-    <title>Calculus Flow — Dennis Carroll</title>
-    <meta name="description" content="Interactive calculus visualizer: Riemann sums, tangent lines, area under curves, FTC, and limits." />
-  </>
-)
-
-export default function CalculusFlowPage() {
-  return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', margin: 0, padding: 0 }}>
-      <iframe
-        src="/calc-flow/index.html"
-        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-        title="Calculus Flow"
-      />
-    </div>
-  )
-}
-```
-
-No Gatsby Layout wrapper — the app has its own navbar. The page is full-viewport.
+The Apps page links its Calculus Flow card directly to `/apps/calc-flow/`. There is
+no dedicated Gatsby page or wrapper; the standalone application is
+delivered directly from Gatsby's static assets.
 
 ---
 
@@ -185,22 +162,24 @@ No Gatsby Layout wrapper — the app has its own navbar. The page is full-viewpo
 |---|---------|---------------|
 | 1 | `fix(calc-flow): isAnimating prop, FTC y-range, Infinity preset, secant drag` | `CanvasBoard.tsx`, `canvasRenderers.ts`, `mathFunctions.ts`, `App.tsx` |
 | 2 | `feat(calc-flow): intuitive mode canvas tooltip layer` | `canvasRenderers.ts`, `CanvasBoard.tsx`, `App.tsx` |
-| 3 | `feat(site): add Calculus Flow page via iframe embed` | `vite.config.ts`, `static/calc-flow/*`, `src/pages/calculus-flow.js` |
+| 3 | `chore(calc-flow): establish canonical app workflow` | `apps/calculus-flow/*`, `scripts/deploy-calc-flow.mjs`, `static/apps/calc-flow/*`, `src/pages/apps.js` |
 
 ---
 
 ## Testing Checklist
 
-- [ ] Vite dev server starts: `npm run dev` in app dir
+- [ ] Vite dev server starts: `npm run calc-flow:develop` from the repository root
 - [ ] FTC mode: antiderivative dot tracks correctly in lower panel
 - [ ] Riemann animation: no console warnings about unused props
 - [ ] Limits mode: `(1+1/x)^x` preset loads without rendering artifacts
 - [ ] Tangent mode: secant point is draggable when `Show Secant` is on
-- [ ] Intuitive mode toggle: tips appear/disappear correctly in all 5 modes
-- [ ] Vite build succeeds: `npm run build`
+- [ ] Derivative Lab: chain-rule builder, step navigation, graph, and x scrubber work
+- [ ] Mode tabs expose all six modes, including Derivative Lab
+- [ ] Intuitive mode toggle: tips appear/disappear correctly in every supported canvas mode
+- [ ] Vite build succeeds: `npm run calc-flow:build`
 - [ ] Built `dist/index.html` uses relative asset paths (`./assets/...`)
-- [ ] Gatsby dev server starts with new page: `gatsby develop`
-- [ ] `/calculus-flow` renders the iframe correctly at full viewport
+- [ ] Gatsby Apps page links directly to `/apps/calc-flow/`
+- [ ] `/apps/calc-flow/` renders the app correctly at full viewport
 - [ ] Mobile: canvas sizes correctly, touch drag works
 
 ---

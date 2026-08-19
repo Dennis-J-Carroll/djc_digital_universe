@@ -29,6 +29,8 @@ export default function AnalysisLog({ entries }: AnalysisLogProps) {
     <div
       id="analysis-log"
       ref={containerRef}
+      tabIndex={-1}
+      aria-label="Analysis log"
       className="mx-auto"
       style={{
         maxWidth: 900,

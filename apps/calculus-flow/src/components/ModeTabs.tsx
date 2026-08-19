@@ -3,15 +3,17 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface Mode {
   key: string;
   label: string;
+  shortLabel: string;
   icon: string;
 }
 
 const MODES: Mode[] = [
-  { key: 'riemann', label: 'Riemann Sums', icon: '\u229E' },
-  { key: 'tangent', label: 'Tangent Line', icon: '\u2197' },
-  { key: 'area', label: 'Area Under Curve', icon: '\u222B' },
-  { key: 'ftc', label: 'Fundamental Theorem', icon: '\u21C4' },
-  { key: 'limits', label: 'Limits', icon: 'lim' },
+  { key: 'riemann', label: 'Riemann Sums', shortLabel: 'Sums', icon: '\u229E' },
+  { key: 'tangent', label: 'Tangent Line', shortLabel: 'Slope', icon: '\u2197' },
+  { key: 'derivative', label: 'Derivative Lab', shortLabel: 'Chain', icon: 'd/dx' },
+  { key: 'area', label: 'Area Under Curve', shortLabel: 'Area', icon: '\u222B' },
+  { key: 'ftc', label: 'Fundamental Theorem', shortLabel: 'FTC', icon: '\u21C4' },
+  { key: 'limits', label: 'Limits', shortLabel: 'Limits', icon: 'lim' },
 ];
 
 interface ModeTabsProps {
@@ -40,7 +42,9 @@ export default function ModeTabs({ activeMode, onModeChange }: ModeTabsProps) {
           <button
             key={mode.key}
             onClick={() => onModeChange(mode.key)}
-            className="flex items-center gap-1.5 outline-none select-none"
+            className="flex items-center gap-1.5 select-none focus-ring"
+            aria-label={mode.label}
+            aria-pressed={isActive}
             style={{
               background: isActive ? 'rgba(34, 211, 238, 0.1)' : 'transparent',
               border: isActive ? '1px solid #22d3ee' : '1px solid transparent',
@@ -67,7 +71,8 @@ export default function ModeTabs({ activeMode, onModeChange }: ModeTabsProps) {
               }
             }}
           >
-            <span style={{ fontSize: isMobile ? 16 : 13 }}>{mode.icon}</span>
+            <span aria-hidden="true" style={{ fontSize: isMobile ? 13 : 13 }}>{mode.icon}</span>
+            <span className="sm:hidden">{mode.shortLabel}</span>
             <span className="hidden sm:inline">{mode.label}</span>
           </button>
         );

@@ -27,7 +27,8 @@ export default function FunctionPresets({
           <button
             key={preset.key}
             onClick={() => onFunctionChange(preset.key)}
-            className="outline-none select-none"
+            className="select-none focus-ring"
+            aria-pressed={isActive}
             style={{
               background: isActive
                 ? 'rgba(34, 211, 238, 0.1)'
