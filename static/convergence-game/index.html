@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f0f0f" />
+    <title>meridian_term v3.1.4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./convergence.js"></script>
+    <link rel="stylesheet" crossorigin href="./convergence.css">
+  </head>
+  <body>
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <main
+      class="terminal-window phosphor"
+      id="terminalWindow"
+      aria-label="CONVERGENCE terminal narrative"
+    >
+      <div class="title-bar">
+        <div class="title-bar-left" aria-hidden="true">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <div class="title-bar-title">meridian_term v3.1.4</div>
+        <div aria-hidden="true" style="width: 52px"></div>
+      </div>
+
+      <div class="status-bar-strip" aria-label="Session status">
+        <span class="sb-phase" id="phaseStatus" aria-label="Phase 1 of 4">
+          PHASE <span id="phasePips" aria-hidden="true">▣░░░</span>
+        </span>
+        <span class="sb-temp" id="tempStatus" aria-label="Output temperature calm">
+          TEMP <span id="tempBar" class="temp-calm" aria-hidden="true">░░░░░</span>
+        </span>
+        <span class="sb-timer" id="statusTimer" aria-label="Session duration">00:00</span>
+        <button
+          class="snd-toggle"
+          id="sndToggle"
+          type="button"
+          aria-pressed="false"
+        >
+          [SND OFF]
+        </button>
+      </div>
+
+      <div class="terminal-body" id="terminalBody">
+        <div id="outputContainer" aria-live="off"></div>
+      </div>
+
+      <div class="input-line">
+        <span class="prompt" aria-hidden="true">&gt;</span>
+        <label class="sr-only" for="cmdInput">Terminal command</label>
+        <input
+          type="text"
+          class="cmd-input"
+          id="cmdInput"
+          autocomplete="off"
+          spellcheck="false"
+          aria-describedby="commandHint"
+          disabled
+        />
+        <span class="sr-only" id="commandHint">
+          Enter a command. During questioning, number keys 1 through 4 select a response.
+        </span>
+      </div>
+    </main>
+
+    <div
+      class="sr-only"
+      id="srAnnouncer"
+      role="log"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+  </body>
+</html>

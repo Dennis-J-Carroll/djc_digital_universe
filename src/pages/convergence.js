@@ -4,7 +4,7 @@ import Seo from '../components/shared/seo';
 export default function ConvergencePage() {
   return (
     <iframe
-      src="/convergence-app.html"
+      src="/convergence-game/"
       style={{ width: '100%', height: '100vh', borderWidth: 0, display: 'block' }}
       title="CONVERGENCE terminal narrative"
     />

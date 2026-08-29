@@ -1,7 +1,10 @@
 [build]
-  command = "gatsby build"
+  command = "npm ci --prefix apps/convergence-game && npm run build"
   publish = "public"
   functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22.12.0"
 
 [dev]
   command = "gatsby develop"
@@ -55,6 +58,14 @@
   for = "/convergence-app.html"
   [headers.values]
     X-Frame-Options = "SAMEORIGIN"
+
+# Modular CONVERGENCE shell; stable files revalidate each deploy.
+[[headers]]
+  for = "/convergence-game/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
 
 # ─── Hashed Gatsby JS bundles — immutable, never revalidate ────────────────────
 # Gatsby content-hashes every JS filename; a changed file = a changed URL.
