@@ -53,10 +53,18 @@ typings/
 
 # dotenv environment variable files
 .env*
+variables.env
 
 # gatsby files
 .cache/
-public
+/public
+
+# AI tool session/cache state
+.agents/
+.antigravitycli/
+.benchmarks/
+.codex/
+.superpowers/
 
 # Mac files
 .DS_Store

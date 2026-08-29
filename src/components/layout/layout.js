@@ -4,7 +4,6 @@ import "../../styles/global.css"
 import "../../styles/futuristic-ui.css"
 import Header from "./header.js"
 import Footer from "./footer.js"
-import { Helmet } from "react-helmet"
 import { initAllAnimations } from "../../scripts/animations"
 import Navigation from "../shared/navigation-component"
 import ErrorBoundary from "../shared/error-boundary"
@@ -62,12 +61,6 @@ const Layout = ({ children, pageContext, location }) => {
 
   return (
     <>
-      <Helmet>
-        <title>{siteTitle}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Fonts injected via async script in gatsby-ssr.js — no blocking link here */}
-      </Helmet>
-
       {/* Interactive Cursor Effect */}
       <InteractiveCursor />
 

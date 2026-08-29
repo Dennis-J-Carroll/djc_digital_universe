@@ -13,7 +13,7 @@ describe('ConvergencePage', () => {
     const { container } = render(<ConvergencePage />);
     const iframe = container.querySelector('iframe');
     expect(iframe).not.toBeNull();
-    expect(iframe.getAttribute('src')).toBe('/convergence-app.html');
+    expect(iframe.getAttribute('src')).toBe('/convergence-game/');
     expect(iframe.style.width).toBe('100%');
     expect(iframe.style.height).toBe('100vh');
     expect(iframe.style.borderWidth).toBe('0px');

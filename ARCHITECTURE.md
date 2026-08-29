@@ -220,24 +220,10 @@ src/styles/
 
 ```javascript
 export const THEMES = [
-  {
-    id: 'dark',
-    name: 'Dark',
-    icon: '🌙',
-    ariaLabel: 'Switch to Dark theme'
-  },
-  {
-    id: 'light',
-    name: 'Light',
-    icon: '☀️',
-    ariaLabel: 'Switch to Light theme'
-  },
-  {
-    id: 'tokyo-afternoon',
-    name: 'Tokyo',
-    icon: '🌸',
-    ariaLabel: 'Switch to Tokyo Afternoon theme'
-  }
+  { id: 'dark', name: 'Dark', icon: '◐', ariaLabel: 'Switch to Dark theme' },
+  { id: 'light', name: 'Light', icon: '○', ariaLabel: 'Switch to Light theme' },
+  { id: 'tokyo-afternoon', name: 'Tokyo', icon: '◑', ariaLabel: 'Switch to Tokyo Afternoon theme' },
+  { id: 'retro-80s', name: '80s Retro', icon: '◈', ariaLabel: 'Switch to 80s Retro theme' }
 ];
 ```
 

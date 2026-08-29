@@ -126,7 +126,7 @@
         </div>
         <div class="flex items-center gap-3">
             <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound effects">
-                <span class="sound-icon">🔇</span> Sound
+                <span class="sound-icon" aria-hidden="true"></span> Sound
             </button>
             <button class="hamburger-btn md:hidden" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span><span></span><span></span>
@@ -247,7 +247,7 @@
 
         <!-- Polarization Problem -->
         <div class="polz-box mt-8">
-            <h4 class="font-bold text-blue-900 text-lg mb-2">⚠ The Polarization Problem — Volta's Achilles' Heel</h4>
+            <h4 class="font-bold text-blue-900 text-lg mb-2">The Polarization Problem — Volta's Achilles' Heel</h4>
             <p class="text-gray-700 text-sm leading-relaxed mb-3">
                 Look at the net reaction above: hydrogen gas (H<sub>2</sub>↑) evolves at the copper disc cathode. In practice, these tiny bubbles <em>accumulate</em> on the copper surface, forming an insulating layer that blocks ionic conduction. The result: voltage drops noticeably within minutes of operation — a phenomenon called <strong>polarization</strong>.
             </p>
@@ -260,9 +260,9 @@
         <!-- Simulator -->
         <div class="mt-16 bg-gray-50 rounded-xl p-8 border border-gray-100">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-                <h4 class="text-2xl font-bold">⚡ Interactive Pile Simulator</h4>
+                <h4 class="text-2xl font-bold">Interactive Pile Simulator</h4>
                 <button class="sound-toggle" id="soundToggle2" aria-label="Toggle sound">
-                    <span class="sound-icon2">🔇</span> Sound
+                    <span class="sound-icon2" aria-hidden="true"></span> Sound
                 </button>
             </div>
             <p class="text-gray-600 mb-8 text-sm leading-relaxed">Experiment with stacking voltaic cells to understand how Volta's invention produced usable electricity. Each cell adds 0.76 V and 0.5 Ω internal resistance. Watch electron flow increase as you add more cells.</p>
@@ -288,7 +288,7 @@
                         </div>
                     </div>
                     <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p class="text-sm text-amber-800"><strong>💡 Historical Note:</strong> <span id="historicalNote">Volta's original pile used ~32 cells to achieve approximately 24V — enough to produce visible sparks and strong shock sensations.</span></p>
+                        <p class="text-sm text-amber-800"><strong>Historical Note:</strong> <span id="historicalNote">Volta's original pile used ~32 cells to achieve approximately 24V — enough to produce visible sparks and strong shock sensations.</span></p>
                     </div>
                 </div>
                 <div class="relative">
@@ -317,8 +317,8 @@
         </p>
         <div class="max-w-4xl mx-auto">
             <div class="flex justify-center border-b mb-8 space-x-4 md:space-x-8" role="tablist">
-                <button class="tab active py-2 px-4 text-sm md:text-base" data-tab="gothic" role="tab" aria-selected="true" aria-controls="tab-gothic">💀 The Gothic Theater</button>
-                <button class="tab py-2 px-4 text-sm md:text-base" data-tab="chemical" role="tab" aria-selected="false" aria-controls="tab-chemical">🧪 The Chemical Miracle</button>
+                <button class="tab active py-2 px-4 text-sm md:text-base" data-tab="gothic" role="tab" aria-selected="true" aria-controls="tab-gothic">The Gothic Theater</button>
+                <button class="tab py-2 px-4 text-sm md:text-base" data-tab="chemical" role="tab" aria-selected="false" aria-controls="tab-chemical">The Chemical Miracle</button>
             </div>
             <div id="tabContent" role="tabpanel"><!-- JS renders --></div>
         </div>
@@ -362,9 +362,9 @@
             <div class="md:col-span-1">
                 <h4 class="font-bold mb-4 text-center">Component Palette</h4>
                 <div class="builder-palette flex-col items-center">
-                    <div class="builder-piece copper" draggable="true" data-type="copper" role="button" tabindex="0" aria-label="Drag copper disc to stack">⬛ Copper Disc (+)</div>
+                    <div class="builder-piece copper" draggable="true" data-type="copper" role="button" tabindex="0" aria-label="Drag copper disc to stack">Copper Disc (+)</div>
                     <div class="builder-piece electrolyte" draggable="true" data-type="electrolyte" role="button" tabindex="0" aria-label="Drag electrolyte card to stack">≡ Electrolyte Card</div>
-                    <div class="builder-piece zinc" draggable="true" data-type="zinc" role="button" tabindex="0" aria-label="Drag zinc disc to stack">⬛ Zinc Disc (−)</div>
+                    <div class="builder-piece zinc" draggable="true" data-type="zinc" role="button" tabindex="0" aria-label="Drag zinc disc to stack">Zinc Disc (−)</div>
                 </div>
                 <p class="text-xs text-gray-400 text-center mt-4">Drag pieces onto the stack<br>or tap/click on mobile</p>
                 <button onclick="clearBuilderStack()" class="mt-4 w-full text-sm text-red-500 border border-red-200 rounded-lg py-2 hover:bg-red-50 transition">Clear Stack</button>
@@ -385,10 +385,10 @@
                 </div>
                 <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500 leading-relaxed">
                     <p class="font-semibold mb-1">Validation rules:</p>
-                    <p>✓ One cell = Cu + Electrolyte + Zn</p>
-                    <p>✓ Cells can be stacked (multiply voltage)</p>
-                    <p>✗ Wrong order reduces or eliminates EMF</p>
-                    <p>✗ Adjacent metals without electrolyte = short circuit</p>
+                    <p>One cell = Cu + Electrolyte + Zn</p>
+                    <p>Cells can be stacked (multiply voltage)</p>
+                    <p>Wrong order reduces or eliminates EMF</p>
+                    <p>Adjacent metals without electrolyte = short circuit</p>
                 </div>
             </div>
         </div>
@@ -445,6 +445,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Declare sound state early to avoid TDZ crash when playBuzz is called from updateSimulator(4)
     let soundOn = false, _audioCtx = null;
+
+    // Inline icon set (Lucide-style, stroke-based) — no emoji anywhere in this app.
+    const ICON_VOLUME_ON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
+    const ICON_VOLUME_OFF = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+    const ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    const ICON_X = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    const ICON_ALERT = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    document.querySelectorAll('.sound-icon,.sound-icon2').forEach(s => s.innerHTML = ICON_VOLUME_OFF);
 
     // ══════════════════════════════════════════════
     // DATA
@@ -634,35 +642,35 @@ document.addEventListener('DOMContentLoaded', function () {
         ],
         figures: [
             {
-                name: 'Luigi Galvani', dates: '1737–1798', emoji: '🐸',
+                name: 'Luigi Galvani', dates: '1737–1798',
                 role: 'The Catalyst',
                 contribution: 'Observed that dissected frog legs twitched when touched with two different metals during an electrical storm. Proposed "animal electricity" — wrong theory, real phenomenon.',
                 quote: '"Perhaps this electric fluid is the very same as the one flowing through the nervous system of living beings."',
                 fact: 'Galvani\'s wife Lucia first noticed the frog leg twitching while observing her husband\'s static electricity machine. He spent 8 years investigating the observation she made in passing.'
             },
             {
-                name: 'Alessandro Volta', dates: '1745–1827', emoji: '⚡',
+                name: 'Alessandro Volta', dates: '1745–1827',
                 role: 'The Inventor',
                 contribution: 'Proved electricity arose from metal-metal contact, not animal tissue. Created the first true battery by stacking alternating copper, zinc, and electrolyte-soaked discs.',
                 quote: '"My pile is not merely an instrument for producing electricity, but an artificial electrical organ."',
                 fact: 'Volta originally used silver, not copper. Copper became the substitute only when silver proved too expensive for large piles. He used saltwater and dilute acid as electrolytes and tested cells by tasting them — a dangerous practice that damaged his palate.'
             },
             {
-                name: 'Giovanni Aldini', dates: '1762–1834', emoji: '💀',
+                name: 'Giovanni Aldini', dates: '1762–1834',
                 role: 'The Showman',
                 contribution: 'Volta\'s nephew and the most flamboyant galvanism demonstrator. His 1803 experiments on George Forster at Newgate Prison directly inspired Mary Shelley\'s Frankenstein.',
                 quote: '"The galvanic fluid, applied with skill to the human body, exhibits the most remarkable and striking phenomena nature has to offer."',
                 fact: 'In 1802 — before defibrillators existed — Aldini published a treatise proposing that galvanic stimulation could restart stopped human hearts. He was conceptually 150 years ahead of the technology.'
             },
             {
-                name: 'Humphry Davy', dates: '1778–1829', emoji: '🔬',
+                name: 'Humphry Davy', dates: '1778–1829',
                 role: 'The Alchemist',
                 contribution: 'Used the Voltaic pile to isolate 6 new elements (1807–1808), create the first electric arc lamp (1809), and found electrochemistry as a discipline. Davy was also a poet.',
                 quote: '"Nothing is so dangerous to the progress of the human mind than to assume that our views of science are ultimate, that there are no mysteries in nature."',
                 fact: 'Davy said his greatest discovery was Michael Faraday. He hired Faraday after the then-21-year-old bookbinder\'s apprentice sent him hand-bound annotated notes from his own lectures.'
             },
             {
-                name: 'Michael Faraday', dates: '1791–1867', emoji: '🧲',
+                name: 'Michael Faraday', dates: '1791–1867',
                 role: 'The Bridge',
                 contribution: 'Discovered electromagnetic induction (1831), formulated the laws of electrolysis, and conceptualized the electromagnetic field. Every modern generator runs on his principles.',
                 quote: '"Nothing is too wonderful to be true if it be consistent with the laws of nature."',
@@ -831,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="text-xs uppercase tracking-widest" style="color:${catColors[ev.category]}">${ev.category}</span>
                 <h5 class="font-bold text-xl mt-1 mb-3">${ev.year}: ${ev.title}</h5>
                 <p class="text-gray-600 text-sm leading-relaxed mb-4">${ev.content}</p>
-                ${ev.fact ? `<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800"><strong>💡 Did You Know?</strong> ${ev.fact}</div>` : ''}
+                ${ev.fact ? `<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800"><strong>Did You Know?</strong> ${ev.fact}</div>` : ''}
             `;
             document.querySelectorAll('.timeline-dot').forEach(d => d.style.transform = 'scale(1)');
             dot.style.transform = 'scale(1.5)';
@@ -886,7 +894,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         const colors = { copper: ['#E8994A','#fff'], electrolyte: ['#FDE68A','#92400e'], zinc: ['#9CA3AF','#fff'] };
-        const labels = { copper: '⬛ Copper (+)', electrolyte: '≡ Electrolyte', zinc: '⬛ Zinc (−)' };
+        const labels = { copper: 'Copper (+)', electrolyte: 'Electrolyte', zinc: 'Zinc (−)' };
         [...builderStack].reverse().forEach((type, revIdx) => {
             const el = document.createElement('div');
             el.className = 'placed-piece';
@@ -914,10 +922,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const V = (cells * 0.76).toFixed(2);
         if (error) {
             builderOutput.className = 'builder-output invalid';
-            builderOutput.innerHTML = `<p class="text-red-700 font-semibold">⚠ Incorrect order</p><p class="text-red-600 text-sm mt-1">${error}</p>`;
+            builderOutput.innerHTML = `<p class="text-red-700 font-semibold">${ICON_ALERT} Incorrect order</p><p class="text-red-600 text-sm mt-1">${error}</p>`;
         } else if (cells > 0) {
             builderOutput.className = 'builder-output valid';
-            builderOutput.innerHTML = `<p class="text-green-800 font-bold text-lg">✓ ${cells} cell${cells>1?'s':''} correct</p><p class="text-green-700 text-3xl font-bold mt-1">${V} V</p><p class="text-green-600 text-xs mt-2">${cells} × 0.76 V per Zn/H cell</p>`;
+            builderOutput.innerHTML = `<p class="text-green-800 font-bold text-lg">${ICON_CHECK} ${cells} cell${cells>1?'s':''} correct</p><p class="text-green-700 text-3xl font-bold mt-1">${V} V</p><p class="text-green-600 text-xs mt-2">${cells} × 0.76 V per Zn/H cell</p>`;
         } else {
             builderOutput.className = 'builder-output empty';
             builderOutput.innerHTML = '<p class="text-amber-700 text-sm">Incomplete cell — need: Cu → Electrolyte → Zn</p>';
@@ -931,13 +939,12 @@ document.addEventListener('DOMContentLoaded', function () {
     appData.figures.forEach(fig => {
         figGrid.innerHTML += `
         <div class="figure-card">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-3xl">${fig.emoji}</span>
-                <div><h4 class="font-bold text-lg leading-tight">${fig.name}</h4><p class="text-xs text-gray-400">${fig.dates} · <span class="copper-accent">${fig.role}</span></p></div>
+            <div class="mb-3">
+                <h4 class="font-bold text-lg leading-tight">${fig.name}</h4><p class="text-xs text-gray-400">${fig.dates} · <span class="copper-accent">${fig.role}</span></p>
             </div>
             <p class="figure-quote">${fig.quote}</p>
             <p class="text-sm text-gray-600 leading-relaxed mb-3">${fig.contribution}</p>
-            <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 leading-relaxed"><strong>💡 </strong>${fig.fact}</div>
+            <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 leading-relaxed"><strong>Fact:</strong> ${fig.fact}</div>
         </div>`;
     });
 
@@ -989,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             initAudio();
             const osc = _audioCtx.createOscillator(), gain = _audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(_audioCtx.destination);
             osc.type = 'sawtooth'; osc.frequency.value = 80+Math.random()*40;
             gain.gain.setValueAtTime(0.06, _audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime+dur);
@@ -1003,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', function () {
             initAudio();
             soundOn = !soundOn;
             document.querySelectorAll('.sound-toggle').forEach(b => b.classList.toggle('active', soundOn));
-            document.querySelectorAll('.sound-icon,.sound-icon2').forEach(s => s.textContent = soundOn ? '🔊' : '🔇');
+            document.querySelectorAll('.sound-icon,.sound-icon2').forEach(s => s.innerHTML = soundOn ? ICON_VOLUME_ON : ICON_VOLUME_OFF);
             if (soundOn) playBuzz(0.4);
         });
     });

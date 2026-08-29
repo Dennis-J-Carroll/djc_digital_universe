@@ -10,14 +10,6 @@ jest.mock('gatsby', () => ({
   graphql: jest.fn(),
 }));
 
-// Mock react-helmet
-jest.mock('react-helmet', () => {
-  const React = require('react');
-  return {
-    Helmet: ({ children }) => React.createElement('div', { 'data-testid': 'helmet' }, children),
-  };
-});
-
 describe('SEO Component', () => {
   const mockSiteData = {
     site: {
