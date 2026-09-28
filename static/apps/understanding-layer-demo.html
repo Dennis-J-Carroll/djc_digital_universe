@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MIRAGE-Bench · misleading · sympy-22914 (gpt-4.1 SWE-agent)</title>
+<title>Understanding Layer · Evidence-led SWE-agent trace</title>
+<meta name="description" content="Explore a sourced MIRAGE-Bench SWE-agent trace, its two tasks, observed tool results, evidence limits, and a separate Glassport MCP example.">
+<link rel="canonical" href="https://dennisjcarroll.com/apps/understanding-layer-demo.html">
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -281,9 +283,15 @@
     /* ── Phase segmentation ── */
     .phase-header {
         position: sticky;
-        top: 0;
+        top: 44px;
         background: #0d1117;
         border-bottom: 1px solid #30363d;
+        border-top: 0;
+        border-left: 0;
+        border-right: 0;
+        width: 100%;
+        font-family: inherit;
+        text-align: left;
         padding: 8px 0 8px 64px;
         margin: 18px 0 8px;
         font-size: 12px;
@@ -304,9 +312,212 @@
         text-transform: none;
         letter-spacing: 0;
     }
-    .phase-group.collapsed .tl-event { display: none; }
+    .phase-group.collapsed .phase-events { display: none; }
     .phase-header .ph-chevron { transition: transform .15s; }
     .phase-group.collapsed .ph-chevron { transform: rotate(-90deg); }
+
+    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 100001; background: #161b22; color: #e6edf3; padding: 8px 12px; }
+    .skip-link:focus { left: 8px; }
+    .ul-static-summary, .ul-tasks, .ul-glassport { max-width: 860px; margin: 0 auto 20px; }
+    .ul-static-summary { padding: 14px 18px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; }
+    .ul-tasks h2, .ul-glassport h2 { font-size: 16px; margin: 0 0 12px; }
+    .ul-source-link { margin: -4px 0 12px; font-size: 12px; color: #8b949e; }
+    .ul-source-link a { color: #58a6ff; }
+    .ul-task-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .ul-task-card, .ul-glassport { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+    .ul-task-card h3 { color: #e6edf3; font-size: 14px; margin-bottom: 8px; }
+    .ul-task-card p, .ul-glassport p { margin: 0 0 8px; font-size: 12px; line-height: 1.55; }
+    .ul-task-card a, .ul-glassport a, .ul-evidence a { color: #58a6ff; }
+    .ul-task-card .intent-box { padding: 10px; overflow-wrap: anywhere; }
+    .intent-plain { display: block; color: #e6edf3; font-size: 12px; }
+    .ul-intent-diff summary, .ul-issue summary, .ul-scenario summary { cursor: pointer; color: #58a6ff; font-size: 12px; font-weight: 600; }
+    .ul-issue { margin-top: 10px; }
+    .ul-issue pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; margin-top: 8px; }
+    .ul-glassport { margin-top: 24px; }
+    .ul-glassport ol { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
+    .ul-glassport li { padding: 10px; border: 1px solid #30363d; border-radius: 6px; font-size: 12px; }
+    .ul-glassport li span { display: block; margin-top: 6px; }
+    .ul-case-finding { color: #e3b341; }
+    .ul-note-meta, .summary-explain { color: #8b949e; font-size: 11px; margin-top: 6px; }
+    .ul-evidence a { margin: 0 2px; }
+    .ul-scenario blockquote { margin: 10px 0; padding: 10px; border-left: 3px solid #e3b341; white-space: pre-wrap; }
+    .ul-scenario p { margin: 10px 0; }
+    body.theme-light .page-title, body.theme-light .ul-task-card h3, body.theme-light .intent-plain { color: #1f2328; }
+    body.theme-light .page-header { border-color: #d0d7de; }
+    body.theme-light .meta-pill, body.theme-light .ul-task-card, body.theme-light .ul-glassport, body.theme-light .ul-static-summary { background: #f6f8fa; border-color: #d0d7de; color: #1f2328; }
+    body.theme-light .intent-box { color: #57606a; }
+    body.theme-light .intent-label { color: #1a7f37; }
+    body.theme-light .ul-task-card p, body.theme-light .ul-glassport p, body.theme-light .ul-note-meta { color: #57606a; }
+    body.theme-light .ul-source-link { color: #57606a; }
+    body.theme-light .ul-source-link a { color: #0969da; }
+    body.theme-light .ul-glassport li { border-color: #d0d7de; }
+    body.theme-light .ul-intro { background: #f6f8fa !important; border-color: #d0d7de !important; }
+    body.theme-light .ul-intro summary, body.theme-light .ul-intro p, body.theme-light .trace-ann-section p, body.theme-light .ul-gloss-term { color: #1f2328 !important; }
+    body.theme-light .trace-ann-section { background: #f6f8fa; border-color: #d0d7de; }
+    body.theme-light .ul-scenario blockquote { color: #1f2328; }
+
+    /* ── DJC trace visualizations ── */
+    .ul-event-map {
+        max-width: 860px;
+        margin: 0 auto 24px;
+        padding: 18px;
+        background: linear-gradient(145deg, #0f1d31, #0a1423 72%);
+        border: 1px solid rgba(68, 214, 184, .35);
+        border-radius: 10px;
+        box-shadow: inset 0 1px 0 rgba(62, 240, 226, .08);
+    }
+    .ul-map-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .ul-map-heading { color: #ecf4fb; font-size: 17px; line-height: 1.3; margin: 0 0 4px; }
+    .ul-map-note { color: #b8c6d8; font-size: 12px; line-height: 1.5; max-width: 62ch; }
+    .ul-map-legend { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; color: #b8c6d8; font-size: 11px; }
+    .ul-map-legend > * { white-space: nowrap; }
+    .ul-map-key::before { content: ''; display: inline-block; width: 13px; height: 8px; margin-right: 5px; border-top: 3px solid #b8c6d8; vertical-align: middle; }
+    .ul-map-key[data-kind="TOOL_CALL"]::before { border-color: #3ef0e2; }
+    .ul-map-key[data-kind="TOOL_RESULT"]::before { border-color: #44d6b8; }
+    .ul-map-phases { display: grid; gap: 10px; }
+    .ul-map-phase {
+        min-width: 0;
+        padding: 10px 12px 12px;
+        background: rgba(7, 14, 26, .52);
+        border: 1px solid rgba(124, 180, 200, .18);
+        border-radius: 7px;
+    }
+    .ul-map-phase-title { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; color: #cdd9e5; font-size: 12px; font-weight: 650; line-height: 1.4; margin: 0 0 8px; }
+    .ul-map-phase-title span:last-child { color: #9fb5ca; font-weight: 500; white-space: nowrap; }
+    .ul-map-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 5px; }
+    .ul-map-node {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 4px;
+        border: 1px solid #46678a;
+        border-top-width: 3px;
+        border-radius: 5px;
+        background: #14293f;
+        color: #ecf4fb;
+        font: 600 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+        cursor: pointer;
+        transition: background .15s, border-color .15s, transform .15s;
+    }
+    .ul-map-node[data-kind="MESSAGE"] { border-top-color: #b8c6d8; }
+    .ul-map-node[data-kind="TOOL_CALL"] { border-top-color: #3ef0e2; }
+    .ul-map-node[data-kind="TOOL_RESULT"] { border-top-color: #44d6b8; }
+    .ul-map-node.is-annotated { box-shadow: inset 0 -3px 0 #f4b840; }
+    .ul-map-node.is-error { border-color: #ff5d73; background: #3a1e2a; }
+    .ul-map-node:hover { background: #1d3852; transform: translateY(-1px); }
+    .ul-map-node.is-selected { border-color: #3ef0e2; outline: 2px solid #3ef0e2; outline-offset: 1px; background: #075844; }
+    .ul-map-node:focus-visible { outline: 3px solid #3ef0e2; outline-offset: 2px; }
+    .ul-map-detail {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        min-height: 68px;
+        margin-top: 14px;
+        padding: 11px 13px;
+        background: #070e1a;
+        border-left: 3px solid #14b89a;
+        border-radius: 4px;
+    }
+    .ul-map-detail-text { min-width: 0; flex: 1 1 250px; color: #ecf4fb; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+    .ul-map-detail-text span { display: block; }
+    .ul-map-jump, .ul-matrix-clear {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 8px 12px;
+        background: #0b7e68;
+        border: 1px solid #44d6b8;
+        border-radius: 6px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .ul-map-jump:hover, .ul-matrix-clear:hover { background: #075844; }
+    .ul-map-jump:focus-visible, .ul-matrix-clear:focus-visible { outline: 3px solid #3ef0e2; outline-offset: 2px; }
+
+    .ul-kind-matrix { min-width: 0; margin-top: 16px; }
+    .ul-matrix-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+    .ul-kind-matrix-table { width: 100%; min-width: 440px; border-collapse: separate; border-spacing: 4px; font-size: 11px; }
+    .ul-kind-matrix-table th { padding: 5px; color: #b8c6d8; font-weight: 600; text-align: left; white-space: nowrap; }
+    .ul-kind-matrix-table td { padding: 0; }
+    .ul-matrix-cell {
+        appearance: none;
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        padding: 6px;
+        background: #0f1d31;
+        border: 1px solid #2a4d6d;
+        border-radius: 5px;
+        color: #ecf4fb;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        cursor: pointer;
+    }
+    .ul-matrix-cell:hover { background: #1d3852; border-color: #44d6b8; }
+    .ul-matrix-cell.is-selected { background: #075844; border-color: #3ef0e2; box-shadow: inset 0 0 0 1px #3ef0e2; }
+    .ul-matrix-cell:focus-visible { outline: 3px solid #3ef0e2; outline-offset: 2px; }
+    .ul-matrix-clear { margin-top: 8px; background: #14293f; }
+
+    .ul-case-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 14px 0 10px; }
+    .ul-case-step {
+        appearance: none;
+        width: 100%;
+        min-height: 72px;
+        padding: 10px;
+        background: #0f1d31;
+        border: 1px solid #2a4d6d;
+        border-radius: 6px;
+        color: #e6edf3;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1.45;
+        text-align: left;
+        cursor: pointer;
+    }
+    .ul-case-step strong, .ul-case-step span { display: block; }
+    .ul-case-step span { margin-top: 4px; }
+    .ul-case-step:hover { border-color: #44d6b8; background: #14293f; }
+    .ul-case-step.is-selected { border-color: #3ef0e2; box-shadow: inset 0 0 0 1px #3ef0e2; background: #0b3b3b; }
+    .ul-case-step:focus-visible { outline: 3px solid #3ef0e2; outline-offset: 2px; }
+    .ul-case-detail { min-height: 76px; padding: 12px; background: #0a1423; border-left: 3px solid #14b89a; border-radius: 4px; color: #e6edf3; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+
+    body.theme-light .ul-event-map { background: linear-gradient(145deg, #f0faf8, #f6f8fa); border-color: #9dcfc3; box-shadow: none; }
+    body.theme-light .ul-map-heading, body.theme-light .ul-map-detail-text { color: #1f2328; }
+    body.theme-light .ul-map-note, body.theme-light .ul-map-legend, body.theme-light .ul-map-phase-title, body.theme-light .ul-kind-matrix-table th { color: #455568; }
+    body.theme-light .ul-map-phase { background: rgba(255, 255, 255, .75); border-color: #c7d7d7; }
+    body.theme-light .ul-map-node { background: #eaf0f5; color: #1f2328; border-color: #6d89a8; }
+    body.theme-light .ul-map-node[data-kind="TOOL_CALL"] { border-top-color: #0b7e68; }
+    body.theme-light .ul-map-node[data-kind="TOOL_RESULT"] { border-top-color: #14b89a; }
+    body.theme-light .ul-map-node.is-error { background: #fff0f2; border-color: #b4233a; }
+    body.theme-light .ul-map-node.is-selected { background: #d5f2e9; border-color: #0b7e68; outline-color: #0b7e68; }
+    body.theme-light .ul-map-detail, body.theme-light .ul-case-detail { background: #fff; color: #1f2328; }
+    body.theme-light .ul-map-jump, body.theme-light .ul-matrix-clear { color: #fff; }
+    body.theme-light .ul-matrix-cell, body.theme-light .ul-case-step { background: #fff; color: #1f2328; border-color: #9fb5ca; }
+    body.theme-light .ul-matrix-cell:hover, body.theme-light .ul-case-step:hover { background: #eaf0f5; }
+    body.theme-light .ul-matrix-cell.is-selected, body.theme-light .ul-case-step.is-selected { background: #d5f2e9; border-color: #0b7e68; box-shadow: inset 0 0 0 1px #0b7e68; }
 
     /* ── Task 17: Responsive layout ── */
     .ul-legend-panel { width: min(320px, calc(100vw - 32px)); }
@@ -362,17 +573,43 @@
         .ul-minimap {
             display: none;
         }
+        .ul-task-grid, .ul-glassport ol { grid-template-columns: 1fr; }
+        .ul-case-steps { grid-template-columns: 1fr; }
+        .ul-case-step { min-height: 56px; }
+        .ul-event-map { padding: 12px; }
+        .ul-map-phase { padding: 9px; }
+        .ul-map-header { display: block; }
+        .ul-map-legend { margin-top: 10px; }
+        .ul-map-jump { width: 100%; }
+        .phase-header { position: static; padding-left: 28px; }
+        body .djc-app-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; height: auto; min-height: 44px; padding: 6px; }
+        .djc-app-bar > div:first-child { min-width: 0; gap: 4px !important; }
+        .djc-app-bar .djc-title, .djc-app-bar > div:first-child > span:nth-child(2) { display: none; }
+        .djc-app-bar .ul-theme-toggle, .djc-app-bar .ul-tour-btn { margin-left: 0; }
+        .ul-tour-bubble { width: calc(100vw - 16px); max-width: 320px; }
         /* Prevent horizontal scroll */
         .part-content {
-            word-break: break-word;
+            grid-column: 1 / -1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+            word-break: normal;
         }
+        .part-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 6px; }
+        .part-icon { grid-column: 1; }
+        .part-kind { grid-column: 2; min-width: 0; }
+        .ul-trunc-note { margin-left: 0; }
+        .tl-card { padding: 10px 12px; }
         .ul-diff {
             max-width: calc(100vw - 32px);
         }
     }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
     </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to trace</a>
 <style>
   .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
   .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
@@ -389,31 +626,35 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
 
+<main id="main-content">
 <div class="page-header">
-    <div class="page-title">MIRAGE-Bench · misleading · sympy-22914 (gpt-4.1 SWE-agent)</div>
+    <h1 class="page-title">Understanding Layer · SWE-agent trace</h1>
     <div class="page-meta">
-        <span class="meta-pill">Protocol: HYBRID</span>
-        <span class="meta-pill">State: WORKING</span>
-        <span class="meta-pill">ID: mirage_misleading_swebench.sympy__sympy-22914_SWE-agent-gpt-4.1</span>
+        <span class="meta-pill">Source: MIRAGE-Bench</span>
+        <span class="meta-pill">46-event input prefix</span>
+        <span class="meta-pill">Two tasks</span>
     </div>
-    
-    <div id="ul-intent"></div>
 </div>
 
-<div id="ul-intro"></div>
+<div id="ul-intro"><p class="ul-static-summary">Public MIRAGE-Bench prefix: Marshmallow TimeDelta task, then SymPy Min/Max task. <a href="https://github.com/sunblaze-ucb/mirage-bench/tree/main/dataset_all/misleading/swebench">Read source dataset</a>.</p></div>
+<div id="ul-tasks"></div>
 <div class="summary-bar" id="ul-summary"></div>
 
+<div id="ul-event-map"></div>
 <div id="ul-analytics"></div>
 
 <div id="ul-toolbar"></div>
 <div class="timeline" id="ul-timeline"></div>
 <div id="ul-panels"></div>
+<div id="ul-glassport"></div>
 
-<div id="ul-minimap"></div>
+<div id="ul-minimap" class="ul-minimap"></div>
+<noscript><p class="ul-static-summary">Interactive timeline requires JavaScript. Source record remains available through MIRAGE-Bench link above.</p></noscript>
+</main>
 
-<script src="/apps/understanding-layer.icons.js"></script>
-<script src="/apps/understanding-layer.data.js"></script>
-<script src="/apps/understanding-layer.app.js" defer></script>
+<script src="/apps/understanding-layer.icons.js?v=20260928" defer></script>
+<script src="/apps/understanding-layer.data.js?v=20260928" defer></script>
+<script src="/apps/understanding-layer.app.js?v=20260928" defer></script>
 
 </body>
 </html>

@@ -1,6 +1,9 @@
 /** @jest-environment jsdom */
 window.UL_ICONS = require('../static/apps/understanding-layer.icons.js');
 const TRACE = require('../static/apps/understanding-layer.data.js');
+const SOURCE = require('../data/understanding-layer/mirage-source.json');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 window.UL_TRACE = TRACE;
 const UL = require('../static/apps/understanding-layer.app.js');
 
@@ -8,6 +11,69 @@ test('computeStats returns correct counts', () => {
   const s = UL.computeStats(TRACE.events);
   expect(s.events).toBe(46);
   expect(s.toolCalls).toBe(TRACE.events.filter(e => e.kind === 'TOOL_CALL').length);
+});
+
+test('all displayed events preserve their corresponding source text and tool pairs', () => {
+  expect(TRACE.events).toHaveLength(SOURCE.input.length - 1);
+  TRACE.events.forEach((event, index) => {
+    const source = SOURCE.input[index + 1];
+    expect(event.id).toBe(`e${index}`);
+    expect(event.sourceIndex).toBe(index + 1);
+    expect(event.parts.every(part => !part.truncatedUpstream)).toBe(true);
+    if (source.role === 'user') {
+      expect(event.kind).toBe('MESSAGE');
+      expect(event.parts[0].content).toBe(source.content.replace(/\r\n?/g, '\n'));
+      expect(event.causalParent).toBeNull();
+    } else if (source.role === 'assistant') {
+      expect(event.kind).toBe('TOOL_CALL');
+      expect(event.parts[0].content).toBe(source.content.replace(/\r\n?/g, '\n'));
+      expect(event.toolCallId).toBe(source.tool_calls[0].id);
+      expect(event.to).toBe(source.tool_calls[0].function.name);
+      expect(event.parts[1].content).toContain(source.tool_calls[0].function.arguments);
+      expect(event.causalParent).toBeNull();
+    } else {
+      expect(event.kind).toBe('TOOL_RESULT');
+      expect(event.parts[0].content).toBe(source.content.replace(/\r\n?/g, '\n'));
+      expect(event.toolCallId).toBe(source.tool_call_id);
+      expect(event.causalParent).toBe(`e${index - 1}`);
+      expect(TRACE.events[index - 1].toolCallId).toBe(source.tool_call_id);
+    }
+  });
+});
+
+test('benchmark setup and task boundary remain distinct from agent evidence', () => {
+  expect(TRACE.benchmark.misleadingReasoning).toBe(SOURCE.misleading_reasoning);
+  expect(TRACE.intent.raw).toBe(SOURCE.goal);
+  expect(TRACE.intent.issue).toBe(SOURCE.problem_statement);
+  expect(TRACE.events[22].kind).toBe('TOOL_RESULT');
+  expect(TRACE.events[23].kind).toBe('MESSAGE');
+  expect(TRACE.events[23].parts[0].content).toContain('PythonCodePrinter');
+  expect(TRACE.events[45].parts[0].content).toContain('pycode.py');
+  expect(TRACE.events[45].causalParent).toBe('e44');
+});
+
+test('failure, retry, and fabrication statistics reflect observed evidence', () => {
+  expect(TRACE.events.filter(event => event.isError).map(event => event.id)).toEqual(['e14', 'e35']);
+  expect(UL.markErrorChains(TRACE.events).map(chain => chain.eventIds)).toEqual([['e13', 'e14', 'e15', 'e16']]);
+  const analytics = UL.computeAnalytics(TRACE.events);
+  expect(analytics.errorCount).toBe(2);
+  expect(analytics.toolResultCount).toBe(22);
+  expect(analytics.errorRate).toBeCloseTo(2 / 22);
+  expect(analytics.retryCount).toBe(1);
+  expect(UL.computeStats(TRACE.events).fabricated).toBeNull();
+});
+
+test('generated page has semantic entry points and static context before scripts', () => {
+  const html = readFileSync(join(__dirname, '../static/apps/understanding-layer-demo.html'), 'utf8');
+  expect(html).toContain('<main id="main-content">');
+  expect(html).toContain('<h1 class="page-title">');
+  expect(html).toContain('id="ul-tasks"');
+  expect(html).toContain('id="ul-event-map"');
+  expect(html).toContain('id="ul-glassport"');
+  expect(html.indexOf('class="ul-static-summary"')).toBeLessThan(html.indexOf('understanding-layer.app.js'));
+  expect(html).toContain('<script src="/apps/understanding-layer.icons.js?v=20260928" defer>');
+  expect(html).toContain('<script src="/apps/understanding-layer.data.js?v=20260928" defer>');
+  expect(html).toContain('<script src="/apps/understanding-layer.app.js?v=20260928" defer>');
 });
 test('renderEventCard produces a card with kind badge and event id, no emoji', () => {
   const html = UL.renderEventCard(TRACE.events[0]);
@@ -21,7 +87,8 @@ test('renderEventCard marks error events', () => {
 });
 test('renderSummary shows the five summary cards', () => {
   const html = UL.renderSummary(UL.computeStats(TRACE.events));
-  ['Events','Actors','Tool Calls','Fabricated','Annotated Events'].forEach(l => expect(html).toContain(l));
+  ['Events','Actors','Tool Calls','MCP Fabricated Calls','Annotated Events'].forEach(l => expect(html).toContain(l));
+  expect(html).toContain('N/A');
 });
 
 // ── Feature A: groupByPhase ──────────────────────────────────────────────────
@@ -35,13 +102,15 @@ test('groupByPhase returns 5 groups matching phases, correct first event, total 
 });
 
 // ── Feature B: per-event annotations ────────────────────────────────────────
-test('renderEventCard for e22 includes annotation-callout and annotated class', () => {
+test('e22 annotation cites observed post-edit reproduction before submission', () => {
   const e22 = TRACE.events.find(e => e.id === 'e22');
   const html = UL.renderEventCard(e22);
   expect(html).toContain('annotation-callout');
   expect(html).toContain('annotated');
-  expect(html).toContain('decision-point');
-  expect(html).toContain('without re-validating');
+  expect(html).toContain('task-1-submission');
+  expect(html).toContain('rerun before submission');
+  expect(html).toContain('href="#e18"');
+  expect(html).not.toContain('without re-validating');
 });
 test('computeStats annotated counts distinct event-annotated ids', () => {
   const distinctAnnotatedIds = new Set(
@@ -105,16 +174,17 @@ test('renderGlossary contains every term in TRACE.glossary', () => {
   });
 });
 
-test('renderIntent contains plain summary, raw diff text (escaped), and "Success criteria"', () => {
+test('renderIntent labels evaluator reference and its comparison limit', () => {
   const html = UL.renderIntent(TRACE.intent);
   // esc() escapes apostrophes — compare against escaped versions
   expect(html).toContain(UL.esc(TRACE.intent.plain));
   // The raw diff text will be HTML-escaped in the output
   expect(html).toContain('diff --git');
-  expect(html).toContain('Success criteria');
+  expect(html).toContain('EVALUATOR REFERENCE');
+  expect(html).toContain('Comparison limit');
 });
 
-test('renderScenario contains trace verdict explanation and all 3 scenario paragraphs', () => {
+test('renderScenario distinguishes benchmark setup from observed outcome', () => {
   const traceAnn = TRACE.annotations.find(a => a.scope === 'trace');
   const html = UL.renderScenario(TRACE.scenario, TRACE.annotations);
   // esc() escapes apostrophes — compare against escaped version
@@ -122,6 +192,8 @@ test('renderScenario contains trace verdict explanation and all 3 scenario parag
   TRACE.scenario.paragraphs.forEach(p => {
     expect(html).toContain(UL.esc(p));
   });
+  expect(html).toContain('not agent output');
+  expect(html).not.toContain('Trace-level verdict');
 });
 
 // ── Sprint 2: Tasks 10/11/12/14 ───────────────────────────────────────────────
@@ -140,6 +212,23 @@ test('applyFilters by actor bash returns only events with from===bash OR to===ba
   filtered.forEach(e => {
     expect(e.from === 'bash' || e.to === 'bash').toBe(true);
   });
+});
+
+test('an explicitly empty actor filter returns no events', () => {
+  expect(UL.applyFilters(TRACE.events, { actors: [] })).toEqual([]);
+});
+
+test('task cards and separate Glassport example disclose their evidence limits', () => {
+  const tasks = UL.renderTasks(TRACE.tasks, TRACE.intent, TRACE.meta);
+  const glassport = UL.renderGlassportCase(TRACE.glassportExample);
+  expect(tasks).toContain('Marshmallow TimeDelta');
+  expect(tasks).toContain('SymPy Min/Max');
+  expect(tasks).toContain('No SymPy edit');
+  expect(tasks).toContain(TRACE.meta.sourceUrl);
+  expect(tasks).toContain('46 of 46 displayed input events');
+  expect(glassport).toContain('Synthetic sequence');
+  expect(glassport).toContain('fabricated_tool_call');
+  expect(glassport).toContain('Later declarations');
 });
 
 test('applyFilters by query reproduce.py returns matching events', () => {
@@ -203,10 +292,11 @@ test('groupByPhase never drops events from a filtered subset (regression)', () =
 // ── Sprint 2: Tasks 13/15/16/17 ───────────────────────────────────────────────
 
 // Task 13: Per-event commentary
-test('commentaryFor("e22") returns a non-empty string', () => {
-  const text = UL.commentaryFor('e22');
-  expect(typeof text).toBe('string');
-  expect(text.length).toBeGreaterThan(0);
+test('commentaryFor("e22") returns sourced note', () => {
+  const note = UL.commentaryFor('e22');
+  expect(note.basis).toBe('observed');
+  expect(note.evidence).toContain('e18');
+  expect(note.text.length).toBeGreaterThan(0);
 });
 
 test('renderEventCard for e22 contains "Why this matters" and the commentary text', () => {
@@ -215,7 +305,7 @@ test('renderEventCard for e22 contains "Why this matters" and the commentary tex
   expect(html).toContain('Why this matters');
   const commentary = UL.commentaryFor('e22');
   // The text is esc()d so check against the escaped form
-  expect(html).toContain(UL.esc(commentary));
+  expect(html).toContain(UL.esc(commentary.text));
 });
 
 test('renderEventCard for e2 (no commentary) does NOT contain "Why this matters"', () => {
@@ -279,6 +369,26 @@ test('renderAnalytics returns HTML with .ul-analytics and .ul-bar-row elements',
   expect(html).toContain('Trace analytics');
 });
 
+test('event map and matrix preserve source order and count each phase-kind intersection', () => {
+  const map = UL.renderEventMap(TRACE.events, TRACE.phases, 'e14');
+  expect(map).toContain('Spacing shows sequence, not elapsed time');
+  expect((map.match(/class="ul-map-node(?:\s|")/g) || [])).toHaveLength(46);
+  expect(map.indexOf('data-ev="e22"')).toBeLessThan(map.indexOf('data-ev="e23"'));
+  expect(map).toContain('data-ev="e14" data-kind="TOOL_RESULT"');
+  const rows = UL.computePhaseKindCounts(TRACE.events, TRACE.phases);
+  expect(rows.map(row => row.total)).toEqual([7, 6, 6, 4, 23]);
+  expect(rows.reduce((sum, row) => sum + row.total, 0)).toBe(46);
+  const matrix = UL.renderAnalytics(UL.computeAnalytics(TRACE.events), TRACE.events, TRACE.phases);
+  expect(matrix).toContain('ul-kind-matrix-table');
+  expect(matrix).toContain('data-phase="task2"');
+});
+
+test('phase filter limits events while retaining AND behavior', () => {
+  const filtered = UL.applyFilters(TRACE.events, { phase: TRACE.phases[0].id, kinds: ['TOOL_CALL'] });
+  expect(filtered.length).toBeGreaterThan(0);
+  expect(filtered.every(ev => ev.phase === TRACE.phases[0].id && ev.kind === 'TOOL_CALL')).toBe(true);
+});
+
 // Task 19: sparkline
 test('sparkline([1,2,3]) returns an <svg> containing 3 <rect', () => {
   const html = UL.sparkline([1, 2, 3]);
@@ -300,10 +410,10 @@ test('renderSummary(stats) without events still works and contains Events label'
 });
 
 // Task 20: causalChain
-test('causalChain(events, "e3") returns e0>e1>e2>e3, length 4', () => {
-  const chain = UL.causalChain(TRACE.events, 'e3');
-  expect(chain).toEqual(['e0', 'e1', 'e2', 'e3']);
-  expect(chain.length).toBe(4);
+test('causalChain links proven call/result pair only', () => {
+  expect(UL.causalChain(TRACE.events, 'e2')).toEqual(['e1', 'e2']);
+  expect(UL.causalChain(TRACE.events, 'e3')).toEqual(['e3']);
+  expect(UL.causalChain(TRACE.events, 'e23')).toEqual(['e23']);
 });
 
 test('causalChain for a root event returns just that event', () => {
@@ -329,6 +439,13 @@ test('renderTimeline includes .phase-summary spans (one per non-empty phase grou
   expect(matches).toBe(5); // 5 phases, all non-empty
 });
 
+test('phase controls expose expanded state and controlled event regions', () => {
+  const html = UL.renderTimeline(TRACE.events);
+  expect((html.match(/class="phase-header" aria-expanded="true"/g) || [])).toHaveLength(5);
+  expect(html).toContain('aria-controls="phase-events-task2"');
+  expect(html).toContain('id="phase-events-task2"');
+});
+
 // ── Sprint 3: Tasks 22/23/24 ─────────────────────────────────────────────────
 
 // Task 22: tourSteps
@@ -348,9 +465,10 @@ test('tourSteps — each step has target, title, and body', () => {
   });
 });
 
-test('tourSteps includes #e22 and #ul-intro targets', () => {
+test('tourSteps points to corrected task boundary and post-edit check', () => {
   const targets = UL.tourSteps().map(s => s.target);
-  expect(targets).toContain('#e22');
+  expect(targets).toContain('#e18');
+  expect(targets).toContain('#e23');
   expect(targets).toContain('#ul-intro');
 });
 
@@ -380,13 +498,16 @@ test('mount injects theme toggle, tour button, export button, tour overlay, and 
   document.body.innerHTML = `
     <div class="djc-app-bar"></div>
     <div id="ul-intro"></div>
+    <div id="ul-tasks"></div>
     <div id="ul-analytics"></div>
     <div id="ul-summary"></div>
+    <div id="ul-event-map"></div>
     <div id="ul-toolbar"></div>
     <div id="ul-timeline"></div>
     <div id="ul-minimap"></div>
     <div id="ul-intent"></div>
     <div id="ul-panels"></div>
+    <div id="ul-glassport"></div>
   `;
   UL.mount();
   expect(document.querySelector('.ul-theme-toggle')).not.toBeNull();
@@ -394,4 +515,18 @@ test('mount injects theme toggle, tour button, export button, tour overlay, and 
   expect(document.querySelector('.ul-export-json')).not.toBeNull();
   expect(document.querySelector('.ul-tour-overlay')).not.toBeNull();
   expect(document.getElementById('ul-timeline').getAttribute('aria-label')).toBeTruthy();
+  expect(document.getElementById('ul-tasks').textContent).toContain('Two tasks');
+  expect(document.getElementById('ul-glassport').textContent).toContain('Glassport');
+  expect(document.querySelectorAll('.ul-map-node')).toHaveLength(46);
+  const matrixCell = document.querySelector('.ul-matrix-cell[data-phase="task2"][data-kind="TOOL_CALL"]');
+  matrixCell.click();
+  const visible = UL.applyFilters(TRACE.events, { phase: 'task2', kinds: ['TOOL_CALL'] });
+  expect(document.querySelectorAll('.tl-event')).toHaveLength(visible.length);
+  expect(matrixCell.getAttribute('aria-pressed')).toBe('true');
+  document.querySelector('.ul-matrix-clear').click();
+  expect(document.querySelectorAll('.tl-event')).toHaveLength(46);
+  const glassportStep = document.querySelector('.ul-case-step[data-step="2"]');
+  glassportStep.click();
+  expect(glassportStep.getAttribute('aria-pressed')).toBe('true');
+  expect(document.querySelector('.ul-case-detail').textContent).toContain('fabricated_tool_call');
 });

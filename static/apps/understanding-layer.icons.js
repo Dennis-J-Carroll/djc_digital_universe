@@ -17,6 +17,6 @@ window.UL_ICONS = {
 };
 window.UL_ICONS._forPart = function (partKind, isError) {
   if (isError) return 'error';
-  return { TEXT: 'message', TOOL_USE: 'tool', TOOL_RESULT: 'result' }[partKind] || 'info';
+  return { TEXT: 'message', AGENT_TEXT: 'message', TOOL_USE: 'tool', TOOL_RESULT: 'result' }[partKind] || 'info';
 };
 if (typeof module !== 'undefined') module.exports = window.UL_ICONS;

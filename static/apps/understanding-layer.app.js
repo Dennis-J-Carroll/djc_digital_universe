@@ -26,7 +26,8 @@
 
   // ── Feature B: computeStats reads annotations ─────────────────────────────
   function computeStats(events) {
-    var annotations = ((global.UL_TRACE || {}).annotations) || [];
+    var trace = global.UL_TRACE || {};
+    var annotations = trace.annotations || [];
     var annotatedIds = new Set(
       annotations
         .filter(function (a) { return a.scope === 'event'; })
@@ -36,7 +37,9 @@
       events: events.length,
       actors: new Set(events.flatMap(e => [e.from, e.to])).size,
       toolCalls: events.filter(e => e.kind === 'TOOL_CALL').length,
-      fabricated: events.filter(e => e.fabricated).length,
+      // SWE-agent events have no MCP declared-tool surface to compare.
+      fabricated: trace.meta && trace.meta.fabricationAssessment === 'not-applicable'
+        ? null : events.filter(e => e.fabricated === true).length,
       annotated: annotatedIds.size,
     };
   }
@@ -44,10 +47,17 @@
   const KIND_COLOR = { MESSAGE: '#3fb950', TOOL_CALL: '#58a6ff', TOOL_RESULT: '#8b949e' };
 
   // ── Task 13: commentaryFor ────────────────────────────────────────────────
-  // Pure: returns commentary string for an event id, or undefined.
+  // Pure: returns a sourced reviewer note for an event id, or undefined.
   function commentaryFor(eventId) {
     var commentary = ((global.UL_TRACE || {}).commentary) || {};
     return commentary[eventId];
+  }
+
+  function renderEvidenceLinks(ids) {
+    if (!ids || !ids.length) return '';
+    return '<span class="ul-evidence">Evidence: ' + ids.map(function (id) {
+      return '<a href="#' + esc(id) + '">' + esc(id) + '</a>';
+    }).join(', ') + '</span>';
   }
 
   // ── Task 15: renderDiff ───────────────────────────────────────────────────
@@ -73,47 +83,20 @@
   }
 
   // ── Task 16: markErrorChains ──────────────────────────────────────────────
-  // Pure: returns [{chainId, eventIds, tool}] for error→retry sequences.
+  // Pure: only adjacent same-tool calls after an observed failure count as retries.
   function markErrorChains(events) {
-    // Build a map of event id → event for fast lookup
-    var byId = {};
-    events.forEach(function (ev) { byId[ev.id] = ev; });
-
     var chains = [];
-    var chainId = 0;
-    var visited = new Set();
-
-    events.forEach(function (ev) {
-      // Find TOOL_RESULT events that are errors
-      if (ev.kind !== 'TOOL_RESULT' || !ev.isError || visited.has(ev.id)) return;
-
-      // Determine the tool that produced this error: it's ev.from
-      var tool = ev.from;
-
-      // Collect the contiguous run of events involving this same tool
-      // Walk backwards to find the start of the run (the originating TOOL_CALL)
-      // and forward to find the end (last result from same tool in this run).
-      // Strategy: gather all events in the same phase that involve this tool.
-      var phase = ev.phase;
-      var runEvents = events.filter(function (e) {
-        return e.phase === phase && (e.from === tool || e.to === tool);
-      });
-
-      if (runEvents.length < 2) return; // need at least call + error result
-
-      // Only include a chain if there's at least one error and at least one retry
-      // (i.e., more than one TOOL_CALL to the same tool in this run)
-      var callsInRun = runEvents.filter(function (e) { return e.kind === 'TOOL_CALL' && e.to === tool; });
-      var errorsInRun = runEvents.filter(function (e) { return e.kind === 'TOOL_RESULT' && e.isError && e.from === tool; });
-
-      if (callsInRun.length < 2 || errorsInRun.length < 1) return;
-
-      var ids = runEvents.map(function (e) { return e.id; });
-      // Avoid duplicate chains: skip if all ids already visited
-      if (ids.every(function (id) { return visited.has(id); })) return;
-
-      ids.forEach(function (id) { visited.add(id); });
-      chains.push({ chainId: 'chain-' + (++chainId), eventIds: ids, tool: tool });
+    events.forEach(function (error, index) {
+      if (error.kind !== 'TOOL_RESULT' || !error.isError) return;
+      var call = events[index - 1];
+      var retry = events[index + 1];
+      var retryResult = events[index + 2];
+      if (!call || call.id !== error.causalParent || call.to !== error.from ||
+          !retry || retry.kind !== 'TOOL_CALL' || retry.to !== error.from ||
+          retry.phase !== error.phase) return;
+      var ids = [call.id, error.id, retry.id];
+      if (retryResult && retryResult.causalParent === retry.id) ids.push(retryResult.id);
+      chains.push({ chainId: 'chain-' + (chains.length + 1), eventIds: ids, tool: error.from });
     });
 
     return chains;
@@ -156,8 +139,7 @@
       var ic = icons[icons._forPart(p.partKind, ev.isError)];
       var full = p.content || '';
       var isLong = full.length > 140;
-      // Under the truncated-fallback, content===preview, so do NOT offer a useless expand
-      // when truncatedUpstream is set; show a source-truncation note instead.
+      // Never imply an upstream-truncated value can reveal more on expand.
       var canExpand = isLong && !p.truncatedUpstream;
       var shown = (opts.expanded || !isLong) ? full : (p.preview || full.slice(0, 140) + '…');
       var shownEscaped = esc(shown);
@@ -165,12 +147,12 @@
       return '<div class="part-row">' +
         '<span class="part-icon" style="color:' + kindColor + '">' + ic + '</span>' +
         '<span class="part-kind">' + esc(p.partKind) + '</span>' +
-        '<span class="part-content' + (ev.isError ? ' error-text' : '') + '" data-full="' + esc(full) + '">' + shownEscaped + '</span>' +
+        '<span class="part-content' + (ev.isError ? ' error-text' : '') + '">' + shownEscaped + '</span>' +
         (canExpand ? '<button class="ul-expand" data-ev="' + esc(ev.id) + '" aria-expanded="' + (opts.expanded ? 'true' : 'false') + '">' + icons.chevron + '<span>' + (opts.expanded ? 'Less' : 'More') + '</span></button>' : '') +
         '</div>';
     }).join('');
     var truncNote = anyTrunc ? '<div class="ul-trunc-note">content truncated in source</div>' : '';
-    var parent = ev.causalParent ? '<a class="parent-ref" href="#' + esc(ev.causalParent) + '">↑ caused by ' + esc(ev.causalParent) + '</a>' : '';
+    var parent = ev.causalParent ? '<a class="parent-ref" href="#' + esc(ev.causalParent) + '">↑ response to ' + esc(ev.causalParent) + '</a>' : '';
 
     // ── Feature B: per-event annotation callouts ───────────────────────────
     var annotations = ((global.UL_TRACE || {}).annotations) || [];
@@ -185,16 +167,18 @@
         '<span class="ann-category">· ' + esc(a.category) + '</span>' +
         '</div>' +
         '<div class="ann-explanation">' + esc(a.explanation) + '</div>' +
+        '<div class="ul-note-meta">' + esc(a.basis || 'reviewer note') + ' · ' + renderEvidenceLinks(a.evidence) + '</div>' +
         '</div>';
     }).join('');
     var hasEvAnnotation = evAnnotations.length > 0;
 
     // ── Task 13: per-event commentary callout ─────────────────────────────
-    var commentaryText = commentaryFor(ev.id);
-    var commentaryHtml = commentaryText
+    var commentary = commentaryFor(ev.id);
+    var commentaryHtml = commentary
       ? '<details class="ul-commentary">' +
         '<summary>' + (global.UL_ICONS ? global.UL_ICONS.info : '') + ' Why this matters</summary>' +
-        '<div>' + esc(commentaryText) + '</div>' +
+        '<div>' + esc(commentary.text) + '</div>' +
+        '<div class="ul-note-meta">' + esc(commentary.basis) + ' · ' + renderEvidenceLinks(commentary.evidence) + '</div>' +
         '</details>'
       : '';
 
@@ -281,13 +265,13 @@
       if (psum.hasError) psumParts.push('errors');
       var psumText = psumParts.join(' · ');
       return '<div class="phase-group" data-phase-id="' + esc(g.phase.id) + '">' +
-        '<div class="phase-header">' +
+        '<button type="button" class="phase-header" aria-expanded="true" aria-controls="phase-events-' + esc(g.phase.id) + '">' +
         '<span class="ph-chevron">' + icons.chevron + '</span>' +
         '<span>' + esc(g.phase.label) + '</span>' +
         '<span class="phase-count">' + count + ' event' + (count !== 1 ? 's' : '') + '</span>' +
         '<span class="phase-summary">' + esc(psumText) + '</span>' +
-        '</div>' +
-        eventsHtml +
+        '</button>' +
+        '<div class="phase-events" id="phase-events-' + esc(g.phase.id) + '">' + eventsHtml + '</div>' +
         '</div>';
     }).join('');
     return '<div class="tl-rail"></div>' + groupsHtml;
@@ -301,6 +285,60 @@
       return '<a href="#' + esc(ev.id) + '" class="ul-mini-dot" data-ev="' + esc(ev.id) + '" title="' + esc(ev.id) + ' ' + esc(ev.kind) + '" style="background:' + color + '"></a>';
     }).join('');
     return dots;
+  }
+
+  // Source positions have an order, but no timestamps. Keep the map discrete.
+  function renderEventMapDetail(ev, phases) {
+    if (!ev) return '';
+    var phase = (phases || []).find(function (item) { return item.id === ev.phase; });
+    var excerpt = (ev.parts[0] && ev.parts[0].content || '').replace(/\s+/g, ' ').trim();
+    if (excerpt.length > 170) excerpt = excerpt.slice(0, 170).trimEnd() + '…';
+    var notes = ((global.UL_TRACE || {}).annotations || []).filter(function (a) {
+      return a.scope === 'event' && a.eventId === ev.id;
+    });
+    var status = ev.isError ? 'Observed tool error' : notes.length ? 'Reviewer annotation attached' : 'No reviewer annotation';
+    return '<div class="ul-map-detail-text">' +
+      '<strong>' + esc(ev.id) + ' · ' + esc(ev.kind.replace(/_/g, ' ')) + '</strong>' +
+      '<span>' + esc((phase || {}).label || ev.phase) + ' · ' + esc(ev.from) + ' → ' + esc(ev.to) +
+      ' · source input #' + esc(ev.sourceIndex) + '</span>' +
+      '<span>' + esc(status) + '</span>' +
+      '<p>Preview: ' + esc(excerpt) + '</p>' +
+      '</div><a class="ul-map-jump" href="#' + esc(ev.id) + '" data-ev="' + esc(ev.id) + '">Open full event ' + esc(ev.id) + ' ↓</a>';
+  }
+
+  function renderEventMap(events, phases, selectedId) {
+    var annotated = new Set(((global.UL_TRACE || {}).annotations || [])
+      .filter(function (a) { return a.scope === 'event'; })
+      .map(function (a) { return a.eventId; }));
+    var groups = groupByPhase(events, phases || []);
+    var selected = events.find(function (ev) { return ev.id === selectedId; }) || events[0];
+    var phasesHtml = groups.map(function (group) {
+      var nodes = group.events.map(function (ev) {
+        var active = selected && ev.id === selected.id;
+        return '<button type="button" class="ul-map-node' +
+          (ev.isError ? ' is-error' : '') +
+          (annotated.has(ev.id) ? ' is-annotated' : '') +
+          (active ? ' is-selected' : '') +
+          '" data-ev="' + esc(ev.id) + '" data-kind="' + esc(ev.kind) +
+          '" aria-pressed="' + (active ? 'true' : 'false') +
+          '" aria-label="' + esc(ev.id + ', ' + ev.kind.replace(/_/g, ' ').toLowerCase() +
+          (ev.isError ? ', observed error' : '') +
+          (annotated.has(ev.id) ? ', reviewer annotation' : '') +
+          ', ' + group.phase.label) + '">' +
+          '<span>' + esc(ev.id) + '</span>' + (ev.isError ? '<b aria-hidden="true">!</b>' : '') +
+          '</button>';
+      }).join('');
+      return '<div class="ul-map-phase" data-phase="' + esc(group.phase.id) + '">' +
+        '<div class="ul-map-phase-title"><span>' + esc(group.phase.label) + '</span><span>' + group.events.length + ' events</span></div>' +
+        '<div class="ul-map-nodes">' + nodes + '</div></div>';
+    }).join('');
+    return '<section class="ul-event-map" aria-labelledby="ul-map-title">' +
+      '<div class="ul-map-header"><div><h2 id="ul-map-title" class="ul-map-heading">Trace map</h2>' +
+      '<p class="ul-map-note">' + events.length + ' events in source order. Spacing shows sequence, not elapsed time. Select event for evidence preview.</p></div></div>' +
+      '<div class="ul-map-legend"><span class="ul-map-key" data-kind="MESSAGE">Message</span><span class="ul-map-key" data-kind="TOOL_CALL">Tool call</span><span class="ul-map-key" data-kind="TOOL_RESULT">Tool result</span><span>! Observed error</span><span>Amber underline: reviewer note</span></div>' +
+      '<div class="ul-map-phases">' + phasesHtml + '</div>' +
+      '<div class="ul-map-detail" aria-live="polite">' + renderEventMapDetail(selected, phases) + '</div>' +
+      '</section>';
   }
 
   // ── Task 12: searchEvents ─────────────────────────────────────────────────
@@ -320,8 +358,7 @@
 
   // ── Tasks 10/11/12: applyFilters ──────────────────────────────────────────
   // Pure: filter events by kind set, actor set, and text query. AND semantics.
-  // kinds: Set or array; empty/undefined = all kinds.
-  // actors: Set or array; empty/undefined = no actor filter (all pass).
+  // kinds/actors: undefined means no filter; an explicit empty set means none.
   // query: string; empty/undefined = no text filter.
   function applyFilters(events, state) {
     state = state || {};
@@ -331,11 +368,11 @@
 
     // Normalize kinds
     var kindsArr = kinds ? Array.from(kinds) : [];
-    var filterKinds = kindsArr.length > 0;
+    var filterKinds = kinds != null;
 
     // Normalize actors
     var actorsArr = actors ? Array.from(actors) : [];
-    var filterActors = actorsArr.length > 0;
+    var filterActors = actors != null;
 
     var filtered = events;
 
@@ -349,6 +386,10 @@
       filtered = filtered.filter(function (ev) {
         return actorsSet.has(ev.from) || actorsSet.has(ev.to);
       });
+    }
+
+    if (state.phase) {
+      filtered = filtered.filter(function (ev) { return ev.phase === state.phase; });
     }
 
     if (query) {
@@ -377,24 +418,40 @@
       '</details>';
   }
 
+  function renderTasks(tasks, intent, meta) {
+    var cards = (tasks || []).map(function (task) {
+      return '<article class="ul-task-card">' +
+        '<h3>' + esc(task.label) + '</h3>' +
+        '<p><strong>Issue.</strong> ' + esc(task.issue) + '</p>' +
+        '<p><strong>Observed.</strong> ' + esc(task.observation) + '</p>' +
+        '<p><strong>Limit.</strong> ' + esc(task.limit) + '</p>' +
+        '<a href="#' + esc(task.range[0]) + '">Events ' + esc(task.range[0]) + '–' + esc(task.range[1]) + '</a>' +
+        (task.id === 'task2' && intent ? renderIntent(intent) : '') +
+        '</article>';
+    }).join('');
+    return '<section class="ul-tasks" aria-labelledby="ul-tasks-title">' +
+      '<h2 id="ul-tasks-title">Two tasks in source record</h2>' +
+      (meta && meta.sourceUrl ? '<p class="ul-source-link">' +
+        '46 of 46 displayed input events · <a href="' + esc(meta.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' +
+        'Pinned MIRAGE-Bench record (' + esc(meta.sourceCommit.slice(0, 8)) + ')</a> · ' +
+        esc(meta.sourceLicense) + '</p>' : '') +
+      '<div class="ul-task-grid">' + cards + '</div></section>';
+  }
+
   // ── Task 9: renderIntent ──────────────────────────────────────────────────
   function renderIntent(intent) {
     var diffContent = (intent.kind === 'diff' && intent.raw)
       ? renderDiff(intent.raw)
       : '<pre style="margin-top:8px;font-size:12px;font-family:\'SF Mono\',\'Fira Code\',monospace;color:#a5d6ff;white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #21262d;border-radius:4px;padding:10px;overflow:auto;">' + esc(intent.raw) + '</pre>';
     return '<div class="intent-box">' +
-      '<span class="intent-label">INTENT</span>' +
-      '<span style="font-size:13px;color:#e6edf3;">' + esc(intent.plain) + '</span>' +
+      '<span class="intent-label">EVALUATOR REFERENCE</span>' +
+      '<span class="intent-plain">' + esc(intent.plain) + '</span>' +
       '<details class="ul-intent-diff" style="margin-top:10px;">' +
-      '<summary style="cursor:pointer;font-size:12px;color:#58a6ff;font-weight:600;">Gold patch (diff)</summary>' +
+      '<summary>Reference patch (diff)</summary>' +
       diffContent +
       '</details>' +
-      '<div style="margin-top:10px;font-size:12px;color:#8b949e;line-height:1.5;">' +
-      '<span style="font-weight:600;color:#e6edf3;">Issue: </span>' + esc(intent.issue) +
-      '</div>' +
-      '<div style="margin-top:6px;font-size:12px;color:#8b949e;line-height:1.5;">' +
-      '<span style="font-weight:600;color:#e6edf3;">Success criteria: </span>' + esc(intent.successCriteria) +
-      '</div>' +
+      '<details class="ul-issue"><summary>Full benchmark problem statement</summary><pre>' + esc(intent.issue) + '</pre></details>' +
+      '<p><strong>Comparison limit.</strong> ' + esc(intent.successCriteria) + '</p>' +
       '</div>';
   }
 
@@ -432,13 +489,14 @@
   function renderScenario(scenario, annotations) {
     var icons = global.UL_ICONS;
     var traceAnn = (annotations || []).find(function (a) { return a.scope === 'trace'; });
-    var verdictHtml = traceAnn
+    var setupHtml = traceAnn
       ? '<div class="annotation-callout">' +
         '<div class="ann-header">' +
-        '<span class="ann-sev sev-' + esc(String(traceAnn.severity)) + '">' + esc({ 1: 'NOTE', 2: 'WARNING', 3: 'CRITICAL' }[traceAnn.severity] || String(traceAnn.severity)) + '</span>' +
+        '<span class="ann-sev sev-' + esc(String(traceAnn.severity)) + '">SETUP</span>' +
         '<span class="ann-category">· ' + esc(traceAnn.category) + '</span>' +
         '</div>' +
         '<div class="ann-explanation">' + esc(traceAnn.explanation) + '</div>' +
+        '<div class="ul-note-meta">' + esc(traceAnn.basis) + ' · ' + renderEvidenceLinks(traceAnn.evidence) + '</div>' +
         '</div>'
       : '';
     var paragraphsHtml = (scenario.paragraphs || []).map(function (p) {
@@ -446,15 +504,46 @@
     }).join('');
     return '<div class="trace-ann-section">' +
       '<div class="section-title">' +
-      '<span style="color:#ffa657;margin-right:6px;">' + icons.warn + '</span>' +
-      'Trace-level verdict' +
+      '<span style="color:#58a6ff;margin-right:6px;">' + icons.info + '</span>' +
+      esc(scenario.title || 'Benchmark context') +
       '</div>' +
-      verdictHtml +
+      setupHtml +
       '<details class="ul-scenario" style="margin-top:14px;">' +
-      '<summary style="cursor:pointer;font-size:12px;color:#58a6ff;font-weight:600;">Why this is the \'misleading\' scenario</summary>' +
+      '<summary>What this record establishes</summary>' +
       '<div style="margin-top:10px;">' + paragraphsHtml + '</div>' +
       '</details>' +
+      '<details class="ul-scenario"><summary>Benchmark-provided misleading explanation · not agent output</summary>' +
+      '<p>' + esc((global.UL_TRACE.benchmark || {}).note || '') + '</p>' +
+      '<blockquote>' + esc((global.UL_TRACE.benchmark || {}).misleadingReasoning || '') + '</blockquote>' +
+      '</details>' +
       '</div>';
+  }
+
+  function renderGlassportDetail(step, index) {
+    if (!step) return '';
+    return '<h3>Step ' + (index + 1) + ' · ' + esc(step.event) + '</h3>' +
+      '<p><strong>Declared surface at this step:</strong> ' + esc(step.surface) + '</p>' +
+      '<p><strong>Finding:</strong> ' + esc(step.finding) +
+      (step.severity ? ' · severity ' + step.severity : '') + '</p>';
+  }
+
+  function renderGlassportCase(example) {
+    if (!example) return '';
+    var steps = example.steps.map(function (step, i) {
+      return '<button type="button" class="ul-case-step' + (i === 0 ? ' is-selected' : '') +
+        '" data-step="' + i + '" aria-pressed="' + (i === 0 ? 'true' : 'false') +
+        '" aria-controls="ul-case-detail">' +
+        '<strong>' + (i + 1) + '. ' + esc(step.event) + '</strong>' +
+        '<span class="ul-case-finding">' + esc(step.finding) + '</span></button>';
+    }).join('');
+    return '<section class="ul-glassport" aria-labelledby="ul-glassport-title">' +
+      '<h2 id="ul-glassport-title">' + esc(example.title) + '</h2>' +
+      '<p>' + esc(example.description) + '</p>' +
+      '<div class="ul-case-steps" role="group" aria-label="Glassport declaration sequence">' + steps + '</div>' +
+      '<div class="ul-case-detail" id="ul-case-detail" aria-live="polite">' + renderGlassportDetail(example.steps[0], 0) + '</div>' +
+      '<p>' + esc(example.limit) + '</p>' +
+      '<a href="' + esc(example.sourceUrl) + '">Glassport test source</a>' +
+      '</section>';
   }
 
   // ── Task 19: sparkline ───────────────────────────────────────────────────────
@@ -492,7 +581,8 @@
     return card(stats.events, 'Events', false, sparkHtml) +
       card(stats.actors, 'Actors') +
       card(stats.toolCalls, 'Tool Calls') +
-      card(stats.fabricated, 'Fabricated', stats.fabricated > 0) +
+      card(stats.fabricated == null ? 'N/A' : stats.fabricated, 'MCP Fabricated Calls', stats.fabricated > 0,
+        stats.fabricated == null ? '<div class="summary-explain">No MCP tools/list declaration in this source</div>' : '') +
       card(stats.annotated, 'Annotated Events');
   }
 
@@ -501,6 +591,7 @@
   function computeAnalytics(events) {
     var toolUsage = {};
     var errorCount = 0;
+    var toolResultCount = 0;
     var perPhase = {};
 
     events.forEach(function (ev) {
@@ -509,14 +600,17 @@
         toolUsage[ev.to] = (toolUsage[ev.to] || 0) + 1;
       }
       // Error count
-      if (ev.isError) errorCount++;
+      if (ev.kind === 'TOOL_RESULT') {
+        toolResultCount++;
+        if (ev.isError) errorCount++;
+      }
       // Per-phase event count
       if (ev.phase) {
         perPhase[ev.phase] = (perPhase[ev.phase] || 0) + 1;
       }
     });
 
-    var errorRate = events.length > 0 ? errorCount / events.length : 0;
+    var errorRate = toolResultCount > 0 ? errorCount / toolResultCount : 0;
 
     // retryCount: events in error chains beyond first call per chain
     var chains = markErrorChains(events);
@@ -529,12 +623,20 @@
       if (callsInChain > 1) retryCount += (callsInChain - 1);
     });
 
-    return { toolUsage: toolUsage, errorRate: errorRate, errorCount: errorCount, retryCount: retryCount, perPhase: perPhase };
+    return { toolUsage: toolUsage, errorRate: errorRate, errorCount: errorCount, toolResultCount: toolResultCount, retryCount: retryCount, perPhase: perPhase };
+  }
+
+  function computePhaseKindCounts(events, phases) {
+    return groupByPhase(events, phases).map(function (group) {
+      var counts = { MESSAGE: 0, TOOL_CALL: 0, TOOL_RESULT: 0 };
+      group.events.forEach(function (ev) { counts[ev.kind]++; });
+      return { phase: group.phase, counts: counts, total: group.events.length };
+    });
   }
 
   // ── Task 18: renderAnalytics ─────────────────────────────────────────────────
   // Pure: returns HTML for the analytics panel.
-  function renderAnalytics(analytics) {
+  function renderAnalytics(analytics, events, phases) {
     // Tool usage bar list
     var toolNames = Object.keys(analytics.toolUsage);
     var maxToolCount = toolNames.length > 0 ? Math.max.apply(null, toolNames.map(function (t) { return analytics.toolUsage[t]; })) : 1;
@@ -550,20 +652,30 @@
         }).join('')
       : '<div style="font-size:11px;color:#8b949e;">No tool calls</div>';
 
-    // Per-phase bar list
-    var phaseIds = Object.keys(analytics.perPhase);
-    var maxPhaseCount = phaseIds.length > 0 ? Math.max.apply(null, phaseIds.map(function (p) { return analytics.perPhase[p]; })) : 1;
-    var phaseBarsHtml = phaseIds.length > 0
-      ? phaseIds.map(function (ph) {
-          var count = analytics.perPhase[ph];
-          var pct = maxPhaseCount > 0 ? Math.round((count / maxPhaseCount) * 100) : 0;
-          return '<div class="ul-bar-row">' +
-            '<span class="ul-bar-label">' + esc(ph) + '</span>' +
-            '<span class="ul-bar-track"><span class="ul-bar-fill" style="width:' + pct + '%;background:#3fb950"></span></span>' +
-            '<span class="ul-bar-count">' + count + '</span>' +
-            '</div>';
-        }).join('')
-      : '<div style="font-size:11px;color:#8b949e;">No phase data</div>';
+    var matrixHtml = '';
+    if (events && phases) {
+      var rows = computePhaseKindCounts(events, phases);
+      var kinds = ['MESSAGE', 'TOOL_CALL', 'TOOL_RESULT'];
+      var body = rows.map(function (row) {
+        var cells = kinds.map(function (kind) {
+          var count = row.counts[kind];
+          return '<td>' + (count
+            ? '<button type="button" class="ul-matrix-cell" data-phase="' + esc(row.phase.id) +
+              '" data-kind="' + kind + '" aria-pressed="false" aria-label="Show ' + count + ' ' +
+              esc(kind.replace(/_/g, ' ').toLowerCase()) + ' event' + (count === 1 ? '' : 's') +
+              ' in ' + esc(row.phase.label) + '">' + count + '</button>'
+            : '<span aria-label="zero">0</span>') + '</td>';
+        }).join('');
+        return '<tr><th scope="row">' + esc(row.phase.label) + '</th>' + cells + '<td>' + row.total + '</td></tr>';
+      }).join('');
+      matrixHtml = '<div class="ul-kind-matrix"><div class="ul-matrix-head"><h3>Events by phase and kind</h3>' +
+        '<button type="button" class="ul-matrix-clear">Show all events</button></div>' +
+        '<p>Choose count to filter trace. Counts describe source events, not elapsed time.</p>' +
+        '<div class="ul-matrix-scroll"><table class="ul-kind-matrix-table"><caption>Event counts for each phase</caption>' +
+        '<thead><tr><th scope="col">Phase</th><th scope="col">Message</th><th scope="col">Tool call</th><th scope="col">Tool result</th><th scope="col">Total</th></tr></thead>' +
+        '<tbody>' + body + '</tbody></table></div>' +
+        '<p class="ul-matrix-status" aria-live="polite">Showing all ' + events.length + ' source events.</p></div>';
+    }
 
     var errorPct = (analytics.errorRate * 100).toFixed(1);
 
@@ -576,13 +688,12 @@
         '</div>' +
         '<div>' +
           '<div style="display:flex;gap:24px;margin-bottom:16px;">' +
-            '<div><div class="ul-an-stat' + (analytics.errorCount > 0 ? ' num-warn' : ' num-ok') + '">' + errorPct + '%</div><div class="ul-an-stat-label">Error rate</div></div>' +
-            '<div><div class="ul-an-stat num-ok">' + analytics.retryCount + '</div><div class="ul-an-stat-label">Retries</div></div>' +
+            '<div><div class="ul-an-stat' + (analytics.errorCount > 0 ? ' num-warn' : ' num-ok') + '">' + errorPct + '%</div><div class="ul-an-stat-label">Tool failures · ' + analytics.errorCount + '/' + analytics.toolResultCount + ' results</div></div>' +
+            '<div><div class="ul-an-stat num-ok">' + analytics.retryCount + '</div><div class="ul-an-stat-label">Direct same-tool retries</div></div>' +
           '</div>' +
-          '<div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Events per phase</div>' +
-          phaseBarsHtml +
         '</div>' +
       '</div>' +
+      matrixHtml +
       '</div>';
   }
 
@@ -620,14 +731,14 @@
   // Pure: returns the 8 guided tour steps.
   function tourSteps() {
     return [
-      { target: '#ul-intro',    title: 'Start here',         body: 'This panel explains what the trace is and how to read it.' },
-      { target: '#ul-analytics', title: 'Trace at a glance', body: 'Tool usage, error rate, and per-phase counts summarize the whole run.' },
-      { target: '#ul-toolbar',  title: 'Filter & search',    body: 'Toggle event kinds, filter by actor, or search the full trace. Collapse phases to scan structure.' },
-      { target: '#e0',          title: 'The first event',    body: 'The user hands the agent an issue. Every card is one event in the causal chain.' },
-      { target: '#e6',          title: 'Bug reproduced',     body: 'The reproduction script prints 344 — the agent now has a signal to fix against.' },
-      { target: '#e14',         title: 'First error',        body: 'The edit fails with a syntax error. Watch how the agent recovers — this run is bracketed as an error chain.' },
-      { target: '#e22',         title: 'The decision point', body: 'The agent submits without re-validating. This is exactly where the MIRAGE misleading scenario is induced.' },
-      { target: '#ul-panels',   title: 'The verdict',        body: 'The trace-level verdict and scenario explanation tie it together.' }
+      { target: '#ul-intro',      title: 'Start here',            body: 'Read source scope and evidence rules before interpreting events.' },
+      { target: '#ul-tasks',      title: 'Two tasks',             body: 'Marshmallow task ends at e22. SymPy task starts at e23; its reference patch applies only there.' },
+      { target: '#ul-analytics',  title: 'Defined counts',        body: 'Tool failures use tool results as denominator. MCP fabricated-call status is not applicable.' },
+      { target: '#ul-toolbar',    title: 'Filter and search',    body: 'Search full recovered event text; filter by kind or actor.' },
+      { target: '#e18',           title: 'Post-edit check',      body: 'Task 1 reproduction changes from 344 to 345 after the edit.' },
+      { target: '#e23',           title: 'New task boundary',    body: 'A new user message starts the SymPy task; it is not a causal child of Task 1 submission.' },
+      { target: '#ul-panels',     title: 'Benchmark setup',      body: 'Proposed misleading reasoning belongs to benchmark setup, not observed agent output.' },
+      { target: '#ul-glassport',  title: 'Glassport comparison', body: 'MCP declaration timing determines which fabricated-call finding is justified.' }
     ];
   }
 
@@ -652,13 +763,13 @@
       var color = KIND_COLOR[k] || '#8b949e';
       var label = k.replace(/_/g, ' ');
       var active = filterState.kinds.has(k);
-      return '<button class="ul-kind-btn' + (active ? ' active' : '') + '" data-kind="' + esc(k) + '" style="border-color:' + color + ';color:' + color + '">' + esc(label) + '</button>';
+      return '<button type="button" class="ul-kind-btn' + (active ? ' active' : '') + '" data-kind="' + esc(k) + '" aria-pressed="' + active + '" style="border-color:' + color + ';color:' + color + '">' + esc(label) + '</button>';
     }).join('');
 
     // Actor dropdown items
     var actorItems = actors.map(function (id) {
       var color = ((T.actors || {})[id] || {}).color || '#8b949e';
-      var checked = filterState.actors.size === 0 || filterState.actors.has(id);
+      var checked = filterState.actors.has(id);
       return '<label class="ul-actor-item">' +
         '<span class="ul-actor-dot" style="background:' + color + '"></span>' +
         '<input type="checkbox" class="ul-actor-cb" data-actor="' + esc(id) + '"' + (checked ? ' checked' : '') + '>' +
@@ -677,7 +788,7 @@
       '</div>' +
       '<div class="ul-search-wrap">' +
         '<span class="ul-search-icon">' + (icons.search || '') + '</span>' +
-        '<input class="ul-search" type="search" placeholder="Search trace…" value="' + esc(filterState.query) + '" autocomplete="off">' +
+        '<input class="ul-search" type="search" aria-label="Search available trace text" placeholder="Search trace…" value="' + esc(filterState.query) + '" autocomplete="off">' +
       '</div>' +
       '<span class="ul-count">' + currentCount + ' / ' + totalCount + '</span>' +
       '<button class="ul-collapse-all" data-all-collapsed="false">Collapse all</button>' +
@@ -705,9 +816,52 @@
   // ── Tasks 10/11/12/14: Filter state ───────────────────────────────────────
   var _filterState = {
     kinds: new Set(['MESSAGE', 'TOOL_CALL', 'TOOL_RESULT']),
-    actors: new Set(),
-    query: ''
+    actors: new Set(Object.keys((global.UL_TRACE || {}).actors || {})),
+    query: '',
+    phase: null
   };
+
+  function _resetTraceFilters() {
+    var T = global.UL_TRACE;
+    _filterState.kinds = new Set(['MESSAGE', 'TOOL_CALL', 'TOOL_RESULT']);
+    _filterState.actors = new Set(Object.keys((T || {}).actors || {}));
+    _filterState.query = '';
+    _filterState.phase = null;
+    _syncToolbarControls();
+  }
+
+  function _syncToolbarControls() {
+    var toolbar = document.getElementById('ul-toolbar');
+    if (!toolbar) return;
+    toolbar.querySelectorAll('.ul-kind-btn').forEach(function (btn) {
+      var active = _filterState.kinds.has(btn.getAttribute('data-kind'));
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+    toolbar.querySelectorAll('.ul-actor-cb').forEach(function (input) {
+      input.checked = _filterState.actors.has(input.getAttribute('data-actor'));
+    });
+    var search = toolbar.querySelector('.ul-search');
+    if (search) search.value = _filterState.query;
+  }
+
+  function _updateMatrixState(count) {
+    var T = global.UL_TRACE;
+    var matrix = document.querySelector('.ul-kind-matrix');
+    if (!matrix || !T) return;
+    matrix.querySelectorAll('.ul-matrix-cell').forEach(function (btn) {
+      var selected = btn.getAttribute('data-phase') === _filterState.phase &&
+        _filterState.kinds.size === 1 && _filterState.kinds.has(btn.getAttribute('data-kind'));
+      btn.classList.toggle('is-selected', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+    var status = matrix.querySelector('.ul-matrix-status');
+    if (status) {
+      var phase = (T.phases || []).find(function (item) { return item.id === _filterState.phase; });
+      status.textContent = 'Showing ' + count + ' of ' + T.events.length + ' source events' +
+        (phase ? ' in ' + phase.label : '') + '.';
+    }
+  }
 
   // Debounce helper
   function _debounce(fn, delay) {
@@ -750,6 +904,7 @@
     // Update result count
     var countEl = document.querySelector('.ul-count');
     if (countEl) countEl.textContent = filtered.length + ' / ' + T.events.length;
+    _updateMatrixState(filtered.length);
   }
 
   // ── Task 14: minimap IntersectionObserver wiring ──────────────────────────
@@ -799,6 +954,7 @@
     // Kind toggle buttons
     toolbarEl.querySelectorAll('.ul-kind-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        _filterState.phase = null;
         var kind = btn.getAttribute('data-kind');
         if (_filterState.kinds.has(kind)) {
           // Only remove if at least one other will remain
@@ -810,6 +966,7 @@
           _filterState.kinds.add(kind);
           btn.classList.add('active');
         }
+        btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
         _applyAndRender();
       });
     });
@@ -838,20 +995,14 @@
     // Actor checkboxes
     toolbarEl.querySelectorAll('.ul-actor-cb').forEach(function (cb) {
       cb.addEventListener('change', function () {
+        _filterState.phase = null;
         var actor = cb.getAttribute('data-actor');
         // Build set from all checked boxes
         var newActors = new Set();
         toolbarEl.querySelectorAll('.ul-actor-cb:checked').forEach(function (c) {
           newActors.add(c.getAttribute('data-actor'));
         });
-        // If all checked = same as no filter
-        var T = global.UL_TRACE;
-        var allActors = T ? Object.keys(T.actors || {}) : [];
-        if (newActors.size === allActors.length) {
-          _filterState.actors = new Set();
-        } else {
-          _filterState.actors = newActors;
-        }
+        _filterState.actors = newActors;
         _applyAndRender();
       });
     });
@@ -860,6 +1011,7 @@
     var searchInput = toolbarEl.querySelector('.ul-search');
     if (searchInput) {
       var debouncedSearch = _debounce(function () {
+        _filterState.phase = null;
         _filterState.query = searchInput.value;
         _applyAndRender();
       }, 150);
@@ -922,6 +1074,12 @@
   }
 
   // ── Task 21: _wireCollapseAll — collapse/expand all phase groups ─────────────
+  function setPhaseCollapsed(group, collapsed) {
+    group.classList.toggle('collapsed', collapsed);
+    var header = group.querySelector('.phase-header');
+    if (header) header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  }
+
   function _wireCollapseAll() {
     var toolbarEl = document.getElementById('ul-toolbar');
     if (!toolbarEl) return;
@@ -933,11 +1091,7 @@
       if (!tEl) return;
       var groups = tEl.querySelectorAll('.phase-group');
       groups.forEach(function (g) {
-        if (allCollapsed) {
-          g.classList.remove('collapsed');
-        } else {
-          g.classList.add('collapsed');
-        }
+        setPhaseCollapsed(g, !allCollapsed);
       });
       var nowCollapsed = !allCollapsed;
       btn.setAttribute('data-all-collapsed', nowCollapsed ? 'true' : 'false');
@@ -985,13 +1139,17 @@
   var _tourActive = false;
   var _tourIdx = 0;
   var _tourSpotEl = null;
+  var _tourPreviousFocus = null;
 
   function _startTour() {
     if (typeof document === 'undefined') return;
+    _tourPreviousFocus = document.activeElement;
     _tourActive = true;
-    _tourGoto(0);
     var overlay = document.querySelector('.ul-tour-overlay');
     if (overlay) overlay.classList.add('active');
+    var bubble = document.querySelector('.ul-tour-bubble');
+    if (bubble) bubble.classList.add('active');
+    _tourGoto(0);
   }
 
   function _tourGoto(i) {
@@ -1012,7 +1170,8 @@
     if (targetEl) {
       targetEl.classList.add('ul-tour-spot');
       _tourSpotEl = targetEl;
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Positioning reads the target immediately; animated scroll gives stale coordinates.
+      targetEl.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
 
     // Update bubble
@@ -1037,9 +1196,12 @@
       var bTop = rect.bottom + 10;
       var bLeft = Math.max(8, rect.left);
       // Keep within viewport
-      var maxLeft = window.innerWidth - 340;
+      var maxLeft = Math.max(8, window.innerWidth - (bubble.offsetWidth || 320) - 8);
       if (bLeft > maxLeft) bLeft = maxLeft;
-      if (bTop + 180 > window.innerHeight) bTop = Math.max(8, rect.top - 190);
+      var bubbleHeight = bubble.offsetHeight || 180;
+      var maxTop = Math.max(8, window.innerHeight - bubbleHeight - 8);
+      if (bTop > maxTop) bTop = rect.top - bubbleHeight - 10;
+      bTop = Math.min(maxTop, Math.max(8, bTop));
       bubble.style.top = bTop + 'px';
       bubble.style.left = bLeft + 'px';
     } else {
@@ -1055,6 +1217,7 @@
     if (prevBtn) prevBtn.addEventListener('click', function () { _tourGoto(_tourIdx - 1); });
     if (nextBtn) nextBtn.addEventListener('click', function () { _tourGoto(_tourIdx + 1); });
     if (exitBtn) exitBtn.addEventListener('click', _endTour);
+    bubble.focus();
   }
 
   function _endTour() {
@@ -1062,10 +1225,14 @@
     _tourActive = false;
     var overlay = document.querySelector('.ul-tour-overlay');
     if (overlay) overlay.classList.remove('active');
+    var bubble = document.querySelector('.ul-tour-bubble');
+    if (bubble) bubble.classList.remove('active');
     if (_tourSpotEl) {
       _tourSpotEl.classList.remove('ul-tour-spot');
       _tourSpotEl = null;
     }
+    if (_tourPreviousFocus && _tourPreviousFocus.focus) _tourPreviousFocus.focus();
+    _tourPreviousFocus = null;
   }
 
   // ── Task 24: Keyboard navigation ─────────────────────────────────────────────
@@ -1084,16 +1251,16 @@
     _activeIdx = idx;
     var activeCard = cards[idx];
     activeCard.classList.add('kbd-active');
-    activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    activeCard.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'nearest' });
   }
 
   function _wireKeyboard() {
     if (typeof document === 'undefined') return;
     document.addEventListener('keydown', function (e) {
-      // Ignore when focus is in text inputs
+      // Keep page/control arrow keys available for native navigation.
       var tag = (document.activeElement || {}).tagName;
-      var inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-      if (inInput && e.key !== 'Escape') return;
+      var inControl = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'SUMMARY'].indexOf(tag) !== -1 ||
+        (document.activeElement && document.activeElement.isContentEditable);
 
       // Tour keyboard nav
       if (_tourActive) {
@@ -1103,17 +1270,30 @@
           return;
         }
         if (e.key === 'Escape') { _endTour(); return; }
+        if (e.key === 'Tab') {
+          var bubble = document.querySelector('.ul-tour-bubble');
+          var buttons = bubble ? Array.from(bubble.querySelectorAll('button:not(:disabled)')) : [];
+          if (buttons.length) {
+            var first = buttons[0];
+            var last = buttons[buttons.length - 1];
+            if (e.shiftKey && (document.activeElement === first || document.activeElement === bubble)) {
+              e.preventDefault(); last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault(); first.focus();
+            }
+          }
+        }
         return; // block other keys during tour
       }
 
+      if (inControl && e.key !== 'Escape') return;
+
       switch (e.key) {
         case 'j':
-        case 'ArrowDown':
           e.preventDefault();
           _setActiveEvent(_activeIdx + 1);
           break;
         case 'k':
-        case 'ArrowUp':
           e.preventDefault();
           _setActiveEvent(_activeIdx - 1);
           break;
@@ -1203,7 +1383,7 @@
       var header = e.target.closest && e.target.closest('.phase-header');
       if (header) {
         var group = header.closest('.phase-group');
-        if (group) group.classList.toggle('collapsed');
+        if (group) setPhaseCollapsed(group, !group.classList.contains('collapsed'));
         return;
       }
       // Expand/collapse individual card parts
@@ -1230,6 +1410,80 @@
         }
         // Don't return — let the default anchor navigation happen
       }
+    });
+  }
+
+  function _wireVisualizations() {
+    var T = global.UL_TRACE;
+    if (!T) return;
+
+    var map = document.getElementById('ul-event-map');
+    if (map) map.addEventListener('click', function (event) {
+      var node = event.target.closest && event.target.closest('.ul-map-node');
+      if (node) {
+        var id = node.getAttribute('data-ev');
+        var selected = T.events.find(function (ev) { return ev.id === id; });
+        if (!selected) return;
+        map.querySelectorAll('.ul-map-node').forEach(function (button) {
+          var active = button === node;
+          button.classList.toggle('is-selected', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        var detail = map.querySelector('.ul-map-detail');
+        if (detail) detail.innerHTML = renderEventMapDetail(selected, T.phases);
+        return;
+      }
+      var jump = event.target.closest && event.target.closest('.ul-map-jump');
+      if (jump) {
+        event.preventDefault();
+        var targetId = jump.getAttribute('data-ev');
+        _resetTraceFilters();
+        _applyAndRender();
+        var target = document.getElementById(targetId);
+        if (target) {
+          target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+          if (target.scrollIntoView) target.scrollIntoView({ block: 'start' });
+        }
+      }
+    });
+
+    var analytics = document.getElementById('ul-analytics');
+    if (analytics) analytics.addEventListener('click', function (event) {
+      var cell = event.target.closest && event.target.closest('.ul-matrix-cell');
+      var clear = event.target.closest && event.target.closest('.ul-matrix-clear');
+      if (clear) {
+        _resetTraceFilters();
+        _applyAndRender();
+      } else if (cell) {
+        var phase = cell.getAttribute('data-phase');
+        var kind = cell.getAttribute('data-kind');
+        var alreadySelected = _filterState.phase === phase &&
+          _filterState.kinds.size === 1 && _filterState.kinds.has(kind);
+        _resetTraceFilters();
+        if (!alreadySelected) {
+          _filterState.phase = phase;
+          _filterState.kinds = new Set([kind]);
+          _syncToolbarControls();
+        }
+        _applyAndRender();
+      }
+    });
+
+    var glassport = document.getElementById('ul-glassport');
+    if (glassport) glassport.addEventListener('click', function (event) {
+      var stepButton = event.target.closest && event.target.closest('.ul-case-step');
+      if (!stepButton || !T.glassportExample) return;
+      var index = Number(stepButton.getAttribute('data-step'));
+      var step = T.glassportExample.steps[index];
+      if (!step) return;
+      glassport.querySelectorAll('.ul-case-step').forEach(function (button) {
+        var active = button === stepButton;
+        button.classList.toggle('is-selected', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      var detail = glassport.querySelector('.ul-case-detail');
+      if (detail) detail.innerHTML = renderGlassportDetail(step, index);
     });
   }
 
@@ -1319,7 +1573,8 @@
         // Task 22: Tour
         '.ul-tour-overlay{position:fixed;inset:0;background:rgba(1,4,9,.7);z-index:10000;display:none}',
         '.ul-tour-overlay.active{display:block}',
-        '.ul-tour-bubble{position:fixed;z-index:10002;max-width:320px;background:#161b22;border:1px solid #58a6ff;border-radius:8px;padding:14px;font-size:13px;color:#e6edf3}',
+        '.ul-tour-bubble{display:none;position:fixed;z-index:10002;width:min(320px,calc(100vw - 16px));background:#161b22;border:1px solid #58a6ff;border-radius:8px;padding:14px;font-size:13px;color:#e6edf3}',
+        '.ul-tour-bubble.active{display:block}',
         '.ul-tour-bubble h4{margin:0 0 6px;font-size:13px}',
         '.ul-tour-bubble .ul-tour-nav{display:flex;gap:8px;margin-top:10px;align-items:center}',
         '.ul-tour-bubble button{background:#21262d;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}',
@@ -1372,17 +1627,19 @@
     var introEl = document.getElementById('ul-intro');
     if (introEl && T.intro) introEl.innerHTML = renderIntro(T.intro);
 
-    // Task 9: enriched intent
-    var intentEl = document.getElementById('ul-intent');
-    if (intentEl && T.intent) intentEl.innerHTML = renderIntent(T.intent);
+    var tasksEl = document.getElementById('ul-tasks');
+    if (tasksEl) tasksEl.innerHTML = renderTasks(T.tasks, T.intent, T.meta);
 
     // Task 18: analytics panel (between summary and toolbar in DOM)
     var anEl = document.getElementById('ul-analytics');
-    if (anEl) anEl.innerHTML = renderAnalytics(computeAnalytics(T.events));
+    if (anEl) anEl.innerHTML = renderAnalytics(computeAnalytics(T.events), T.events, T.phases);
 
     // Summary (Task 19: pass events for sparkline)
     var sEl = document.getElementById('ul-summary');
     if (sEl) sEl.innerHTML = renderSummary(computeStats(T.events), T.events);
+
+    var mapEl = document.getElementById('ul-event-map');
+    if (mapEl) mapEl.innerHTML = renderEventMap(T.events, T.phases, T.events[0] && T.events[0].id);
 
     // Tasks 10/11/12: Toolbar (between summary and timeline)
     var tbEl = document.getElementById('ul-toolbar');
@@ -1406,6 +1663,9 @@
     // Task 7: scenario panel
     var panelsEl = document.getElementById('ul-panels');
     if (panelsEl && T.scenario) panelsEl.innerHTML = renderScenario(T.scenario, T.annotations);
+
+    var glassportEl = document.getElementById('ul-glassport');
+    if (glassportEl) glassportEl.innerHTML = renderGlassportCase(T.glassportExample);
 
     // Task 5: glossary legend button + panel
     if (typeof document !== 'undefined') {
@@ -1467,9 +1727,7 @@
       if (!document.querySelector('.ul-tour-overlay')) {
         var tourOverlay = document.createElement('div');
         tourOverlay.className = 'ul-tour-overlay';
-        tourOverlay.setAttribute('role', 'dialog');
-        tourOverlay.setAttribute('aria-modal', 'true');
-        tourOverlay.setAttribute('aria-label', 'Guided tour');
+        tourOverlay.setAttribute('aria-hidden', 'true');
         document.body.appendChild(tourOverlay);
         // Close tour when clicking overlay background
         tourOverlay.addEventListener('click', _endTour);
@@ -1477,6 +1735,10 @@
       if (!document.querySelector('.ul-tour-bubble')) {
         var tourBubble = document.createElement('div');
         tourBubble.className = 'ul-tour-bubble';
+        tourBubble.setAttribute('role', 'dialog');
+        tourBubble.setAttribute('aria-modal', 'true');
+        tourBubble.setAttribute('aria-label', 'Guided tour');
+        tourBubble.setAttribute('tabindex', '-1');
         document.body.appendChild(tourBubble);
       }
     }
@@ -1511,6 +1773,7 @@
     }
 
     _wire();
+    _wireVisualizations();
     _wireGlossary();
     _wireCausal();
     _initTheme();
@@ -1523,11 +1786,15 @@
     renderEventCard: renderEventCard,
     renderTimeline: renderTimeline,
     renderMinimap: renderMinimap,
+    renderEventMap: renderEventMap,
+    renderEventMapDetail: renderEventMapDetail,
     renderSummary: renderSummary,
     renderIntro: renderIntro,
+    renderTasks: renderTasks,
     renderIntent: renderIntent,
     renderGlossary: renderGlossary,
     renderScenario: renderScenario,
+    renderGlassportCase: renderGlassportCase,
     renderToolbar: renderToolbar,
     applyFilters: applyFilters,
     searchEvents: searchEvents,
@@ -1546,6 +1813,7 @@
     markErrorChains: markErrorChains,
     // Task 18
     computeAnalytics: computeAnalytics,
+    computePhaseKindCounts: computePhaseKindCounts,
     renderAnalytics: renderAnalytics,
     // Task 19
     sparkline: sparkline,
