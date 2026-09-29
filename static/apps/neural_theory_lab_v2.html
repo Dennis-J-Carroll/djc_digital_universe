@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Network Theory Laboratory - Complete Interactive Edition</title>
+    <title>Neural Theory Lab | Architectures, Optimization &amp; Research Frontiers</title>
+    <meta name="description" content="Explore neural network architectures, optimization, and research frontiers through interactive mathematical models.">
     
     <!-- Core Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="neural-theory-frontiers.js"></script>
+    <script defer src="neural-theory-extensions.js"></script>
     
     <style>
         :root {
@@ -156,6 +158,8 @@
             margin: 1rem 0;
             border-radius: 0 8px 8px 0;
             font-family: 'JetBrains Mono', monospace;
+            max-width: 100%;
+            overflow-x: auto;
         }
 
         .parameter-slider {
@@ -271,6 +275,27 @@
             font-size: 14px;
             color: white;
         }
+
+        /* Keep the builder diagram in the site's slate and cyan range. */
+        #builder-palette .layer-icon, .builder-layer .layer-icon {
+            background: #526a80 !important;
+            color: #f5f8fa;
+        }
+        #builder-palette .palette-item { background: #f5f8fa; border-color: #b8cbd9; }
+        #builder-palette .palette-item:hover, #builder-palette .palette-item:focus-visible { border-color: #648bbc; box-shadow: 0 4px 14px rgba(34, 72, 99, .12); }
+        .lab-train-button { background-color: #648bbc; }
+        .lab-train-button:hover:not(:disabled) { background-color: #5278a8; }
+        .lab-reset-button { background-color: #8e3e3e; }
+        .lab-reset-button:hover:not(:disabled) { background-color: #733232; }
+        .lab-train-button:disabled, .lab-reset-button:disabled { opacity: .55; cursor: not-allowed; }
+        .recent-network-flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem; padding: 2rem; min-height: 24rem; }
+        .recent-network-stage { flex: 1 1 8rem; max-width: 12rem; min-height: 6.5rem; border: 1px solid #a8bfce; border-top: 3px solid #648bbc; border-radius: .5rem; background: #f5f8fa; padding: .75rem; color: #26374a; }
+        .recent-network-stage strong { display: block; font-size: .88rem; }
+        .recent-network-stage span { display: block; margin-top: .4rem; font-size: .75rem; line-height: 1.4; }
+        .builder-presets { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .builder-preset { border: 1px solid #a8bfce; border-radius: .45rem; background: #fff; color: #29475f; padding: .45rem .7rem; font-size: .8rem; font-weight: 600; }
+        .builder-preset:hover, .builder-preset:focus-visible { background: #e8f1f7; border-color: #648bbc; }
+        .builder-model-note { border-left: 3px solid #648bbc; background: #edf3f7; padding: .7rem .85rem; font-size: .8rem; line-height: 1.5; color: #354a5e; }
 
         .builder-workspace {
             min-height: 400px;
@@ -395,7 +420,7 @@
         .builder-connector {
             width: 2px;
             height: 20px;
-            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-green));
+            background: #a8bfce;
             flex-shrink: 0;
         }
 
@@ -628,6 +653,15 @@
             border-color: var(--accent-soft);
             transform: translateY(-2px);
         }
+        #glossary-grid .glossary-card[open] { border-color: #648bbc; }
+        #glossary-grid .glossary-card summary { cursor: pointer; list-style: none; position: relative; padding-right: 1.4rem; }
+        #glossary-grid .glossary-card summary::-webkit-details-marker { display: none; }
+        #glossary-grid .glossary-card summary::after { content: '+'; position: absolute; top: 0; right: 0; color: #526a80; font-size: 1.2rem; line-height: 1; }
+        #glossary-grid .glossary-card[open] summary::after { content: '−'; }
+        #glossary-grid .glossary-card summary:focus-visible { outline: 2px solid #648bbc; outline-offset: 4px; }
+        .glossary-deep-dive { border-top: 1px solid #d4dce4; margin-top: .9rem; padding-top: .9rem; }
+        .glossary-deep-dive h4 { color: #29475f; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: .7rem; }
+        .glossary-equation { overflow-x: auto; padding: .55rem; background: #edf3f7; border-radius: .35rem; font-size: .9rem; }
 
         /* ── Architecture detail modal (Explore) ───────────────────── */
         .arch-modal-overlay {
@@ -836,7 +870,7 @@
         /* Builder validation */
         .builder-layer.layer-error { border-left: 4px solid #ef4444 !important; }
         .builder-layer.layer-warn  { border-left: 4px solid #f59e0b !important; }
-        .builder-layer.layer-ok    { border-left: 4px solid #10b981 !important; }
+        .builder-layer.layer-ok    { border-left: 4px solid #648bbc !important; }
         .shape-badge { font-family: ui-monospace, monospace; font-size: 0.68rem; color: #9ca3af; }
         .shape-row { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; border-bottom: 1px solid #f1f5f9; }
         .shape-row:last-child { border-bottom: none; }
@@ -864,9 +898,21 @@
         /* ── Mobile touch targets ── */
         @media (max-width: 767px) {
             .palette-item { padding: 12px 14px; font-size: 0.8rem; }
-            .builder-layer { padding: 12px 14px; }
+            .builder-layer {
+                padding: 12px 14px;
+                display: grid;
+                grid-template-columns: 36px minmax(0, 1fr) auto;
+                grid-template-areas: "icon info remove" "controls controls controls";
+                gap: 8px 10px;
+            }
+            .builder-layer .layer-icon { grid-area: icon; }
+            .builder-layer .layer-info { grid-area: info; min-width: 0; }
+            .builder-layer .layer-controls { grid-area: controls; justify-content: flex-end; }
+            .builder-layer .remove-layer { grid-area: remove; }
             .builder-layer .layer-controls input,
             .builder-layer .layer-controls select { width: 60px; font-size: 0.7rem; }
+            #builder .builder-workspace-header { display: block; }
+            .builder-workspace-header > div { margin-top: .7rem; justify-content: flex-start; flex-wrap: wrap; }
             .activ-tab { padding: 0.5rem 0.875rem; font-size: 0.75rem; }
         }
         #dataset-class-toggle { display: none; gap: 8px; margin-bottom: 10px; }
@@ -881,13 +927,75 @@
         @media (max-width: 767px) {
             .builder-preview-svg { height: 180px; }
             .optim-canvas { max-width: 100%; }
-            /* Push nav below the djc-app-bar (44px sticky) so hamburger isn't blocked */
-            nav { top: 44px !important; }
-            #mobile-menu { top: 108px !important; } /* 44px app-bar + 64px nav */
-            /* Increase hero padding to clear app-bar + nav (108px total) */
-            .pt-24 { padding-top: 7.5rem !important; } /* 120px */
             /* Dataset class toggle: visible on mobile */
             #dataset-class-toggle { display: flex !important; }
+        }
+
+        /* Page-specific polish: sharper surfaces, restrained site accent. */
+        html { scroll-padding-top: 7.5rem; }
+        nav { top: 44px !important; border-bottom: 2px solid #12a9bf; }
+        #mobile-menu { top: 64px; max-height: calc(100vh - 108px); overflow-y: auto; }
+        .neural-canvas { right: 0; overflow: hidden; }
+        .lab-hero { border-bottom: 1px solid rgba(18, 169, 191, 0.28); }
+        .lab-eyebrow, .frontier-kicker {
+            font: 700 0.72rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+            letter-spacing: 0.15em; text-transform: uppercase;
+        }
+        .lab-eyebrow { color: #176879; margin-bottom: 0.85rem; }
+        .misty-card, .neural-card { border-radius: 10px; }
+        .neural-card { border-color: rgba(16, 117, 139, 0.34); }
+        .neural-card:hover { border-color: #087d96; }
+        .theory-badge { color: #102033; }
+        :is(a, button, input, select, [tabindex]):focus-visible {
+            outline: 3px solid #087d96;
+            outline-offset: 3px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in, .typewriter-text { animation: none !important; }
+            .reveal-on-scroll { opacity: 1; transform: none; transition: none; }
+        }
+
+        .frontier-section { background: #eef0f5; color: #162138; border-block: 1px solid #147b8e; }
+        .frontier-section .frontier-kicker { color: #397a91; }
+        .frontier-section h2 { color: #5b87ba; }
+        .frontier-section > div > .frontier-intro { color: #78dde5; background: #31536e; border-left: 3px solid #42c7d7; border-radius: 4px; padding: 0.8rem 1rem; }
+        .frontier-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .frontier-card { background: #eeeff5; border: 1px solid #315065; border-top: 2px solid #42c7d7; border-radius: 8px; padding: 1.35rem; }
+        .frontier-card:last-child { grid-column: 1 / -1; }
+        .frontier-card:last-child > p { max-width: 85ch; }
+        .frontier-card h3, .frontier-card p { color: #162138; }
+        .frontier-card .frontier-label { color: #397a91; font: 700 0.68rem ui-monospace, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
+        .frontier-card .frontier-equation { display: block; color: #162138; overflow-x: auto; padding: 0.7rem 0; font-size: 0.95rem; }
+        .frontier-card a, .frontier-section .frontier-source { color: #256b86; text-decoration: underline; text-underline-offset: 3px; }
+        .frontier-card .frontier-limit { border-left: 2px solid #90aebb; padding-left: 0.7rem; color: #4a6075; }
+        .frontier-demo { margin-top: 1.25rem; padding: 1.35rem; background: #112032; border: 1px solid #315065; border-radius: 8px; }
+        .frontier-demo h3 { color: #f4fbff; }
+        .frontier-demo .frontier-kicker { color: #67d6e7; }
+        .frontier-demo .frontier-intro { color: #b9cbd7; }
+        .frontier-controls { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-block: 1rem; }
+        .frontier-controls label { display: grid; gap: 0.35rem; min-width: 9rem; color: #e1eef5; font-weight: 600; }
+        .frontier-controls input { width: 100%; accent-color: #54cddc; }
+        .frontier-output { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, 1fr); gap: 1.4rem; align-items: start; }
+        .frontier-matrix-wrap { max-width: 100%; overflow-x: auto; }
+        .frontier-matrix { border-collapse: separate; border-spacing: 2px; font: 0.7rem ui-monospace, monospace; }
+        .frontier-matrix th { color: #a4c4d2; font-weight: 500; min-width: 2rem; }
+        .frontier-matrix td { min-width: 2rem; height: 2rem; text-align: center; color: #061621; border-radius: 2px; }
+        .frontier-matrix td.zero { background: #1b3043; color: #9bb3c1; }
+        .frontier-matrix td.chunk-edge { border-top: 2px solid #f2ae65; }
+        .frontier-readout { font: 0.83rem/1.7 ui-monospace, monospace; color: #c5e8ee; overflow-wrap: anywhere; }
+        .frontier-readout output { color: #f8fbff; }
+        @media (max-width: 780px) {
+            .frontier-grid, .frontier-output { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 1130px) {
+            nav .desktop-nav { display: none !important; }
+            nav .hamburger-btn { display: flex !important; }
+        }
+        @media (max-width: 600px) {
+            .training-header { flex-wrap: wrap; gap: 0.75rem; }
+            .training-actions { flex-wrap: wrap; gap: 0.5rem; }
+            .training-actions > * { margin-left: 0 !important; }
+            .djc-app-bar .djc-title, .djc-app-bar .app-bar-divider { display: none; }
         }
     </style>
 </head>
@@ -902,7 +1010,7 @@
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;">
     <a href="/apps/">← Back to Projects</a>
-    <span style="color:#4b5563;">|</span>
+    <span class="app-bar-divider" style="color:#4b5563;">|</span>
     <span class="djc-title">Neural Network Theory Lab v2</span>
   </div>
   <a href="/" class="djc-logo">DJC</a>
@@ -912,63 +1020,63 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl font-bold gradient-text">Neural Theory Lab</h1>
+                    <span class="text-xl font-bold gradient-text">Neural Theory Lab</span>
                 </div>
-                <div class="hidden md:flex space-x-6" role="menubar">
-                    <a href="#architectures" class="text-sm hover:text-gray-900 transition" role="menuitem">Architectures</a>
-                    <a href="#interactive" class="text-sm hover:text-gray-900 transition" role="menuitem">Interactive Lab</a>
-                    <a href="#activations" class="text-sm hover:text-gray-900 transition" role="menuitem">Activations</a>
-                    <a href="#builder" class="text-sm hover:text-gray-900 transition" role="menuitem">Network Builder</a>
-                    <a href="#comparison" class="text-sm hover:text-gray-900 transition" role="menuitem">Performance</a>
-                    <a href="#research" class="text-sm hover:text-gray-900 transition" role="menuitem">Research</a>
-                    <a href="#optimization" class="text-sm hover:text-gray-900 transition" role="menuitem">Optimization</a>
-                    <a href="#glossary" class="text-sm hover:text-gray-900 transition" role="menuitem">Glossary</a>
+                <div class="desktop-nav hidden md:flex space-x-6">
+                    <a href="#architectures" class="text-sm hover:text-gray-900 transition">Architectures</a>
+                    <a href="#interactive" class="text-sm hover:text-gray-900 transition">Interactive Lab</a>
+                    <a href="#activations" class="text-sm hover:text-gray-900 transition">Activations</a>
+                    <a href="#builder" class="text-sm hover:text-gray-900 transition">Network Builder</a>
+                    <a href="#comparison" class="text-sm hover:text-gray-900 transition">Performance</a>
+                    <a href="#research" class="text-sm hover:text-gray-900 transition">Research</a>
+                    <a href="#optimization" class="text-sm hover:text-gray-900 transition">Optimization</a>
+                    <a href="#glossary" class="text-sm hover:text-gray-900 transition">Glossary</a>
                 </div>
                 <button class="hamburger-btn md:hidden" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
                     <span></span><span></span><span></span>
                 </button>
             </div>
         </div>
-        <div id="mobile-menu" role="menu" aria-label="Mobile navigation">
-            <a href="#architectures" role="menuitem">Architectures</a>
-            <a href="#interactive" role="menuitem">Interactive Lab</a>
-            <a href="#activations" role="menuitem">Activations</a>
-            <a href="#builder" role="menuitem">Network Builder</a>
-            <a href="#comparison" role="menuitem">Performance</a>
-            <a href="#research" role="menuitem">Research</a>
-            <a href="#optimization" role="menuitem">Optimization</a>
-            <a href="#glossary" role="menuitem">Glossary</a>
+        <div id="mobile-menu" aria-label="Mobile navigation">
+            <a href="#architectures">Architectures</a>
+            <a href="#interactive">Interactive Lab</a>
+            <a href="#activations">Activations</a>
+            <a href="#builder">Network Builder</a>
+            <a href="#comparison">Performance</a>
+            <a href="#research">Research</a>
+            <a href="#optimization">Optimization</a>
+            <a href="#glossary">Glossary</a>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative">
+    <section class="lab-hero pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative">
         <div id="neural-canvas" class="neural-canvas"></div>
-        <div class="max-w-7xl mx-auto text-center fade-in content-overlay">
-            <h2 class="text-5xl font-bold mb-6">
+        <div class="max-w-7xl mx-auto text-center content-overlay">
+            <p class="lab-eyebrow">Interactive research notebook / neural systems</p>
+            <h1 class="text-5xl font-bold mb-6">
                 <span class="gradient-text">Neural Network Theory Laboratory</span>
-            </h2>
-            <div class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                <span id="typewriter-text" class="typewriter-text"></span>
-            </div>
+            </h1>
+            <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-6">Trace network mechanics from gradient descent to state-space duality, online memory, and interpretable circuits.</p>
+            <a href="#frontiers" class="inline-flex items-center gap-2 font-semibold text-cyan-800 underline underline-offset-4">Explore research frontiers <span aria-hidden="true">↗</span></a>
 
             <!-- Quick Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
                 <div class="misty-card p-6">
-                    <div class="stat-number">7</div>
-                    <div class="text-sm text-gray-600">Core Architectures</div>
+                    <div class="stat-number" id="architecture-count">16</div>
+                    <div class="text-sm text-gray-600">Architectures</div>
                 </div>
                 <div class="misty-card p-6">
                     <div class="stat-number">1957</div>
                     <div class="text-sm text-gray-600">First Perceptron</div>
                 </div>
                 <div class="misty-card p-6">
-                    <div class="stat-number">∞</div>
-                    <div class="text-sm text-gray-600">Mathematical Depth</div>
+                    <div class="stat-number">5</div>
+                    <div class="text-sm text-gray-600">Research Frontiers</div>
                 </div>
                 <div class="misty-card p-6">
-                    <div class="stat-number">2024</div>
-                    <div class="text-sm text-gray-600">Modern Architectures</div>
+                    <div class="stat-number">2025</div>
+                    <div class="text-sm text-gray-600">Circuit Tracing</div>
                 </div>
             </div>
         </div>
@@ -977,7 +1085,7 @@
     <!-- Neural Network Selection -->
     <section id="architectures" class="py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Neural Network Architectures</h3>
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Neural Network Architectures</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12" id="network-selector">
                 <!-- Network cards will be populated by JavaScript -->
@@ -988,24 +1096,24 @@
     <!-- Interactive Lab Section -->
     <section id="interactive" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Interactive Neural Network Lab</h3>
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Interactive Neural Network Lab</h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <!-- Network Visualizer (Left 2/3) -->
                 <div class="lg:col-span-3">
                     <div class="misty-card p-6 mb-6">
-                        <div class="flex justify-between items-center mb-4">
+                        <div class="training-header flex justify-between items-center mb-4">
                             <h3 class="text-2xl font-bold text-gray-900" id="current-network-title">
                                 Select a Network Type
                             </h3>
-                            <div class="flex space-x-2">
-                                <button id="play-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" disabled>
+                            <div class="training-actions flex space-x-2">
+                                <button id="play-btn" class="lab-train-button text-white px-4 py-2 rounded-lg transition-colors" disabled>
                                     <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg> Train</span>
                                 </button>
                                 <button id="pause-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors" disabled>
                                     <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg> Pause</span>
                                 </button>
-                                <button id="reset-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" disabled>
+                                <button id="reset-btn" class="lab-reset-button text-white px-4 py-2 rounded-lg transition-colors" disabled>
                                     <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg> Reset</span>
                                 </button>
                             </div>
@@ -1014,8 +1122,10 @@
                         <!-- Network SVG Container -->
                         <div id="network-container" class="bg-white rounded-lg border-2 border-dashed border-gray-300 min-h-96 flex items-center justify-center">
                             <div class="text-center text-gray-500">
-                                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <svg class="w-20 h-16 mx-auto mb-4" fill="none" viewBox="0 0 80 64" aria-hidden="true">
+                                    <path d="M11 15 38 32 66 12M11 48 38 32 66 51" stroke="#a8bfce" stroke-width="2"/>
+                                    <circle cx="11" cy="15" r="5" fill="#648bbc"/><circle cx="11" cy="48" r="5" fill="#648bbc"/>
+                                    <circle cx="38" cy="32" r="6" fill="#29475f"/><circle cx="66" cy="12" r="5" fill="#648bbc"/><circle cx="66" cy="51" r="5" fill="#648bbc"/>
                                 </svg>
                                 <p class="text-lg">Select a neural network type to begin exploration</p>
                             </div>
@@ -1190,7 +1300,7 @@
     <!-- Activation Function Explorer -->
     <section id="activations" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/40">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Activation Function Explorer</h3>
+            <h2 class="text-3xl font-bold mb-2 text-center gradient-text">Activation Function Explorer</h2>
             <p class="text-center text-gray-500 mb-8 text-sm">Compare f(x) and f′(x) — the derivative is what backprop actually multiplies through each layer</p>
             <div class="flex flex-wrap gap-2 justify-center mb-8" id="activ-tabs"></div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -1217,7 +1327,7 @@
     <!-- Build Your Own Network Section -->
     <section id="builder" class="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white/60 to-blue-50/60">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Build Your Own Network</h3>
+            <h2 class="text-3xl font-bold mb-2 text-center gradient-text">Build Your Own Network</h2>
             <p class="text-center text-gray-500 mb-8">Drag layers from the palette to assemble a custom neural network architecture</p>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1268,18 +1378,24 @@
                                 <span>Output</span>
                             </div>
                         </div>
+                        <p class="text-xs text-gray-600 mt-3">Tap, press Enter, or drag a block. Advanced blocks show structure and shape flow; this builder does not execute full model training.</p>
+                        <div class="mt-5 pt-4 border-t border-gray-200">
+                            <h5 class="font-semibold text-gray-800 mb-2">Recent architecture examples</h5>
+                            <div id="builder-presets" class="builder-presets" aria-label="Load an example architecture"></div>
+                            <p id="builder-preset-description" class="text-sm text-gray-600 mt-2">Choose a preset to inspect its blocks, shape flow, and design trade-off.</p>
+                        </div>
                     </div>
 
                     <!-- Build Workspace -->
                     <div class="misty-card p-6">
-                        <div class="flex justify-between items-center mb-4">
+                        <div class="builder-workspace-header flex justify-between items-center mb-4">
                             <h4 class="text-lg font-semibold text-gray-800">Network Architecture</h4>
                             <div class="flex gap-2">
                                 <button id="builder-clear-btn" onclick="clearBuilder()" class="bg-gray-400 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-gray-500 transition">
                                     <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Clear</span>
                                 </button>
-                                <button id="builder-train-btn" onclick="trainBuilderNetwork()" class="bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition" disabled>
-                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg> Train Network</span>
+                                <button id="builder-train-btn" onclick="trainBuilderNetwork()" class="lab-train-button text-white px-4 py-1.5 rounded-lg text-sm transition" disabled>
+                                    <span class="inline-flex items-center gap-1.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;"><polygon points="6 3 20 12 6 21 6 3"/></svg> Show Training Trace</span>
                                 </button>
                             </div>
                         </div>
@@ -1290,6 +1406,7 @@
                                 <p class="text-sm mt-1">Start with an Input layer, add hidden layers, end with Output</p>
                             </div>
                         </div>
+                        <div id="builder-layer-explanation" class="builder-model-note mt-3" aria-live="polite">Add a block or load an example to inspect what each stage computes.</div>
                     </div>
                 </div>
 
@@ -1300,6 +1417,7 @@
                         <svg id="builder-preview-svg" class="builder-preview-svg w-full" height="300" viewBox="0 0 300 300">
                             <text x="150" y="150" text-anchor="middle" fill="#a0aec0" font-size="14">Add layers to see preview</text>
                         </svg>
+                        <p id="builder-preview-note" class="text-xs text-gray-600 mt-2">Schematic node preview; node count is illustrative.</p>
 
                         <!-- Builder Stats -->
                         <div class="mt-6 pt-4 border-t border-gray-200">
@@ -1310,7 +1428,7 @@
                                     <span id="builder-layer-count" class="font-medium">0</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Parameters (est.):</span>
+                                    <span class="text-gray-600">Parameters (rough est.):</span>
                                     <span id="builder-param-count" class="font-medium">0</span>
                                 </div>
                                 <div class="flex justify-between">
@@ -1329,7 +1447,8 @@
 
                         <!-- Builder Training Progress -->
                         <div id="builder-training-display" class="mt-6 pt-4 border-t border-gray-200" style="display:none;">
-                            <h4 class="font-semibold text-gray-800 mb-3">Training Progress</h4>
+                            <h4 class="font-semibold text-gray-800 mb-1">Illustrative Training Trace</h4>
+                            <p class="text-xs text-gray-600 mb-3">Synthetic loss curve; no weights are optimized in this builder.</p>
                             <div class="bg-gray-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Builder training progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="builder-progress-bar-wrap">
                                 <div id="builder-progress-bar" class="bg-gradient-to-r from-cyan-500 to-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                             </div>
@@ -1348,7 +1467,7 @@
     <!-- Performance Comparison -->
     <section id="comparison" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/30">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Performance Comparison</h3>
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Performance Comparison</h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div class="misty-card p-6">
@@ -1370,7 +1489,7 @@
             <!-- Performance Matrix -->
             <div class="misty-card p-6">
                 <h4 class="text-lg font-semibold mb-1">Performance Matrix</h4>
-                <p class="text-xs text-gray-400 mb-4">* Task Performance: normalized 0–100 score relative to each architecture's primary domain (ImageNet for vision, GLUE/PTB for sequence, FID-derived for generative). Sources: He et al. 2015, Tan &amp; Le 2019, Vaswani et al. 2017, Merity et al. 2018, Ho et al. 2020, Gu &amp; Dao 2023, Karras et al. 2020.</p>
+                <p class="text-xs text-gray-500 mb-4">Illustrative scores for the original 11 architectures only. Recent models are omitted because their benchmarks and tasks are not directly comparable. Task score uses each architecture's primary domain (ImageNet for vision, GLUE/PTB for sequence, FID-derived for generation). Sources: He et al. 2015, Tan &amp; Le 2019, Vaswani et al. 2017, Merity et al. 2018, Ho et al. 2020, Gu &amp; Dao 2023, Karras et al. 2020.</p>
                 <div class="chart-container" style="height: 460px;">
                     <canvas id="performance-matrix"></canvas>
                 </div>
@@ -1381,7 +1500,7 @@
     <!-- Research Insights -->
     <section id="research" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-8 text-center gradient-text">Research Insights</h3>
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Research Insights</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="misty-card p-6">
@@ -1394,7 +1513,7 @@
                 </div>
                 <div class="misty-card p-6">
                     <h4 class="text-lg font-semibold mb-3 text-purple-600">Mathematical Foundations</h4>
-                    <p class="text-sm text-gray-600">Understanding gradient flow and optimization dynamics is crucial for effective neural network design and training.</p>
+                    <p class="text-sm text-gray-600">Newer theory asks where a model stores context, how features combine across layers, and what loss geometry says about effective complexity. <a href="#frontiers" class="font-semibold text-cyan-800 underline">Explore five research frontiers</a>.</p>
                 </div>
             </div>
 
@@ -1403,6 +1522,78 @@
                 <h4 class="text-lg font-semibold mb-4">Evolution Timeline</h4>
                 <div class="chart-container" style="height: 200px;">
                     <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research frontiers: concise source-backed models, not benchmark claims. -->
+    <section id="frontiers" class="frontier-section py-14 px-4 sm:px-6 lg:px-8" aria-labelledby="frontiers-title">
+        <div class="max-w-7xl mx-auto">
+            <p class="frontier-kicker">Research frontiers / five working models</p>
+            <h2 id="frontiers-title" class="text-3xl sm:text-4xl font-bold mt-2 mb-3">Where neural theory is moving</h2>
+            <p class="frontier-intro max-w-3xl mb-8">These approaches study sequence memory, singular loss geometry, feature circuits, and energy-based learning. Equations show each core mechanism; limits mark where a toy model stops matching a full system.</p>
+
+            <div class="frontier-grid">
+                <article class="frontier-card">
+                    <p class="frontier-label">01 / Sequence structure</p>
+                    <h3 class="text-xl font-bold mt-2 mb-3">Structured State Space Duality</h3>
+                    <p>For scalar state transitions, a selective state-space recurrence can be written as a structured causal matrix. Mamba-2 uses this dual view for chunked matrix multiplication during training and compact recurrent state during decoding.</p>
+                    <span class="frontier-equation" data-frontier-math="h_t=a_t h_{t-1}+b_t x_t,\quad y_t=c_t h_t">hₜ = aₜhₜ₋₁ + bₜxₜ; yₜ = cₜhₜ</span>
+                    <p class="frontier-limit text-sm mt-2">Scope: relation concerns structured attention variants; it does not make every Transformer layer a Mamba layer.</p>
+                    <a class="text-sm inline-block mt-3" href="https://arxiv.org/abs/2405.21060" target="_blank" rel="noopener noreferrer">Dao &amp; Gu, ICML 2024 ↗</a>
+                </article>
+                <article class="frontier-card">
+                    <p class="frontier-label">02 / Adaptive memory</p>
+                    <h3 class="text-xl font-bold mt-2 mb-3">Test-Time Training</h3>
+                    <p>TTT layers make hidden state an inner model. Each token supplies a self-supervised training signal; a gradient step updates inner weights before the next query reads memory.</p>
+                    <span class="frontier-equation" data-frontier-math="W_t=W_{t-1}-\eta\nabla_W\ell(W_{t-1};x_t)">Wₜ = Wₜ₋₁ − η∇W ℓ(Wₜ₋₁; xₜ)</span>
+                    <p class="frontier-limit text-sm mt-2">Trade-off: fixed-size state avoids a growing KV cache, but inner updates still cost compute and memory bandwidth.</p>
+                    <a class="text-sm inline-block mt-3" href="https://arxiv.org/abs/2407.04620" target="_blank" rel="noopener noreferrer">Sun et al., TTT layers ↗</a>
+                </article>
+                <article class="frontier-card">
+                    <p class="frontier-label">03 / Loss geometry</p>
+                    <h3 class="text-xl font-bold mt-2 mb-3">Singular Learning Theory</h3>
+                    <p>Neural networks can represent one function with many parameter settings. Near such singularities, raw parameter count misses local geometry; the local learning coefficient measures a region’s effective complexity.</p>
+                    <span class="frontier-equation" data-frontier-math="\lambda_{\mathrm{regular}}=d/2">λregular = d/2</span>
+                    <p class="frontier-limit text-sm mt-2">In regular models, coefficient equals half parameter dimension. Tracking developmental transitions in real networks remains active research.</p>
+                    <a class="text-sm inline-block mt-3" href="https://arxiv.org/abs/2308.12108" target="_blank" rel="noopener noreferrer">Lau et al., local learning coefficient ↗</a>
+                </article>
+                <article class="frontier-card">
+                    <p class="frontier-label">04 / Mechanistic circuits</p>
+                    <h3 class="text-xl font-bold mt-2 mb-3">Cross-Layer Transcoders</h3>
+                    <p>A sparse replacement model approximates MLP computations across layers. Attribution graphs then trace prompt-specific paths among learned features, attention heads, and output.</p>
+                    <span class="frontier-equation" data-frontier-math="\widehat{\mathrm{MLP}}(x)\approx D\,\mathrm{sparse}(E x)">MLP(x) ≈ D · sparse(E x)</span>
+                    <p class="frontier-limit text-sm mt-2">Limit: reconstruction errors and missing attention circuits can leave parts of a model’s behavior unexplained; graph edges need intervention checks.</p>
+                    <a class="text-sm inline-block mt-3" href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html" target="_blank" rel="noopener noreferrer">Circuit Tracing, 2025 ↗</a>
+                </article>
+                <article class="frontier-card">
+                    <p class="frontier-label">05 / Energy dynamics</p>
+                    <h3 class="text-xl font-bold mt-2 mb-3">Hopfield Retrieval &amp; Equilibrium Propagation</h3>
+                    <p>Modern Hopfield retrieval uses a softmax-weighted pattern lookup closely related to attention. Equilibrium Propagation trains certain energy-based networks by comparing free and gently nudged fixed points.</p>
+                    <span class="frontier-equation" data-frontier-math="x_{\mathrm{new}}=X\,\mathrm{softmax}(\beta X^{\mathsf T}x)">xnew = X · softmax(βXᵀx)</span>
+                    <p class="frontier-limit text-sm mt-2">Scope: retrieval equivalence needs the specified pattern and projection setup. EqProp’s gradient result uses equilibrium and small-nudge assumptions.</p>
+                    <p class="text-sm mt-3"><a href="https://arxiv.org/abs/2008.02217" target="_blank" rel="noopener noreferrer">Ramsauer et al. ↗</a> · <a href="https://www.frontiersin.org/journals/computational-neuroscience/articles/10.3389/fncom.2017.00024/full" target="_blank" rel="noopener noreferrer">Scellier &amp; Bengio ↗</a></p>
+                </article>
+            </div>
+
+            <div class="frontier-demo" aria-labelledby="ssd-demo-title">
+                <p class="frontier-kicker">Live model / scalar SSD</p>
+                <h3 id="ssd-demo-title" class="text-xl font-bold mt-2">One recurrence, two views</h3>
+                <p class="frontier-intro text-sm mt-2 max-w-3xl">Move decay and chunk controls. Matrix cell (i, j) shows how input j reaches output i. Orange rules mark chunk boundaries. Both paths compute same output for fixed input [1, 0, 1, 0, …].</p>
+                <div class="frontier-controls">
+                    <label>Sequence length <span><output id="ssd-length-value">8</output> tokens</span><input id="ssd-length" type="range" min="4" max="12" value="8"></label>
+                    <label>State decay <span><output id="ssd-decay-value">0.70</output></span><input id="ssd-decay" type="range" min="0.2" max="0.95" step="0.05" value="0.7"></label>
+                    <label>Chunk size <span><output id="ssd-chunk-value">4</output> tokens</span><input id="ssd-chunk" type="range" min="2" max="6" value="4"></label>
+                </div>
+                <div class="frontier-output">
+                    <div class="frontier-matrix-wrap"><table class="frontier-matrix" id="ssd-matrix"><caption class="sr-only">Causal contribution matrix with row output positions and column input positions</caption><tbody></tbody></table></div>
+                    <div class="frontier-readout">
+                        <p>RECURRENCE <output id="ssd-recurrence"></output></p>
+                        <p>MATRIX PRODUCT <output id="ssd-product"></output></p>
+                        <p>MAX |Δ| <output id="ssd-error"></output></p>
+                        <p class="frontier-intro text-sm mt-3">Toy uses a constant scalar transition with B = C = 1. Mamba-2 uses richer, input-dependent components; this view demonstrates algebra, not its measured speed.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1672,47 +1863,30 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            initializeTypewriter();
             initializeNeuralCanvas();
             populateNetworkSelector();
             initializeParameterControls();
             initializeDatasetPlayground();
             setupEventListeners();
-            initializeCharts();
+            initializeChartsWhenVisible();
             initializeScrollAnimations();
             initializeBuilder();
         });
 
-        // Typewriter effect for hero section
-        function initializeTypewriter() {
-            const typewriterStrings = [
-                'Interactive Mathematical Explorations',
-                'Visualize Neural Network Architectures',
-                'Understand the Mathematics of AI',
-                'Explore Gradient Descent and Backpropagation',
-                'Master Attention Mechanisms'
-            ];
-            
-            new Typed('#typewriter-text', {
-                strings: typewriterStrings,
-                typeSpeed: 50,
-                backSpeed: 30,
-                backDelay: 2000,
-                loop: true,
-                showCursor: true,
-                cursorChar: '|'
-            });
-        }
-
         // Initialize p5.js neural network background
         function initializeNeuralCanvas() {
+            const host = document.getElementById('neural-canvas');
+            const hero = document.querySelector('.lab-hero');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let heroVisible = true;
             neuralNetworkSketch = new p5((p) => {
                 let nodes = [];
                 let connections = [];
                 
                 p.setup = function() {
-                    const canvas = p.createCanvas(p.windowWidth, 400);
-                    canvas.parent('neural-canvas');
+                    const canvas = p.createCanvas(host.clientWidth, 400);
+                    canvas.parent(host);
+                    p.frameRate(24);
                     
                     // Create nodes
                     for (let i = 0; i < 30; i++) {
@@ -1725,6 +1899,7 @@
                             alpha: p.random(0.3, 0.7)
                         });
                     }
+                    if (reduceMotion.matches) p.noLoop();
                 };
                 
                 p.draw = function() {
@@ -1757,14 +1932,31 @@
                 };
                 
                 p.windowResized = function() {
-                    p.resizeCanvas(p.windowWidth, 400);
+                    p.resizeCanvas(host.clientWidth, 400);
                 };
             });
+
+            const updateCanvasMotion = () => {
+                if (!neuralNetworkSketch) return;
+                if (reduceMotion.matches || document.hidden || !heroVisible) neuralNetworkSketch.noLoop();
+                else neuralNetworkSketch.loop();
+            };
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver(([entry]) => {
+                    heroVisible = entry.isIntersecting;
+                    updateCanvasMotion();
+                });
+                observer.observe(hero);
+            }
+            document.addEventListener('visibilitychange', updateCanvasMotion);
+            reduceMotion.addEventListener('change', updateCanvasMotion);
         }
 
         // Populate network selector
         function populateNetworkSelector() {
             const selector = document.getElementById('network-selector');
+            const architectureCount = document.getElementById('architecture-count');
+            if (architectureCount) architectureCount.textContent = Object.keys(networkTypes).length;
             
             Object.entries(networkTypes).forEach(([key, network]) => {
                 const card = document.createElement('div');
@@ -1803,7 +1995,7 @@
             document.querySelectorAll('.neural-card').forEach(card => {
                 card.classList.remove('active');
             });
-            event.target.closest('.neural-card').classList.add('active');
+            document.querySelector(`.neural-card[data-key="${networkType}"]`)?.classList.add('active');
             
             currentNetwork = networkTypes[networkType];
             currentNetworkKey = networkType;
@@ -1848,6 +2040,24 @@
         function visualizeNetwork(networkType) {
             const container = document.getElementById('network-container');
             container.innerHTML = '';
+            const recent = networkTypes[networkType];
+            if (recent?.recentStages) {
+                const flow = document.createElement('div');
+                flow.className = 'recent-network-flow w-full';
+                flow.setAttribute('aria-label', `${recent.name} conceptual stages`);
+                recent.recentStages.forEach(stage => {
+                    const cell = document.createElement('div');
+                    cell.className = 'recent-network-stage';
+                    const title = document.createElement('strong');
+                    title.textContent = stage[0];
+                    const note = document.createElement('span');
+                    note.textContent = stage[1];
+                    cell.append(title, note);
+                    flow.appendChild(cell);
+                });
+                container.appendChild(flow);
+                return;
+            }
             
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('width', '100%');
@@ -2577,12 +2787,25 @@
             });
         }
 
-        // Initialize charts
-        function initializeCharts() {
-            initTrainingChart();
-            initRadarChart();
-            initPerformanceMatrix();
-            initTimelineChart();
+        // Defer lower-page charts until users approach their sections.
+        function initializeChartsWhenVisible() {
+            if (!('IntersectionObserver' in window)) {
+                initTrainingChart(); initRadarChart(); initPerformanceMatrix(); initTimelineChart();
+                return;
+            }
+            const targets = [
+                { id: 'comparison', run: () => { initTrainingChart(); initRadarChart(); initPerformanceMatrix(); } },
+                { id: 'research', run: initTimelineChart }
+            ];
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const target = targets.find(item => item.id === entry.target.id);
+                    if (target) target.run();
+                    observer.unobserve(entry.target);
+                });
+            }, { rootMargin: '250px' });
+            targets.forEach(target => observer.observe(document.getElementById(target.id)));
         }
 
         function initTrainingChart() {
@@ -2663,7 +2886,9 @@
 
         function initPerformanceMatrix() {
             const ctx = document.getElementById('performance-matrix').getContext('2d');
-            const architectures = Object.keys(networkTypes);
+            // Matrix scores below cover original 11 only. Recent models lack
+            // directly comparable task scores, so omit rather than invent them.
+            const architectures = Object.keys(networkTypes).filter(k => !networkTypes[k].recentStages);
             // Key order: perceptron, mlp, cnn, rnn, lstm, transformer, gan, resnet, vae, diffusion, ssm
             // Task Performance*: normalized 0-100. Primary benchmarks:
             //   perceptron(52): linear decision boundary, limited to separable tasks
@@ -2945,6 +3170,9 @@
                         <text x="30" y="22" fill="#4a5568" font-size="11" font-weight="600">Selective Scan: h_t = Āh_{t-1} + B̄x_t  ·  y_t = Ch_t</text>
                         ${buildSSMAnimSVG()}
                     </svg>`;
+                    break;
+                case 'dit': case 'mamba2': case 'jamba': case 'ttt': case 'titans':
+                    svgContent = buildRecentArchitectureSVG(networkTypes[networkType]);
                     break;
                 default:
                     svgContent = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
@@ -3598,6 +3826,7 @@
         let builderLayers = [];
         let builderLossChart = null;
         let builderTraining = false;
+        let activeBuilderPreset = null;
 
         const layerDefinitions = {
             input:     { name: 'Input Layer',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>', color: '#3b82f6', units: 784, hasUnits: true, activation: false },
@@ -3649,6 +3878,8 @@
 
         function addBuilderLayer(type) {
             const def = layerDefinitions[type];
+            if (!def) return;
+            activeBuilderPreset = null;
             const id = 'bl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
             const layer = {
                 id,
@@ -3665,6 +3896,7 @@
 
         function removeBuilderLayer(id) {
             builderLayers = builderLayers.filter(l => l.id !== id);
+            activeBuilderPreset = null;
             renderBuilderWorkspace();
             updateBuilderPreview();
             updateBuilderStats();
@@ -3722,7 +3954,7 @@
                     : `<div class="shape-badge">→ ${sr.shape}</div>`;
 
                 el.innerHTML = `
-                    <div class="layer-icon" style="background: linear-gradient(135deg, ${def.color}, ${def.color}dd);">${def.icon}</div>
+                    <div class="layer-icon">${def.icon}</div>
                     <div class="layer-info">
                         <div class="layer-name">${def.name}</div>
                         <div class="layer-config">${def.hasUnits ? (def.unitLabel || 'units') + ': ' + layer.units : ''} ${layer.activation ? '· ' + layer.activation : ''} ${layer.rate != null ? '· rate: ' + layer.rate : ''}</div>
@@ -3757,6 +3989,9 @@
 
                 workspace.appendChild(el);
             });
+            const last = builderLayers[builderLayers.length - 1];
+            const explanation = document.getElementById('builder-layer-explanation');
+            if (explanation && last) explanation.textContent = layerDefinitions[last.type].description || (layerDefinitions[last.type].name + ' processes the current representation.');
         }
 
         function reorderBuilderLayers(dragId, dropTargetId) {
@@ -3765,14 +4000,17 @@
             if (dragIdx === -1 || dropIdx === -1) return;
             const [moved] = builderLayers.splice(dragIdx, 1);
             builderLayers.splice(dropIdx, 0, moved);
+            activeBuilderPreset = null;
             renderBuilderWorkspace();
             updateBuilderPreview();
+            updateBuilderStats();
         }
 
         function updateBuilderLayerUnits(id, value) {
             const layer = builderLayers.find(l => l.id === id);
             if (layer) {
                 layer.units = parseInt(value) || 1;
+                renderBuilderWorkspace();
                 updateBuilderPreview();
                 updateBuilderStats();
             }
@@ -3818,7 +4056,7 @@
 
                 // Draw nodes
                 positions.forEach(pos => {
-                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="${def.color}" opacity="0.8"/>`;
+                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="#648bbc" opacity="0.8"/>`;
                 });
 
                 // Layer label
@@ -3838,7 +4076,7 @@
             builderLayers.forEach((layer, idx) => {
                 const def = layerDefinitions[layer.type];
                 nodePositions[idx].forEach(pos => {
-                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="${def.color}" opacity="0.85"/>`;
+                    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="8" fill="#526a80" opacity="0.85"/>`;
                 });
             });
 
@@ -3878,11 +4116,27 @@
                     case 'attention':
                         if (mode === 'spatial') error = 'Attention expects sequence input — add Flatten first';
                         shape = mode === 'seq' ? '(N, T, d)' : `(N, T, ${layer.units})`; mode = 'seq'; break;
+                    case 'tokenize':
+                        shape = `(N, T, ${layer.units})`; mode = 'seq'; break;
+                    case 'patchify':
+                        if (mode === 'seq') warning = 'Already tokenized — patch embedding normally starts from an image latent';
+                        shape = `(N, P, ${layer.units})`; mode = 'seq'; break;
+                    case 'ssm2': case 'ttt': case 'memory':
+                        if (mode === 'spatial') error = 'Sequence block needs tokens — add PatchEmbed first';
+                        if (mode === '1d') warning = 'Treating 1D input as a single token — add PatchEmbed for image sequences';
+                        shape = `(N, T, ${layer.units})`; mode = 'seq'; break;
+                    case 'moe':
+                        if (mode === 'spatial') error = 'MoE expects token features — add PatchEmbed first';
+                        shape = lastShape; break;
+                    case 'adaln':
+                        if (mode !== 'seq') warning = 'AdaLN is normally applied to conditioned token features';
+                        shape = lastShape; break;
                     case 'dropout': case 'batchnorm':
                         shape = lastShape; break;
                     case 'output':
                         if (mode === 'spatial') error = 'Output requires 1D input — add Flatten + Dense first';
                         if (results.some(r => r.layer.type === 'output')) error = 'Duplicate Output layer';
+                        if (mode === 'seq') warning = 'Schematic output reads a pooled or final token';
                         shape = `(N, ${layer.units})`; mode = '1d'; break;
                     default: shape = lastShape;
                 }
@@ -3927,13 +4181,19 @@
                     totalParams += prev.units * curr.units + curr.units;
                 }
             }
-            document.getElementById('builder-param-count').textContent = totalParams > 1000 ? (totalParams / 1000).toFixed(1) + 'K' : totalParams;
+            const advancedTypes = ['tokenize', 'patchify', 'ssm2', 'moe', 'ttt', 'memory', 'adaln'];
+            const advanced = builderLayers.some(layer => advancedTypes.includes(layer.type));
+            document.getElementById('builder-param-count').textContent = advanced ? 'Not estimated' : (totalParams > 1000 ? (totalParams / 1000).toFixed(1) + 'K' : totalParams);
+            document.getElementById('builder-preview-note').textContent = advanced
+                ? 'Schematic only. Advanced width, routing, and recurrent state are not modeled in parameter count.'
+                : 'Schematic node preview; node count is illustrative.';
 
             // Status
             const statusEl = document.getElementById('builder-status');
             const hasInput = builderLayers.some(l => l.type === 'input');
             const hasOutput = builderLayers.some(l => l.type === 'output');
             const trainBtn = document.getElementById('builder-train-btn');
+            const hasShapeError = computeShapeFlow(builderLayers).some(result => result.error);
 
             if (builderLayers.length === 0) {
                 statusEl.textContent = 'No layers';
@@ -3947,12 +4207,16 @@
                 statusEl.textContent = 'Missing Output layer';
                 statusEl.className = 'font-medium text-red-500';
                 trainBtn.disabled = true;
+            } else if (hasShapeError) {
+                statusEl.textContent = 'Fix shape errors';
+                statusEl.className = 'font-medium text-red-500';
+                trainBtn.disabled = true;
             } else if (builderLayers.length < 3) {
                 statusEl.textContent = 'Add hidden layers';
                 statusEl.className = 'font-medium text-amber-600';
                 trainBtn.disabled = false;
             } else {
-                statusEl.textContent = 'Ready to train';
+                statusEl.textContent = 'Ready for illustration';
                 statusEl.className = 'font-medium text-green-600';
                 trainBtn.disabled = false;
             }
@@ -3963,7 +4227,10 @@
         function clearBuilder() {
             builderLayers = [];
             builderTraining = false;
+            activeBuilderPreset = null;
             document.getElementById('builder-training-display').style.display = 'none';
+            document.getElementById('builder-preset-description').textContent = 'Choose a preset to inspect its blocks, shape flow, and design trade-off.';
+            document.getElementById('builder-layer-explanation').textContent = 'Add a block or load an example to inspect what each stage computes.';
             renderBuilderWorkspace();
             updateBuilderPreview();
             updateBuilderStats();
@@ -4048,7 +4315,7 @@
     <!-- ════════ Optimization Theory (report §2.4) ════════ -->
     <section id="optimization" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Optimization Theory</h3>
+            <h2 class="text-3xl font-bold mb-2 text-center gradient-text">Optimization Theory</h2>
             <p class="text-sm text-gray-600 text-center mb-10 max-w-2xl mx-auto">How neural networks actually learn: first- and second-moment gradient methods, adaptive step sizes, and the geometry of the loss landscape.</p>
 
             <!-- Optimizer equation cards -->
@@ -4166,8 +4433,8 @@
     <!-- ════════ Concepts Glossary (report §5.4) ════════ -->
     <section id="glossary" class="py-12 px-4 sm:px-6 lg:px-8 bg-white/40">
         <div class="max-w-7xl mx-auto">
-            <h3 class="text-3xl font-bold mb-2 text-center gradient-text">Concepts Glossary</h3>
-            <p class="text-sm text-gray-600 text-center mb-8 max-w-2xl mx-auto">Plain-language definitions for the core terms used across the lab. Hover a dotted term anywhere on the page for a quick definition.</p>
+            <h2 class="text-3xl font-bold mb-2 text-center gradient-text">Concepts Glossary</h2>
+            <p class="text-sm text-gray-600 text-center mb-8 max-w-2xl mx-auto">Open any concept for an equation, explanation, and worked example. Hover a dotted term elsewhere for a quick definition.</p>
             <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
     </section>
@@ -4560,9 +4827,25 @@
         const grid = document.getElementById('glossary-grid');
         if (!grid) return;
         const terms = Object.keys(glossary).sort();
-        grid.innerHTML = terms.map(t =>
-            `<div class="glossary-card"><div class="font-semibold text-gray-800 mb-1">${t}</div><div class="text-sm text-gray-600 leading-relaxed">${glossary[t]}</div></div>`
+        grid.innerHTML = terms.map((t, i) =>
+            `<details class="glossary-card" data-index="${i}"><summary><span class="block font-semibold text-gray-800 mb-1">${t}</span><span class="block text-sm text-gray-600 leading-relaxed font-normal">${glossary[t]}</span></summary><div class="glossary-deep-dive"><h4>Equation</h4><div class="glossary-equation"></div><h4>Explanation</h4><p class="glossary-explanation text-sm"></p><h4>Example</h4><p class="glossary-example text-sm"></p></div></details>`
         ).join('');
+        grid.querySelectorAll('details').forEach(card => {
+            const term = terms[Number(card.dataset.index)];
+            const detail = window.neuralGlossaryDetails?.[term];
+            if (!detail) return;
+            card.querySelector('.glossary-explanation').textContent = detail[1];
+            card.querySelector('.glossary-example').textContent = detail[2];
+            card.addEventListener('toggle', () => {
+                if (!card.open || card.dataset.mathRendered) return;
+                const equation = card.querySelector('.glossary-equation');
+                try {
+                    if (typeof katex === 'undefined') throw new Error('KaTeX unavailable');
+                    katex.render(detail[0], equation, { displayMode: false, throwOnError: false });
+                } catch (error) { equation.textContent = detail[0]; }
+                card.dataset.mathRendered = 'true';
+            });
+        });
     }
 
     // ── Init everything once the original DOM is ready ───────────────
