@@ -277,6 +277,25 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+    .report-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+    .report-actions strong { display: block; color: var(--text-bright); }
+    .report-actions small { color: var(--text-dim); }
+    .report-action-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .report-action-buttons .scan-btn:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 3px;
+    }
 
     /* Dashboard Grid */
     .dashboard {
@@ -767,6 +786,123 @@
       return `<a href="https://osv.dev/vulnerability/${encodeURIComponent(id)}" target="_blank" rel="noopener noreferrer">${escapeHTML(id)} on OSV</a>`;
     }
 
+    function reportFilename(data, extension) {
+      const name = String(data.repo_name || 'repository').toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-').replace(/^[._-]+|[._-]+$/g, '').slice(0, 80) || 'repository';
+      const scanned = new Date(data.scanned_at);
+      const date = Number.isNaN(scanned.getTime())
+        ? new Date().toISOString().slice(0, 10) : scanned.toISOString().slice(0, 10);
+      return `repo-tester-${name}-${date}.${extension}`;
+    }
+
+    function buildReportHTML(data) {
+      const findings = Array.isArray(data.findings) ? data.findings : [];
+      const warnings = Array.isArray(data.scan_warnings) ? data.scan_warnings : [];
+      const targets = Array.isArray(data.library_targets) ? data.library_targets : [];
+      const summary = data.summary || {};
+      const verdicts = data.verdict_summary || {};
+      const simulated = data.export_metadata.mode === 'simulated';
+      const findingSections = findings.map((raw, index) => {
+        const finding = raw && typeof raw === 'object' ? raw : {};
+        const advisory = finding.advisory && typeof finding.advisory === 'object' ? finding.advisory : null;
+        const evidence = Array.isArray(finding.evidence) ? finding.evidence : [];
+        const chain = Array.isArray(finding.dependency_chain) ? finding.dependency_chain : [];
+        const lessons = Array.isArray(finding.learn) ? finding.learn : [];
+        const line = count(finding.line_number);
+        const source = finding.file_path ? `${finding.file_path}${line ? ':' + line : ''}` : 'Not recorded';
+        const facts = [
+          ['Scanner', finding.scanner], ['Source', source], ['Package', finding.package],
+          ['Committed lockfile version', finding.resolved_version], ['Installed version', finding.installed],
+          ['Dependency path', chain.join(' → ')], ['Remediation', finding.remediation],
+        ].filter(([, value]) => value !== null && value !== undefined && value !== '');
+        return `<article class="finding">
+          <h3>${index + 1}. ${escapeHTML(finding.title || 'Untitled finding')}</h3>
+          <p class="meta">${escapeHTML(finding.severity || 'Unrated')} severity · ${escapeHTML(finding.verdict || 'unrated')} verdict</p>
+          <p>${escapeHTML(finding.detail || '')}</p>
+          <dl>${facts.map(([label, value]) => `<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd>`).join('')}</dl>
+          ${advisory ? `<p>Advisory: ${safeOsvLink(advisory) || escapeHTML(advisory.id || 'ID not recorded')}</p>
+            ${advisory.source_url ? `<p>Source URL: ${escapeHTML(advisory.source_url)}</p>` : ''}
+            ${Array.isArray(advisory.fixed) && advisory.fixed.length ? `<p>Published fixes: ${escapeHTML(advisory.fixed.join(', '))}</p>` : ''}
+            ${Array.isArray(advisory.affected) && advisory.affected.length ? `<details><summary>Published affected ranges</summary><pre>${escapeHTML(JSON.stringify(advisory.affected, null, 2))}</pre></details>` : ''}` : ''}
+          ${evidence.length ? `<details><summary>Evidence (${evidence.length})</summary>${evidence.map(item => `<pre>${escapeHTML(JSON.stringify(item, null, 2))}</pre>`).join('')}</details>` : ''}
+          ${lessons.length ? `<p>Learn: ${escapeHTML(lessons.join(', '))}</p>` : ''}
+        </article>`;
+      }).join('');
+
+      return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>repo-tester report — ${escapeHTML(data.repo_name || 'repository')}</title>
+<style>
+  body{font:15px/1.55 system-ui,sans-serif;max-width:960px;margin:0 auto;padding:2rem;color:#142033;background:#f6f8fb}
+  header,.finding,section{background:#fff;border:1px solid #d6dee9;border-radius:8px;padding:1.2rem;margin-bottom:1rem}
+  header{border-top:5px solid #2563eb}h1,h2,h3{line-height:1.25;color:#10213a}h1{margin-top:0}
+  .mode{font-weight:700;color:#8a3d00}.meta,footer{color:#475569;font-size:.9rem}dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem}
+  dt{font-weight:700}dd{margin:0;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:.75rem;border-radius:4px}
+  a{color:#1555b1}summary{cursor:pointer;font-weight:700}li{margin:.25rem 0}.finding{border-left:4px solid #2563eb}
+  @media(max-width:600px){body{padding:.7rem}dl{grid-template-columns:1fr}dt{margin-top:.4rem}}
+  @media print{body{padding:0;background:#fff}.finding,section,header{break-inside:avoid;box-shadow:none}details{display:block}pre{max-height:none}}
+</style></head><body>
+<header><h1>repo-tester report</h1>
+<p class="mode">${simulated ? 'SIMULATED DEMO REPORT — no repository or advisory lookup occurred.' : 'LIVE SCAN REPORT — findings require source review; installed environments and reachability may be unverified.'}</p>
+<p>Repository: <strong>${escapeHTML(data.repo_name || 'Not recorded')}</strong><br>
+URL: ${escapeHTML(data.url || 'Not recorded')}<br>
+Scanned: ${escapeHTML(data.scanned_at || 'Not recorded')}<br>
+Exported: ${escapeHTML(data.export_metadata.exported_at)}</p></header>
+<section><h2>Summary</h2><p>${findings.length} findings · ${count(verdicts.bad)} flagged · ${count(verdicts.warn)} warnings · ${count(verdicts.ok)} OK</p>
+<p>Critical ${count(summary.CRITICAL)} · High ${count(summary.HIGH)} · Medium ${count(summary.MEDIUM)} · Low ${count(summary.LOW)} · Info ${count(summary.INFO)}</p>
+<p>Scanned files: ${count(data.file_count)}. Adjusted flags per 100 files: ${escapeHTML(data.flag_density ?? 'Not reported')}.
+Formula: max(0, findings ÷ scanned files × 100 − repo-type baseline). Heuristic; not a security score.</p></section>
+${warnings.length ? `<section><h2>Scanner warnings</h2><ul>${warnings.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul></section>` : ''}
+<section><h2>Findings</h2>${findingSections || '<p>No findings reported. This does not prove the repository safe.</p>'}</section>
+${targets.length ? `<section><h2>Repeated dependency declarations</h2><p>Counts are manifest declarations, not code use or dependency edges.</p><ul>${targets.map(item => `<li>${escapeHTML(item.name)}: ${count(item.count)} — ${escapeHTML(item.note || '')}</li>`).join('')}</ul></section>` : ''}
+<section><h2>Complete report data</h2><p>JSON below preserves every field supplied by scanner plus export metadata.</p>
+<details><summary>Show raw JSON</summary><pre>${escapeHTML(JSON.stringify(data, null, 2))}</pre></details></section>
+<footer>Generated locally by repo-tester webpage. No report was uploaded by export action.</footer>
+</body></html>`;
+    }
+
+    function prepareReportDownload(data, format) {
+      if (!data || typeof data !== 'object' || !['html', 'json'].includes(format)) {
+        throw new Error('No report or unsupported export format');
+      }
+      const exported = {
+        ...data,
+        export_metadata: {
+          exported_at: new Date().toISOString(),
+          mode: DEMO_MODE ? 'simulated' : 'live_scan',
+          note: DEMO_MODE
+            ? 'Simulated preview data; no repository or advisory lookup occurred.'
+            : 'Scanner findings are triage leads. Installed environments and vulnerable code reachability may be unverified.',
+        },
+      };
+      return {
+        filename: reportFilename(exported, format),
+        mimeType: format === 'html' ? 'text/html;charset=utf-8' : 'application/json;charset=utf-8',
+        content: format === 'html' ? buildReportHTML(exported) : JSON.stringify(exported, null, 2) + '\n',
+      };
+    }
+
+    function downloadReport(format) {
+      if (!currentScan) return;
+      try {
+        const report = prepareReportDownload(currentScan, format);
+        const objectUrl = URL.createObjectURL(new Blob([report.content], { type: report.mimeType }));
+        const link = document.createElement('a');
+        try {
+          link.href = objectUrl;
+          link.download = report.filename;
+          document.body.appendChild(link);
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        }
+      } catch (error) {
+        document.getElementById('status-text').textContent = `EXPORT ERROR — ${error.message}`;
+      }
+    }
+
     const CONCEPTS = {
       lockfiles: 'A lockfile records selected package versions for a reproducible install. It does not prove which files run in an existing environment.',
       'osv-version-queries': 'OSV can answer whether a named package version falls under a published advisory. A package-name-only query also returns historical advisories.',
@@ -823,6 +959,11 @@
     }
 
     document.getElementById('dashboard').addEventListener('click', event => {
+      const reportButton = event.target.closest('[data-report-format]');
+      if (reportButton) {
+        downloadReport(reportButton.dataset.reportFormat);
+        return;
+      }
       const button = event.target.closest('[data-finding-index]');
       if (button) openFinding(Number(button.dataset.findingIndex));
     });
@@ -967,6 +1108,13 @@
       db.innerHTML = `
         <div class="fade-in">
           ${DEMO_MODE ? '<div class="card" style="margin-bottom:1rem;color:var(--verdict-warn)">DEMO DATA — simulated results. No repository or advisory lookup occurred.</div>' : ''}
+          <div class="report-actions" role="group" aria-label="Export current scan report">
+            <div><strong>EXPORT REPORT</strong><small>Latest completed scan. HTML opens offline; JSON preserves all fields.</small></div>
+            <div class="report-action-buttons">
+              <button type="button" class="scan-btn" data-report-format="html">DOWNLOAD HTML</button>
+              <button type="button" class="scan-btn" data-report-format="json">DOWNLOAD JSON</button>
+            </div>
+          </div>
           <!-- Top Metrics -->
           <div class="grid-2">
             <div class="card">
@@ -1157,6 +1305,8 @@
       }
 
       btn.disabled = true;
+      const reportButtons = [...document.querySelectorAll('[data-report-format]')];
+      reportButtons.forEach(button => button.disabled = true);
       const status = document.getElementById('status-text');
       status.textContent = DEMO_MODE
         ? 'GENERATING DEMO DATA...'
@@ -1191,6 +1341,7 @@
         status.style.color = 'var(--verdict-bad)';
       } finally {
         btn.disabled = false;
+        reportButtons.forEach(button => button.disabled = false);
         input.focus();
       }
     }
