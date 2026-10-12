@@ -415,6 +415,54 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
+    .finding-open {
+      border: 0;
+      background: none;
+      color: var(--accent-cyan);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .finding-open:focus-visible, .drawer-close:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 3px;
+    }
+    .finding-drawer {
+      position: fixed;
+      inset: 0 0 0 auto;
+      margin: 0;
+      width: min(560px, 100vw);
+      max-width: none;
+      height: 100vh;
+      max-height: none;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-left: 2px solid var(--accent-blue);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 1.5rem;
+      font: inherit;
+    }
+    .finding-drawer::backdrop { background: rgba(2, 6, 15, 0.75); }
+    .drawer-head { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+    .drawer-head h2 { color: var(--text-bright); font-size: 18px; overflow-wrap: anywhere; }
+    .drawer-close {
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      background: var(--bg-card);
+      color: var(--text-bright);
+      padding: 0.25rem 0.55rem;
+      cursor: pointer;
+    }
+    .drawer-section { border-top: 1px solid var(--border-color); margin-top: 1rem; padding-top: 1rem; }
+    .drawer-section h3 { color: var(--accent-cyan); font-size: 13px; margin-bottom: 0.5rem; }
+    .drawer-section p, .drawer-section li { overflow-wrap: anywhere; margin-bottom: 0.45rem; }
+    .drawer-section ul { padding-left: 1.2rem; }
+    .drawer-section a { color: var(--accent-cyan); }
+    .density-definition { margin-top: 0.35rem; font-size: 11px; color: var(--text-primary); }
+
     /* Insights Panel */
     .insights {
       background: var(--bg-panel);
@@ -590,7 +638,7 @@
 
         <div class="sidebar-section">
           <h3>Verdicts</h3>
-          <div class="legend-item"><span style="color:var(--verdict-bad)">✗</span> Bad — action required</div>
+          <div class="legend-item"><span style="color:var(--verdict-bad)">✗</span> Flagged — inspect evidence</div>
           <div class="legend-item"><span style="color:var(--verdict-warn)">◆</span> Warn — review needed</div>
           <div class="legend-item"><span style="color:var(--verdict-ok)">✓</span> OK — known legitimate</div>
         </div>
@@ -638,7 +686,16 @@
     </div>
   </div>
 
+  <dialog class="finding-drawer" id="finding-drawer" aria-labelledby="drawer-title">
+    <div id="finding-drawer-content"></div>
+  </dialog>
+
   <script>
+    const pageParams = new URLSearchParams(location.search);
+    const IS_LOCAL_PREVIEW = location.protocol === 'file:' ||
+      ['localhost', '127.0.0.1'].includes(location.hostname);
+    const DEMO_MODE = pageParams.has('demo') || IS_LOCAL_PREVIEW;
+
     // ═══════════════════════════════════════════════════════════════
     //  BOOT SEQUENCE
     // ═══════════════════════════════════════════════════════════════
@@ -660,20 +717,25 @@
     ];
 
     const bootEl = document.getElementById('boot-screen');
-    bootLines.forEach(line => {
-      setTimeout(() => {
-        const div = document.createElement('div');
-        div.className = `boot-line visible ${line.cls}`;
-        div.textContent = line.text;
-        bootEl.appendChild(div);
-      }, line.delay);
-    });
-
-    setTimeout(() => {
+    if (DEMO_MODE) {
       bootEl.style.display = 'none';
       document.getElementById('app').style.display = 'flex';
-      document.getElementById('repo-url').focus();
-    }, 4000);
+    } else {
+      bootLines.forEach(line => {
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.className = `boot-line visible ${line.cls}`;
+          div.textContent = line.text;
+          bootEl.appendChild(div);
+        }, line.delay);
+      });
+
+      setTimeout(() => {
+        bootEl.style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        document.getElementById('repo-url').focus();
+      }, 4000);
+    }
 
     // ═══════════════════════════════════════════════════════════════
     //  STATE
@@ -684,10 +746,86 @@
     // ═══════════════════════════════════════════════════════════════
     //  BACKEND CONFIG
     //  Real scans hit the FastAPI service on Render (server.py /scan).
-    //  Append ?demo=1 to the URL to force the offline simulated scanner.
+    //  Local previews and ?demo=1 use visibly labeled simulated data.
     // ═══════════════════════════════════════════════════════════════
     const API_URL = 'https://repo-tester-api.onrender.com';
-    const DEMO_MODE = new URLSearchParams(location.search).has('demo');
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    function count(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+    }
+
+    function safeOsvLink(advisory) {
+      const id = String(advisory?.id || '');
+      if (!/^[A-Za-z0-9-]+$/.test(id)) return '';
+      return `<a href="https://osv.dev/vulnerability/${encodeURIComponent(id)}" target="_blank" rel="noopener noreferrer">${escapeHTML(id)} on OSV</a>`;
+    }
+
+    const CONCEPTS = {
+      lockfiles: 'A lockfile records selected package versions for a reproducible install. It does not prove which files run in an existing environment.',
+      'osv-version-queries': 'OSV can answer whether a named package version falls under a published advisory. A package-name-only query also returns historical advisories.',
+      'advisory-ranges': 'Introduced and fixed events bound affected versions. Multiple ranges can cover separate release lines; inspect the relevant line before upgrading.',
+      typosquatting: 'A similar name is only a clue. Check registry identity, maintainers, age, and download direction before treating it as an impersonation attempt.'
+    };
+
+    function openFinding(index) {
+      const finding = currentScan?.findings?.[index];
+      if (!finding) return;
+      const advisory = finding.advisory || null;
+      const evidence = Array.isArray(finding.evidence) ? finding.evidence : [];
+      const chain = Array.isArray(finding.dependency_chain) ? finding.dependency_chain : [];
+      const ranges = Array.isArray(advisory?.affected) ? advisory.affected : [];
+      const fixed = Array.isArray(advisory?.fixed) ? advisory.fixed : [];
+      const learned = Array.isArray(finding.learn) ? finding.learn : [];
+      const lockedVersion = finding.resolved_version || finding.installed;
+      const identity = lockedVersion
+        ? `${finding.package || 'Package'}@${lockedVersion} in committed lockfile; actual installation not inspected`
+        : finding.package ? `${finding.package}: installed version unverified` : 'No package version recorded';
+      const rangeText = ranges.map(range => {
+        const events = Array.isArray(range.events) ? range.events : [];
+        return `${range.type || 'range'}: ${events.map(event => Object.entries(event).map(
+          ([kind, version]) => `${kind} ${version}`
+        ).join(', ')).join('; ')}`;
+      });
+      const content = document.getElementById('finding-drawer-content');
+      content.innerHTML = `
+        <div class="drawer-head">
+          <h2 id="drawer-title">${escapeHTML(finding.title)}</h2>
+          <button class="drawer-close" type="button" onclick="document.getElementById('finding-drawer').close()" aria-label="Close finding">Close</button>
+        </div>
+        <p>${escapeHTML(finding.severity)} severity · ${escapeHTML(finding.verdict)} verdict · ${escapeHTML(finding.scanner)}</p>
+        <section class="drawer-section"><h3>Why flagged</h3>
+          <p>${escapeHTML(finding.detail)}</p>
+          <p>${escapeHTML(identity)}</p>
+          ${chain.length ? `<p>Dependency path: ${escapeHTML(chain.join(' → '))}</p>` : ''}
+          ${rangeText.length ? `<p>Published affected ranges:</p><ul>${rangeText.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>` : ''}
+          ${fixed.length ? `<p>Published fixes: ${escapeHTML(fixed.join(', '))}</p>` : ''}
+        </section>
+        <section class="drawer-section"><h3>How verified</h3>
+          ${safeOsvLink(advisory)}
+          ${evidence.length ? `<ul>${evidence.map(item => `<li>${escapeHTML(item.type || 'Evidence')}: ${escapeHTML(item.source || item.detail || '')}${item.fetched_at ? ` · fetched ${escapeHTML(item.fetched_at)}` : ''}</li>`).join('')}</ul>` : '<p>Scanner supplied no structured evidence for this finding.</p>'}
+          ${advisory ? `<p>OSV matched ${lockedVersion ? 'committed lockfile' : 'declared'} version. Scanner did not check actual installation or vulnerable code reachability.</p>` : '<p>Heuristic finding; inspect source context before treating it as confirmed risk.</p>'}
+        </section>
+        <section class="drawer-section"><h3>What to do</h3>
+          <p>${escapeHTML(finding.remediation || 'Review source location and verify finding before changing dependencies or code.')}</p>
+          <p>Source: ${escapeHTML(finding.file_path || 'not recorded')}${finding.line_number ? ':' + count(finding.line_number) : ''}</p>
+        </section>
+        <section class="drawer-section"><h3>What to learn</h3>
+          ${learned.length ? `<ul>${learned.map(key => `<li><strong>${escapeHTML(key)}</strong>: ${escapeHTML(CONCEPTS[key] || 'Review source evidence and scanner limits.')}</li>`).join('')}</ul>` : '<p>Check which observations support this flag and which facts remain unverified.</p>'}
+        </section>`;
+      document.getElementById('finding-drawer').showModal();
+    }
+
+    document.getElementById('dashboard').addEventListener('click', event => {
+      const button = event.target.closest('[data-finding-index]');
+      if (button) openFinding(Number(button.dataset.findingIndex));
+    });
 
     // ═══════════════════════════════════════════════════════════════
     //  DEMO DATA — Simulated scan results (offline fallback / ?demo=1)
@@ -708,8 +846,7 @@
         { severity: 'HIGH', title: 'Possible env-var exfiltration', detail: 'POSTs data including environment variables to remote endpoint', verdict: 'bad', scanner: 'malicious' },
         { severity: 'MEDIUM', title: 'Unpinned dependency: requests', detail: 'Version >=2.0 allows unexpected upgrades', verdict: 'warn', scanner: 'supply_chain' },
         { severity: 'MEDIUM', title: 'Unpinned dependency: urllib3', detail: 'Version >=1.0 allows unexpected upgrades', verdict: 'warn', scanner: 'supply_chain' },
-        { severity: 'HIGH', title: 'Known CVEs in idna', detail: '3 vulnerabilities: GHSA-9hjg-9r4m-mvj7, GHSA-9wx4-h78v-vm56 (+1 more)', verdict: 'bad', scanner: 'supply_chain' },
-        { severity: 'HIGH', title: 'Possible typosquat: numpi ≈ numpy', detail: 'Package name is very close to popular package numpy', verdict: 'bad', scanner: 'supply_chain' },
+        { severity: 'MEDIUM', title: 'Possible typosquat: numpi ≈ numpy', detail: 'Similar package name; verify registry identity', verdict: 'warn', scanner: 'supply_chain' },
         { severity: 'LOW', title: 'Repo not updated in 45 days', detail: 'Inactive repos may have unpatched vulnerabilities', verdict: 'warn', scanner: 'health' },
         { severity: 'INFO', title: 'No SECURITY.md', detail: 'No security policy documented', verdict: 'ok', scanner: 'health' },
         { severity: 'HIGH', title: 'curl pipe shell in CI workflow (thin wrapper)', detail: 'CI downloads and executes remote scripts without checksum. Flag density: 1/3 steps (33%)', verdict: 'bad', scanner: 'health' },
@@ -738,7 +875,7 @@
 
       const hasTyposquat = repoName.includes('numpi') || repoName.includes('reques') || repoName.includes('djano');
       if (hasTyposquat) {
-        findings.push({ severity: 'HIGH', title: 'Possible typosquat detected', detail: 'Package name closely matches a well-known package', verdict: 'bad', scanner: 'supply_chain', file_path: 'setup.py', line_number: 12 });
+        findings.push({ severity: 'MEDIUM', title: 'Possible typosquat detected', detail: 'Package name closely matches a known package; verify identity', verdict: 'warn', scanner: 'supply_chain', file_path: 'setup.py', line_number: 12 });
       }
 
       const domainMap = {
@@ -760,7 +897,9 @@
       }
 
       const fileCount = 20 + Math.floor(rng() * 200);
-      const density = ((findings.length / fileCount) * 100).toFixed(1);
+      const rawDensity = (findings.length / fileCount) * 100;
+      const baseline = { django: 8, flask: 5, fastapi: 5, react: 4, vue: 4, angular: 4, nextjs: 5, 'data-science': 6 }[repoType] ?? 3;
+      const density = Math.max(0, rawDensity - baseline);
       const summary = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0, INFO: 0 };
       findings.forEach(f => summary[f.severity] = (summary[f.severity] || 0) + 1);
       const vSum = { bad: 0, warn: 0, ok: 0 };
@@ -769,13 +908,17 @@
       return {
         url, repo_name: repoName, repo_type: repoType,
         findings, summary, verdict_summary: vSum,
-        flag_density: parseFloat(density),
+        schema_version: 2,
+        flag_density: Number(density.toFixed(1)),
+        flag_density_raw: Number(rawDensity.toFixed(1)),
+        flag_density_baseline: baseline,
+        scan_warnings: [],
         file_count: fileCount,
         scanned_at: new Date().toISOString(),
         library_targets: [
-          { name: 'requests', count: 3, note: 'appears 3x in dependency tree' },
-          { name: 'urllib3', count: 2, note: 'appears 2x in dependency tree' },
-          { name: 'certifi', count: 2, note: 'appears 2x in dependency tree' },
+          { name: 'requests', count: 3, note: 'declared in 3 manifests' },
+          { name: 'urllib3', count: 2, note: 'declared in 2 manifests' },
+          { name: 'certifi', count: 2, note: 'declared in 2 manifests' },
         ],
       };
     }
@@ -785,8 +928,14 @@
     // ═══════════════════════════════════════════════════════════════
     function renderDashboard(data) {
       const db = document.getElementById('dashboard');
-      const s = data.summary;
-      const v = data.verdict_summary;
+      const findings = Array.isArray(data.findings) ? data.findings : [];
+      const targets = Array.isArray(data.library_targets) ? data.library_targets : [];
+      const warnings = Array.isArray(data.scan_warnings) ? data.scan_warnings : [];
+      const s = Object.fromEntries(['CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(key => [key, count(data.summary?.[key])]));
+      const v = Object.fromEntries(['bad','warn','ok'].map(key => [key, count(data.verdict_summary?.[key])]));
+      const fileCount = count(data.file_count);
+      const density = Number.isFinite(Number(data.flag_density)) ? Math.max(0, Number(data.flag_density)) : 0;
+      const baseline = Number.isFinite(Number(data.flag_density_baseline)) ? Math.max(0, Number(data.flag_density_baseline)) : null;
 
       const severityColors = {
         CRITICAL: 'var(--severity-critical)',
@@ -796,7 +945,7 @@
         INFO: 'var(--severity-info)',
       };
 
-      const totalFindings = data.findings.length;
+      const totalFindings = findings.length;
       const maxSev = Math.max(s.CRITICAL, s.HIGH, s.MEDIUM, s.LOW, s.INFO, 1);
 
       // Update severity sidebar
@@ -817,26 +966,32 @@
 
       db.innerHTML = `
         <div class="fade-in">
+          ${DEMO_MODE ? '<div class="card" style="margin-bottom:1rem;color:var(--verdict-warn)">DEMO DATA — simulated results. No repository or advisory lookup occurred.</div>' : ''}
           <!-- Top Metrics -->
           <div class="grid-2">
             <div class="card">
               <div class="card-header">
                 <span class="card-title">Repository</span>
               </div>
-              <div class="card-value glow-text" style="font-size:18px">${data.repo_name}</div>
+              <div class="card-value glow-text" style="font-size:18px">${escapeHTML(data.repo_name)}</div>
               <div class="card-subtitle">
-                ${data.repo_type ? `type: <span style="color:var(--accent-cyan)">${data.repo_type}</span> | ` : ''}
-                ${data.file_count} files | density: <span style="color:${data.flag_density > 5 ? 'var(--severity-high)' : 'var(--verdict-ok)'}">${data.flag_density}/100</span>
+                ${data.repo_type ? `type: <span style="color:var(--accent-cyan)">${escapeHTML(data.repo_type)}</span> | ` : ''}
+                ${fileCount} files | adjusted flags: ${density.toFixed(1)}/100 files
+                <details class="density-definition"><summary>How calculated</summary>
+                  Raw flags = findings ÷ scanned files × 100. Adjusted flags = max(0, raw flags − repo-type baseline).
+                  ${baseline === null ? 'Backend did not report baseline.' : `Baseline: ${baseline.toFixed(1)}/100 files.`}
+                  Counts include heuristic findings; this number is not a security score.
+                </details>
               </div>
             </div>
             <div class="card">
               <div class="card-header">
                 <span class="card-title">Scan Result</span>
               </div>
-              <div class="card-value" style="color:${v.bad > 0 ? 'var(--severity-critical)' : v.warn > 0 ? 'var(--verdict-warn)' : 'var(--verdict-ok)'};">
-                ${v.bad > 0 ? 'ACTION REQUIRED' : v.warn > 0 ? 'REVIEW NEEDED' : 'CLEAN'}
+              <div class="card-value" style="color:${v.bad > 0 ? 'var(--severity-critical)' : v.warn > 0 || warnings.length ? 'var(--verdict-warn)' : 'var(--verdict-ok)'};">
+                ${warnings.length ? 'SCAN INCOMPLETE' : v.bad > 0 ? 'FLAGS TO REVIEW' : v.warn > 0 ? 'REVIEW NEEDED' : 'NO FLAGS REPORTED'}
               </div>
-              <div class="card-subtitle">${totalFindings} ${pluralize(totalFindings, 'finding')} | ${new Date(data.scanned_at).toLocaleTimeString()}</div>
+              <div class="card-subtitle">${totalFindings} ${pluralize(totalFindings, 'finding')} | ${escapeHTML(new Date(data.scanned_at).toLocaleTimeString())}</div>
             </div>
           </div>
 
@@ -845,7 +1000,7 @@
             <div class="verdict-box bad">
               <div class="verdict-icon">✗</div>
               <div class="verdict-count" style="color:var(--verdict-bad)">${v.bad}</div>
-              <div class="verdict-label" style="color:var(--verdict-bad)">BAD</div>
+              <div class="verdict-label" style="color:var(--verdict-bad)">FLAGGED</div>
             </div>
             <div class="verdict-box warn">
               <div class="verdict-icon">◆</div>
@@ -858,6 +1013,8 @@
               <div class="verdict-label" style="color:var(--verdict-ok)">OK</div>
             </div>
           </div>
+
+          ${warnings.length ? `<div class="card" style="margin-bottom:1rem"><div class="card-header"><span class="card-title">Scanner warnings</span></div><ul style="padding-left:1.2rem">${warnings.map(warning => `<li>${escapeHTML(warning)}</li>`).join('')}</ul></div>` : ''}
 
           <!-- Findings Table -->
           <div class="card" style="margin-bottom:1rem">
@@ -876,16 +1033,16 @@
                   </tr>
                 </thead>
                 <tbody>
-                  ${data.findings.map(f => `
+                  ${findings.map((f, index) => `
                     <tr>
-                      <td><span class="severity-badge ${f.severity}">${f.severity}</span></td>
-                      <td><span class="verdict-badge ${f.verdict}">${f.verdict === 'bad' ? '✗' : f.verdict === 'warn' ? '◆' : '✓'} ${f.verdict.toUpperCase()}</span></td>
+                      <td><span class="severity-badge ${['CRITICAL','HIGH','MEDIUM','LOW','INFO'].includes(f.severity) ? f.severity : 'INFO'}">${escapeHTML(f.severity)}</span></td>
+                      <td><span class="verdict-badge ${['bad','warn','ok'].includes(f.verdict) ? f.verdict : 'warn'}">${f.verdict === 'bad' ? '✗ FLAGGED' : f.verdict === 'warn' ? '◆ WARN' : '✓ OK'}</span></td>
                       <td>
-                        <div style="color:var(--text-bright);font-weight:600">${f.title}</div>
-                        <div style="color:var(--text-dim);font-size:11px;margin-top:2px">${f.detail}</div>
+                        <button type="button" class="finding-open" data-finding-index="${index}">${escapeHTML(f.title)}</button>
+                        <div style="color:var(--text-dim);font-size:11px;margin-top:2px">${escapeHTML(f.detail)}</div>
                       </td>
-                      <td class="file-path">${f.file_path}${f.line_number ? ':' + f.line_number : ''}</td>
-                      <td style="color:var(--text-dim);font-size:11px">${f.scanner}</td>
+                      <td class="file-path">${escapeHTML(f.file_path || '—')}${f.line_number ? ':' + count(f.line_number) : ''}</td>
+                      <td style="color:var(--text-dim);font-size:11px">${escapeHTML(f.scanner)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -894,30 +1051,28 @@
           </div>
 
           <!-- Library Practice Targets -->
-          ${data.library_targets.length > 0 ? `
+          ${targets.length > 0 ? `
           <div class="card" style="margin-bottom:1rem">
             <div class="card-header">
-              <span class="card-title">Library Practice Targets</span>
+              <span class="card-title">Repeated Dependency Declarations</span>
               <span style="font-size:11px;color:var(--text-dim)">Most-declared dependencies in this repo</span>
             </div>
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:0.75rem;padding:0.5rem;background:var(--bg-panel);border-radius:4px;border-left:3px solid var(--accent-blue)">
-              These are the libraries your code depends on most frequently across dependency files (requirements.txt, pyproject.toml, etc.). High concentration in a single library increases supply-chain blast radius — a CVE here affects more of your codebase.
+              Counts show repeated manifest declarations, not imports, dependency edges, or blast radius.
             </div>
             <div class="bar-chart">
-              ${data.library_targets.map(t => {
-                const maxCount = Math.max(...data.library_targets.map(x => x.count));
-                const width = Math.round((t.count / maxCount) * 100);
-                const color = t.count >= 3 ? 'var(--severity-high)' : t.count >= 2 ? 'var(--verdict-warn)' : 'var(--accent-blue)';
-                const note = t.count >= 3 ? 'high concentration — review for CVEs' : t.count >= 2 ? 'moderate concentration' : 'normal';
+              ${targets.map(t => {
+                const targetCount = count(t.count);
+                const maxCount = Math.max(1, ...targets.map(x => count(x.count)));
+                const width = Math.round((targetCount / maxCount) * 100);
                 return `
                   <div class="bar-row">
-                    <span class="bar-label" title="${t.note}">${t.name}</span>
+                    <span class="bar-label" title="${escapeHTML(t.note)}">${escapeHTML(t.name)}</span>
                     <div class="bar-visual">
-                      <div class="bar-fill" style="width:${width}%;background:${color}"></div>
-                      <span class="bar-value">${t.count} ${pluralize(t.count, 'file')}</span>
+                      <div class="bar-fill" style="width:${width}%;background:var(--accent-blue)"></div>
+                      <span class="bar-value">${targetCount} ${pluralize(targetCount, 'declaration')}</span>
                     </div>
                   </div>
-                  <div style="font-size:10px;color:var(--text-dim);margin-left:66px;margin-bottom:4px">${note}</div>
                 `;
               }).join('')}
             </div>
@@ -926,11 +1081,11 @@
 
           <!-- Insights -->
           <div class="insights">
-            <h3>💡 What You Can Learn From This Scan</h3>
+            <h3>What This Scan Shows</h3>
             ${insights.map(i => `
               <div class="insight-item">
                 <span class="insight-bullet">›</span>
-                <span class="insight-text">${i}</span>
+                <span class="insight-text">${escapeHTML(i)}</span>
               </div>
             `).join('')}
           </div>
@@ -944,7 +1099,7 @@
       if (v.bad > 0) {
         dot.style.setProperty('--dot-color', 'var(--verdict-bad)');
         dot.style.setProperty('--dot-glow', 'rgba(220,38,38,0.5)');
-      } else if (v.warn > 0) {
+      } else if (v.warn > 0 || warnings.length) {
         dot.style.setProperty('--dot-color', 'var(--verdict-warn)');
         dot.style.setProperty('--dot-glow', 'rgba(234,179,8,0.5)');
       } else {
@@ -964,57 +1119,25 @@
 
     function generateInsights(data) {
       const insights = [];
-      const s = data.summary;
-      const v = data.verdict_summary;
-      const findings = data.findings;
-
-      if (v.bad > 0) {
-        insights.push(`<strong style="color:var(--severity-critical)">${v.bad} ${pluralize(v.bad, 'finding')} ${v.bad === 1 ? 'requires' : 'require'} immediate action</strong> — ${v.bad === 1 ? 'this represents a confirmed security risk' : 'these represent confirmed security risks'} (malicious patterns, known CVEs, or exposed secrets).`);
+      const findings = Array.isArray(data.findings) ? data.findings : [];
+      const matched = findings.filter(f => f.scanner === 'supply_chain' && f.advisory && (f.resolved_version || f.installed));
+      const unverified = findings.filter(f => f.scanner === 'supply_chain' && f.verdict === 'warn');
+      const warnings = Array.isArray(data.scan_warnings) ? data.scan_warnings : [];
+      if (matched.length) {
+        insights.push(`${matched.length} OSV ${pluralize(matched.length, 'finding')} matched a committed lockfile version. Open each finding for advisory ranges and dependency path. Actual installation and reachability remain untested.`);
       }
-
-      const curlPipeFindings = findings.filter(f => f.title.includes('curl pipe'));
-      if (curlPipeFindings.length > 0) {
-        const density = curlPipeFindings[0].detail.match(/(\d+)%/);
-        insights.push(`<strong>Thin wrapper detected:</strong> Your CI has curl|bash steps ${density ? 'at ' + density[1] + '% density' : ''}. Following the method from your analyze.py — this is delegation bloat. Each unverified curl|bash is a "thin wrapper" adding indirection without adding value. <strong>Fix:</strong> Add sha256sum or gpg verification, or vendor the script.`);
+      if (unverified.length) {
+        insights.push(`${unverified.length} supply-chain ${pluralize(unverified.length, 'finding')} need verification. Missing lockfiles, name similarity, and declaration-only checks do not prove exposure.`);
       }
-
-      if (s.CRITICAL > 0) {
-        insights.push(`<strong>Dynamic code execution found:</strong> ${s.CRITICAL} CRITICAL ${pluralize(s.CRITICAL, 'finding')} for eval()/exec()/compile(). Context matters — ${data.repo_type ? 'your ' + data.repo_type + ' repo may have legitimate template compilation, but' : 'if these are in template engines (jinja2, tornado), they are'} ok. If in install scripts, they are <strong>bad</strong>.`);
+      if (warnings.length) {
+        insights.push(`${warnings.length} scanner ${pluralize(warnings.length, 'warning')} occurred. Results may be incomplete.`);
       }
-
-      const typosquats = findings.filter(f => f.title.includes('typosquat'));
-      if (typosquats.length > 0) {
-        insights.push(`<strong>Typosquatting risk:</strong> ${typosquats.length} ${pluralize(typosquats.length, 'package name')} closely ${typosquats.length === 1 ? 'matches' : 'match'} a popular package. This is the #1 supply chain attack vector. <strong>Fix:</strong> Verify ${typosquats.length === 1 ? 'this dependency is' : 'these dependencies are'} intentional, not typos.`);
+      if (count(data.verdict_summary?.bad) > matched.length) {
+        insights.push('Other flagged patterns require source review. Pattern matches do not establish exploitation or malicious intent.');
       }
-
-      if (s.HIGH > 0) {
-        const cves = findings.filter(f => f.title.includes('CVE'));
-        if (cves.length > 0) {
-          insights.push(`<strong>${cves.length} known CVE(s) found</strong> via OSV database. These are real, tracked vulnerabilities — not pattern matches. Run <code>pip install --upgrade</code> or pin to patched versions.`);
-        }
+      if (!findings.length && !warnings.length) {
+        insights.push('No findings reported by completed scanners. This scan does not prove the repository is safe.');
       }
-
-      const unpinned = findings.filter(f => f.title.includes('Unpinned'));
-      if (unpinned.length > 0) {
-        insights.push(`<strong>${unpinned.length} unpinned ${pluralize(unpinned.length, 'dependency')}</strong> ${unpinned.length === 1 ? 'allows' : 'allow'} silent upgrades. Following your CodeHealth methodology — this is "expected noise" for some domains (${data.repo_type || 'your repo type'} baseline: ~3-8/100 files), but each unpinned dep is a future CVE waiting to happen. <strong>Fix:</strong> Use == pins or lockfiles.`);
-      }
-
-      const secrets = findings.filter(f => f.title.includes('Secret'));
-      if (secrets.length > 0) {
-        insights.push(`<strong>Secret exposure:</strong> CI workflows are printing secrets to logs. Anyone with log access can read them. <strong>Fix:</strong> Remove echo statements, use GitHub Secrets masking.`);
-      }
-
-      if (v.ok > 0) {
-        insights.push(`<strong>${v.ok} ${pluralize(v.ok, 'finding')} marked OK</strong> — these are known-legitimate patterns (template engine exec, framework dynamic imports, or informational items). The context-aware detection correctly identified them as non-issues.`);
-      }
-
-      // Library targets insight — gives the "so what" to the bar chart
-      if (data.library_targets.length > 0) {
-        const top = data.library_targets[0];
-        insights.push(`<strong>Highest dependency concentration: ${top.name}</strong> — declared in ${top.count} ${pluralize(top.count, 'dependency file')}. For a ${data.repo_type || 'general'} repo, ${top.count >= 3 ? 'this concentration is high — a CVE in ' + top.name + ' would have broad impact. Prioritize keeping this pinned and monitored.' : 'this is normal concentration. Ensure it stays pinned to a specific version.'}`);
-      }
-
-      insights.push(`<strong>Flag density: ${data.flag_density}/100 files</strong> — ${data.flag_density > 10 ? 'Above normal. Review findings carefully.' : data.flag_density > 5 ? 'Moderate. Some cleanup recommended.' : 'Within normal range. Good hygiene.'}`);
 
       return insights;
     }
@@ -1035,7 +1158,9 @@
 
       btn.disabled = true;
       const status = document.getElementById('status-text');
-      status.innerHTML = '<span style="color:var(--verdict-warn)">SCANNING... (cold start may take ~50s)</span>';
+      status.textContent = DEMO_MODE
+        ? 'GENERATING DEMO DATA...'
+        : 'SCANNING... (cold start may take ~50s)';
 
       try {
         let data;
@@ -1059,14 +1184,23 @@
         scanHistory.push(data);
         currentScan = data;
         renderDashboard(data);
-        status.innerHTML = '<span style="color:var(--verdict-ok)">DONE</span>';
+        status.textContent = DEMO_MODE ? 'DEMO READY — simulated data' : 'DONE';
         input.value = '';
       } catch (err) {
-        status.innerHTML = `<span style="color:var(--verdict-bad)">ERROR — ${err.message}</span>`;
+        status.textContent = `ERROR — ${err.message}`;
+        status.style.color = 'var(--verdict-bad)';
       } finally {
         btn.disabled = false;
         input.focus();
       }
+    }
+
+    if (DEMO_MODE) {
+      const sampleUrl = 'https://github.com/example/simulated-repo';
+      currentScan = generateDemoScan(sampleUrl);
+      renderDashboard(currentScan);
+      document.getElementById('status-text').textContent = 'DEMO PREVIEW — simulated sample';
+      document.getElementById('scan-btn').textContent = 'DEMO SCAN';
     }
 
     // ═══════════════════════════════════════════════════════════════
