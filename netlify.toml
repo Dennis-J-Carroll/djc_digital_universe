@@ -47,12 +47,6 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
 
-# ─── Allow same-origin iframe embedding for /apps/* (Writing Studio shell) ─────
-[[headers]]
-  for = "/apps/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-
 # ─── Allow same-origin iframe embedding for CONVERGENCE game shell ───────────
 [[headers]]
   for = "/convergence-app.html"
