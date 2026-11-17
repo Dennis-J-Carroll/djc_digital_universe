@@ -1,0 +1,1871 @@
+{
+  "tool": "comp-spec",
+  "version": 1,
+  "createdAt": "2026-11-17T18:20:01.850Z",
+  "comp": ".impeccable/mocks/option-2.webp",
+  "warnings": [],
+  "uncoveredInkCells": [],
+  "compSize": {
+    "width": 1672,
+    "height": 941
+  },
+  "aspect": 1.7768,
+  "orientation": "landscape",
+  "palette": [
+    {
+      "hex": "#f8f2e0",
+      "coverage": 0.9322
+    },
+    {
+      "hex": "#a29680",
+      "coverage": 0.023
+    },
+    {
+      "hex": "#796a50",
+      "coverage": 0.0178
+    },
+    {
+      "hex": "#ccc4b4",
+      "coverage": 0.0165
+    },
+    {
+      "hex": "#b83626",
+      "coverage": 0.0106
+    }
+  ],
+  "bands": [
+    {
+      "y": 0.0278,
+      "strength": 0.4968
+    },
+    {
+      "y": 0.0694,
+      "strength": 0.3439
+    },
+    {
+      "y": 0.3472,
+      "strength": 0.264
+    },
+    {
+      "y": 0.4167,
+      "strength": 0.2667
+    },
+    {
+      "y": 0.625,
+      "strength": 0.2749
+    },
+    {
+      "y": 0.6667,
+      "strength": 0.213
+    },
+    {
+      "y": 0.7083,
+      "strength": 0.3216
+    },
+    {
+      "y": 0.9306,
+      "strength": 0.2311
+    },
+    {
+      "y": 0.9722,
+      "strength": 0.222
+    }
+  ],
+  "regions": [
+    {
+      "id": "paper",
+      "kind": "texture",
+      "note": "Warm uncoated cream paper grain, a clean patch beneath all ink",
+      "grid": "H6:H6",
+      "box": {
+        "x": 0.7,
+        "y": 0.6,
+        "w": 0.1,
+        "h": 0.1
+      },
+      "px": {
+        "x": 1170,
+        "y": 565,
+        "w": 167,
+        "h": 94
+      },
+      "aspect": 1.7766,
+      "palette": [
+        {
+          "hex": "#f7f4e3",
+          "coverage": 0.9273
+        },
+        {
+          "hex": "#a3987d",
+          "coverage": 0.0496
+        },
+        {
+          "hex": "#b9b1a7",
+          "coverage": 0.009
+        },
+        {
+          "hex": "#766a50",
+          "coverage": 0.0079
+        },
+        {
+          "hex": "#4e4b3f",
+          "coverage": 0.0062
+        }
+      ],
+      "detail": {
+        "energy": 14.7418
+      },
+      "medium": "raster",
+      "plate": "assets/plates/paper.png",
+      "text": null
+    },
+    {
+      "id": "neuron-mark",
+      "kind": "plate",
+      "note": "Small engraved neuron illustration with branches at upper left",
+      "grid": "A0:A0",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 0.1,
+        "h": 0.1
+      },
+      "px": {
+        "x": 0,
+        "y": 0,
+        "w": 167,
+        "h": 94
+      },
+      "aspect": 1.7766,
+      "palette": [
+        {
+          "hex": "#f7f0dc",
+          "coverage": 0.816
+        },
+        {
+          "hex": "#c7b8a3",
+          "coverage": 0.1007
+        },
+        {
+          "hex": "#9a886e",
+          "coverage": 0.0653
+        },
+        {
+          "hex": "#6b563e",
+          "coverage": 0.0129
+        },
+        {
+          "hex": "#130d08",
+          "coverage": 0.0051
+        }
+      ],
+      "detail": {
+        "energy": 22.0326
+      },
+      "medium": "raster",
+      "plate": "assets/plates/neuron-mark.png",
+      "text": null
+    },
+    {
+      "id": "site-title",
+      "kind": "text",
+      "note": "Edge AI Training Lab large black editorial serif title",
+      "grid": "B0:D0",
+      "coverBox": {
+        "x": 0.1,
+        "y": 0,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.0999,
+        "y": 0.0064,
+        "w": 0.3002,
+        "h": 0.0935
+      },
+      "px": {
+        "x": 167,
+        "y": 6,
+        "w": 502,
+        "h": 88
+      },
+      "aspect": 5.7045,
+      "palette": [
+        {
+          "hex": "#f7f5e2",
+          "coverage": 0.802
+        },
+        {
+          "hex": "#c2b9a9",
+          "coverage": 0.0811
+        },
+        {
+          "hex": "#0d0b0a",
+          "coverage": 0.0551
+        },
+        {
+          "hex": "#9f9177",
+          "coverage": 0.0488
+        },
+        {
+          "hex": "#867e7c",
+          "coverage": 0.013
+        }
+      ],
+      "detail": {
+        "energy": 56.7577
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 1,
+          "glyphs": 20,
+          "capHeightPx": 30.7,
+          "inkIsDark": true,
+          "allCaps": false,
+          "advance": 0.6187,
+          "advTall": 0.5047,
+          "advX": 0.6513,
+          "gap": 0.0651,
+          "xRatio": 0.6697,
+          "stemW": 0.1589,
+          "contrast": 1.894,
+          "serif": 0.8895,
+          "densTall": 0.4464,
+          "densX": 0.5187,
+          "weight": 0.4464
+        },
+        "widthClass": "normal",
+        "weightClass": "regular",
+        "chosen": {
+          "family": "Zen Antique Soft",
+          "weight": 400,
+          "fontSizePx": 44,
+          "source": "catalog",
+          "estimatedSize": true,
+          "stamp": "94c32e28f961"
+        }
+      }
+    },
+    {
+      "id": "site-deck",
+      "kind": "text",
+      "note": "A Browser-Based Neural Network Trainer italic subtitle",
+      "grid": "E0:G0",
+      "box": {
+        "x": 0.4,
+        "y": 0,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "px": {
+        "x": 669,
+        "y": 0,
+        "w": 502,
+        "h": 94
+      },
+      "aspect": 5.3404,
+      "palette": [
+        {
+          "hex": "#f8f3de",
+          "coverage": 0.8641
+        },
+        {
+          "hex": "#c0b5a2",
+          "coverage": 0.0791
+        },
+        {
+          "hex": "#95876c",
+          "coverage": 0.0438
+        },
+        {
+          "hex": "#0e0b0b",
+          "coverage": 0.0076
+        },
+        {
+          "hex": "#282516",
+          "coverage": 0.0053
+        }
+      ],
+      "detail": {
+        "energy": 31.0029
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-17T18:21:05.485Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "folio-nav",
+      "kind": "control",
+      "note": "Data, Network, Training, Results printed index links",
+      "grid": "H0:J0",
+      "box": {
+        "x": 0.7,
+        "y": 0,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "px": {
+        "x": 1170,
+        "y": 0,
+        "w": 502,
+        "h": 94
+      },
+      "aspect": 5.3404,
+      "palette": [
+        {
+          "hex": "#f8f6e5",
+          "coverage": 0.8564
+        },
+        {
+          "hex": "#6e5e40",
+          "coverage": 0.0609
+        },
+        {
+          "hex": "#c5bfad",
+          "coverage": 0.0553
+        },
+        {
+          "hex": "#90887d",
+          "coverage": 0.0185
+        },
+        {
+          "hex": "#0f0d0b",
+          "coverage": 0.0089
+        }
+      ],
+      "detail": {
+        "energy": 29.2648
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "masthead-rules",
+      "kind": "chrome",
+      "note": "Fine twin rules under masthead",
+      "grid": "A0:J1",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.2
+      },
+      "px": {
+        "x": 0,
+        "y": 0,
+        "w": 1672,
+        "h": 188
+      },
+      "aspect": 8.8936,
+      "palette": [
+        {
+          "hex": "#f7f3df",
+          "coverage": 0.8813
+        },
+        {
+          "hex": "#8e8168",
+          "coverage": 0.0546
+        },
+        {
+          "hex": "#c2b8a5",
+          "coverage": 0.0433
+        },
+        {
+          "hex": "#0d0b09",
+          "coverage": 0.0144
+        },
+        {
+          "hex": "#4a463a",
+          "coverage": 0.0064
+        }
+      ],
+      "detail": {
+        "energy": 30.5373
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "network-frame",
+      "kind": "chrome",
+      "note": "First scientific plate frame with fine double rules",
+      "grid": "A1:D6",
+      "box": {
+        "x": 0,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.6
+      },
+      "px": {
+        "x": 0,
+        "y": 94,
+        "w": 669,
+        "h": 565
+      },
+      "aspect": 1.1841,
+      "palette": [
+        {
+          "hex": "#f8f0dc",
+          "coverage": 0.9535
+        },
+        {
+          "hex": "#897d68",
+          "coverage": 0.021
+        },
+        {
+          "hex": "#150e09",
+          "coverage": 0.0108
+        },
+        {
+          "hex": "#3a3324",
+          "coverage": 0.0074
+        },
+        {
+          "hex": "#b8b2a3",
+          "coverage": 0.0073
+        }
+      ],
+      "detail": {
+        "energy": 24.0105
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "network-heading",
+      "kind": "text",
+      "note": "PLATE I and NEURAL NETWORK TOPOLOGY small caps heading",
+      "grid": "A1:D1",
+      "box": {
+        "x": 0,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "px": {
+        "x": 0,
+        "y": 94,
+        "w": 669,
+        "h": 94
+      },
+      "aspect": 7.117,
+      "palette": [
+        {
+          "hex": "#f7efdb",
+          "coverage": 0.9526
+        },
+        {
+          "hex": "#7d7661",
+          "coverage": 0.0164
+        },
+        {
+          "hex": "#b8b2a4",
+          "coverage": 0.0126
+        },
+        {
+          "hex": "#0e0b09",
+          "coverage": 0.0123
+        },
+        {
+          "hex": "#3a3a2a",
+          "coverage": 0.006
+        }
+      ],
+      "detail": {
+        "energy": 32.156
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 8,
+          "capHeightPx": 2.4,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 3.933,
+          "advTall": 3.933,
+          "advX": null,
+          "gap": 0,
+          "xRatio": null,
+          "stemW": 0.4165,
+          "contrast": 1.2379,
+          "serif": null,
+          "densTall": 0.5723,
+          "densX": null,
+          "weight": 0.5723
+        },
+        "widthClass": "wide",
+        "weightClass": "bold"
+      }
+    },
+    {
+      "id": "network-labels",
+      "kind": "text",
+      "note": "Input, Hidden, Output column labels above live graph",
+      "grid": "A2:D2",
+      "coverBox": {
+        "x": 0,
+        "y": 0.2,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.1292,
+        "y": 0.2253,
+        "w": 0.1112,
+        "h": 0.0744
+      },
+      "px": {
+        "x": 216,
+        "y": 212,
+        "w": 186,
+        "h": 70
+      },
+      "aspect": 2.6571,
+      "palette": [
+        {
+          "hex": "#f8eed7",
+          "coverage": 0.9467
+        },
+        {
+          "hex": "#190e0a",
+          "coverage": 0.0216
+        },
+        {
+          "hex": "#9b9080",
+          "coverage": 0.0128
+        },
+        {
+          "hex": "#665a4b",
+          "coverage": 0.0095
+        },
+        {
+          "hex": "#3e361f",
+          "coverage": 0.0095
+        }
+      ],
+      "detail": {
+        "energy": 18.774
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-17T18:21:11.952Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "network-chart",
+      "kind": "chrome",
+      "note": "Runtime network chart with countable neurons and connection lines",
+      "grid": "A2:D5",
+      "box": {
+        "x": 0,
+        "y": 0.2,
+        "w": 0.4,
+        "h": 0.4
+      },
+      "px": {
+        "x": 0,
+        "y": 188,
+        "w": 669,
+        "h": 376
+      },
+      "aspect": 1.7793,
+      "palette": [
+        {
+          "hex": "#f8efda",
+          "coverage": 0.9662
+        },
+        {
+          "hex": "#8e846d",
+          "coverage": 0.0129
+        },
+        {
+          "hex": "#170e08",
+          "coverage": 0.0105
+        },
+        {
+          "hex": "#625848",
+          "coverage": 0.0056
+        },
+        {
+          "hex": "#392f1f",
+          "coverage": 0.0047
+        }
+      ],
+      "detail": {
+        "energy": 21.3592
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "network-caption",
+      "kind": "text",
+      "note": "Fig. 1 caption describing fully connected network",
+      "grid": "A6:D6",
+      "coverBox": {
+        "x": 0,
+        "y": 0.6,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.0574,
+        "y": 0.6068,
+        "w": 0.2835,
+        "h": 0.0638
+      },
+      "px": {
+        "x": 96,
+        "y": 571,
+        "w": 474,
+        "h": 60
+      },
+      "aspect": 7.9,
+      "palette": [
+        {
+          "hex": "#f7f5e5",
+          "coverage": 0.8745
+        },
+        {
+          "hex": "#a19c90",
+          "coverage": 0.0404
+        },
+        {
+          "hex": "#6e6a5f",
+          "coverage": 0.0306
+        },
+        {
+          "hex": "#140f0a",
+          "coverage": 0.029
+        },
+        {
+          "hex": "#383329",
+          "coverage": 0.0254
+        }
+      ],
+      "detail": {
+        "energy": 52.3971
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 71,
+          "capHeightPx": 13.5,
+          "inkIsDark": true,
+          "allCaps": false,
+          "advance": 0.6311,
+          "advTall": 0.4619,
+          "advX": 0.634,
+          "gap": 0.0746,
+          "xRatio": 0.6404,
+          "stemW": 0.1756,
+          "contrast": 1.2687,
+          "serif": 0.869,
+          "densTall": 0.5026,
+          "densX": 0.608,
+          "weight": 0.5026
+        },
+        "widthClass": "normal",
+        "weightClass": "medium"
+      }
+    },
+    {
+      "id": "data-frame",
+      "kind": "chrome",
+      "note": "Second scientific plate frame with fine double rules",
+      "grid": "E1:H6",
+      "box": {
+        "x": 0.4,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.6
+      },
+      "px": {
+        "x": 669,
+        "y": 94,
+        "w": 669,
+        "h": 565
+      },
+      "aspect": 1.1841,
+      "palette": [
+        {
+          "hex": "#f8f6e4",
+          "coverage": 0.963
+        },
+        {
+          "hex": "#c9c2b3",
+          "coverage": 0.0126
+        },
+        {
+          "hex": "#998f79",
+          "coverage": 0.0123
+        },
+        {
+          "hex": "#0f0b08",
+          "coverage": 0.0089
+        },
+        {
+          "hex": "#383628",
+          "coverage": 0.0032
+        }
+      ],
+      "detail": {
+        "energy": 24.4541
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "data-heading",
+      "kind": "text",
+      "note": "PLATE II and DATA IN FEATURE SPACE heading",
+      "grid": "E1:H1",
+      "box": {
+        "x": 0.4,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "px": {
+        "x": 669,
+        "y": 94,
+        "w": 669,
+        "h": 94
+      },
+      "aspect": 7.117,
+      "palette": [
+        {
+          "hex": "#f7f6e2",
+          "coverage": 0.9638
+        },
+        {
+          "hex": "#d0c4b8",
+          "coverage": 0.0108
+        },
+        {
+          "hex": "#100c08",
+          "coverage": 0.0103
+        },
+        {
+          "hex": "#6b6653",
+          "coverage": 0.008
+        },
+        {
+          "hex": "#a09580",
+          "coverage": 0.007
+        }
+      ],
+      "detail": {
+        "energy": 29.8414
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 7,
+          "capHeightPx": 1.9,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 1.0541,
+          "advTall": 1.0541,
+          "advX": null,
+          "gap": 0,
+          "xRatio": null,
+          "stemW": null,
+          "contrast": null,
+          "serif": null,
+          "densTall": 0.7597,
+          "densX": null,
+          "weight": 0.7597
+        },
+        "widthClass": "wide",
+        "weightClass": "black"
+      }
+    },
+    {
+      "id": "data-chart",
+      "kind": "chrome",
+      "note": "Runtime dataset and decision-boundary canvas with two plotted classes",
+      "grid": "E2:H5",
+      "box": {
+        "x": 0.4,
+        "y": 0.2,
+        "w": 0.4,
+        "h": 0.4
+      },
+      "px": {
+        "x": 669,
+        "y": 188,
+        "w": 669,
+        "h": 376
+      },
+      "aspect": 1.7793,
+      "palette": [
+        {
+          "hex": "#f8f6e5",
+          "coverage": 0.9813
+        },
+        {
+          "hex": "#7e786e",
+          "coverage": 0.0064
+        },
+        {
+          "hex": "#1172ea",
+          "coverage": 0.0046
+        },
+        {
+          "hex": "#eb3e1e",
+          "coverage": 0.0042
+        },
+        {
+          "hex": "#bcb8a8",
+          "coverage": 0.0036
+        }
+      ],
+      "detail": {
+        "energy": 22.0101
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "data-legend",
+      "kind": "text",
+      "note": "Class 0 and Class 1 legend beside plotted data",
+      "grid": "H2:H3",
+      "box": {
+        "x": 0.7,
+        "y": 0.2,
+        "w": 0.1,
+        "h": 0.2
+      },
+      "px": {
+        "x": 1170,
+        "y": 188,
+        "w": 167,
+        "h": 188
+      },
+      "aspect": 0.8883,
+      "palette": [
+        {
+          "hex": "#f7f5e4",
+          "coverage": 0.9487
+        },
+        {
+          "hex": "#b72e27",
+          "coverage": 0.0208
+        },
+        {
+          "hex": "#3a2a13",
+          "coverage": 0.0103
+        },
+        {
+          "hex": "#a49174",
+          "coverage": 0.0103
+        },
+        {
+          "hex": "#655d44",
+          "coverage": 0.01
+        }
+      ],
+      "detail": {
+        "energy": 18.5008
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 18,
+          "capHeightPx": 13,
+          "inkIsDark": true,
+          "allCaps": false,
+          "advance": 0.5174,
+          "advTall": 0.3322,
+          "advX": 0.5369,
+          "gap": 0.0752,
+          "xRatio": 0.6899,
+          "stemW": 0.181,
+          "contrast": 1.2729,
+          "serif": 0.9979,
+          "densTall": 0.7294,
+          "densX": 0.6316,
+          "weight": 0.7294
+        },
+        "widthClass": "condensed",
+        "weightClass": "black"
+      }
+    },
+    {
+      "id": "data-caption",
+      "kind": "text",
+      "note": "Fig. 2 caption stating boundary absent before training",
+      "grid": "E6:H6",
+      "coverBox": {
+        "x": 0.4,
+        "y": 0.6,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.4109,
+        "y": 0.6004,
+        "w": 0.3373,
+        "h": 0.0765
+      },
+      "px": {
+        "x": 687,
+        "y": 565,
+        "w": 564,
+        "h": 72
+      },
+      "aspect": 7.8333,
+      "palette": [
+        {
+          "hex": "#f8f7e7",
+          "coverage": 0.894
+        },
+        {
+          "hex": "#c6c1b5",
+          "coverage": 0.0362
+        },
+        {
+          "hex": "#807d71",
+          "coverage": 0.0256
+        },
+        {
+          "hex": "#120d0a",
+          "coverage": 0.0222
+        },
+        {
+          "hex": "#4e483f",
+          "coverage": 0.022
+        }
+      ],
+      "detail": {
+        "energy": 41.4903
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 84,
+          "capHeightPx": 14.9,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 0.5731,
+          "advTall": 0.609,
+          "advX": null,
+          "gap": 0.0675,
+          "xRatio": null,
+          "stemW": 0.1651,
+          "contrast": 1.2585,
+          "serif": 0.7918,
+          "densTall": 0.4629,
+          "densX": null,
+          "weight": 0.4629
+        },
+        "widthClass": "condensed",
+        "weightClass": "regular"
+      }
+    },
+    {
+      "id": "dataset-frame",
+      "kind": "chrome",
+      "note": "Dataset selection panel with printed rule frame",
+      "grid": "I1:J3",
+      "box": {
+        "x": 0.8,
+        "y": 0.1,
+        "w": 0.2,
+        "h": 0.3
+      },
+      "px": {
+        "x": 1338,
+        "y": 94,
+        "w": 334,
+        "h": 282
+      },
+      "aspect": 1.1844,
+      "palette": [
+        {
+          "hex": "#f4f2df",
+          "coverage": 0.811
+        },
+        {
+          "hex": "#b63525",
+          "coverage": 0.1545
+        },
+        {
+          "hex": "#b7ad96",
+          "coverage": 0.0146
+        },
+        {
+          "hex": "#761b08",
+          "coverage": 0.0103
+        },
+        {
+          "hex": "#100e0c",
+          "coverage": 0.0096
+        }
+      ],
+      "detail": {
+        "energy": 29.3083
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "dataset-heading",
+      "kind": "text",
+      "note": "DATASET heading",
+      "grid": "I1:J1",
+      "box": {
+        "x": 0.8,
+        "y": 0.1,
+        "w": 0.2,
+        "h": 0.1
+      },
+      "px": {
+        "x": 1338,
+        "y": 94,
+        "w": 334,
+        "h": 94
+      },
+      "aspect": 3.5532,
+      "palette": [
+        {
+          "hex": "#efeed8",
+          "coverage": 0.9567
+        },
+        {
+          "hex": "#d0ecbe",
+          "coverage": 0.0199
+        },
+        {
+          "hex": "#94856f",
+          "coverage": 0.0098
+        },
+        {
+          "hex": "#0e0b08",
+          "coverage": 0.0084
+        },
+        {
+          "hex": "#124f14",
+          "coverage": 0.0052
+        }
+      ],
+      "detail": {
+        "energy": 21.5975
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 3,
+          "glyphs": 12,
+          "capHeightPx": 14.5,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 0.8963,
+          "advTall": 0.8963,
+          "advX": null,
+          "gap": 0.2618,
+          "xRatio": null,
+          "stemW": 0.2073,
+          "contrast": 1.3021,
+          "serif": 1.0478,
+          "densTall": 0.5955,
+          "densX": null,
+          "weight": 0.5955
+        },
+        "widthClass": "wide",
+        "weightClass": "bold"
+      }
+    },
+    {
+      "id": "dataset-control",
+      "kind": "control",
+      "note": "XOR, Circle, Spiral, and Sine regression selection",
+      "grid": "I2:J3",
+      "box": {
+        "x": 0.8,
+        "y": 0.2,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "px": {
+        "x": 1338,
+        "y": 188,
+        "w": 334,
+        "h": 188
+      },
+      "aspect": 1.7766,
+      "palette": [
+        {
+          "hex": "#f8f6e5",
+          "coverage": 0.7116
+        },
+        {
+          "hex": "#b63526",
+          "coverage": 0.2229
+        },
+        {
+          "hex": "#8c7f68",
+          "coverage": 0.0222
+        },
+        {
+          "hex": "#f6c3b5",
+          "coverage": 0.0222
+        },
+        {
+          "hex": "#8f1b0b",
+          "coverage": 0.0211
+        }
+      ],
+      "detail": {
+        "energy": 32.9308
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "train-action",
+      "kind": "control",
+      "note": "Large vermilion TRAIN MODEL action",
+      "grid": "I3:J4",
+      "coverBox": {
+        "x": 0.8,
+        "y": 0.3,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "box": {
+        "x": 0.8002,
+        "y": 0.3316,
+        "w": 0.1974,
+        "h": 0.102
+      },
+      "px": {
+        "x": 1338,
+        "y": 312,
+        "w": 330,
+        "h": 96
+      },
+      "aspect": 3.4375,
+      "palette": [
+        {
+          "hex": "#b33324",
+          "coverage": 0.6197
+        },
+        {
+          "hex": "#f8f4e4",
+          "coverage": 0.1885
+        },
+        {
+          "hex": "#bf5f4f",
+          "coverage": 0.1097
+        },
+        {
+          "hex": "#ac705a",
+          "coverage": 0.0672
+        },
+        {
+          "hex": "#d89b8d",
+          "coverage": 0.0148
+        }
+      ],
+      "detail": {
+        "energy": 44.3551
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "status-frame",
+      "kind": "chrome",
+      "note": "Training status panel with fine border",
+      "grid": "I4:J6",
+      "box": {
+        "x": 0.8,
+        "y": 0.4,
+        "w": 0.2,
+        "h": 0.3
+      },
+      "px": {
+        "x": 1338,
+        "y": 376,
+        "w": 334,
+        "h": 282
+      },
+      "aspect": 1.1844,
+      "palette": [
+        {
+          "hex": "#f8ecda",
+          "coverage": 0.8494
+        },
+        {
+          "hex": "#b63826",
+          "coverage": 0.0601
+        },
+        {
+          "hex": "#c6b89e",
+          "coverage": 0.0443
+        },
+        {
+          "hex": "#90826b",
+          "coverage": 0.0237
+        },
+        {
+          "hex": "#bbd4aa",
+          "coverage": 0.0224
+        }
+      ],
+      "detail": {
+        "energy": 28.1295
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "status-heading",
+      "kind": "text",
+      "note": "TRAINING STATUS heading",
+      "grid": "I4:J4",
+      "coverBox": {
+        "x": 0.8,
+        "y": 0.4,
+        "w": 0.2,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.8002,
+        "y": 0.3996,
+        "w": 0.1974,
+        "h": 0.0319
+      },
+      "px": {
+        "x": 1338,
+        "y": 376,
+        "w": 330,
+        "h": 30
+      },
+      "aspect": 11,
+      "palette": [
+        {
+          "hex": "#b63826",
+          "coverage": 0.5505
+        },
+        {
+          "hex": "#f8f5e4",
+          "coverage": 0.2384
+        },
+        {
+          "hex": "#901e0f",
+          "coverage": 0.1183
+        },
+        {
+          "hex": "#f8ddd8",
+          "coverage": 0.0801
+        },
+        {
+          "hex": "#c58e7a",
+          "coverage": 0.0127
+        }
+      ],
+      "detail": {
+        "energy": 52.4768
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-17T18:21:28.013Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "status-values",
+      "kind": "text",
+      "note": "Idle state and Epoch, Loss, Accuracy with dash values",
+      "grid": "I5:J6",
+      "box": {
+        "x": 0.8,
+        "y": 0.5,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "px": {
+        "x": 1338,
+        "y": 471,
+        "w": 334,
+        "h": 188
+      },
+      "aspect": 1.7766,
+      "palette": [
+        {
+          "hex": "#f8ecd9",
+          "coverage": 0.8901
+        },
+        {
+          "hex": "#9d8f76",
+          "coverage": 0.06
+        },
+        {
+          "hex": "#bcd4aa",
+          "coverage": 0.0365
+        },
+        {
+          "hex": "#ccc7b9",
+          "coverage": 0.0068
+        },
+        {
+          "hex": "#0d0d09",
+          "coverage": 0.0065
+        }
+      ],
+      "detail": {
+        "energy": 21.2537
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 2,
+          "glyphs": 15,
+          "capHeightPx": 12.6,
+          "inkIsDark": true,
+          "allCaps": false,
+          "advance": 0.8607,
+          "advTall": 0.8607,
+          "advX": null,
+          "gap": 0.2347,
+          "xRatio": 0.5444,
+          "stemW": 0.2619,
+          "contrast": 1.519,
+          "serif": 0.9861,
+          "densTall": 0.5503,
+          "densX": null,
+          "weight": 0.5503
+        },
+        "widthClass": "wide",
+        "weightClass": "medium"
+      }
+    },
+    {
+      "id": "architecture-heading",
+      "kind": "text",
+      "note": "ARCHITECTURE SETTINGS heading",
+      "grid": "A7:C7",
+      "coverBox": {
+        "x": 0,
+        "y": 0.7,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.0036,
+        "y": 0.7194,
+        "w": 0.2967,
+        "h": 0.0808
+      },
+      "px": {
+        "x": 6,
+        "y": 677,
+        "w": 496,
+        "h": 76
+      },
+      "aspect": 6.5263,
+      "palette": [
+        {
+          "hex": "#f8f5e0",
+          "coverage": 0.8777
+        },
+        {
+          "hex": "#d4c9b1",
+          "coverage": 0.0606
+        },
+        {
+          "hex": "#a19988",
+          "coverage": 0.0278
+        },
+        {
+          "hex": "#0d0b09",
+          "coverage": 0.0231
+        },
+        {
+          "hex": "#666052",
+          "coverage": 0.0108
+        }
+      ],
+      "detail": {
+        "energy": 40.2938
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 1,
+          "glyphs": 26,
+          "capHeightPx": 28,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 0.4284,
+          "advTall": 0.4284,
+          "advX": null,
+          "gap": 0.1071,
+          "xRatio": null,
+          "stemW": 0.1123,
+          "contrast": 1.9197,
+          "serif": 1.869,
+          "densTall": 0.2939,
+          "densX": null,
+          "weight": 0.2939
+        },
+        "widthClass": "compressed",
+        "weightClass": "light"
+      }
+    },
+    {
+      "id": "architecture-controls",
+      "kind": "control",
+      "note": "Hidden layers, neurons, and activation controls",
+      "grid": "A8:C9",
+      "coverBox": {
+        "x": 0,
+        "y": 0.8,
+        "w": 0.3,
+        "h": 0.2
+      },
+      "box": {
+        "x": 0.0036,
+        "y": 0.8002,
+        "w": 0.2967,
+        "h": 0.1785
+      },
+      "px": {
+        "x": 6,
+        "y": 753,
+        "w": 496,
+        "h": 168
+      },
+      "aspect": 2.9524,
+      "palette": [
+        {
+          "hex": "#f8f2e0",
+          "coverage": 0.9143
+        },
+        {
+          "hex": "#b5ad9a",
+          "coverage": 0.0341
+        },
+        {
+          "hex": "#756850",
+          "coverage": 0.0309
+        },
+        {
+          "hex": "#877d77",
+          "coverage": 0.0105
+        },
+        {
+          "hex": "#100b0b",
+          "coverage": 0.0102
+        }
+      ],
+      "detail": {
+        "energy": 28.5976
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "training-heading",
+      "kind": "text",
+      "note": "TRAINING SETTINGS heading",
+      "grid": "D7:E7",
+      "coverBox": {
+        "x": 0.3,
+        "y": 0.7,
+        "w": 0.2,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.3002,
+        "y": 0.7194,
+        "w": 0.1998,
+        "h": 0.0808
+      },
+      "px": {
+        "x": 502,
+        "y": 677,
+        "w": 334,
+        "h": 76
+      },
+      "aspect": 4.3947,
+      "palette": [
+        {
+          "hex": "#f7f4df",
+          "coverage": 0.9009
+        },
+        {
+          "hex": "#cec2ab",
+          "coverage": 0.0544
+        },
+        {
+          "hex": "#0f0d09",
+          "coverage": 0.0185
+        },
+        {
+          "hex": "#999388",
+          "coverage": 0.0153
+        },
+        {
+          "hex": "#595449",
+          "coverage": 0.0108
+        }
+      ],
+      "detail": {
+        "energy": 38.4748
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 1,
+          "glyphs": 14,
+          "capHeightPx": 12.9,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 0.8364,
+          "advTall": 0.8364,
+          "advX": null,
+          "gap": 0.2723,
+          "xRatio": null,
+          "stemW": 0.2652,
+          "contrast": 1.6051,
+          "serif": null,
+          "densTall": 0.6468,
+          "densX": null,
+          "weight": 0.6468
+        },
+        "widthClass": "wide",
+        "weightClass": "bold"
+      }
+    },
+    {
+      "id": "training-controls",
+      "kind": "control",
+      "note": "Learning rate, batch size, epochs controls",
+      "grid": "D8:E9",
+      "coverBox": {
+        "x": 0.3,
+        "y": 0.8,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "box": {
+        "x": 0.3002,
+        "y": 0.8002,
+        "w": 0.1998,
+        "h": 0.1785
+      },
+      "px": {
+        "x": 502,
+        "y": 753,
+        "w": 334,
+        "h": 168
+      },
+      "aspect": 1.9881,
+      "palette": [
+        {
+          "hex": "#f8f3e2",
+          "coverage": 0.9196
+        },
+        {
+          "hex": "#a49d90",
+          "coverage": 0.0274
+        },
+        {
+          "hex": "#d5c9b4",
+          "coverage": 0.0225
+        },
+        {
+          "hex": "#7e6d4f",
+          "coverage": 0.0215
+        },
+        {
+          "hex": "#100c09",
+          "coverage": 0.009
+        }
+      ],
+      "detail": {
+        "energy": 29.7743
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "loss-heading",
+      "kind": "text",
+      "note": "LOSS heading",
+      "grid": "F7:H7",
+      "coverBox": {
+        "x": 0.5,
+        "y": 0.7,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.5,
+        "y": 0.7194,
+        "w": 0.3002,
+        "h": 0.0808
+      },
+      "px": {
+        "x": 836,
+        "y": 677,
+        "w": 502,
+        "h": 76
+      },
+      "aspect": 6.6053,
+      "palette": [
+        {
+          "hex": "#f8f1df",
+          "coverage": 0.944
+        },
+        {
+          "hex": "#cec4a8",
+          "coverage": 0.0412
+        },
+        {
+          "hex": "#0a0808",
+          "coverage": 0.0069
+        },
+        {
+          "hex": "#938668",
+          "coverage": 0.0046
+        },
+        {
+          "hex": "#272717",
+          "coverage": 0.0032
+        }
+      ],
+      "detail": {
+        "energy": 21.4395
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": {
+          "lines": 1,
+          "glyphs": 2,
+          "capHeightPx": 2.3,
+          "inkIsDark": true,
+          "allCaps": true,
+          "advance": 104.1951,
+          "advTall": 104.1951,
+          "advX": null,
+          "gap": 0,
+          "xRatio": null,
+          "stemW": null,
+          "contrast": null,
+          "serif": null,
+          "densTall": 0.6365,
+          "densX": null,
+          "weight": 0.6365
+        },
+        "widthClass": "wide",
+        "weightClass": "bold"
+      }
+    },
+    {
+      "id": "loss-chart",
+      "kind": "chrome",
+      "note": "Runtime loss chart, empty axes before training",
+      "grid": "F8:H9",
+      "box": {
+        "x": 0.5,
+        "y": 0.8,
+        "w": 0.3,
+        "h": 0.2
+      },
+      "px": {
+        "x": 836,
+        "y": 753,
+        "w": 502,
+        "h": 188
+      },
+      "aspect": 2.6702,
+      "palette": [
+        {
+          "hex": "#f8f3e2",
+          "coverage": 0.9542
+        },
+        {
+          "hex": "#0c0908",
+          "coverage": 0.0188
+        },
+        {
+          "hex": "#766346",
+          "coverage": 0.0165
+        },
+        {
+          "hex": "#a5957d",
+          "coverage": 0.0079
+        },
+        {
+          "hex": "#574a3f",
+          "coverage": 0.0026
+        }
+      ],
+      "detail": {
+        "energy": 14.2821
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "accuracy-heading",
+      "kind": "text",
+      "note": "ACCURACY heading",
+      "grid": "I7:J7",
+      "coverBox": {
+        "x": 0.8,
+        "y": 0.7,
+        "w": 0.2,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.8002,
+        "y": 0.7194,
+        "w": 0.1974,
+        "h": 0.0808
+      },
+      "px": {
+        "x": 1338,
+        "y": 677,
+        "w": 330,
+        "h": 76
+      },
+      "aspect": 4.3421,
+      "palette": [
+        {
+          "hex": "#f8eddc",
+          "coverage": 0.9561
+        },
+        {
+          "hex": "#d5c7ac",
+          "coverage": 0.0362
+        },
+        {
+          "hex": "#94815f",
+          "coverage": 0.006
+        },
+        {
+          "hex": "#080808",
+          "coverage": 0.0011
+        },
+        {
+          "hex": "#785838",
+          "coverage": 0.0007
+        }
+      ],
+      "detail": {
+        "energy": 12.3093
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-17T18:21:37.878Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "accuracy-chart",
+      "kind": "chrome",
+      "note": "Runtime accuracy chart, empty axes before training",
+      "grid": "I8:J9",
+      "box": {
+        "x": 0.8,
+        "y": 0.8,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "px": {
+        "x": 1338,
+        "y": 753,
+        "w": 334,
+        "h": 188
+      },
+      "aspect": 1.7766,
+      "palette": [
+        {
+          "hex": "#f8f0de",
+          "coverage": 0.9643
+        },
+        {
+          "hex": "#746144",
+          "coverage": 0.0193
+        },
+        {
+          "hex": "#908f82",
+          "coverage": 0.0088
+        },
+        {
+          "hex": "#7b6e69",
+          "coverage": 0.0076
+        }
+      ],
+      "detail": {
+        "energy": 10.6806
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    }
+  ]
+}
