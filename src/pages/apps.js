@@ -217,6 +217,7 @@ const interactiveApps = [
     { title: 'Sphere Chat Interface', path: '/apps/sphere-chat-interface.html', description: '3D spherical chat interface with immersive user experience.', category: 'Creative' },
     { title: 'Advanced Python CS', path: '/apps/Advanced_python_CS.html', description: 'Comprehensive computer science curriculum and interactive Python programming environment.', category: 'Education' },
     { title: 'CLI University', path: '/apps/CLI_uni.html', description: 'Interactive command-line interface learning environment for mastering CLI tools.', category: 'Education' },
+    { title: 'Rust / Atom — An Interactive Rust Learning Lab', path: '/apps/rust-atom/', description: 'Start with bits and bytes, then experiment with memory, ownership, and collections through guided simulations.', category: 'Education' },
     { title: 'CompTIA Study Guide', path: '/apps/ComTia.html', description: 'Comprehensive study materials and practice tests for CompTIA certifications.', category: 'Education' },
     { title: 'Python Function a Day', path: '/apps/python-function-a-day/', description: 'Comprehensive Python learning platform featuring 100+ functions from standard library and third-party packages. Includes interactive code playground, progress tracking, and curated learning paths.', category: 'Education', featured: true },
 ];

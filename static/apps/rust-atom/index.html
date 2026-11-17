@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c1316">
+<title>Rust / Atom — An Interactive Rust Learning Lab</title>
+<meta name="description" content="Start with bits and bytes, then experiment with memory, ownership, and collections through guided Rust simulations.">
+<link rel="canonical" href="https://dennisjcarroll.com/apps/rust-atom/">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+:root{color-scheme:dark;--bg:#091114;--surface:#111c20;--surface2:#15242a;--raised:#1d2d33;--line:#2a4046;--line2:#3b555a;--text:#eaf2f1;--muted:#a7bab9;--soft:#79918f;--copper:#f0ac80;--copper2:#cc7858;--mint:#99e3ce;--red:#ff9d99;--blue:#9cbfd8;--shadow:0 18px 45px -20px #000a;--radius:13px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 'DM Sans',Inter,system-ui,sans-serif;min-height:100vh}button,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}a{color:var(--mint);text-decoration-thickness:1px;text-underline-offset:4px}a:hover{color:#d9fff3}::selection{background:#bf7959;color:#111}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--mint);outline-offset:3px}::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#345059;border:2px solid var(--bg);border-radius:10px}
+.mono,.eyebrow,.nav-num,pre,.chip,.spec,.smallcaps,.key,.step-no,.stat,progress,.side-foot,.quizcount{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.shell{display:grid;grid-template-columns:246px minmax(0,1fr);min-height:100vh}.sidebar{background:#0e191d;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;min-height:690px;overflow-y:auto}.brand{padding:30px 22px 26px;border-bottom:1px solid var(--line)}.brand-top{display:flex;align-items:center;gap:11px}.mark{width:40px;height:40px;border:1px solid var(--copper);display:grid;place-items:center;color:var(--copper);font:700 20px/1 'IBM Plex Mono',monospace;position:relative}.mark:before,.mark:after{content:'';position:absolute;background:var(--copper)}.mark:before{width:7px;height:2px;left:-4px;top:10px}.mark:after{height:7px;width:2px;right:9px;bottom:-4px}.brand-name{font-size:17px;font-weight:800;letter-spacing:.09em;line-height:1.2}.brand-sub{font-size:9px;font-weight:600;letter-spacing:.16em;color:var(--copper);margin-top:4px}.sidelabel{font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.13em;color:var(--soft);padding:23px 23px 12px;text-transform:uppercase}.nav{display:grid;gap:3px;padding:0 10px}.nav button{width:100%;background:transparent;border:0;border-radius:7px;display:flex;align-items:center;gap:12px;color:var(--muted);padding:12px 12px;text-align:left;font-size:12px;font-weight:600;transition:background .17s,color .17s}.nav button:hover{background:#1a292e;color:var(--text)}.nav button.active{background:#25363a;color:var(--text)}.nav-num{font-size:10px;color:var(--soft);width:22px}.nav button.active .nav-num{color:var(--copper)}.nav-name{flex:1}.nav-check{font-size:13px;color:var(--mint)}.nav-check.blank{color:#53676a}.side-track{margin:24px 22px 0;padding-top:20px;border-top:1px solid var(--line)}.trackhead{display:flex;justify-content:space-between;font:500 10px 'IBM Plex Mono',monospace;color:var(--muted);margin-bottom:13px}.progress-track{height:3px;background:#2b4145;overflow:hidden}.progress-bar{height:100%;background:var(--copper);width:0;transition:width .3s}.side-foot{font-size:10px;line-height:1.7;color:var(--soft);padding:22px;margin-top:auto}.side-foot a{font-size:10px}
+.workspace{min-width:0}.topbar{height:73px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-bottom:1px solid var(--line);background:#0c161a}.bread{font:500 11px 'IBM Plex Mono',monospace;letter-spacing:.045em;color:var(--muted)}.bread b{color:var(--copper);font-weight:500}.top-actions{display:flex;align-items:center;gap:18px}.signal{display:flex;align-items:center;gap:8px;font:500 10px 'IBM Plex Mono',monospace;color:var(--muted);white-space:nowrap}.dot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 3px #99e3ce17}.tiny-btn{background:transparent;border:1px solid var(--line2);color:var(--muted);padding:7px 11px;border-radius:6px;font:500 11px 'IBM Plex Mono',monospace}.tiny-btn:hover{color:var(--text);border-color:var(--mint)}.page{max-width:1520px;margin:0 auto;padding:30px 36px 55px}.hero{border-bottom:1px solid var(--line);padding:8px 0 28px;display:flex;gap:18px;justify-content:space-between;align-items:end}.hero h1{font-size:clamp(30px,3.7vw,58px);letter-spacing:-.035em;line-height:1.05;margin:8px 0 10px;font-weight:800}.hero h1 span{color:var(--copper)}.hero p{max-width:68ch;color:var(--muted);margin:0;font-size:14px}.system-stamp{display:flex;flex-direction:column;align-items:end;color:var(--soft);gap:8px;font-size:10px;white-space:nowrap}.stamp-block{font:700 35px/.95 'IBM Plex Mono',monospace;letter-spacing:-.07em;color:#465f63}.main-grid{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(330px,.82fr);gap:28px;margin-top:28px}.leftcol,.rightcol{min-width:0}.chapterhead{display:flex;gap:13px;align-items:center;margin-bottom:15px}.chapter-index{font:600 10px 'IBM Plex Mono',monospace;color:var(--copper);border:1px solid #81553f;background:#3a281f;padding:6px 8px;border-radius:4px}.chapter-tag{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--soft)}.title{font-size:30px;line-height:1.12;letter-spacing:-.03em;margin:0 0 13px;font-weight:800}.lede{font-size:16px;line-height:1.72;max-width:65ch;color:#c8d7d5;margin:0 0 20px}.concept{padding:20px 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin:21px 0 20px}.concept h3{font-size:12px;color:var(--copper);letter-spacing:.045em;margin:0 0 8px;font-weight:700}.concept p{color:#c3d3d1;margin:0;line-height:1.7}.concept strong{color:var(--text)}.coreline{color:var(--text);font-weight:700}.lab{margin-top:28px}.section-title{display:flex;align-items:center;gap:11px;margin:0 0 13px;font-size:15px;font-weight:700}.section-title:before{content:'';height:9px;width:9px;background:var(--copper);transform:rotate(45deg)}.lab-instruct{color:var(--muted);margin:0 0 18px;font-size:13px;max-width:70ch}.sim{background:#102026;border:1px solid #304b50;border-radius:var(--radius);padding:20px;min-height:186px}.control-label{font:600 10px 'IBM Plex Mono',monospace;color:var(--soft);letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}.button-row{display:flex;flex-wrap:wrap;gap:9px}.button-row button,.action{border:1px solid #446064;background:#21353a;color:var(--text);border-radius:6px;padding:10px 13px;font-size:12px;font-weight:700;transition:background .15s,border-color .15s,transform .15s}.button-row button:hover,.action:hover{background:#2d464a;border-color:#8ca8a4}.button-row button.selected{background:#604638;border-color:var(--copper);color:#ffe2c9}.action.primary{background:var(--copper);border-color:var(--copper);color:#171613}.action.primary:hover{background:#ffd0ab}.action.secondary{background:transparent;color:var(--muted)}.button-row button:active,.action:active{transform:translateY(1px)}.metric-line{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}.metric{background:#1a2c31;border:1px solid #38515a;border-radius:7px;padding:12px 15px;min-width:100px}.metric small{display:block;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;color:var(--soft);margin-bottom:4px}.metric b{font:700 20px 'IBM Plex Mono',monospace;color:var(--text)}.bit-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin:15px 0 0}.bit-grid button{min-width:0;border:1px solid #416066;border-radius:6px;background:#1d3035;color:#95aeac;padding:15px 0 12px;font:700 23px 'IBM Plex Mono',monospace;transition:background .17s,color .17s}.bit-grid button.on{background:#664530;border-color:var(--copper);color:#ffd2ac}.bit-grid button:hover{border-color:var(--mint)}.bit-grid label{display:block;color:var(--soft);font:500 9px 'IBM Plex Mono',monospace;margin-top:5px;text-align:center}.bit-grid .cell{min-width:0}.status-line{border-top:1px solid #345057;margin-top:18px;padding-top:14px;font-size:12px;color:var(--muted)}.valid{color:var(--mint)}.invalid{color:var(--red)}.component-preview{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}.pipeline-node{border:1px solid #3d5961;background:#1d3035;flex:1;min-width:115px;padding:17px 11px;border-radius:8px;color:var(--muted);text-align:left}.pipeline-node span{display:block;color:var(--soft);font:500 9px 'IBM Plex Mono',monospace;margin-bottom:10px}.pipeline-node strong{display:block;color:var(--text);font-size:14px}.pipeline-node.active{border-color:var(--copper);background:#3b322b}.pipeline-node.active strong{color:#ffcca9}.flow-arrow{display:flex;align-items:center;color:var(--copper);font-size:20px}.explain-output{margin-top:14px;color:#cbd8d5;font-size:12px;line-height:1.6;min-height:20px}.code-wrap{border:1px solid #2f454c;border-radius:var(--radius);overflow:hidden;background:#071115;box-shadow:var(--shadow)}.code-top{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #284047;background:#132227;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.03em;color:#9db6b4}.code-top .dots{display:inline-flex;gap:5px;margin-right:10px}.code-top .dots i{display:inline-block;width:6px;height:6px;background:#526a6d;border-radius:50%}.code-top .dots i:first-child{background:var(--copper)}.code-actions{display:flex;gap:12px}.code-actions button{background:transparent;color:var(--mint);border:0;font:500 10px 'IBM Plex Mono',monospace}.code-actions button:hover{text-decoration:underline}pre{margin:0;padding:21px 18px;overflow:auto;min-height:160px;white-space:pre;tab-size:4;color:#d5e8e2;font-size:12px;line-height:1.8}.terminal{margin-top:13px;background:#102026;border:1px solid var(--line);border-radius:10px;overflow:hidden}.term-header{border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:11px 15px;color:var(--soft);font:500 10px 'IBM Plex Mono',monospace}.term-body{padding:14px 15px;font:12px/1.7 'IBM Plex Mono',monospace;color:var(--mint);white-space:pre-wrap;min-height:55px;overflow-wrap:anywhere}.term-body.error{color:var(--red)}.term-body.neutral{color:#c2d4d0}.system-notice{font-size:11px;color:var(--soft);margin:9px 2px 0;line-height:1.6}.challenge{margin-top:27px;padding-top:22px;border-top:1px solid var(--line)}.challenge-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.challenge h3{font-size:15px;margin:0}.chip{font-size:10px;padding:5px 8px;background:#24383d;color:var(--soft);border-radius:3px;white-space:nowrap}.question{font-size:14px;margin:0 0 15px;color:#d8e7e4;font-weight:600}.options{display:grid;gap:9px}.option{display:flex;gap:12px;align-items:flex-start;background:#142329;border:1px solid #345057;color:var(--muted);text-align:left;border-radius:7px;padding:12px 14px;font-size:12px;line-height:1.55}.option:hover{border-color:#80a59e;color:var(--text)}.option:disabled{opacity:1;cursor:default}.option.chosen{border-color:var(--copper);color:var(--text)}.option.right{border-color:var(--mint);background:#18302e;color:var(--text)}.option.wrong{border-color:var(--red);background:#35282b;color:var(--text)}.opt-letter{font:600 11px 'IBM Plex Mono',monospace;color:var(--copper);margin-top:1px}.feedback{margin-top:13px;padding:13px 15px;border:1px solid #38534f;border-radius:7px;background:#1a2c2b;color:#d0e1d8;font-size:12px;line-height:1.65}.feedback.bad{background:#30252a;border-color:#704b4b;color:#f6cbc7}.bottom{display:flex;align-items:center;justify-content:space-between;margin-top:28px;gap:15px}.bottom .action{min-width:107px}.footer-path{font:10px 'IBM Plex Mono',monospace;color:var(--soft)}.micro{font:500 10px 'IBM Plex Mono',monospace;color:var(--soft);letter-spacing:.065em}.memory-flow{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}.slot{flex:1;min-width:120px;border:1px solid #456368;background:#1a3035;border-radius:8px;padding:13px 12px}.slot span{font:500 10px 'IBM Plex Mono',monospace;color:var(--soft);display:block}.slot strong{display:block;font:700 15px 'IBM Plex Mono',monospace;margin:8px 0}.slot .v{font:11px 'IBM Plex Mono',monospace;color:var(--mint)}.slot.faded{opacity:.52;border-style:dashed}.heap{border:1px solid #587a78;border-radius:8px;background:#203a36;color:#bff5e5;font:500 11px 'IBM Plex Mono',monospace;padding:12px;margin-top:15px}.sep{height:1px;background:#355159;margin:17px 0}.form-row{display:flex;align-items:center;gap:13px;flex-wrap:wrap}.form-row input[type=range]{accent-color:var(--copper);width:200px}.pills{display:flex;gap:6px;flex-wrap:wrap}.pill{font:500 10px 'IBM Plex Mono',monospace;border:1px solid #436261;border-radius:4px;padding:8px 10px;background:#1b3331;color:var(--mint)}.pill.exclusive{background:#4b3a2e;border-color:#b88563;color:#ffdbbd}.roadmap{margin:26px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius);background:#101c20}.roadmap h3{margin:0 0 12px;font-size:13px}.roadmap-grid{display:grid;gap:0}.roadmap-item{display:flex;align-items:start;gap:13px;padding:10px 0;border-top:1px solid #273c42}.roadmap-item:first-child{border-top:0}.roadmap-item span{color:var(--copper);font:500 10px 'IBM Plex Mono',monospace;min-width:24px;margin-top:2px}.roadmap-item div{font-size:12px;color:var(--muted)}.roadmap-item b{display:block;font-weight:700;color:var(--text);margin-bottom:2px}.workshop{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius);padding:17px;background:#101d21}.workshop h3{margin:0 0 5px;font-size:13px}.workshop p{margin:0 0 12px;color:var(--soft);font-size:11px}.workshop textarea{background:#081418;border:1px solid #3b585d;width:100%;min-height:142px;color:#e3ede9;border-radius:6px;font:12px/1.65 'IBM Plex Mono',monospace;resize:vertical;padding:12px}.workshop-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.workshop-actions .action{font-size:10px;padding:8px 10px}.scratch-status{font-size:11px;color:var(--soft);margin-top:10px;min-height:16px}.quizpage h2{font-size:30px;line-height:1.2;margin:0 0 13px}.quizpage p{color:var(--muted)}.quizcount{font-size:12px;color:var(--copper);margin-bottom:13px}.quizresult{border:1px solid #416961;background:#1b302e;border-radius:var(--radius);padding:25px}.quizresult strong{font:700 42px 'IBM Plex Mono',monospace;color:var(--mint)}.legend{display:flex;gap:12px;align-items:center;font:11px 'IBM Plex Mono',monospace;color:var(--soft)}.legend i{display:block;background:var(--copper);width:10px;height:10px;transform:rotate(45deg)}.notes{border-top:1px solid var(--line);margin-top:30px;padding-top:17px;display:flex;justify-content:space-between;gap:25px;color:var(--soft);font-size:11px}.notes span{max-width:48ch}.mini-disclosure{background:none;border:0;color:var(--mint);font:500 11px 'IBM Plex Mono',monospace;padding:0}.concept-extra{display:none;margin-top:13px;padding-top:13px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.concept-extra.open{display:block}
+@media(max-width:1260px){.main-grid{grid-template-columns:1fr}.rightcol{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,.8fr);gap:16px;align-content:start}.code-section{min-width:0}.terminal{grid-column:1}.rightcol>.roadmap,.rightcol>.workshop{grid-column:2;margin-top:0}.rightcol>.roadmap{grid-row:1/3}.rightcol>.workshop{grid-row:3}.notes{flex-direction:column}}
+@media(max-width:850px){.shell{display:block}.sidebar{position:relative;width:100%;height:auto;min-height:0;padding:0;display:block}.brand{padding:14px 18px}.brand .mark{height:32px;width:32px;font-size:16px}.sidelabel,.side-track,.side-foot{display:none}.nav{display:flex;overflow:auto;gap:5px;padding:10px 12px;scrollbar-width:thin}.nav button{white-space:nowrap;width:auto;padding:8px 10px;flex-shrink:0}.nav-check{display:none}.topbar{height:55px;padding:0 18px}.page{padding:24px 18px}.hero{padding-top:0}.system-stamp{display:none}.main-grid{gap:21px}.rightcol{display:block}.rightcol>.roadmap,.rightcol>.workshop{margin-top:16px}.bread{font-size:10px}.signal{display:none}}
+@media(max-width:460px){.title,.quizpage h2{font-size:26px}.lede{font-size:14px}.sim{padding:14px}.bit-grid{gap:4px}.bit-grid button{font-size:16px;padding:12px 0}.pipeline-node{min-width:83px;padding:11px 8px}.pipeline-node strong{font-size:11px}.flow-arrow{display:none}.metric{padding:10px 12px;min-width:85px}.notes{gap:10px}.bottom{flex-wrap:wrap}.footer-path{width:100%}.top-actions{gap:6px}.tiny-btn{padding:6px 7px}.code-top{padding:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+<style>
+  [hidden] { display: none !important; }
+  .course-bar, .course-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: 13px clamp(18px, 4vw, 58px);
+    background: #0e191d;
+    border-bottom: 1px solid var(--line);
+  }
+  .course-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-decoration: none;
+  }
+  .course-brand .mark { width: 31px; height: 31px; font-size: 16px; }
+  .course-bar nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .course-bar nav a, .course-footer a { font-weight: 600; font-size: 14px; }
+  .course-index { max-width: 1110px; margin: auto; padding: 38px clamp(18px, 4vw, 50px) 66px; }
+  .course-intro { padding: 8px 0 24px; border-bottom: 1px solid var(--line); }
+  .course-intro h1 { font-size: clamp(42px, 8vw, 82px); line-height: 1.02; letter-spacing: -.035em; margin: 0 0 14px; }
+  .course-intro h1 span { color: var(--copper); }
+  .course-intro p { color: var(--muted); font-size: 17px; max-width: 60ch; margin: 0; }
+  .course-launches { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 10px; }
+  .course-launches .action { text-decoration: none; font-size: 14px; padding: 11px 15px; }
+  .course-version { color: var(--muted); font: 12px/1.5 'IBM Plex Mono', monospace; }
+  .course-index h2 { font-size: 23px; margin: 27px 0 10px; letter-spacing: -.02em; }
+  .module-list { margin: 0; padding: 0; list-style: none; }
+  .module-list li { border-bottom: 1px solid var(--line); }
+  .module-list a {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    align-items: center;
+    padding: 12px 8px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .module-list a:hover { background: var(--surface2); }
+  .module-number { color: var(--copper); font: 13px 'IBM Plex Mono', monospace; }
+  .module-list strong, .module-list small { display: block; }
+  .module-list strong { font-size: 16px; }
+  .module-list small { color: var(--muted); font-size: 13px; }
+  .module-list svg { color: var(--mint); }
+  .course-footer { border-bottom: 0; border-top: 1px solid var(--line); }
+  .course-footer a:last-child { margin-left: auto; }
+  .course-footer a[hidden] { display: none; }
+  #module-core .sidebar { max-height: 100vh; min-height: 0; }
+  #module-core .topbar { height: auto; min-height: 62px; padding-block: 9px; flex-wrap: wrap; gap: 6px 12px; }
+  [tabindex="-1"]:focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
+  @media (max-width: 460px) {
+    .course-intro p { font-size: 16px; }
+    .module-list a { grid-template-columns: 1.8rem minmax(0, 1fr) auto; padding-inline: 3px; }
+    .course-footer a:last-child { margin-left: 0; }
+  }
+</style>
+
+</head>
+<body>
+<header class="course-bar">
+  <a class="course-brand" href="#course"><span class="mark" aria-hidden="true">R</span>Rust / Atom</a>
+  <nav aria-label="Course navigation">
+    <a id="module-index-link" href="#course" hidden>Course modules</a>
+    <a href="https://dennisjcarroll.com/apps/">Apps &amp; Projects</a>
+  </nav>
+</header>
+<main class="course-index" id="course-index">
+  <div class="course-intro">
+    <h1>Rust / <span>Atom</span></h1>
+    <p>A hands-on Rust lab. Start with bits and bytes, then trace what happens to a value as you move it, borrow it, and process it in a collection.</p>
+    <div class="course-launches">
+      <a class="action primary" href="#bits">Start from bits</a>
+      <a class="action secondary" href="#module-02">Jump to ownership</a>
+    </div>
+    <div class="course-version">v1.5.1 · Six modules · Progress saved in this browser</div>
+  </div>
+  <nav aria-labelledby="course-modules-title">
+    <h2 id="course-modules-title">Course modules</h2>
+    <ol class="module-list" id="module-list">
+      <li><a href="#module-00"><span class="module-number">00</span><span><strong>First principles</strong><small>Compilation, bits, types, and bindings</small></span></a></li>
+      <li><a href="#module-01"><span class="module-number">01</span><span><strong>Memory architecture</strong><small>Value layout, stack, heap, and allocation</small></span></a></li>
+      <li><a href="#module-02"><span class="module-number">02</span><span><strong>Ownership and borrowing</strong><small>Moves, copies, shared borrows, and exclusive access</small></span></a></li>
+      <li><a href="#module-03"><span class="module-number">03</span><span><strong>Data structures and patterns</strong><small>Structs, enums, and exhaustive matches</small></span></a></li>
+      <li><a href="#module-04"><span class="module-number">04</span><span><strong>Error states and recovery</strong><small>Optional values, parse errors, and early returns</small></span></a></li>
+      <li><a href="#module-05"><span class="module-number">05</span><span><strong>Collections and iterators</strong><small>Vectors, slices, maps, and lazy transformations</small></span></a></li>
+    </ol>
+  </nav>
+  <noscript><p>Enable JavaScript to use the labs and record your progress.</p></noscript>
+</main>
+
+<div class="shell" id="module-core" hidden>
+<aside class="sidebar" aria-label="Lesson navigation">
+ <div class="brand"><div class="brand-top"><div class="mark" aria-hidden="true">R</div><div><div class="brand-name">RUST / ATOM</div><div class="brand-sub">FOUNDATION ENGINE</div></div></div></div>
+ <div class="sidelabel">Module 00 / First principles</div><nav class="nav" id="nav"></nav>
+ <div class="side-track"><div class="trackhead"><span>CORE INTEGRITY</span><span id="progressLabel">0 / 8</span></div><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div></div>
+ <div class="side-foot">BUILT FOR DEEP SYSTEMS LEARNING<br>Foundation → memory → safe programs<br><br><a href="https://doc.rust-lang.org/book/" target="_blank" rel="noopener noreferrer">THE RUST BOOK ↗</a></div>
+</aside>
+<div class="workspace">
+<header class="topbar"><div class="bread">RUST / <b>CORE 00</b> / <span id="crumb">MACHINE</span></div><div class="top-actions"><div class="signal"><span class="dot" aria-hidden="true"></span> OFFLINE SIMULATION</div><button class="tiny-btn" id="resetBtn" title="Clear lesson progress and restart">RESET PROGRESS</button></div></header>
+<div class="page"><div class="hero"><div><div class="micro">THE SYSTEMS LEARNING INTERFACE</div><h1>Rust, from <span>atoms.</span></h1><p>Understand what the machine actually does. Manipulate the rules. Predict the compiler. Only then write bigger programs.</p></div><div class="system-stamp"><div>LEARNING SYSTEM // 00.01</div><div class="stamp-block">R/01</div><div>8 STATIONS · SELF-PACED</div></div></div>
+<div class="main-grid"><main class="leftcol" id="lesson" aria-live="polite"></main><aside class="rightcol" id="rightcol"><div class="code-section"><div class="section-title">Code specimen</div><div class="code-wrap"><div class="code-top"><span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span> main.rs / GENERATED</span><div class="code-actions"><button id="copyBtn" title="Copy specimen to clipboard">COPY</button><button id="loadBtn" title="Load specimen into scratchpad">LOAD ↘</button></div></div><pre><code id="code"></code></pre></div><div class="terminal"><div class="term-header"><span>MODEL / READOUT</span><span id="terminalState">SIMULATED</span></div><div class="term-body neutral" id="terminal"></div></div><p class="system-notice">This guided model demonstrates Rust rules; it is not a compiler or an arbitrary-code runtime. Validate editable Rust at the <a href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer">official Rust Playground ↗</a>.</p></div>
+<div class="roadmap"><h3>Beyond this module</h3><div class="roadmap-grid"><div class="roadmap-item"><span>01</span><div><b>Functions & control flow</b>Branches, loops, scope, signatures</div></div><div class="roadmap-item"><span>02</span><div><b>Data structures</b>Structs, enums, pattern matching</div></div><div class="roadmap-item"><span>03</span><div><b>Errors & abstractions</b>Result, Option, traits, generics</div></div><div class="roadmap-item"><span>04</span><div><b>Memory & systems</b>References, lifetimes, collections</div></div><div class="roadmap-item"><span>05</span><div><b>Building real tools</b>Cargo, CLI, testing, files, network protocols</div></div><div class="roadmap-item"><span>06</span><div><b>Concurrency & security</b>Threads, sync, atomic operations, agent-tool boundaries</div></div></div></div>
+<div class="workshop"><h3>Local scratchpad</h3><p>Editable notes / code. Saved on this browser only. No execution.</p><textarea id="scratch" spellcheck="false" aria-label="Rust code scratchpad" placeholder="// Write a prediction, edit a snippet, or take notes..."></textarea><div class="workshop-actions"><button class="action secondary" id="scratchCopy">COPY DRAFT</button><button class="action secondary" id="scratchClear">CLEAR DRAFT</button><a class="action secondary" href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer">REAL RUST PLAYGROUND ↗</a></div><div class="scratch-status" id="scratchStatus"></div></div>
+</aside></div>
+<div class="notes"><span>COURSE PRINCIPLE / Smallest useful concept first. Make a prediction, perform an action, explain the result.</span><span>REFERENCE / Rust 2024 edition · <a href="https://doc.rust-lang.org/book/" target="_blank" rel="noopener noreferrer">The Rust Programming Language</a> · <a href="https://doc.rust-lang.org/reference/" target="_blank" rel="noopener noreferrer">The Rust Reference</a></span></div>
+</div></div></div>
+<script>
+(()=>{'use strict';
+const KEY='rust-atom-v1';let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch{};
+const state={step:Math.max(0,Math.min(7,Number(saved.step)||0)),done:Array.isArray(saved.done)?saved.done:[],bit:42,pipe:0,type:'u8',mutable:false,assign:true,semicolon:false,asset:'String',moved:false,borrowShared:0,borrowMut:false,borrowMsg:'Choose a reference operation to test the rules.',answer:null,quizIndex:0,quizAnswers:[],quizResult:false,snippet:'',term:'',termType:'neutral'};
+const stations=[
+{nav:'Machine model',tag:'COMPILATION PATH',title:'What is a program?',lede:'A program is an ordered set of instructions. Rust source is text that describes operations; a compiler checks and translates it into a form the target machine can execute.',core:'Source code is not execution. Compilation is the gate between your intentions and machine behavior.',detail:'Rust uses a compiler to check syntax, types, and ownership rules before generating a target executable. The compiled program runs on the target system; these teaching diagrams intentionally omit optimization and platform details.',prompt:'Which stage detects many type and ownership mistakes before your program runs?',choices:['The source text itself','The Rust compiler','The final terminal output'],correct:1,why:'rustc checks the program before running it. That is why many errors become compile-time feedback, not runtime surprises.'},
+{nav:'Bits & bytes',tag:'DATA REPRESENTATION',title:'Build a byte.',lede:'At the lowest level, computers distinguish states we represent as binary digits: 0 and 1. Eight bits make a byte. A Rust u8 stores an unsigned integer from 0 to 255.',core:'Bits are a representation. Types tell Rust how to interpret values and which operations are valid.',detail:'An 8-bit unsigned integer has 2⁸ = 256 possible patterns. For example, 00101010 in binary represents 42. This is a logical representation; real hardware and storage are more complex.',prompt:'What is the largest value a u8 can represent?',choices:['127','255','256'],correct:1,why:'There are 256 distinct patterns, but counting begins at zero: 0 through 255.'},
+{nav:'Types',tag:'MEANING & CONSTRAINTS',title:'A value needs a type.',lede:'The same idea of stored data can stand for different things. Rust gives every value a type, allowing the compiler to reject operations that do not make sense.',core:'A type describes what a value means, its allowed operations, and often its representation.',detail:'Common primitives include u8 (1-byte unsigned integer), i32 (4-byte signed integer), bool (true/false; 1 byte), and char (a 4-byte Unicode scalar value). A char is not the same as an entire human-perceived grapheme.',prompt:'Which type should represent a simple true/false condition?',choices:['bool','char','i32'],correct:0,why:'bool has exactly two values: true and false. Its meaning is explicit.'},
+{nav:'Bindings',tag:'NAME & MUTABILITY',title:'A name holds a binding.',lede:'Use let to bind a name to a value. Bindings are immutable by default in Rust; add mut when the variable needs to be reassigned.',core:'Immutable is the default, not a promise you must manually remember.',detail:'Mutability applies to a binding and what you may do through it. It does not mean “the computer cannot ever change the underlying memory.” Rust also allows shadowing with a new let binding, which is different from assignment.',prompt:'Why does let mut count = 1; allow count = 2;?',choices:['All numbers are automatically mutable','The binding explicitly permits reassignment','The compiler ignores let'],correct:1,why:'The mut keyword tells the compiler that reassignment through this binding is permitted.'},
+{nav:'Expressions',tag:'EVALUATION RULES',title:'Code can produce values.',lede:'In Rust, many constructs are expressions: they evaluate to a value. The last expression in a block can become the value of that block—unless you end it with a semicolon.',core:'A trailing semicolon turns an expression into a statement whose value is discarded.',detail:'A block with x + y as its final expression evaluates to an integer. Add a semicolon and the block instead evaluates to the unit value (), which cannot be assigned to an i32 variable without a type mismatch.',prompt:'What does the block { 2 + 3 } evaluate to?',choices:['5','()','A compile error'],correct:0,why:'Without a trailing semicolon, the final expression becomes the block’s value: 5.'},
+{nav:'Ownership',tag:'SAFE MEMORY MODEL',title:'Who owns the value?',lede:'Rust assigns ownership to values. Moving a String to another binding transfers ownership; copying a u8 duplicates its value instead. This distinction prevents dangerous use of invalid data.',core:'Move transfers ownership. Copy duplicates the value when its type implements Copy.',detail:'String owns a heap allocation. A String assignment normally moves its owner, leaving the original binding unusable. A u8 implements Copy, so assignment copies the value and both bindings remain usable. The visual is a simplified ownership model, not a memory-layout trace.',prompt:'After let b = a; when a is a String, can you use a again?',choices:['Yes, both String owners remain valid','No, ownership moved to b','Only if a has fewer than eight characters'],correct:1,why:'String does not implement Copy. The new binding b becomes the owner; the old binding a cannot be used after the move.'},
+{nav:'Borrowing',tag:'REFERENCES & ACCESS',title:'Borrow without owning.',lede:'Borrowing lets code access a value without taking ownership. Shared references can coexist; an exclusive mutable reference cannot overlap with active shared or other mutable references.',core:'Multiple readers OR one writer, for overlapping live borrows—not both.',detail:'The precise Rust rule follows when references are last used, not merely the braces they were written in. This model treats a reference as live until you explicitly release it, which is deliberately simpler than the full borrow checker.',prompt:'Which combination is valid while references are simultaneously live?',choices:['Two shared references','One shared plus one mutable reference','Two mutable references'],correct:0,why:'Rust allows multiple overlapping shared borrows, or one exclusive mutable borrow, but not conflicting live borrows.'},
+{nav:'Core assessment',tag:'REASONING CHECKPOINT',title:'Prove the mental model.',lede:'No trivia marathon. Answer five questions about how Rust values and programs behave. Passing means you can explain the rules rather than just recognize syntax.',core:'Predict before compiling. Treat compiler errors as design feedback.',detail:'You can review earlier stations at any time. Passing requires 4 of 5; a retry starts a fresh attempt.',prompt:'',choices:[],correct:0,why:''}
+];
+const exam=[
+{q:'Which sequence best describes a simple Rust program being prepared to run?',a:['Source → compiler → executable','Source → terminal → compiler','Executable → source → memory'],correct:0,why:'The compiler checks and translates Rust source into an executable for a target.'},
+{q:'Binary 11111111 interpreted as u8 is…',a:['128','255','256'],correct:1,why:'All eight powers of two are on: 128+64+32+16+8+4+2+1 = 255.'},
+{q:'Which snippet permits reassignment?',a:['let x = 1; x = 2;','let mut x = 1; x = 2;','let x: i32 = 1; x = 2;'],correct:1,why:'Only the second makes the binding mutable.'},
+{q:'After let b = a; for a String, what is true?',a:['a and b can both own the String','a is invalid after the move; b owns the String','The string is automatically copied'],correct:1,why:'String assignment moves ownership. Cloning is explicit if a duplicate is needed.'},
+{q:'Which borrowing situation can Rust allow when all references remain in use?',a:['Two &String shared references','&String and &mut String to the same value','Two &mut String references to the same value'],correct:0,why:'Two shared borrows can coexist. An active mutable borrow requires exclusive access.'}
+];
+const $=s=>document.querySelector(s);const els={nav:$('#nav'),lesson:$('#lesson'),code:$('#code'),term:$('#terminal'),termState:$('#terminalState'),scratch:$('#scratch'),scratchStatus:$('#scratchStatus')};
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({step:state.step,done:state.done,scratch:els.scratch.value}))}catch{}};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function navRender(){els.nav.innerHTML=stations.map((s,i)=>`<button type="button" data-go="${i}" class="${state.step===i?'active':''}" ${state.step===i?'aria-current="step"':''}><span class="nav-num">${String(i+1).padStart(2,'0')}</span><span class="nav-name">${esc(s.nav)}</span><span class="nav-check ${state.done.includes(i)?'':'blank'}" aria-label="${state.done.includes(i)?'Completed':'Not completed'}">${state.done.includes(i)?'✓':'·'}</span></button>`).join('');$('#progressLabel').textContent=`${state.done.length} / 8`;$('#progressBar').style.width=(state.done.length/8*100)+'%';}
+function setSnippet(txt,terminal,kind='neutral'){state.snippet=txt;state.term=terminal;state.termType=kind;els.code.textContent=txt;els.term.textContent=terminal;els.term.className='term-body '+(kind==='error'?'error':kind==='success'?'':'neutral');els.termState.textContent=kind==='error'?'REJECTED':kind==='success'?'ACCEPTED':'SIMULATED';}
+function selectStage(i){state.step=Math.max(0,Math.min(7,i));state.answer=null;state.quizIndex=0;state.quizAnswers=[];state.quizResult=false;render();window.scrollTo({top:0,behavior:'smooth'});persist()}
+function explanation(content){return `<div class="concept"><h3>THE INVARIANT</h3><p class="coreline">${esc(content.core)}</p><button class="mini-disclosure" id="deeper" style="margin-top:13px">+ OPEN ENGINEERING NOTE</button><div id="extra" class="concept-extra">${esc(content.detail)}</div></div>`;}
+function questionBlock(s){const answered=state.answer!==null;return `<div class="challenge"><div class="challenge-head"><h3>Check your understanding</h3><span class="chip">${state.done.includes(state.step)?'VERIFIED':'1 QUESTION'}</span></div><p class="question">${esc(s.prompt)}</p><div class="options">${s.choices.map((x,i)=>`<button class="option ${answered&&i===state.answer?'chosen '+(i===s.correct?'right':'wrong'):''} ${answered&&i===s.correct?'right':''}" data-answer="${i}" ${answered?'disabled':''}><span class="opt-letter">${'ABC'[i]}</span><span>${esc(x)}</span></button>`).join('')}</div>${answered?`<div class="feedback ${state.answer===s.correct?'':'bad'}"><strong>${state.answer===s.correct?'Correct. Model validated.':'Not quite. Revisit the rule.'}</strong> ${esc(s.why)} ${state.answer!==s.correct?'<button class="mini-disclosure" id="retry" style="margin-left:6px">TRY AGAIN ↻</button>':''}</div>`:''}</div>`}
+function render(){let s=stations[state.step];navRender();$('#crumb').textContent=s.nav.toUpperCase();if(state.step===7){renderExam();}else{els.lesson.innerHTML=`<div class="chapterhead"><span class="chapter-index">STATION ${String(state.step+1).padStart(2,'0')}</span><span class="chapter-tag">${s.tag}</span></div><h2 class="title">${esc(s.title)}</h2><p class="lede">${esc(s.lede)}</p>${explanation(s)}<section class="lab"><h3 class="section-title">Interact with the rule</h3><p class="lab-instruct" id="labHint"></p><div class="sim" id="sim"></div></section>${questionBlock(s)}<div class="bottom"><button class="action secondary" data-prev ${state.step===0?'disabled':''}>← PREVIOUS</button><div class="footer-path">${String(state.step+1).padStart(2,'0')} / 08 · CORE 00</div><button class="action primary" data-next>${state.step===6?'TAKE ASSESSMENT →':'NEXT STATION →'}</button></div>`;renderLab();}persist();}
+function renderLab(){const idx=state.step,sim=$('#sim'),hint=$('#labHint');let html='',snippet='',term='',kind='neutral';
+if(idx===0){hint.textContent='Select each stage to see what is transformed or checked.';const labels=['SOURCE','COMPILER','EXECUTABLE'];html=`<div class="component-preview">${labels.map((label,i)=>`${i?'<span class="flow-arrow" aria-hidden="true">→</span>':''}<button class="pipeline-node ${state.pipe===i?'active':''}" data-pipe="${i}"><span>${'0'+(i+1)} / ${label}</span><strong>${['main.rs','rustc','program'][i]}</strong></button>`).join('')}</div><div class="explain-output" id="labOutput"></div>`;const statements=['You write a text file of Rust code. It has no effect until processed.','The compiler parses, type-checks, borrow-checks, and generates target code.','The operating system loads and runs the compiled program, producing output.'];term=statements[state.pipe];snippet='fn main() {\n    println!("Hello, machine.");\n}';kind='success';}
+if(idx===1){hint.textContent='Tap any bit. Observe the number change. Each position contributes 2 raised to its index.';html=`<div class="control-label">REGISTER / 8-BIT UNSIGNED</div><div class="bit-grid">${Array.from({length:8},(_,i)=>{const shift=7-i,on=Boolean(state.bit&(1<<shift));return `<div class="cell"><button aria-label="Toggle bit ${shift}, place value ${2**shift}" aria-pressed="${on}" data-bit="${shift}" class="${on?'on':''}">${on?1:0}</button><label>${2**shift}</label></div>`}).join('')}</div><div class="metric-line"><div class="metric"><small>DECIMAL</small><b>${state.bit}</b></div><div class="metric"><small>HEXADECIMAL</small><b>0x${state.bit.toString(16).toUpperCase().padStart(2,'0')}</b></div><div class="metric"><small>RANGE</small><b>0–255</b></div></div><div class="status-line">The lit bits sum to <b>${state.bit}</b>. A u8 has exactly 256 possible values.</div>`;snippet=`fn main() {\n    let byte: u8 = ${state.bit};\n    println!("{byte}");\n}`;term=`Model output: ${state.bit}\nBinary: ${state.bit.toString(2).padStart(8,'0')}`;kind='success';}
+if(idx===2){hint.textContent='Choose a primitive type and examine its literal, size, and purpose.';const meta={u8:{value:'42',size:'1 byte',why:'Unsigned integer: 0 through 255.',terminal:'42'},i32:{value:'-42',size:'4 bytes',why:'Signed integer: -2,147,483,648 through 2,147,483,647.',terminal:'-42'},bool:{value:'true',size:'1 byte',why:'Exactly true or false; logical conditions.',terminal:'true'},char:{value:"'🦀'",size:'4 bytes',why:'One Unicode scalar value, not necessarily a displayed grapheme.',terminal:'🦀'}};const m=meta[state.type];html=`<div class="control-label">SELECT TYPE</div><div class="button-row">${Object.keys(meta).map(k=>`<button data-type="${k}" class="${k===state.type?'selected':''}" aria-pressed="${k===state.type}">${k}</button>`).join('')}</div><div class="metric-line"><div class="metric"><small>TYPE</small><b>${state.type}</b></div><div class="metric"><small>SIZE</small><b style="font-size:17px">${m.size}</b></div></div><div class="status-line">${m.why}</div>`;snippet=`fn main() {\n    let value: ${state.type} = ${m.value};\n    println!("{value}");\n}`;term='Model output: '+m.terminal;kind='success';}
+if(idx===3){hint.textContent='Toggle mut on the binding. Then inspect whether reassignment is legal.';const ok=state.mutable||!state.assign;html=`<div class="control-label">VARIABLE PERMISSIONS</div><div class="button-row"><button class="${state.mutable?'selected':''}" data-toggle="mutable" aria-pressed="${state.mutable}">${state.mutable?'mut ENABLED':'mut DISABLED'}</button><button class="${state.assign?'selected':''}" data-toggle="assign" aria-pressed="${state.assign}">${state.assign?'REASSIGN = ON':'REASSIGN = OFF'}</button></div><div class="metric-line"><div class="metric"><small>INITIAL VALUE</small><b>1</b></div><div class="metric"><small>AFTER CODE</small><b>${ok?(state.assign?'2':'1'):'—'}</b></div></div><div class="status-line ${ok?'valid':'invalid'}">${ok?'✓ This snippet is permitted by Rust’s mutability rules.':'× Reassignment is rejected: count is an immutable binding.'}</div>`;snippet=`fn main() {\n    let ${state.mutable?'mut ':''}count = 1;\n${state.assign?'    count = 2;\n':''}    println!("{count}");\n}`;term=ok?'Model output: '+(state.assign?2:1):'Model compile error: cannot assign twice to immutable variable `count`.\nTry enabling mut.';kind=ok?'success':'error';}
+if(idx===4){hint.textContent='Add/remove the semicolon after the final expression. Predict the type of the block.';html=`<div class="control-label">FINAL EXPRESSION</div><div class="button-row"><button data-toggle="semicolon" class="${state.semicolon?'selected':''}" aria-pressed="${state.semicolon}">${state.semicolon?'SEMICOLON ; PRESENT':'NO FINAL SEMICOLON'}</button></div><div class="metric-line"><div class="metric"><small>BLOCK VALUE</small><b>${state.semicolon?'()':'18'}</b></div><div class="metric"><small>BLOCK TYPE</small><b>${state.semicolon?'unit':'i32'}</b></div></div><div class="status-line ${state.semicolon?'invalid':'valid'}">${state.semicolon?'× The block yields (), but total requires i32.':'✓ The final expression supplies the block result.'}</div>`;snippet=`fn main() {\n    let total: i32 = {\n        let x = 10;\n        let y = 8;\n        x + y${state.semicolon?';':''}\n    };\n    println!("{total}");\n}`;term=state.semicolon?'Model compile error: expected i32, found () (unit).\nRemove the final semicolon.':'Model output: 18';kind=state.semicolon?'error':'success';}
+if(idx===5){hint.textContent='Switch the type, then perform an assignment. Test whether the original name is still valid.';const isS=state.asset==='String',moved=state.moved,firstBad=isS&&moved;html=`<div class="control-label">VALUE CATEGORY</div><div class="button-row"><button class="${isS?'selected':''}" data-asset="String" aria-pressed="${isS}">OWNED String</button><button class="${!isS?'selected':''}" data-asset="u8" aria-pressed="${!isS}">COPY u8</button></div><div class="sep"></div><div class="memory-flow"><div class="slot ${firstBad?'faded':''}"><span>BINDING / a</span><strong>${firstBad?'MOVED':isS?'String':'u8'}</strong><div class="v">${firstBad?'unusable':isS?'owns value':'42'}</div></div><div class="slot ${!moved?'faded':''}"><span>BINDING / b</span><strong>${moved?(isS?'String':'u8'):'—'}</strong><div class="v">${moved?(isS?'new owner':'copied 42'):'not bound yet'}</div></div></div><div class="heap">${isS?`HEAP BUFFER / "rust" / ${moved?'owner: b':'owner: a'}`:'SCALAR VALUE / 42 / copied on assignment'}</div><div class="button-row" style="margin-top:14px"><button data-transfer ${moved?'disabled':''}>${moved?'ASSIGNMENT DONE':'PERFORM let b = a;'}</button><button data-restart>RESET MODEL ↻</button></div><div class="status-line ${firstBad?'invalid':'valid'}">${!moved?'Assignment not performed yet.':firstBad?'a cannot be used now. b is the owner.':'Both a and b remain usable because u8 implements Copy.'}</div>`;const val=isS?'String::from("rust")':'42u8';snippet=`fn main() {\n    let a = ${val};\n${moved?'    let b = a;\n':''}    println!("{a}");${moved?'\n    println!("{b}");':''}\n}`;term=firstBad?'Model compile error: use of moved value `a`.\nString ownership moved to `b`.':moved?`Model output: ${isS?'rust\nrust':'42\n42'}`:`Model output: ${isS?'rust':'42'}`;kind=firstBad?'error':'success';}
+if(idx===6){hint.textContent='Try borrowing a String. “Release” a reference to end its simulated live range.';const s=state.borrowShared,m=state.borrowMut;html=`<div class="control-label">ACTIVE REFERENCE SET</div><div class="pills">${s?Array.from({length:s},(_,i)=>`<div class="pill">&s / reader ${i+1}</div>`).join(''):''}${m?'<div class="pill exclusive">&mut s / writer</div>':''}${!s&&!m?'<span style="color:var(--soft);font-size:12px">No active borrows</span>':''}</div><div class="sep"></div><div class="button-row"><button data-borrow="shared">+ SHARED &s</button><button data-borrow="mut">+ MUTABLE &mut s</button><button data-borrow="release" ${!s&&!m?'disabled':''}>RELEASE REFS</button></div><div class="metric-line"><div class="metric"><small>READERS</small><b>${s}</b></div><div class="metric"><small>WRITERS</small><b>${m?1:0}</b></div></div><div class="status-line" id="borrowMsg">${esc(state.borrowMsg)}</div>`;snippet=`fn main() {\n    let mut s = String::from("data");\n${Array.from({length:s},(_,i)=>`    let r${i+1} = &s;`).join('\n')}${s?'\n':''}${m?'    let writer = &mut s;\n':''}${s?`    println!("{}", ${Array.from({length:s},(_,i)=>`r${i+1}`).join(' + " " + ')});\n`:''}${m?'    writer.push_str("!");\n':''}    println!("{s}");\n}`;
+// The model uses an illustrative draft, not a guarantee of a compilable generated program.
+if(s>1){snippet=`fn main() {\n    let s = String::from("data");\n${Array.from({length:s},(_,i)=>`    let r${i+1} = &s;`).join('\n')}\n${Array.from({length:s},(_,i)=>`    println!("{r${i+1}}");`).join('\n')}\n}`;}
+term=s||m?`Model state: ${s} shared, ${m?1:0} mutable.\n${state.borrowMsg}`:'Model state: no active borrows.\nBorrowing never transfers ownership.';kind='neutral';}
+sim.innerHTML=html;setSnippet(snippet,term,kind);if(idx===0)$('#labOutput').textContent=['You write a text file of Rust code. It has no effect until processed.','The compiler parses, type-checks, checks ownership, and generates target code.','The operating system loads and runs the compiled program, producing output.'][state.pipe];}
+function complete(i){if(!state.done.includes(i))state.done.push(i);navRender();persist();}
+function renderExam(){const s=stations[7];let html=`<div class="chapterhead"><span class="chapter-index">STATION 08</span><span class="chapter-tag">${s.tag}</span></div><div class="quizpage"><h2>${s.title}</h2><p class="lede">${s.lede}</p>${explanation(s)}`;
+if(state.quizResult){let score=state.quizAnswers.filter((answer,i)=>answer===exam[i].correct).length,passed=score>=4;html+=`<div class="quizresult"><div class="control-label">ASSESSMENT COMPLETE</div><strong>${score} / 5</strong><h3>${passed?'CORE 00 VALIDATED':'RECALIBRATION REQUIRED'}</h3><p>${passed?'You can now identify basic Rust types, binding rules, ownership, and safe borrowing.':'Review the missed rules below, then make another prediction-based attempt.'}</p><div class="button-row"><button class="action primary" data-retryexam>RETAKE ASSESSMENT ↻</button><button class="action secondary" data-go="0">REVIEW FROM START</button></div></div><div style="margin-top:21px">${exam.map((q,i)=>`<div class="feedback ${state.quizAnswers[i]===q.correct?'':'bad'}" style="margin-top:9px"><b>${i+1}. ${state.quizAnswers[i]===q.correct?'✓':'×'} ${esc(q.q)}</b><div>${esc(q.why)}</div></div>`).join('')}</div>`;
+}else{let q=exam[state.quizIndex],picked=state.quizAnswers[state.quizIndex];html+=`<div class="quizcount">QUESTION ${state.quizIndex+1} / 05</div><div class="progress-track" style="margin-bottom:24px"><div class="progress-bar" style="width:${state.quizIndex/5*100}%"></div></div><p class="question">${esc(q.q)}</p><div class="options">${q.a.map((a,i)=>`<button data-exam="${i}" ${picked!==undefined?'disabled':''} class="option ${picked===i?'chosen '+(picked===q.correct?'right':'wrong'):''} ${picked!==undefined&&i===q.correct?'right':''}"><span class="opt-letter">${'ABC'[i]}</span><span>${esc(a)}</span></button>`).join('')}</div>${picked!==undefined?`<div class="feedback ${picked===q.correct?'':'bad'}">${picked===q.correct?'Correct.':'Review this distinction.'} ${esc(q.why)}</div><div class="bottom"><span class="footer-path">${state.quizIndex+1} / 05</span><button class="action primary" data-examnext>${state.quizIndex===4?'GRADE MODULE →':'NEXT QUESTION →'}</button></div>`:''}`;}
+html+='</div>';els.lesson.innerHTML=html;setSnippet('fn main() {\n    // Predict first.\n    // Compile second.\n    println!("I understand the model.");\n}','Assessment mode. Review the rules, then test yourself.','neutral');}
+function tryCopy(text,kind){const ok=()=>{els.scratchStatus.textContent=kind+' copied to clipboard.';};if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(ok).catch(()=>fallback())}else fallback();function fallback(){const temp=document.createElement('textarea');temp.value=text;temp.style.position='fixed';temp.style.opacity='0';document.body.append(temp);temp.select();try{document.execCommand('copy');ok()}catch{els.scratchStatus.textContent='Copy unavailable. Select and copy the text manually.'}temp.remove();}}
+function onAction(e){const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+if(d.go!==undefined){selectStage(Number(d.go));return}if(d.prev!==undefined){selectStage(state.step-1);return}if(d.next!==undefined){selectStage(state.step+1);return}
+if(b.id==='deeper'){const el=$('#extra');el.classList.toggle('open');b.textContent=el.classList.contains('open')?'− CLOSE ENGINEERING NOTE':'+ OPEN ENGINEERING NOTE';return}
+if(b.id==='retry'){state.answer=null;render();return}
+if(d.answer!==undefined&&state.answer===null){state.answer=Number(d.answer);if(state.answer===stations[state.step].correct)complete(state.step);render();return}
+if(d.pipe!==undefined)state.pipe=Number(d.pipe);
+if(d.bit!==undefined)state.bit^=1<<Number(d.bit);
+if(d.type!==undefined)state.type=d.type;
+if(d.toggle==='mutable')state.mutable=!state.mutable;
+if(d.toggle==='assign')state.assign=!state.assign;
+if(d.toggle==='semicolon')state.semicolon=!state.semicolon;
+if(d.asset!==undefined){state.asset=d.asset;state.moved=false}
+if(d.transfer!==undefined)state.moved=true;
+if(d.restart!==undefined)state.moved=false;
+if(d.borrow==='shared'){if(state.borrowMut)state.borrowMsg='DENIED: a live mutable reference already has exclusive access.';else{state.borrowShared=Math.min(4,state.borrowShared+1);state.borrowMsg='ALLOWED: another shared reader can coexist.'}}
+if(d.borrow==='mut'){if(state.borrowShared||state.borrowMut)state.borrowMsg='DENIED: the mutable borrow needs exclusive access; release other live references.';else{state.borrowMut=true;state.borrowMsg='ALLOWED: one mutable borrower has exclusive access.'}}
+if(d.borrow==='release'){state.borrowShared=0;state.borrowMut=false;state.borrowMsg='REFERENCES ENDED: a new borrow is now possible.'}
+if(d.exam!==undefined&&state.quizAnswers[state.quizIndex]===undefined){state.quizAnswers[state.quizIndex]=Number(d.exam);renderExam();return}
+if(d.examnext!==undefined){if(state.quizIndex===4){state.quizResult=true;const score=state.quizAnswers.filter((a,i)=>a===exam[i].correct).length;if(score>=4)complete(7)}else state.quizIndex++;renderExam();return}
+if(d.retryexam!==undefined){state.quizIndex=0;state.quizAnswers=[];state.quizResult=false;renderExam();return}
+if(d.pipe!==undefined||d.bit!==undefined||d.type!==undefined||d.toggle!==undefined||d.asset!==undefined||d.transfer!==undefined||d.restart!==undefined||d.borrow!==undefined)renderLab();}
+els.lesson.addEventListener('click',onAction);els.nav.addEventListener('click',onAction);
+$('#copyBtn').addEventListener('click',()=>tryCopy(state.snippet,'Specimen'));$('#loadBtn').addEventListener('click',()=>{els.scratch.value=state.snippet;els.scratchStatus.textContent='Specimen loaded. Edit freely; this does not execute Rust.';persist();});$('#scratchCopy').addEventListener('click',()=>tryCopy(els.scratch.value,'Draft'));$('#scratchClear').addEventListener('click',()=>{els.scratch.value='';els.scratchStatus.textContent='Draft cleared.';persist()});els.scratch.addEventListener('input',()=>{els.scratchStatus.textContent='Draft saved locally.';persist()});$('#resetBtn').addEventListener('click',()=>{if(!confirm('Clear saved progress and restart the lesson? Your scratchpad will also be cleared.'))return;try{localStorage.removeItem(KEY)}catch{};state.done=[];state.bit=42;state.pipe=0;state.asset='String';state.moved=false;state.borrowShared=0;state.borrowMut=false;els.scratch.value='';selectStage(0)});
+els.scratch.value=typeof saved.scratch==='string'?saved.scratch:'';render();
+})();
+</script>
+
+<style>
+#memory01[hidden],.shell[hidden]{display:none!important}
+#memory01{--m-bg:#091114;--m-panel:#111c20;--m-line:#2a4046;--m-text:#eaf2f1;--m-muted:#a7bab9;--m-copper:#f0ac80;--m-mint:#99e3ce;background:var(--m-bg);color:var(--m-text);min-height:100vh;font-family:'DM Sans',system-ui,sans-serif}
+#memory01 .m-top{position:sticky;top:0;z-index:5;background:#0e191df2;border-bottom:1px solid var(--m-line);padding:16px clamp(18px,4vw,64px);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#memory01 .m-top strong{letter-spacing:.1em}#memory01 button{background:#192a30;color:var(--m-text);border:1px solid #416068;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}#memory01 button:hover{border-color:var(--m-mint)}#memory01 button:focus-visible,#memory01 select:focus-visible{outline:2px solid var(--m-mint);outline-offset:3px}
+#memory01 button.active,#memory01 button.primary{background:#f0ac80;color:#172025;border-color:#f0ac80}#memory01 button:disabled{opacity:.45;cursor:not-allowed}
+#memory01 .m-body{max-width:1220px;margin:auto;padding:44px clamp(18px,4vw,52px) 90px}
+#memory01 .m-kicker,#memory01 .m-small{font:600 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.11em;color:var(--m-copper)}
+#memory01 h1{font-size:clamp(34px,5vw,64px);line-height:1.08;letter-spacing:-.035em;margin:13px 0 20px}#memory01 h2{font-size:25px;margin:0 0 12px}#memory01 h3{font-size:17px;margin:0 0 10px}
+#memory01 p{color:var(--m-muted);max-width:72ch}#memory01 .m-lead{font-size:18px;line-height:1.7}
+#memory01 .m-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:32px 0 20px}
+#memory01 .m-panel{border:1px solid var(--m-line);background:var(--m-panel);border-radius:13px;padding:clamp(18px,3vw,32px);margin-bottom:18px}
+#memory01 .m-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:18px}
+#memory01 .m-code{white-space:pre-wrap;overflow-wrap:anywhere;background:#081114;border:1px solid #2b444b;border-radius:9px;padding:20px;color:#bcebdc;font:13px/1.8 'IBM Plex Mono',monospace}
+#memory01 .m-visual{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin:18px 0}
+#memory01 .m-block{flex:1;min-width:135px;border:1px solid #416068;background:#17282e;padding:16px;border-radius:9px}
+#memory01 .m-block b{display:block;color:#eaf2f1;font:700 13px 'IBM Plex Mono',monospace;margin:8px 0}
+#memory01 .m-block small{color:var(--m-muted)}
+#memory01 .m-arrow{align-self:center;color:var(--m-copper);font-size:25px}
+#memory01 .m-readout{background:#0a171b;border:1px solid #34525a;padding:14px;border-radius:8px;font:13px/1.6 'IBM Plex Mono',monospace;color:var(--m-mint);white-space:pre-wrap}
+#memory01 .m-options{display:grid;gap:9px;margin:20px 0}#memory01 .m-options button{text-align:left;font-weight:500}#memory01 .m-options button.correct{border-color:#99e3ce;background:#183a35}#memory01 .m-options button.wrong{border-color:#ff9d99;background:#3b2427}
+#memory01 .m-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:14px 0}#memory01 select{background:#15242a;color:#eaf2f1;padding:11px;border:1px solid #416068;border-radius:7px}
+#memory01 .m-status{min-height:26px;color:var(--m-mint)}#memory01 .m-foot{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#memory01 .m-progress{height:6px;background:#273b40;border-radius:10px;overflow:hidden;max-width:350px}#memory01 .m-progress>div{height:100%;background:#f0ac80;transition:width .2s}
+#memory01 .m-note{font-size:12px;color:var(--m-muted)}#memory01 .m-check{margin-top:24px;padding-top:20px;border-top:1px solid var(--m-line)}
+@media(max-width:780px){#memory01 .m-grid{grid-template-columns:1fr}#memory01 .m-body{padding-top:28px}}
+@media(prefers-reduced-motion:reduce){#memory01 *{transition:none!important}}
+</style>
+<section id="memory01" hidden aria-label="Module 01 Memory architecture">
+ <header class="m-top"><div><strong>RUST / ATOM</strong><div class="m-small">FOUNDATION ENGINE · MODULE 01</div></div></header>
+ <div class="m-body">
+  <div class="m-small">MEMORY ARCHITECTURE / INTERACTIVE LAB</div>
+  <h1>Where does a value live?</h1>
+  <p class="m-lead">A variable is not simply a box. Explore how values occupy bytes, how stack frames differ from heap allocations, and why Rust's ownership rules make sense once you can see the memory.</p>
+  <div class="m-progress" aria-label="Module progress"><div id="mProgress" style="width:0%"></div></div><p class="m-note" id="mProgressText">0 / 5 checkpoints complete · stored in this browser</p>
+  <nav class="m-tabs" id="mTabs" aria-label="Memory lesson stations"></nav>
+  <div id="mContent" aria-live="polite"></div>
+  <div class="m-foot"><button id="mPrev" type="button">← PREVIOUS</button><span class="m-small" id="mPosition"></span><button id="mNext" class="primary" type="button">NEXT STATION →</button></div>
+  <p class="m-note">Educational simulation, not a Rust compiler. Illustrative addresses and layouts are conceptual, not a promise of exact runtime placement. Verify snippets at <a href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer">play.rust-lang.org</a>.</p>
+ </div>
+</section>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const section=$('memory01');
+const KEY='rust-atom-memory01-v1';
+let persisted={};try{persisted=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{}
+const state={step:0,done:Array.isArray(persisted.done)?persisted.done:[],kind:'String',count:5,frame:false,choice:null,answers:persisted.answers||{}};
+const names=['Layout scanner','Stack / heap','Scope & drop','Allocation lab','Validation'];
+const questions=[
+{q:'Which Rust type is guaranteed to have a size of exactly one byte?',a:['u8','usize','String'],correct:0,why:'u8 is an eight-bit unsigned integer. usize and String depend on the target platform.'},
+{q:'For a String value, where is its dynamically allocated text buffer ordinarily stored?',a:['Inside the String handle itself','In heap allocation','Always in CPU registers'],correct:1,why:'String stores a handle containing pointer, length, and capacity; its owned UTF-8 buffer is allocated on the heap.'},
+{q:'When a local String goes out of scope, what normally happens?',a:['Its owned allocation is freed through Drop','The bytes are permanently leaked','The compiler always copies it'],correct:0,why:'The owner is dropped when its scope ends, and String releases its owned heap allocation.'},
+{q:'What is Vec<u8>::with_capacity(8) guaranteed to do?',a:['Set length to eight','Reserve space for at least eight elements without initializing elements','Create eight zeros'],correct:1,why:'Capacity is reserved storage; length remains zero until elements are pushed.'},
+{q:'Which claim about stack and heap is accurate?',a:['Every Rust value always lives on the stack','Heap allocations cannot be owned by stack-local handles','Stack-local handles may own heap allocations'],correct:2,why:'The stack/heap distinction is about storage and allocation, not ownership itself. Rust ownership spans both.'}
+];
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(KEY,JSON.stringify({done:state.done,answers:state.answers}))}catch{}}
+function done(){if(!state.done.includes(state.step))state.done.push(state.step);save();drawNav()}
+function drawNav(){ $('mTabs').innerHTML=names.map((n,i)=>`<button type="button" data-mstep="${i}" class="${state.step===i?'active':''}">${String(i+1).padStart(2,'0')} ${esc(n)} ${state.done.includes(i)?'✓':''}</button>`).join('');$('mProgress').style.width=(state.done.length/5*100)+'%';$('mProgressText').textContent=state.done.length+' / 5 checkpoints complete · stored in this browser'}
+function code(txt){return `<div class="m-small" style="margin-bottom:8px">RUST SPECIMEN · READ ONLY · NOT EXECUTED</div><pre class="m-code"><code>${esc(txt)}</code></pre>`}
+function quiz(){const q=questions[state.step],a=state.answers[state.step];return `<div class="m-check"><div class="m-small">REASONING CHECK</div><h3>${esc(q.q)}</h3><div class="m-options">${q.a.map((v,i)=>`<button type="button" data-manswer="${i}" class="${a!==undefined?(i===q.correct?'correct':i===a?'wrong':''):''}" ${a!==undefined?'disabled':''}>${String.fromCharCode(65+i)} / ${esc(v)}</button>`).join('')}</div><p class="m-status" role="status">${a===undefined?'Choose an answer to unlock the explanation.':(a===q.correct?'Correct. ':'Not quite. ')+esc(q.why)}</p></div>`}
+function render(){
+let html='',spec='',read='';
+if(state.step===0){
+spec=`use std::mem::{size_of, align_of};
+fn main() {
+    println!("{}", size_of::<u8>());
+    println!("{}", size_of::<u64>());
+    println!("{}", align_of::<u64>());
+}`;
+const sizes={u8:[1,1],u64:[8,8],bool:[1,1],char:[4,4]};
+html=`<h2>Bytes, size, alignment</h2><p>Every value has a size and an alignment requirement. <code>size_of</code> reports bytes; <code>align_of</code> reports alignment in bytes. Choose a primitive to inspect a simplified contiguous layout.</p><div class="m-row"><label for="mType">Inspect type</label><select id="mType">${Object.keys(sizes).map(x=>`<option ${state.kind===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="m-visual" id="mByteView"></div><div class="m-readout" id="mReadout"></div><p class="m-note">Alignment can introduce padding in structs. No actual memory address is read by this simulator.</p>`;
+}else if(state.step===1){
+spec=`fn main() {
+    let number: u32 = 42;
+    let text = String::from("rust");
+    println!("{number}: {text}");
+}`;
+html=`<h2>Stack frame and heap allocation</h2><p>A stack frame can hold local values such as <code>u32</code> and the fixed-size <code>String</code> handle. The String handle owns a separate heap allocation containing UTF-8 bytes. Toggle the object to see the distinction.</p><div class="m-row"><button type="button" data-mkind="String" class="${state.kind==='String'?'active':''}">String</button><button type="button" data-mkind="u32" class="${state.kind==='u32'?'active':''}">u32</button></div><div class="m-visual"><div class="m-block"><span class="m-small">STACK FRAME · CONCEPTUAL</span><b>${state.kind==='String'?'String handle':'u32 number'}</b><small>${state.kind==='String'?'pointer · length · capacity':'42 · fixed-width value'}</small></div>${state.kind==='String'?'<span class="m-arrow" aria-hidden="true">→</span><div class="m-block"><span class="m-small">HEAP · ALLOCATION</span><b>r u s t</b><small>4 UTF-8 bytes · owner: text</small></div>':''}</div><div class="m-readout">${state.kind==='String'?'String has an owned heap buffer; the local handle is fixed-size.':'u32 holds its value directly; no heap allocation is required for this local example.'}</div>`;
+}else if(state.step===2){
+spec=`fn main() {
+    {
+        let label = String::from("atom");
+        println!("{label}");
+    } // label is dropped here
+}`;
+html=`<h2>Scope controls lifetime</h2><p>Rust calls <code>Drop</code> when an owned value leaves scope, unless ownership has moved elsewhere. Run the scope sequence and watch the simulated allocation get released.</p><div class="m-row"><button type="button" id="mScopeToggle" class="primary">${state.frame?'EXIT SCOPE':'ENTER SCOPE'}</button></div><div class="m-visual"><div class="m-block"><span class="m-small">LOCAL OWNER</span><b>${state.frame?'label: String':'out of scope'}</b><small>${state.frame?'live binding':'no live binding'}</small></div><span class="m-arrow">→</span><div class="m-block"><span class="m-small">HEAP BUFFER</span><b>${state.frame?'a t o m':'released'}</b><small>${state.frame?'allocated':'no live owned allocation in this model'}</small></div></div><div class="m-readout">${state.frame?'Scope entered: label owns its buffer.':'Scope exited: String is dropped; its owned allocation is released.'}</div>`;
+}else if(state.step===3){
+spec=`fn main() {
+    let mut bytes: Vec<u8> = Vec::with_capacity(8);
+    bytes.push(7);
+    println!("len={} cap={}", bytes.len(), bytes.capacity());
+}`;
+html=`<h2>Capacity is not length</h2><p>A vector reserves a buffer that can hold elements. Its <b>length</b> is the number of initialized elements, while its <b>capacity</b> is the number it can hold without reallocating. This lab models a capacity of eight; actual allocator behavior can differ.</p><div class="m-row"><button type="button" id="mPush" ${state.count>=8?'disabled':''}>PUSH 7</button><button type="button" id="mPop" ${state.count===0?'disabled':''}>POP</button><button type="button" id="mResetVec">RESET VECTOR</button></div><div class="m-visual">${Array.from({length:8},(_,i)=>`<div class="m-block" style="min-width:42px;flex:0 1 50px;padding:10px;text-align:center"><b>${i<state.count?'07':'—'}</b><small>${i<state.count?'live':'free'}</small></div>`).join('')}</div><div class="m-readout">len = ${state.count} | capacity = 8 | uninitialized reserved slots are not readable elements.</div>`;
+}else{
+spec=`use std::mem::size_of;
+fn main() {
+    let a = 7u8;
+    let s = String::from("rust");
+    println!("{} {}", size_of::<u8>(), s.len());
+}`;
+const correct=questions.filter((q,i)=>state.answers[i]===q.correct).length;
+html=`<h2>Memory model validation</h2><p>Review the five reasoning checks, one for each station. Passing requires at least four correct answers. You can revisit any station and reset the module checks to retry.</p><div class="m-readout">Answered: ${Object.keys(state.answers).length} / 5\nCorrect: ${correct} / 5\n${Object.keys(state.answers).length===5?(correct>=4?'VALIDATED · MEMORY MODEL ONLINE':'RECALIBRATION REQUIRED'):'Complete each station check to finish.'}</div><div class="m-row"><button id="mResetChecks">RESET CHECKS AND RETRY</button></div><p>Applied challenge: predict the output and explain which bytes are in the local handle versus the heap buffer. Then test the specimen in the real Rust Playground.</p>`;
+}
+$('mContent').innerHTML=`<div class="m-grid"><article class="m-panel">${html}${quiz()}</article><aside class="m-panel"><h3>Code and model</h3>${code(spec)}<p class="m-note">Examples are teaching specimens; the interactive readout is simulated, not compiled or executed.</p><button id="mCopy" type="button">COPY RUST SPECIMEN</button><div id="mCopyStatus" class="m-status" role="status"></div></aside></div>`;
+$('mPosition').textContent=`STATION ${state.step+1} / 05`;$('mPrev').disabled=state.step===0;$('mNext').disabled=state.step===4;drawNav();
+if(state.step===0){const sizes={u8:[1,1],u64:[8,8],bool:[1,1],char:[4,4]},[size,align]=sizes[state.kind]||[1,1];$('mByteView').innerHTML=Array.from({length:size},(_,i)=>`<div class="m-block" style="min-width:45px;flex:0 1 65px;text-align:center"><span class="m-small">BYTE</span><b>${i}</b></div>`).join('');$('mReadout').textContent=`${state.kind} → ${size} byte(s) · alignment ${align} byte(s) (common target layouts).`;}
+$('mCopy').onclick=async()=>{try{await navigator.clipboard.writeText(spec);$('mCopyStatus').textContent='Specimen copied.'}catch{$('mCopyStatus').textContent='Clipboard unavailable. Select and copy the code manually.'}};
+if($('mType'))$('mType').onchange=e=>{state.kind=e.target.value;render()};
+if($('mScopeToggle'))$('mScopeToggle').onclick=()=>{state.frame=!state.frame;render()};
+if($('mPush'))$('mPush').onclick=()=>{state.count=Math.min(8,state.count+1);render()};
+if($('mPop'))$('mPop').onclick=()=>{state.count=Math.max(0,state.count-1);render()};
+if($('mResetVec'))$('mResetVec').onclick=()=>{state.count=0;render()};
+if($('mResetChecks'))$('mResetChecks').onclick=()=>{state.answers={};state.done=[];save();render()};
+$('mContent').querySelectorAll('[data-mkind]').forEach(b=>b.onclick=()=>{state.kind=b.dataset.mkind;render()});
+$('mContent').querySelectorAll('[data-manswer]').forEach(b=>b.onclick=()=>{if(state.answers[state.step]!==undefined)return;state.answers[state.step]=Number(b.dataset.manswer);done();render()});
+}
+function go(i){state.step=Math.max(0,Math.min(4,i));render();section.scrollIntoView({behavior:'instant',block:'start'})}
+$('mTabs').onclick=e=>{const b=e.target.closest('[data-mstep]');if(b)go(Number(b.dataset.mstep))};
+$('mPrev').onclick=()=>go(state.step-1);$('mNext').onclick=()=>go(state.step+1);
+render();
+})();
+</script>
+
+
+<style>
+#ownership02[hidden]{display:none!important}
+#ownership02{background:#081215;color:#e9f3f1;min-height:100vh;font-family:'DM Sans',system-ui,sans-serif}
+#ownership02 .o-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding:18px clamp(18px,4vw,58px);border-bottom:1px solid #2b4449;background:#0d1b1f}
+#ownership02 .o-brand{font-weight:800;letter-spacing:.1em}
+#ownership02 .o-sub{color:#f2b58c;font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.12em;margin-top:5px}
+#ownership02 button{cursor:pointer;border:1px solid #49666b;background:#182b30;color:#ecf6f3;padding:10px 15px;border-radius:8px;font:600 13px 'DM Sans',system-ui,sans-serif}
+#ownership02 button:hover{border-color:#a3e9d4}#ownership02 button:focus-visible{outline:3px solid #a3e9d4;outline-offset:2px}
+#ownership02 button.o-active,#ownership02 button.o-primary{background:#efb48b;color:#142226;border-color:#efb48b}
+#ownership02 button:disabled{opacity:.48;cursor:not-allowed}
+#ownership02 .o-main{max-width:1190px;margin:auto;padding:45px clamp(18px,4vw,52px) 90px}
+#ownership02 h1{font-size:clamp(34px,5vw,58px);letter-spacing:-.03em;line-height:1.1;margin:12px 0 18px}
+#ownership02 h2{font-size:25px;letter-spacing:-.02em;margin:0 0 12px}#ownership02 h3{font-size:17px;margin:0 0 12px}
+#ownership02 p{color:#b3c8c5;line-height:1.7;max-width:70ch}#ownership02 .o-lead{font-size:18px}
+#ownership02 .o-label{color:#f2b58c;font:600 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.12em}
+#ownership02 .o-nav{display:flex;gap:8px;flex-wrap:wrap;margin:30px 0 20px}
+#ownership02 .o-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:18px}
+#ownership02 .o-panel{background:#112126;border:1px solid #30484d;border-radius:13px;padding:clamp(18px,3vw,30px)}
+#ownership02 .o-code{background:#071316;border:1px solid #29464a;border-radius:9px;padding:18px;color:#a9ead4;font:13px/1.8 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+#ownership02 .o-sim{background:#0a191d;border:1px solid #36585d;border-radius:10px;padding:18px;margin:20px 0}
+#ownership02 .o-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+#ownership02 .o-node{border:1px solid #527179;background:#1b3035;border-radius:9px;padding:14px;min-width:110px;flex:1}
+#ownership02 .o-node strong{display:block;font:700 14px 'IBM Plex Mono',monospace;color:#e9f3f1;margin:5px 0}
+#ownership02 .o-node small{color:#b3c8c5}#ownership02 .o-arrow{color:#f2b58c;font-size:22px}
+#ownership02 .o-output{color:#a9ead4;font:13px/1.7 'IBM Plex Mono',monospace;white-space:pre-wrap;margin-top:14px}
+#ownership02 .o-answers{display:grid;gap:8px;margin:16px 0}#ownership02 .o-answers button{text-align:left;font-weight:500}
+#ownership02 .o-answers button.o-correct{background:#20453c;border-color:#a9ead4}#ownership02 .o-answers button.o-wrong{background:#482c31;border-color:#e9a0a5}
+#ownership02 .o-feedback{min-height:42px;color:#bdebdc}#ownership02 .o-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+#ownership02 .o-meter{height:6px;background:#30474c;max-width:340px;border-radius:9px;overflow:hidden}#ownership02 .o-meter>div{height:100%;background:#efb48b;transition:width .2s}
+#ownership02 .o-note{font-size:12px;color:#a8c0bc}#ownership02 .o-challenge{border-top:1px solid #345157;padding-top:20px;margin-top:24px}
+@media(max-width:780px){#ownership02 .o-grid{grid-template-columns:1fr}#ownership02 .o-main{padding-top:28px}}
+@media(prefers-reduced-motion:reduce){#ownership02 .o-meter>div{transition:none}}
+</style>
+<section id="ownership02" hidden aria-label="Module 02 ownership and borrowing">
+<header class="o-header"><div><div class="o-brand">RUST / ATOM</div><div class="o-sub">FOUNDATION ENGINE · MODULE 02</div></div></header>
+<main class="o-main">
+<div class="o-label">OWNERSHIP SYSTEMS / INTERACTIVE MACHINE LAB</div>
+<h1>Who controls the bytes?</h1>
+<p class="o-lead">Rust tracks who owns a value and who may borrow it. Explore moves, copies, immutable references, exclusive mutable references, and the moment a borrow ends. No garbage collector required.</p>
+<div class="o-meter"><div id="oMeter" style="width:0%"></div></div><p id="oProgress" class="o-note">0 of 5 checkpoints</p>
+<nav id="oNav" class="o-nav" aria-label="Ownership stations"></nav>
+<div class="o-grid"><article class="o-panel" id="oLesson" aria-live="polite"></article><aside class="o-panel"><h3>Rust code specimen</h3><div class="o-label">ILLUSTRATIVE SOURCE · NOT EXECUTED</div><pre class="o-code"><code id="oCode"></code></pre><button id="oCopy">COPY SOURCE</button><p id="oCopyFeedback" class="o-note" role="status"></p><p class="o-note">The controls simulate Rust rules; they do not compile or run Rust. Test examples in the <a href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer" style="color:#a9ead4">official Rust Playground</a>.</p></aside></div>
+<div class="o-footer"><button id="oPrev">← PREVIOUS</button><span id="oStep" class="o-label"></span><button id="oNext" class="o-primary">NEXT STATION →</button></div>
+</main>
+</section>
+<script>
+(()=>{'use strict';
+const el=id=>document.getElementById(id),root=el('ownership02');
+const key='rust-atom-module02-v1',labels=['Move vs Copy','Shared borrows','Exclusive borrow','Borrow lifetime','Final diagnostic'];
+const checks=[
+{q:'After `let b = a;` where a is a String, can a be used?',opts:['Yes, both own the buffer','No, ownership moved to b','Yes, a is automatically cloned'],ok:1,why:'String is not Copy. The assignment moves its ownership, invalidating the old binding.'},
+{q:'How many immutable references to a String may coexist?',opts:['Any number, if no conflicting mutable borrow exists','Exactly one','None unless the String is cloned'],ok:0,why:'Multiple shared &T borrows may coexist. They cannot conflict with an active exclusive mutable borrow.'},
+{q:'Can a second &mut reference be active while the first &mut is still used later?',opts:['Yes, both may mutate freely','No, mutable access must be exclusive','Only if both references have different names'],ok:1,why:'Overlapping mutable borrows of the same place are disallowed. Non-overlapping reborrows are a separate advanced case.'},
+{q:'What determines when a borrow ends in modern Rust?',opts:['Always the closing curly brace','Its last use, subject to lifetime constraints','Only when the program exits'],ok:1,why:'Non-lexical lifetimes often allow a borrow to end after its last use, even before the enclosing scope ends.'},
+{q:'Which strategy lets a function inspect a String without taking ownership?',opts:['Accept &str or &String','Accept String and drop it','Return the original String without reading it'],ok:0,why:'Borrowed parameters such as &str let a function read the string without owning it.'}
+];
+let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{}
+const state={step:0,answers:saved.answers||{},mode:'move',shared:0,exclusive:false,lastUsed:false};
+const snippets=[
+`fn main() {
+    let a = String::from("atom");
+    let b = a; // ownership moves
+    println!("{b}");
+    // println!("{a}"); // error: moved
+    let x = 7u8;
+    let y = x; // Copy
+    println!("{x} {y}");
+}`,
+`fn main() {
+    let s = String::from("rust");
+    let r1 = &s;
+    let r2 = &s;
+    println!("{r1} {r2}");
+}`,
+`fn main() {
+    let mut s = String::from("atom");
+    let r = &mut s;
+    r.push('!');
+    println!("{r}");
+}`,
+`fn main() {
+    let mut s = String::from("a");
+    let r = &s;
+    println!("{r}"); // last use of r
+    s.push('b'); // permitted
+    println!("{s}");
+}`,
+`fn inspect(text: &str) -> usize {
+    text.len()
+}
+fn main() {
+    let s = String::from("atom");
+    println!("{}", inspect(&s));
+    println!("{s}"); // still owned
+}`];
+const escapeHTML=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(key,JSON.stringify({answers:state.answers}))}catch{}}
+function status(){const n=Object.keys(state.answers).length;el('oMeter').style.width=(n/5*100)+'%';el('oProgress').textContent=`${n} of 5 reasoning checks completed · saved locally`;el('oNav').innerHTML=labels.map((x,i)=>`<button data-step="${i}" class="${i===state.step?'o-active':''}">${i+1}. ${escapeHTML(x)} ${state.answers[i]!==undefined?'✓':''}</button>`).join('')}
+function question(){const q=checks[state.step],a=state.answers[state.step];return `<div class="o-challenge"><div class="o-label">REASONING CHECK · ${state.step+1}/5</div><h3>${escapeHTML(q.q)}</h3><div class="o-answers">${q.opts.map((o,i)=>`<button data-answer="${i}" ${a!==undefined?'disabled':''} class="${a!==undefined?(i===q.ok?'o-correct':i===a?'o-wrong':''):''}">${String.fromCharCode(65+i)} / ${escapeHTML(o)}</button>`).join('')}</div><p class="o-feedback" role="status">${a===undefined?'Select an answer to reveal the reasoning.':(a===q.ok?'Correct. ':'Not quite. ')+escapeHTML(q.why)}</p></div>`}
+function render(){let h='';
+if(state.step===0){const moved=state.mode==='move';h=`<h2>Moves are not copies</h2><p>Assigning a <code>String</code> transfers ownership. A <code>u8</code> implements <code>Copy</code>, so assignment duplicates the small value. Toggle the operation and inspect which binding remains valid.</p><div class="o-row"><button data-mode="move" class="${moved?'o-active':''}">MOVE STRING</button><button data-mode="copy" class="${!moved?'o-active':''}">COPY u8</button></div><div class="o-sim"><div class="o-row"><div class="o-node"><div class="o-label">BINDING A</div><strong>${moved?'INVALID AFTER MOVE':'7 · VALID'}</strong><small>${moved?'no longer owns the buffer':'independent copy'}</small></div><span class="o-arrow">→</span><div class="o-node"><div class="o-label">BINDING B</div><strong>${moved?'OWNER OF STRING':'7 · VALID'}</strong><small>${moved?'owns the heap allocation':'copied scalar'}</small></div></div><div class="o-output">${moved?'Attempting println!("{a}") after move → compiler error.':'Both x and y may be read after assignment.'}</div></div>`}
+if(state.step===1){h=`<h2>Shared access: &T</h2><p>Many readers can inspect the same value. Shared references do not own the String and cannot mutate it through those references. Add readers and see that ownership stays with the original binding.</p><div class="o-row"><button id="oAddReader" ${state.shared>=4?'disabled':''}>ADD SHARED READER</button><button id="oClearReaders">CLEAR READERS</button></div><div class="o-sim"><div class="o-node"><div class="o-label">OWNER</div><strong>s: String</strong><small>retains ownership</small></div><div class="o-row">${Array.from({length:state.shared},(_,i)=>`<div class="o-node"><div class="o-label">SHARED BORROW</div><strong>&s · r${i+1}</strong><small>read only</small></div>`).join('')||'<p>No readers active. Add one to begin.</p>'}</div><div class="o-output">Active shared references in this simulation: ${state.shared}. Exclusive mutation is unavailable while these readers remain active.</div></div>`}
+if(state.step===2){h=`<h2>One writer: &mut T</h2><p>A mutable borrow permits modification, but Rust rejects conflicting access to the same value while the exclusive borrow is active. Activate the writer and attempt a second borrow.</p><div class="o-row"><button id="oToggleWriter">${state.exclusive?'END WRITER BORROW':'START WRITER BORROW'}</button><button id="oSecondWriter">TRY SECOND WRITER</button></div><div class="o-sim"><div class="o-node"><div class="o-label">ORIGINAL OWNER</div><strong>s: String</strong><small>${state.exclusive?'temporarily exclusively borrowed':'available for borrowing'}</small></div><div class="o-row"><div class="o-node"><div class="o-label">MUTABLE REFERENCE</div><strong>${state.exclusive?'&mut s ACTIVE':'NONE'}</strong><small>${state.exclusive?'exclusive write access':'not borrowed'}</small></div></div><div class="o-output" id="oWriterResult">${state.exclusive?'One mutable reference is active.':'No mutable reference is active.'}</div></div>`}
+if(state.step===3){h=`<h2>A borrow ends after its last use</h2><p>Non-lexical lifetimes mean a borrow can end before its enclosing scope closes. Step through the example: first read through the shared reference, then mutate the original String.</p><div class="o-row"><button id="oLastUse">${state.lastUsed?'RESTART SEQUENCE':'EXECUTE LAST READ'}</button></div><div class="o-sim"><div class="o-row"><div class="o-node"><div class="o-label">SHARED REFERENCE</div><strong>${state.lastUsed?'LAST USE COMPLETE':'READ PENDING'}</strong></div><span class="o-arrow">→</span><div class="o-node"><div class="o-label">MUTATION</div><strong>${state.lastUsed?'ALLOWED':'WAITING'}</strong></div></div><div class="o-output">${state.lastUsed?'println!("{r}") has completed; s.push(\'b\') is allowed in this example.':'The shared reference will be used; mutation must wait until its last use.'}</div></div>`}
+if(state.step===4){const total=Object.keys(state.answers).length,score=checks.filter((q,i)=>state.answers[i]===q.ok).length;h=`<h2>Ownership diagnostic</h2><p>Applied challenge: design a function that reads a String, reports its length, and leaves the caller able to use the String afterward. Should its parameter be <code>String</code>, <code>&String</code>, or <code>&str</code>? Explain your choice, then test the specimen.</p><div class="o-sim"><div class="o-label">VALIDATION TELEMETRY</div><div class="o-output">Checks answered: ${total}/5\nCorrect answers: ${score}/5\n${total===5?(score>=4?'PASS · BORROW MODEL STABLE':'REVIEW REQUIRED · TRY AGAIN'):'Complete the checks at each station.'}</div></div><div class="o-row"><button id="oReset">RESET MODULE 02 CHECKS</button></div><p>Hint: <code>&str</code> is generally the flexible read-only parameter for string content. The function borrows rather than takes ownership.</p>`}
+el('oLesson').innerHTML=h+question();el('oCode').textContent=snippets[state.step];el('oPrev').disabled=state.step===0;el('oNext').disabled=state.step===4;el('oStep').textContent=`STATION ${state.step+1} / 05`;status();
+el('oLesson').querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(state.answers[state.step]!==undefined)return;state.answers[state.step]=Number(b.dataset.answer);save();render()});
+el('oLesson').querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;render()});
+if(el('oAddReader'))el('oAddReader').onclick=()=>{state.shared=Math.min(4,state.shared+1);render()};
+if(el('oClearReaders'))el('oClearReaders').onclick=()=>{state.shared=0;render()};
+if(el('oToggleWriter'))el('oToggleWriter').onclick=()=>{state.exclusive=!state.exclusive;render()};
+if(el('oSecondWriter'))el('oSecondWriter').onclick=()=>{el('oWriterResult').textContent=state.exclusive?'REJECTED: overlapping &mut borrows of the same value are not allowed.':'ALLOWED: a first exclusive borrow can be created; no active writer conflicts.'};
+if(el('oLastUse'))el('oLastUse').onclick=()=>{state.lastUsed=!state.lastUsed;render()};
+if(el('oReset'))el('oReset').onclick=()=>{state.answers={};save();render()};
+}
+function go(i){state.step=Math.max(0,Math.min(4,i));render();root.scrollIntoView({behavior:'instant',block:'start'})}
+el('oNav').onclick=e=>{const b=e.target.closest('[data-step]');if(b)go(Number(b.dataset.step))};
+el('oPrev').onclick=()=>go(state.step-1);el('oNext').onclick=()=>go(state.step+1);
+el('oCopy').onclick=async()=>{try{await navigator.clipboard.writeText(snippets[state.step]);el('oCopyFeedback').textContent='Code copied.'}catch{el('oCopyFeedback').textContent='Clipboard blocked; select the code above to copy manually.'}};
+render();
+})();
+</script>
+
+
+<style>
+#structures03[hidden]{display:none!important}
+#structures03{background:#081215;color:#e9f3f1;min-height:100vh;font-family:'DM Sans',system-ui,sans-serif}
+#structures03 .s-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:18px clamp(18px,4vw,58px);background:#0d1b1f;border-bottom:1px solid #2b4449}
+#structures03 .s-brand{font-weight:800;letter-spacing:.1em}
+#structures03 .s-label{color:#f2b58c;font:600 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.1em}
+#structures03 button,#structures03 select{background:#182b30;color:#ecf6f3;border:1px solid #49666b;padding:10px 14px;border-radius:8px;font:600 13px 'DM Sans',system-ui,sans-serif}
+#structures03 button{cursor:pointer}#structures03 button:hover{border-color:#a3e9d4}
+#structures03 button:focus-visible,#structures03 select:focus-visible{outline:3px solid #a3e9d4;outline-offset:2px}
+#structures03 button.active,#structures03 button.primary{background:#efb48b;color:#142226;border-color:#efb48b}
+#structures03 button:disabled{opacity:.5;cursor:not-allowed}
+#structures03 .s-main{max-width:1190px;margin:auto;padding:44px clamp(18px,4vw,52px) 90px}
+#structures03 h1{font-size:clamp(34px,5vw,58px);letter-spacing:-.03em;line-height:1.1;margin:12px 0 18px}
+#structures03 h2{font-size:25px;margin:0 0 12px}#structures03 h3{font-size:17px;margin:0 0 12px}
+#structures03 p{color:#b3c8c5;line-height:1.7;max-width:72ch}#structures03 .s-lead{font-size:18px}
+#structures03 .s-nav{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 20px}
+#structures03 .s-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:18px}
+#structures03 .s-panel{background:#112126;border:1px solid #30484d;border-radius:13px;padding:clamp(18px,3vw,30px)}
+#structures03 .s-code{background:#071316;border:1px solid #29464a;border-radius:9px;padding:18px;color:#a9ead4;font:13px/1.8 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+#structures03 .s-sim{background:#0a191d;border:1px solid #36585d;border-radius:10px;padding:18px;margin:20px 0}
+#structures03 .s-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}
+#structures03 .s-node{border:1px solid #527179;background:#1b3035;border-radius:9px;padding:14px;min-width:100px;flex:1}
+#structures03 .s-node strong{display:block;font:700 14px 'IBM Plex Mono',monospace;color:#e9f3f1;margin:5px 0}
+#structures03 .s-node small{color:#b3c8c5}
+#structures03 .s-output{color:#a9ead4;font:13px/1.7 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:14px}
+#structures03 .s-answers{display:grid;gap:8px;margin:16px 0}#structures03 .s-answers button{text-align:left;font-weight:500}
+#structures03 .s-answers button.correct{background:#20453c;border-color:#a9ead4}#structures03 .s-answers button.wrong{background:#482c31;border-color:#e9a0a5}
+#structures03 .s-feedback{min-height:42px;color:#bdebdc}
+#structures03 .s-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+#structures03 .s-meter{height:6px;background:#30474c;max-width:340px;border-radius:9px;overflow:hidden}
+#structures03 .s-meter>div{height:100%;background:#efb48b;transition:width .2s}
+#structures03 .s-note{font-size:12px;color:#a8c0bc}
+#structures03 .s-challenge{border-top:1px solid #345157;padding-top:20px;margin-top:24px}
+@media(max-width:780px){#structures03 .s-grid{grid-template-columns:1fr}#structures03 .s-main{padding-top:28px}}
+@media(prefers-reduced-motion:reduce){#structures03 .s-meter>div{transition:none}}
+</style>
+<section id="structures03" hidden aria-label="Module 03 structs enums and pattern matching">
+<header class="s-head"><div><div class="s-brand">RUST / ATOM</div><div class="s-label">FOUNDATION ENGINE · MODULE 03</div></div></header>
+<main class="s-main">
+<div class="s-label">DATA MODELING / PATTERN ENGINE</div><h1>Give data a shape.</h1>
+<p class="s-lead">Rust structures describe what data contains. Enums describe which state it can be in. Patterns let you unpack either safely. Build a miniature sensor controller and watch its state machine respond.</p>
+<div class="s-meter"><div id="sMeter" style="width:0%"></div></div><p id="sProgress" class="s-note">0 / 5 checkpoints</p>
+<nav id="sNav" class="s-nav" aria-label="Data structures stations"></nav>
+<div class="s-grid"><article class="s-panel" id="sLesson" aria-live="polite"></article><aside class="s-panel"><h3>Rust code specimen</h3><div class="s-label">ILLUSTRATIVE SOURCE · NOT EXECUTED</div><pre class="s-code"><code id="sCode"></code></pre><button id="sCopy">COPY SOURCE</button><p id="sCopyStatus" class="s-note" role="status"></p><p class="s-note">This is a browser teaching simulator, not a Rust compiler. Validate examples using <a style="color:#a9ead4" href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer">Rust Playground</a>.</p></aside></div>
+<div class="s-footer"><button id="sPrev">← PREVIOUS</button><span id="sStep" class="s-label"></span><button id="sNext" class="primary">NEXT STATION →</button></div>
+</main></section>
+<script>
+(()=>{'use strict';
+const E=id=>document.getElementById(id),root=E('structures03');
+const key='rust-atom-module03-v1',names=['Struct assembler','Enum selector','Match routing','Destructuring','System diagnostic'];
+const checks=[
+{q:'What does a Rust struct primarily define?',a:['A fixed group of named fields','A list of alternative variants','A garbage-collected object'],correct:0,why:'A named-field struct groups fields into one type. Each instance has those fields.'},
+{q:'Why use an enum for sensor state?',a:['It automatically creates threads','It models one of several possible variants','It stores all variants at once'],correct:1,why:'An enum value is one variant at a time; variants can also carry associated data.'},
+{q:'What must a match expression cover?',a:['Only the most common case','Every possible case, perhaps with a wildcard','Only variants with fields'],correct:1,why:'Rust checks that match arms are exhaustive for the value being matched.'},
+{q:'What does `let Sensor { id, reading } = sensor;` do?',a:['It copies every field automatically','It destructures the struct into bindings','It changes the struct definition'],correct:1,why:'A pattern binds the fields. Move and Copy behavior still applies to individual fields.'},
+{q:'Which representation prevents invalid combinations like offline + an active reading?',a:['A struct with two unrelated booleans','An enum with Offline and Online { reading } variants','An unchecked string'],correct:1,why:'The enum makes the reading available only in the Online variant, encoding the invariant in the type.'}
+];
+const snippets=[
+`#[derive(Debug)]
+struct Sensor {
+    id: u8,
+    reading: i32,
+}
+fn main() {
+    let s = Sensor { id: 3, reading: 21 };
+    println!("{}: {}", s.id, s.reading);
+}`,
+`enum SensorState {
+    Offline,
+    Online { reading: i32 },
+    Fault(String),
+}
+fn main() {
+    let state = SensorState::Online { reading: 21 };
+}`,
+`enum State { Offline, Online(i32), Fault }
+fn message(s: State) -> &'static str {
+    match s {
+        State::Offline => "idle",
+        State::Online(n) if n > 80 => "hot",
+        State::Online(_) => "normal",
+        State::Fault => "alert",
+    }
+}`,
+`struct Sensor { id: u8, reading: i32 }
+fn main() {
+    let sensor = Sensor { id: 3, reading: 21 };
+    let Sensor { id, reading } = sensor;
+    println!("{id}: {reading}");
+}`,
+`enum SensorState {
+    Offline,
+    Online { reading: i32 },
+}
+fn inspect(state: &SensorState) -> &'static str {
+    match state {
+        SensorState::Offline => "idle",
+        SensorState::Online { reading: 80..=i32::MAX } => "hot",
+        SensorState::Online { .. } => "normal",
+    }
+}`];
+let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{}
+const state={step:0,answers:saved.answers||{},id:3,reading:21,variant:'Online',temperature:21,route:'Offline',pattern:'full'};
+const escapeHTML=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(key,JSON.stringify({answers:state.answers}))}catch{}}
+function question(){const q=checks[state.step],a=state.answers[state.step];return `<div class="s-challenge"><div class="s-label">REASONING CHECK · ${state.step+1}/5</div><h3>${escapeHTML(q.q)}</h3><div class="s-answers">${q.a.map((v,i)=>`<button data-answer="${i}" ${a!==undefined?'disabled':''} class="${a!==undefined?(i===q.correct?'correct':i===a?'wrong':''):''}">${String.fromCharCode(65+i)} / ${escapeHTML(v)}</button>`).join('')}</div><p class="s-feedback" role="status">${a===undefined?'Choose an answer to reveal the explanation.':(a===q.correct?'Correct. ':'Review this: ')+escapeHTML(q.why)}</p></div>`}
+function nav(){const n=Object.keys(state.answers).length;E('sMeter').style.width=(n/5*100)+'%';E('sProgress').textContent=`${n} / 5 checkpoints answered · progress saved in browser`;E('sNav').innerHTML=names.map((x,i)=>`<button data-step="${i}" class="${i===state.step?'active':''}">${i+1}. ${escapeHTML(x)} ${state.answers[i]!==undefined?'✓':''}</button>`).join('')}
+function render(){let h='';
+if(state.step===0)h=`<h2>Assemble a struct</h2><p>A struct is a named group of fields. Change the sensor ID and reading; both fields remain part of the same value. Unlike an enum, a struct does not select between variants.</p><div class="s-row"><label for="sId">Sensor ID</label><select id="sId">${[1,2,3,4].map(n=>`<option ${state.id===n?'selected':''}>${n}</option>`).join('')}</select><label for="sReading">Reading</label><select id="sReading">${[0,21,42,90].map(n=>`<option ${state.reading===n?'selected':''}>${n}</option>`).join('')}</select></div><div class="s-sim"><div class="s-label">STRUCT INSTANCE · SENSOR</div><div class="s-row"><div class="s-node"><small>id: u8</small><strong>${state.id}</strong></div><div class="s-node"><small>reading: i32</small><strong>${state.reading}</strong></div></div><div class="s-output">Sensor { id: ${state.id}, reading: ${state.reading} }</div></div>`;
+if(state.step===1)h=`<h2>One state, many variants</h2><p>An enum is one of several possible states. An <code>Online</code> variant carries a reading; <code>Offline</code> does not. Choose a variant to see its available data.</p><div class="s-row">${['Offline','Online','Fault'].map(x=>`<button data-variant="${x}" class="${state.variant===x?'active':''}">${x}</button>`).join('')}</div><div class="s-sim"><div class="s-label">ACTIVE VARIANT</div><div class="s-node"><strong>${state.variant}</strong><small>${state.variant==='Online'?'reading: 21':state.variant==='Fault'?'message: "disconnected"':'no payload'}</small></div><div class="s-output">${state.variant==='Online'?'SensorState::Online { reading: 21 }':state.variant==='Fault'?'SensorState::Fault(String::from("disconnected"))':'SensorState::Offline'}</div></div>`;
+if(state.step===2){const route=state.route==='Offline'?'idle':state.route==='Fault'?'alert':state.temperature>80?'hot':'normal';h=`<h2>Match routes every possibility</h2><p><code>match</code> selects an arm based on the variant and any guard. Set the input state and temperature to see which arm fires.</p><div class="s-row"><label for="sRoute">State</label><select id="sRoute">${['Offline','Online','Fault'].map(x=>`<option ${state.route===x?'selected':''}>${x}</option>`).join('')}</select><label for="sTemp">Temperature</label><select id="sTemp" ${state.route!=='Online'?'disabled':''}>${[21,65,81,100].map(n=>`<option ${state.temperature===n?'selected':''}>${n}</option>`).join('')}</select></div><div class="s-sim"><div class="s-label">MATCH ENGINE OUTPUT</div><div class="s-output">input: ${state.route}${state.route==='Online'?'('+state.temperature+')':''}\nselected arm: ${route}\n${route==='hot'?'guard n > 80 matched':route==='normal'?'Online(_) fallback matched':'variant arm matched'}</div></div>`}
+if(state.step===3)h=`<h2>Unpack with patterns</h2><p>Destructuring binds parts of a value to names. Choose a pattern to see which fields are extracted. Fields follow normal ownership rules: non-Copy fields can move unless borrowed.</p><div class="s-row"><button data-pattern="full" class="${state.pattern==='full'?'active':''}">BIND BOTH FIELDS</button><button data-pattern="partial" class="${state.pattern==='partial'?'active':''}">BIND ID ONLY</button></div><div class="s-sim"><div class="s-label">PATTERN RESULT</div><div class="s-output">${state.pattern==='full'?'let Sensor { id, reading } = sensor;\nid = 3\nreading = 21':'let Sensor { id, .. } = sensor;\nid = 3\nremaining fields ignored by pattern'}</div></div>`;
+if(state.step===4){const count=Object.keys(state.answers).length,score=checks.filter((q,i)=>state.answers[i]===q.correct).length;h=`<h2>Sensor controller diagnostic</h2><p><b>Applied challenge:</b> A sensor is either offline or online with a reading. Model it so that an offline sensor cannot accidentally carry an active reading. Then write a <code>match</code> that returns "idle" when offline and "active" when online.</p><div class="s-sim"><div class="s-label">ASSESSMENT TELEMETRY</div><div class="s-output">Answered: ${count}/5\nCorrect: ${score}/5\n${count===5?(score>=4?'PASS · STRUCTURAL MODEL VERIFIED':'RECALIBRATION REQUIRED · RETRY CHECKS'):'Complete all five reasoning checks.'}</div></div><button id="sReset">RESET CHECKS</button><p class="s-note">A strong answer uses <code>enum SensorState { Offline, Online { reading: i32 } }</code> and exhaustive matching. The example on the right demonstrates this principle.</p>`}
+E('sLesson').innerHTML=h+question();E('sCode').textContent=snippets[state.step];E('sPrev').disabled=state.step===0;E('sNext').disabled=state.step===4;E('sStep').textContent=`STATION ${state.step+1} / 05`;nav();
+E('sLesson').querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(state.answers[state.step]!==undefined)return;state.answers[state.step]=Number(b.dataset.answer);save();render()});
+E('sLesson').querySelectorAll('[data-variant]').forEach(b=>b.onclick=()=>{state.variant=b.dataset.variant;render()});
+E('sLesson').querySelectorAll('[data-pattern]').forEach(b=>b.onclick=()=>{state.pattern=b.dataset.pattern;render()});
+if(E('sId'))E('sId').onchange=e=>{state.id=Number(e.target.value);render()};
+if(E('sReading'))E('sReading').onchange=e=>{state.reading=Number(e.target.value);render()};
+if(E('sRoute'))E('sRoute').onchange=e=>{state.route=e.target.value;render()};
+if(E('sTemp'))E('sTemp').onchange=e=>{state.temperature=Number(e.target.value);render()};
+if(E('sReset'))E('sReset').onclick=()=>{state.answers={};save();render()};
+}
+function go(i){state.step=Math.max(0,Math.min(4,i));render();root.scrollIntoView({behavior:'instant',block:'start'})}
+E('sNav').onclick=e=>{const b=e.target.closest('[data-step]');if(b)go(Number(b.dataset.step))};
+E('sPrev').onclick=()=>go(state.step-1);E('sNext').onclick=()=>go(state.step+1);
+E('sCopy').onclick=async()=>{try{await navigator.clipboard.writeText(snippets[state.step]);E('sCopyStatus').textContent='Source copied.'}catch{E('sCopyStatus').textContent='Clipboard unavailable; select code manually.'}};
+render();
+})();
+</script>
+
+<style>
+#errors04[hidden]{display:none!important}#errors04{background:#081215;color:#e9f3f1;min-height:100vh;font-family:'DM Sans',system-ui,sans-serif}#errors04 *{box-sizing:border-box}#errors04 .e-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px clamp(18px,4vw,58px);background:#0d1b1f;border-bottom:1px solid #2b4449}#errors04 .e-brand{font-weight:800;letter-spacing:.1em}#errors04 .e-label{color:#f2b58c;font:600 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.1em}#errors04 button,#errors04 select,#errors04 input{background:#182b30;color:#ecf6f3;border:1px solid #49666b;padding:10px 14px;border-radius:8px;font:600 13px 'DM Sans',system-ui,sans-serif}#errors04 button{cursor:pointer}#errors04 button:hover{border-color:#a3e9d4}#errors04 button:focus-visible,#errors04 select:focus-visible,#errors04 input:focus-visible{outline:3px solid #a3e9d4;outline-offset:2px}#errors04 button.active,#errors04 button.primary{background:#efb48b;color:#142226;border-color:#efb48b}#errors04 button:disabled{opacity:.5;cursor:not-allowed}#errors04 .e-main{max-width:1190px;margin:auto;padding:44px clamp(18px,4vw,52px) 90px}#errors04 h1{font-size:clamp(34px,5vw,58px);letter-spacing:-.03em;line-height:1.1;margin:12px 0 18px}#errors04 h2{font-size:25px;margin:0 0 12px}#errors04 h3{font-size:17px;margin:0 0 12px}#errors04 p{color:#b3c8c5;line-height:1.7;max-width:72ch}#errors04 .e-lead{font-size:18px}#errors04 .e-nav{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 20px}#errors04 .e-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:18px}#errors04 .e-panel{background:#112126;border:1px solid #30484d;border-radius:13px;padding:clamp(18px,3vw,30px);min-width:0}#errors04 .e-code{background:#071316;border:1px solid #29464a;border-radius:9px;padding:18px;color:#a9ead4;font:13px/1.8 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere}#errors04 .e-sim{background:#0a191d;border:1px solid #36585d;border-radius:10px;padding:18px;margin:20px 0}#errors04 .e-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}#errors04 .e-node{border:1px solid #527179;background:#1b3035;border-radius:9px;padding:14px;min-width:100px;flex:1}#errors04 .e-node strong{display:block;font:700 14px 'IBM Plex Mono',monospace;color:#e9f3f1;margin:5px 0}#errors04 .e-node small{color:#b3c8c5}#errors04 .e-output{color:#a9ead4;font:13px/1.7 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:14px}#errors04 .e-answers{display:grid;gap:8px;margin:16px 0}#errors04 .e-answers button{text-align:left;font-weight:500}#errors04 .e-answers button.correct{background:#20453c;border-color:#a9ead4}#errors04 .e-answers button.wrong{background:#482c31;border-color:#e9a0a5}#errors04 .e-feedback{min-height:42px;color:#bdebdc}#errors04 .e-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}#errors04 .e-meter{height:6px;background:#30474c;max-width:340px;border-radius:9px;overflow:hidden}#errors04 .e-meter>div{height:100%;background:#efb48b;transition:width .2s}#errors04 .e-note{font-size:12px;color:#a8c0bc}#errors04 .e-check{border-top:1px solid #345157;padding-top:20px;margin-top:24px}@media(max-width:780px){#errors04 .e-grid{grid-template-columns:1fr}#errors04 .e-main{padding-top:28px}}@media(prefers-reduced-motion:reduce){#errors04 .e-meter>div{transition:none}}
+</style>
+<section id="errors04" hidden aria-label="Module 04 Option Result and error propagation"><header class="e-header"><div><div class="e-brand">RUST / ATOM</div><div class="e-label">FOUNDATION ENGINE · MODULE 04</div></div></header><main class="e-main"><div class="e-label">ERROR-STATE CONTROL / INTERACTIVE LAB</div><h1>Make failure explicit.</h1><p class="e-lead">Rust encodes absence and recoverable errors in types. Route missing sensor readings through <code>Option&lt;T&gt;</code>, parse uncertain input with <code>Result&lt;T, E&gt;</code>, and watch <code>?</code> return errors to the caller.</p><div class="e-meter"><div id="eMeter" style="width:0%"></div></div><p id="eProgress" class="e-note"></p><nav id="eNav" class="e-nav" aria-label="Error states stations"></nav><div class="e-grid"><article class="e-panel" id="eLesson" aria-live="polite"></article><aside class="e-panel"><h3>Rust specimen</h3><div class="e-label">ILLUSTRATIVE SOURCE · NOT EXECUTED</div><pre class="e-code"><code id="eCode"></code></pre><button id="eCopy">COPY SOURCE</button><p id="eCopyStatus" class="e-note" role="status"></p><p class="e-note">Simulated transitions only. No Rust compiler is embedded. Verify examples at <a href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer" style="color:#a9ead4">Rust Playground</a>.</p></aside></div><div class="e-footer"><button id="ePrev">← PREVIOUS</button><span id="eStep" class="e-label"></span><button id="eNext" class="primary">NEXT STATION →</button></div></main></section>
+<script>
+(()=>{'use strict';
+const E=id=>document.getElementById(id),root=E('errors04');
+const key='rust-atom-module04-v1',names=['Option signal','Result parser','? propagation','Fallback strategy','System diagnostic'];
+const questions=[
+{q:'What does Option<i32> communicate?',a:['A number is always present','A number may be Some or absent as None','A parse error message is required'],ok:1,why:'Option<T> is Some(T) or None. It represents optional data without a null reference.'},
+{q:'Which Result variant contains a recoverable error?',a:['None','Err(E)','Some(T)'],ok:1,why:'Result<T,E> is Ok(T) for success or Err(E) for a failure value.'},
+{q:'What does ? do when applied to an Err inside a compatible Result-returning function?',a:['Panic immediately','Ignore the error','Return the error early from that function'],ok:2,why:'The ? operator propagates the failure through the enclosing function, using compatible residual conversion.'},
+{q:'Which expression returns a fallback only when an Option is None?',a:['option.unwrap_or(default)','option.unwrap()','option.expect("must exist")'],ok:0,why:'unwrap_or supplies a fallback. unwrap and expect panic on None.'},
+{q:'Which function signature can report either a parsed integer or a parse error?',a:['fn parse(s: &str) -> i32','fn parse(s: &str) -> Result<i32, ParseIntError>','fn parse(s: &str) -> bool'],ok:1,why:'Result preserves both a successful integer and a structured error.'}
+];
+const snippets=[
+`fn sample(connected: bool) -> Option<i32> {\n    if connected { Some(42) } else { None }\n}\nfn main() {\n    match sample(false) {\n        Some(n) => println!("{n}"),\n        None => println!("no reading"),\n    }\n}`,
+`fn main() {\n    let parsed: Result<i32, _> = "42".parse::<i32>();\n    match parsed {\n        Ok(n) => println!("value: {n}"),\n        Err(e) => println!("error: {e}"),\n    }\n}`,
+`use std::num::ParseIntError;\nfn doubled(input: &str) -> Result<i32, ParseIntError> {\n    let n: i32 = input.parse()?;\n    Ok(n * 2)\n}\nfn main() {\n    println!("{:?}", doubled("21"));\n}`,
+`fn display(reading: Option<i32>) -> i32 {\n    reading.unwrap_or(-1)\n}\nfn main() {\n    println!("{}", display(None));\n}`,
+`use std::num::ParseIntError;\nfn parse_reading(s: &str) -> Result<i32, ParseIntError> {\n    let n: i32 = s.parse()?;\n    Ok(n)\n}\nfn main() {\n    match parse_reading("42") {\n        Ok(n) => println!("reading: {n}"),\n        Err(e) => eprintln!("invalid reading: {e}"),\n    }\n}`
+];
+let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{};
+const state={step:0,answers:saved.answers||{},connected:true,input:'42',propInput:'21',fallback:-1,optional:false};
+const escapeHTML=x=>String(x).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(key,JSON.stringify({answers:state.answers}))}catch{}}
+function question(){const q=questions[state.step],a=state.answers[state.step];return `<div class="e-check"><div class="e-label">REASONING CHECK · ${state.step+1}/5</div><h3>${escapeHTML(q.q)}</h3><div class="e-answers">${q.a.map((v,i)=>`<button data-answer="${i}" ${a!==undefined?'disabled':''} class="${a!==undefined?(i===q.ok?'correct':i===a?'wrong':''):''}">${String.fromCharCode(65+i)} / ${escapeHTML(v)}</button>`).join('')}</div><p class="e-feedback" role="status">${a===undefined?'Choose an answer to unlock the explanation.':(a===q.ok?'Correct. ':'Not quite. ')+escapeHTML(q.why)}</p></div>`}
+function nav(){const n=Object.keys(state.answers).length;E('eMeter').style.width=n*20+'%';E('eProgress').textContent=`${n}/5 checks answered · progress saved locally`;E('eNav').innerHTML=names.map((x,i)=>`<button data-step="${i}" class="${i===state.step?'active':''}">${i+1}. ${escapeHTML(x)} ${state.answers[i]!==undefined?'✓':''}</button>`).join('')}
+function render(){let h='';
+if(state.step===0)h=`<h2>Presence is a variant</h2><p>A sensor may have a reading or no reading. Rust represents this with <code>Some(value)</code> or <code>None</code>. Toggle connectivity to change the variant; notice that a missing value cannot be read as an integer.</p><div class="e-row"><button id="eToggleSignal" class="${state.connected?'active':''}">${state.connected?'DISCONNECT SENSOR':'CONNECT SENSOR'}</button></div><div class="e-sim"><div class="e-label">OPTION&lt;i32&gt; STATE</div><div class="e-row"><div class="e-node"><small>Connection</small><strong>${state.connected?'ONLINE':'OFFLINE'}</strong></div><div class="e-node"><small>Variant</small><strong>${state.connected?'Some(42)':'None'}</strong></div></div><div class="e-output">match output: ${state.connected?'reading = 42':'no reading'}</div></div>`;
+if(state.step===1){const n=Number(state.input),valid=/^[+-]?\d+$/.test(state.input)&&Number.isInteger(n)&&n>=-2147483648&&n<=2147483647;h=`<h2>Success and error are data</h2><p>Parsing user input can fail. <code>Result&lt;i32, ParseIntError&gt;</code> forces you to account for both outcomes. Try a valid integer, surrounding spaces, an empty string, or an out-of-range number.</p><div class="e-row"><label for="eParseInput">Input text</label><input id="eParseInput" value="${escapeHTML(state.input)}" maxlength="60" autocomplete="off"/><button id="eParseRun">PARSE</button></div><div class="e-sim"><div class="e-label">RESULT&lt;i32, ParseIntError&gt;</div><div class="e-output" id="eParseOutput">${valid?'Ok('+n+')':'Err(ParseIntError)'}</div><p class="e-note">Rust’s integer parser rejects leading and trailing spaces unless you call trim() first. The model groups parse errors under ParseIntError.</p></div>`}
+if(state.step===2){const n=Number(state.propInput),valid=/^[+-]?\d+$/.test(state.propInput.trim())&&Number.isInteger(n)&&n>=-2147483648&&n<=2147483647;h=`<h2>The ? operator routes failure</h2><p>Inside a function returning <code>Result</code>, <code>?</code> unwraps <code>Ok</code> and continues, or returns an <code>Err</code> early. Choose input and watch the execution path.</p><div class="e-row">${['21','oops','-5'].map(v=>`<button data-prop="${v}" class="${state.propInput===v?'active':''}">${escapeHTML(v)}</button>`).join('')}</div><div class="e-sim"><div class="e-row"><div class="e-node"><small>parse()</small><strong>${valid?'Ok('+n+')':'Err(...)'}</strong></div><div class="e-node"><small>? operator</small><strong>${valid?'CONTINUE':'EARLY RETURN'}</strong></div><div class="e-node"><small>function output</small><strong>${valid?'Ok('+(n*2)+')':'Err(...)'}</strong></div></div><div class="e-output">${valid?'Parse succeeded. Function computes n * 2.':'Parse failed. The function returns the error; multiplication is skipped.'}</div></div>`}
+if(state.step===3)h=`<h2>Choose a safe fallback</h2><p>Sometimes a missing value has a legitimate default. <code>unwrap_or</code> supplies one without panicking. Use a fallback only when it has an appropriate meaning in your application.</p><div class="e-row"><button id="eToggleOptional" class="${state.optional?'active':''}">${state.optional?'VALUE PRESENT':'VALUE MISSING'}</button><label for="eFallback">Fallback</label><select id="eFallback">${[-1,0,100].map(n=>`<option ${n===state.fallback?'selected':''}>${n}</option>`).join('')}</select></div><div class="e-sim"><div class="e-output">reading = ${state.optional?'Some(42)':'None'}\nreading.unwrap_or(${state.fallback}) → ${state.optional?42:state.fallback}</div></div><p class="e-note">A sentinel such as -1 can be ambiguous. Retaining Option is often safer when absence itself matters.</p>`;
+if(state.step===4){const n=Object.keys(state.answers).length,score=questions.filter((q,i)=>state.answers[i]===q.ok).length;h=`<h2>Fault-handling diagnostic</h2><p><b>Applied challenge:</b> A telemetry endpoint receives a string containing an integer reading. Write a function that returns <code>Result&lt;i32, ParseIntError&gt;</code>, uses <code>?</code> to propagate invalid input, and lets the caller display a meaningful error. Decide separately when a disconnected sensor should return <code>None</code>.</p><div class="e-sim"><div class="e-label">ASSESSMENT TELEMETRY</div><div class="e-output">Answered: ${n}/5\nCorrect: ${score}/5\n${n===5?(score>=4?'PASS · ERROR ROUTING VERIFIED':'REVIEW REQUIRED · RETRY CHECKS'):'Complete all five reasoning checks.'}</div></div><button id="eReset">RESET MODULE 04 CHECKS</button><p class="e-note">The specimen at right is one solution. Note how parsing errors and missing readings are distinct concerns.</p>`}
+E('eLesson').innerHTML=h+question();E('eCode').textContent=snippets[state.step].replace(/\\n/g,'\n');E('ePrev').disabled=state.step===0;E('eNext').disabled=state.step===4;E('eStep').textContent=`STATION ${state.step+1}/05`;nav();
+E('eLesson').querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(state.answers[state.step]!==undefined)return;state.answers[state.step]=Number(b.dataset.answer);save();render()});
+if(E('eToggleSignal'))E('eToggleSignal').onclick=()=>{state.connected=!state.connected;render()};
+if(E('eParseInput')){E('eParseInput').oninput=e=>{state.input=e.target.value};E('eParseRun').onclick=()=>render();E('eParseInput').onkeydown=e=>{if(e.key==='Enter'){render();E('eParseInput').focus()}}}
+E('eLesson').querySelectorAll('[data-prop]').forEach(b=>b.onclick=()=>{state.propInput=b.dataset.prop;render()});
+if(E('eToggleOptional'))E('eToggleOptional').onclick=()=>{state.optional=!state.optional;render()};
+if(E('eFallback'))E('eFallback').onchange=e=>{state.fallback=Number(e.target.value);render()};
+if(E('eReset'))E('eReset').onclick=()=>{state.answers={};save();render()};}
+function go(i){state.step=Math.max(0,Math.min(4,i));render();root.scrollIntoView({behavior:'instant',block:'start'})}
+E('eNav').onclick=e=>{const b=e.target.closest('[data-step]');if(b)go(Number(b.dataset.step))};E('ePrev').onclick=()=>go(state.step-1);E('eNext').onclick=()=>go(state.step+1);
+E('eCopy').onclick=async()=>{try{await navigator.clipboard.writeText(snippets[state.step].replace(/\\n/g,'\n'));E('eCopyStatus').textContent='Source copied.'}catch{E('eCopyStatus').textContent='Clipboard unavailable; select code manually.'}};
+render();})();
+</script>
+
+<style>#collections05[hidden]{display:none!important}#collections05{background:#081215;color:#e9f3f1;min-height:100vh;font-family:'DM Sans',system-ui,sans-serif}#collections05 *{box-sizing:border-box}#collections05 .c-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px clamp(18px,4vw,58px);background:#0d1b1f;border-bottom:1px solid #2b4449}#collections05 .c-brand{font-weight:800;letter-spacing:.1em}#collections05 .c-label{color:#f2b58c;font:600 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.1em}#collections05 button,#collections05 select,#collections05 input{background:#182b30;color:#ecf6f3;border:1px solid #49666b;padding:10px 14px;border-radius:8px;font:600 13px 'DM Sans',system-ui,sans-serif}#collections05 button{cursor:pointer}#collections05 button:hover{border-color:#a3e9d4}#collections05 button:focus-visible,#collections05 select:focus-visible,#collections05 input:focus-visible{outline:3px solid #a3e9d4;outline-offset:2px}#collections05 button.active,#collections05 button.primary{background:#efb48b;color:#142226;border-color:#efb48b}#collections05 button:disabled{opacity:.5;cursor:not-allowed}#collections05 .c-main{max-width:1190px;margin:auto;padding:44px clamp(18px,4vw,52px) 90px}#collections05 h1{font-size:clamp(34px,5vw,58px);letter-spacing:-.03em;line-height:1.1;margin:12px 0 18px}#collections05 h2{font-size:25px;margin:0 0 12px}#collections05 h3{font-size:17px;margin:0 0 12px}#collections05 p{color:#b3c8c5;line-height:1.7;max-width:72ch}#collections05 .c-lead{font-size:18px}#collections05 .c-nav{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 20px}#collections05 .c-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr);gap:18px}#collections05 .c-panel{background:#112126;border:1px solid #30484d;border-radius:13px;padding:clamp(18px,3vw,30px);min-width:0}#collections05 .c-code{background:#071316;border:1px solid #29464a;border-radius:9px;padding:18px;color:#a9ead4;font:13px/1.8 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere}#collections05 .c-sim{background:#0a191d;border:1px solid #36585d;border-radius:10px;padding:18px;margin:20px 0}#collections05 .c-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}#collections05 .c-node{border:1px solid #527179;background:#1b3035;border-radius:9px;padding:14px;min-width:100px;flex:1}#collections05 .c-node strong{display:block;font:700 14px 'IBM Plex Mono',monospace;color:#e9f3f1;margin:5px 0}#collections05 .c-node small{color:#b3c8c5}#collections05 .c-output{color:#a9ead4;font:13px/1.7 'IBM Plex Mono',monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:14px}#collections05 .c-answers{display:grid;gap:8px;margin:16px 0}#collections05 .c-answers button{text-align:left;font-weight:500}#collections05 .c-answers button.correct{background:#20453c;border-color:#a9ead4}#collections05 .c-answers button.wrong{background:#482c31;border-color:#e9a0a5}#collections05 .c-feedback{min-height:42px;color:#bdebdc}#collections05 .c-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}#collections05 .c-meter{height:6px;background:#30474c;max-width:340px;border-radius:9px;overflow:hidden}#collections05 .c-meter>div{height:100%;background:#efb48b;transition:width .2s}#collections05 .c-note{font-size:12px;color:#a8c0bc}#collections05 .c-check{border-top:1px solid #345157;padding-top:20px;margin-top:24px}@media(max-width:780px){#collections05 .c-grid{grid-template-columns:1fr}#collections05 .c-main{padding-top:28px}}@media(prefers-reduced-motion:reduce){#collections05 .c-meter>div{transition:none}}
+</style>
+<section id="collections05" hidden aria-label="Module 05 collections and iterators">
+<header class="c-header"><div><div class="c-brand">RUST / ATOM</div><div class="c-label">FOUNDATION ENGINE · MODULE 05</div></div></header>
+<main class="c-main"><div class="c-label">DATA PIPELINE / INTERACTIVE LAB</div><h1>From one value to a stream.</h1>
+<p class="c-lead">Build and inspect collections of sensor readings. Discover how <code>Vec&lt;T&gt;</code> grows, how slices borrow a view, how maps associate keys with values, and how iterators transform data without mutating the source.</p>
+<div class="c-meter"><div id="cMeter" style="width:0%"></div></div><p id="cProgress" class="c-note"></p>
+<nav id="cNav" class="c-nav" aria-label="Collection learning stations"></nav>
+<div class="c-grid"><article class="c-panel" id="cLesson" aria-live="polite"></article><aside class="c-panel"><h3>Rust source specimen</h3><div class="c-label">READ-ONLY EXAMPLE · NOT EXECUTED</div><pre class="c-code"><code id="cCode"></code></pre><button id="cCopy">COPY RUST SOURCE</button><p id="cCopyStatus" class="c-note" role="status"></p><p class="c-note">All controls simulate collection behavior. Rust is not compiled in this browser. Validate examples in <a href="https://play.rust-lang.org/" target="_blank" rel="noopener noreferrer" style="color:#a9ead4">Rust Playground</a>.</p></aside></div>
+<div class="c-footer"><button id="cPrev">← PREVIOUS</button><span id="cStep" class="c-label"></span><button id="cNext" class="primary">NEXT STATION →</button></div>
+</main></section>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), root=$('collections05');
+const key='rust-atom-module05-v1', names=['Vector engine','Slice viewport','HashMap registry','Iterator pipeline','Pipeline assessment'];
+const qs=[
+{q:'What does Vec::push do when the vector has no spare capacity?',a:['It always fails','It may reallocate its buffer','It overwrites the first element'],ok:1,why:'A Vec can grow by allocating a larger buffer and moving elements; do not depend on a particular growth factor.'},
+{q:'What does &values[1..3] refer to?',a:['Elements at indices 1 and 2','Elements at indices 1 through 3 inclusive','A cloned vector'],ok:0,why:'Rust ranges are start-inclusive and end-exclusive. A slice is a borrowed view, not a copy.'},
+{q:'What does HashMap::insert return when replacing an existing key?',a:['The old value wrapped in Some','The new key','An error every time'],ok:0,why:'insert returns Option<V>: Some(previous_value) on replacement, None on a new key.'},
+{q:'Which operation transforms each iterator element without changing the source collection?',a:['map','clear','remove'],ok:0,why:'map produces a lazy transforming iterator. collect can materialize the results into a new collection.'},
+{q:'Which pipeline keeps only even readings and doubles them?',a:['filter(|n| *n % 2 == 0).map(|n| n * 2)','map(|n| n + 1)','filter(|n| *n > 0)'],ok:0,why:'filter retains even values; map then doubles each surviving item. Iterator closure reference levels depend on the iterator item type.'}
+];
+const specimens=[
+`fn main() {
+    let mut readings = vec![10, 20];
+    readings.push(30);
+    let last = readings.pop();
+    println!("{readings:?} {last:?}");
+}`,
+`fn main() {
+    let readings = vec![10, 20, 30, 40];
+    let window: &[i32] = &readings[1..3];
+    println!("{window:?}");
+}`,
+`use std::collections::HashMap;
+fn main() {
+    let mut sensors = HashMap::new();
+    sensors.insert("alpha", 10);
+    sensors.insert("alpha", 25);
+    println!("{:?}", sensors.get("alpha"));
+}`,
+`fn main() {
+    let data = vec![3, 8, 12, 5];
+    let processed: Vec<i32> = data.iter()
+        .copied()
+        .filter(|n| n % 2 == 0)
+        .map(|n| n * 2)
+        .collect();
+    println!("{processed:?}");
+}`,
+`use std::collections::HashMap;
+fn summarize(data: &[i32]) -> Vec<i32> {
+    data.iter().copied()
+        .filter(|n| n % 2 == 0)
+        .map(|n| n * 2)
+        .collect()
+}
+fn main() {
+    let data = vec![3, 8, 12, 5];
+    let mut registry = HashMap::new();
+    registry.insert("sensor-a", summarize(&data));
+    println!("{registry:?}");
+}`
+];
+let stored={};try{stored=JSON.parse(localStorage.getItem(key)||'{}')}catch{}
+const st={step:0,answers:stored.answers||{},values:[10,20],start:1,end:3,registry:{alpha:10},key:'alpha',val:25,filter:true,double:true};
+const escape=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem(key,JSON.stringify({answers:st.answers}))}catch{}}
+function quiz(){const q=qs[st.step],a=st.answers[st.step];return `<div class="c-check"><div class="c-label">REASONING CHECK ${st.step+1} / 5</div><h3>${escape(q.q)}</h3><div class="c-answers">${q.a.map((x,i)=>`<button data-answer="${i}" ${a!==undefined?'disabled':''} class="${a===undefined?'':i===q.ok?'correct':i===a?'wrong':''}">${String.fromCharCode(65+i)} / ${escape(x)}</button>`).join('')}</div><p class="c-feedback" role="status">${a===undefined?'Select an answer for immediate feedback.':(a===q.ok?'Correct. ':'Not quite. ')+escape(q.why)}</p></div>`}
+function render(){let h='';
+if(st.step===0)h=`<h2>Vector engine</h2><p>A <code>Vec&lt;i32&gt;</code> owns a contiguous, growable sequence. Push a value or pop the last value. Length is the number of elements, while capacity is reserved space and may change when growing.</p><div class="c-row"><button id="cPush">PUSH 30</button><button id="cPop" ${!st.values.length?'disabled':''}>POP</button><button id="cResetVec">RESET</button></div><div class="c-sim"><div class="c-label">VECTOR · ${st.values.length} ELEMENTS</div><div class="c-row">${st.values.map((x,i)=>`<div class="c-node"><small>index ${i}</small><strong>${x}</strong></div>`).join('')||'<p>Empty vector</p>'}</div><div class="c-output">len = ${st.values.length}
+${JSON.stringify(st.values)}
+Capacity is implementation-dependent; this simulator displays length only.</div></div>`;
+if(st.step===1){const data=[10,20,30,40];h=`<h2>Slice viewport</h2><p>A slice <code>&amp;[i32]</code> borrows a contiguous portion of a collection. Change the start and exclusive end indices. No elements are cloned by taking a slice.</p><div class="c-row"><label for="cStart">Start</label><select id="cStart">${[0,1,2,3,4].map(n=>`<option ${n===st.start?'selected':''}>${n}</option>`).join('')}</select><label for="cEnd">End (exclusive)</label><select id="cEnd">${[0,1,2,3,4].map(n=>`<option ${n===st.end?'selected':''}>${n}</option>`).join('')}</select></div><div class="c-sim"><div class="c-row">${data.map((n,i)=>`<div class="c-node" style="${i>=st.start&&i<st.end?'border-color:#a9ead4':''}"><small>${i}</small><strong>${n}</strong></div>`).join('')}</div><div class="c-output">${st.start<=st.end?`&readings[${st.start}..${st.end}] → [${data.slice(st.start,st.end).join(', ')}]`:'Invalid range: start must be <= end.'}</div></div>`}
+if(st.step===2)h=`<h2>HashMap registry</h2><p><code>HashMap&lt;K,V&gt;</code> associates unique keys with values. Inserting an existing key replaces its value. Lookup returns an <code>Option&lt;&amp;V&gt;</code>; iteration order is not guaranteed.</p><div class="c-row"><label for="cKey">Key</label><select id="cKey"><option ${st.key==='alpha'?'selected':''}>alpha</option><option ${st.key==='beta'?'selected':''}>beta</option></select><label for="cValue">Reading</label><select id="cValue">${[10,25,50].map(x=>`<option ${x===st.val?'selected':''}>${x}</option>`).join('')}</select><button id="cInsert">INSERT / REPLACE</button></div><div class="c-sim"><div class="c-row">${Object.entries(st.registry).map(([k,v])=>`<div class="c-node"><small>${escape(k)}</small><strong>${v}</strong></div>`).join('')}</div><div id="cMapOutput" class="c-output">Current keys: ${Object.keys(st.registry).length}. Select and insert to update the registry.</div></div>`;
+if(st.step===3){let a=[3,8,12,5];if(st.filter)a=a.filter(n=>n%2===0);if(st.double)a=a.map(n=>n*2);h=`<h2>Iterator pipeline</h2><p><code>iter()</code> borrows elements; <code>copied()</code> yields copied integers. <code>filter()</code> and <code>map()</code> are lazy until consumed, such as by <code>collect()</code>. Toggle the stages.</p><div class="c-row"><button id="cFilter" class="${st.filter?'active':''}">FILTER EVEN ${st.filter?'ON':'OFF'}</button><button id="cDouble" class="${st.double?'active':''}">MAP ×2 ${st.double?'ON':'OFF'}</button></div><div class="c-sim"><div class="c-output">SOURCE   [3, 8, 12, 5]
+FILTER   ${st.filter?'retain even':'bypassed'}
+MAP      ${st.double?'multiply by two':'bypassed'}
+COLLECT  [${a.join(', ')}]
+SOURCE STILL [3, 8, 12, 5]</div></div>`}
+if(st.step===4){const count=Object.keys(st.answers).length,score=qs.filter((q,i)=>st.answers[i]===q.ok).length;h=`<h2>Pipeline assessment</h2><p><b>Applied challenge:</b> Given <code>[3, 8, 12, 5]</code>, write a function accepting <code>&amp;[i32]</code> that returns a new <code>Vec&lt;i32&gt;</code> containing only even values doubled. Store the result under a sensor ID in a <code>HashMap</code>. Explain why the input remains unchanged.</p><div class="c-sim"><div class="c-label">DIAGNOSTIC READOUT</div><div class="c-output">Checks answered: ${count}/5
+Correct: ${score}/5
+${count===5?(score>=4?'PASS · COLLECTIONS PIPELINE VERIFIED':'RETRY · REVIEW MISSED CONCEPTS'):'Complete all station checks to unlock your score.'}</div></div><button id="cReset">RESET CHECKS</button><p class="c-note">The Rust specimen on the right shows a reference solution. Read its ownership and borrowing decisions carefully.</p>`}
+$('cLesson').innerHTML=h+quiz();$('cCode').textContent=specimens[st.step];$('cPrev').disabled=st.step===0;$('cNext').disabled=st.step===4;$('cStep').textContent=`STATION ${st.step+1} / 05`;
+const n=Object.keys(st.answers).length;$('cMeter').style.width=(n*20)+'%';$('cProgress').textContent=`${n} / 5 reasoning checks completed · browser-local progress`;$('cNav').innerHTML=names.map((x,i)=>`<button data-step="${i}" class="${i===st.step?'active':''}">${i+1}. ${escape(x)} ${st.answers[i]!==undefined?'✓':''}</button>`).join('');
+$('cLesson').querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(st.answers[st.step]!==undefined)return;st.answers[st.step]=Number(b.dataset.answer);save();render()});
+if($('cPush'))$('cPush').onclick=()=>{if(st.values.length<12)st.values.push(30);render()};
+if($('cPop'))$('cPop').onclick=()=>{st.values.pop();render()};
+if($('cResetVec'))$('cResetVec').onclick=()=>{st.values=[10,20];render()};
+if($('cStart'))$('cStart').onchange=e=>{st.start=Number(e.target.value);render()};
+if($('cEnd'))$('cEnd').onchange=e=>{st.end=Number(e.target.value);render()};
+if($('cKey'))$('cKey').onchange=e=>{st.key=e.target.value;render()};
+if($('cValue'))$('cValue').onchange=e=>{st.val=Number(e.target.value);render()};
+if($('cInsert'))$('cInsert').onclick=()=>{st.registry[st.key]=st.val;render();$('cMapOutput').textContent=`Inserted ${st.key} → ${st.val}. Lookup: Some(&${st.val}).`};
+if($('cFilter'))$('cFilter').onclick=()=>{st.filter=!st.filter;render()};
+if($('cDouble'))$('cDouble').onclick=()=>{st.double=!st.double;render()};
+if($('cReset'))$('cReset').onclick=()=>{st.answers={};save();render()};
+}
+function go(i){st.step=Math.max(0,Math.min(4,i));render();root.scrollIntoView({behavior:'instant',block:'start'})}
+$('cNav').onclick=e=>{const b=e.target.closest('[data-step]');if(b)go(Number(b.dataset.step))};$('cPrev').onclick=()=>go(st.step-1);$('cNext').onclick=()=>go(st.step+1);
+$('cCopy').onclick=async()=>{try{await navigator.clipboard.writeText(specimens[st.step]);$('cCopyStatus').textContent='Rust source copied.'}catch{$('cCopyStatus').textContent='Clipboard unavailable; select the source to copy manually.'}};
+render();
+})();
+</script>
+<nav class="course-footer" id="module-pagination" aria-label="Adjacent modules" hidden>
+  <a id="previous-module" hidden></a>
+  <a id="next-module" hidden></a>
+</nav>
+<script>
+(() => {
+  const index = document.querySelector('#course-index');
+  const modules = ['module-core', 'memory01', 'ownership02', 'structures03', 'errors04', 'collections05']
+    .map(id => document.getElementById(id));
+  const links = [...document.querySelectorAll('#module-list a')];
+  const indexLink = document.querySelector('#module-index-link');
+  const pagination = document.querySelector('#module-pagination');
+  const previous = document.querySelector('#previous-module');
+  const next = document.querySelector('#next-module');
+
+  for (const link of links) {
+    link.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M3 8h10m-4-4 4 4-4 4"/></svg>');
+  }
+
+  function focusTarget(element) {
+    if (!element) return;
+    if (element.tabIndex < 0) element.tabIndex = -1;
+    element.focus({preventScroll: true});
+  }
+
+  function setAdjacent(anchor, number, direction) {
+    const link = links[number];
+    anchor.hidden = !link;
+    if (link) {
+      anchor.href = link.hash;
+      anchor.textContent = direction + ' · ' + link.querySelector('strong').textContent;
+    }
+  }
+
+  function showCourse(moveFocus = false) {
+    const bits = location.hash === '#bits';
+    const number = bits ? 0 : links.findIndex(link => link.hash === location.hash);
+    const active = modules[number];
+    modules.forEach(module => { module.hidden = module !== active; });
+    index.hidden = Boolean(active);
+    indexLink.hidden = !active;
+    pagination.hidden = !active;
+    if (active) {
+      setAdjacent(previous, number - 1, 'Previous');
+      setAdjacent(next, number + 1, 'Next');
+    }
+    if (bits && !document.querySelector('#nav [data-go="1"][aria-current]')) {
+      document.querySelector('#nav [data-go="1"]').click();
+    }
+    if (moveFocus) {
+      focusTarget(bits ? active.querySelector('#lesson h2') : (active || index).querySelector('h1'));
+      window.scrollTo({top: 0, behavior: 'instant'});
+    }
+  }
+
+  // Lab renders replace controls. Restore focus to the matching control or its
+  // feedback so keyboard learners can continue from the same place.
+  function retainFocus(event) {
+    const control = event.target.closest('button, select');
+    if (!control || control !== document.activeElement) return;
+    const module = modules.find(view => !view.hidden && view.contains(control));
+    if (!module) return;
+    const scope = control.closest('nav, main, aside') || module;
+    const data = [...control.attributes].filter(attr => attr.name.startsWith('data-'));
+    const selector = control.id
+      ? '#' + CSS.escape(control.id)
+      : data.length
+        ? control.tagName + data.map(({name, value}) => '[' + name + '="' + CSS.escape(value) + '"]').join('')
+        : '';
+    queueMicrotask(() => {
+      if (module.hidden || control.isConnected || document.activeElement !== document.body) return;
+      const duplicate = selector && scope.querySelector(selector);
+      if (duplicate && !duplicate.disabled) {
+        focusTarget(duplicate);
+        return;
+      }
+      const feedback = scope.querySelector('[role="status"]:not(:empty), .feedback, .quizresult');
+      focusTarget(feedback || scope.querySelector('h2, h3') || module.querySelector('h1'));
+    });
+  }
+
+  document.addEventListener('click', retainFocus, true);
+  document.addEventListener('change', retainFocus, true);
+  window.addEventListener('hashchange', () => showCourse(true));
+  showCourse(Boolean(location.hash));
+})();
+</script>
+
+</body>
+</html>
