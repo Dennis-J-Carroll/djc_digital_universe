@@ -1,514 +1,385 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edge AI Sandbox - TensorFlow.js Training Lab</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0a0e14;
-            --bg-secondary: #141b24;
-            --bg-card: rgba(20, 27, 36, 0.9);
-            --accent-cyan: #00d4ff;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --accent-orange: #f97316;
-            --accent-red: #ef4444;
-            --text-primary: #e5e7eb;
-            --text-secondary: #9ca3af;
-            --border-color: rgba(0, 212, 255, 0.2);
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
-            background-size: 400% 400%;
-            animation: gradient-shift 20s ease infinite;
-            min-height: 100vh;
-            color: var(--text-primary);
-        }
-        
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-        }
-        
-        .glow-cyan { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
-        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
-        .glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid var(--accent-cyan);
-            color: var(--accent-cyan);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            background: var(--accent-cyan);
-            color: var(--bg-primary);
-        }
-        
-        .stat-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
-        .code-block {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            padding: 1rem;
-            font-size: 0.85rem;
-            overflow-x: auto;
-        }
-        
-        .training-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--accent-green);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-        
-        #networkVisualization {
-            width: 100%;
-            height: 200px;
-            position: relative;
-        }
-        
-        .neuron {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-cyan);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.3s ease;
-        }
-        
-        .neuron.active {
-            background: var(--accent-cyan);
-            color: var(--bg-primary);
-            box-shadow: 0 0 15px var(--accent-cyan);
-        }
-        
-        .connection {
-            position: absolute;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
-            height: 2px;
-            transform-origin: left center;
-            opacity: 0.3;
-        }
-        
-        .connection.active {
-            opacity: 1;
-            height: 3px;
-        }
-        
-        input[type="range"] {
-            -webkit-appearance: none;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            height: 6px;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-cyan);
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--accent-cyan);
-        }
-        
-        select {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 250px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8f2e0">
+  <title>Edge AI Training Lab — Neural Field Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --paper: #f8f2e0;
+      --paper-deep: #efe5cc;
+      --ink: #211b14;
+      --muted: #514735;
+      --rule: #86765d;
+      --red: #ad3023;
+      --red-dark: #842218;
+      --blue: #165d9f;
+      --green: #1e6841;
+      --font-display: 'Zen Antique Soft', Georgia, serif;
+      --font-text: Georgia, 'Times New Roman', serif;
+      color-scheme: light;
+    }
 
-        .toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.15); border-radius: 26px; transition: 0.3s; }
-        .toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        .toggle-switch input:checked + .toggle-slider { background: var(--accent-cyan); }
-        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper) url('../../assets/plates/paper.png') repeat;
+      background-size: 502px 282px;
+      font-family: var(--font-text);
+      line-height: 1.45;
+    }
+    ::selection { background: #b8d4b8; color: var(--ink); }
+    ::-webkit-scrollbar { width: 11px; height: 11px; }
+    ::-webkit-scrollbar-track { background: var(--paper-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--rule); border: 2px solid var(--paper-deep); }
+    a { color: inherit; text-underline-offset: .2em; }
+    button, select, input { font: inherit; }
+    button, select { cursor: pointer; }
+    button:disabled, select:disabled, input:disabled { cursor: not-allowed; }
+    select:disabled, input:disabled { opacity: .55; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .hidden { display: none !important; }
 
-        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .model-label { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-        .model-a-label { background: rgba(0,212,255,0.2); color: var(--accent-cyan); }
-        .model-b-label { background: rgba(249,115,22,0.2); color: var(--accent-orange); }
+    .djc-app-bar {
+      min-height: 38px;
+      padding: 8px clamp(16px, 2vw, 32px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper-deep);
+      font: 600 12px/1.2 Georgia, serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .djc-app-bar a { text-decoration: none; }
+    .djc-app-bar a:hover { text-decoration: underline; }
+    .djc-app-bar .djc-title { color: var(--muted); }
+    .djc-app-bar .djc-logo { font-family: var(--font-display); font-size: 15px; letter-spacing: .02em; }
+    .bar-location { display: flex; align-items: center; gap: 10px; }
+    .bar-separator { color: var(--rule); }
 
-        .confusion-matrix { display: grid; grid-template-columns: auto 1fr 1fr; grid-template-rows: auto 1fr 1fr; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
-        .cm-cell { display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 8px; font-weight: 600; min-height: 48px; }
-        .cm-header { color: var(--text-secondary); font-size: 0.7rem; text-transform: uppercase; }
-        .cm-tp { background: rgba(16,185,129,0.25); color: #34d399; }
-        .cm-tn { background: rgba(0,212,255,0.2); color: #67e8f9; }
-        .cm-fp { background: rgba(239,68,68,0.2); color: #fca5a5; }
-        .cm-fn { background: rgba(249,115,22,0.2); color: #fdba74; }
+    .folio { max-width: 1680px; margin: auto; padding: 14px clamp(14px, 1.3vw, 24px) 90px; }
+    .folio-masthead {
+      display: grid;
+      grid-template-columns: 112px minmax(330px, 1fr) auto;
+      align-items: center;
+      gap: 15px;
+      min-height: 96px;
+      border-bottom: 3px double var(--rule);
+      margin-bottom: 18px;
+    }
+    .neuron-mark { display: block; width: 112px; height: 72px; object-fit: contain; }
+    .masthead-copy { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px 22px; }
+    h1, h2, h3, p, figure { margin: 0; }
+    h1 { font: 400 clamp(32px, 3vw, 47px)/1.08 var(--font-display); letter-spacing: -.02em; }
+    .masthead-deck { font: italic 17px/1.3 var(--font-text); color: var(--muted); }
+    .folio-index { display: flex; align-items: center; gap: clamp(5px, .7vw, 12px); }
+    .folio-index a {
+      border: 1px solid transparent;
+      padding: 7px 10px;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      font: 700 12px/1.2 var(--font-text);
+    }
+    .folio-index a:hover, .folio-index a:focus-visible { border-color: var(--rule); background: var(--paper-deep); }
 
-        .btn-export { background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; font-size: 0.85rem; }
-        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.3); }
-        .btn-export:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .first-spread { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(265px, .55fr); gap: 12px; align-items: stretch; }
+    .folio-plate, .folio-panel {
+      min-width: 0;
+      background: rgba(248, 242, 224, .66);
+      border: 1px solid var(--rule);
+      box-shadow: inset 0 0 0 5px var(--paper), inset 0 0 0 6px rgba(134,118,93,.7);
+    }
+    .folio-plate { display: flex; flex-direction: column; padding: 11px; min-height: 555px; }
+    .plate-head {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+      border-bottom: 1px solid var(--rule); padding: 5px 8px 9px;
+      text-transform: uppercase; letter-spacing: .14em; font-size: 13px; font-weight: 700;
+    }
+    .plate-head h2 { font: inherit; text-align: right; }
+    .diagram-labels {
+      display: flex; justify-content: space-around; gap: 8px;
+      padding: 14px 7px 0; text-align: center;
+      text-transform: uppercase; letter-spacing: .09em;
+      font-size: 12px; font-weight: 700;
+    }
+    .diagram-labels span { min-width: 0; }
+    .diagram-labels small { display: block; font-size: 12px; letter-spacing: 0; font-weight: 400; }
+    #networkVisualization { position: relative; width: 100%; height: 345px; flex: 1; min-height: 240px; }
+    .neuron {
+      position: absolute; z-index: 2; width: 22px; height: 22px;
+      border: 1.5px solid var(--ink); border-radius: 50%;
+      background: var(--paper); display: grid; place-items: center;
+      font: italic 11px/1 var(--font-text); color: var(--ink);
+      transition: background-color .2s ease, border-color .2s ease;
+    }
+    .neuron.active { background: var(--green); border-color: var(--green); color: white; }
+    .connection { position: absolute; z-index: 1; height: 1px; background: rgba(33,27,20,.5); transform-origin: left center; }
+    .connection.active { height: 2px; background: var(--red); }
+    figcaption {
+      border-top: 1px solid rgba(134,118,93,.6);
+      padding: 12px 12px 5px;
+      text-align: center; font: italic 15px/1.35 var(--font-text);
+    }
+    .figure-number { font-style: normal; font-weight: 700; }
+    #archSummary { white-space: nowrap; }
+    .data-plot { flex: 1; display: flex; align-items: center; justify-content: center; padding: 13px 10px 7px; min-height: 0; }
+    .plot-figure { width: 100%; min-width: 0; }
+    .plot-frame { position: relative; padding: 0 0 20px 20px; }
+    .plot-axis { position: absolute; color: var(--muted); font: italic 12px/1 var(--font-text); }
+    .plot-axis-x { bottom: 1px; left: 50%; }
+    .plot-axis-y { top: 50%; left: 1px; transform: rotate(-90deg); transform-origin: left center; white-space: nowrap; }
+    .plot-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px 16px; padding: 7px 0 0 20px; font-size: 12px; color: var(--muted); }
+    .plot-key { display: inline-flex; align-items: center; gap: 5px; }
+    .plot-swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+    .plot-swatch.red { background: var(--red); }
+    .plot-swatch.line { width: 15px; height: 2px; border-radius: 0; }
+    .canvas-wrap { width: 100%; }
+    #decisionCanvas, #decisionCanvasA, #decisionCanvasB { display: block; width: 100%; height: auto; background: rgba(255,255,255,.12); border: 1px solid var(--rule); }
+    .comparison-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+    .model-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+    .model-a-label { color: var(--blue); } .model-b-label { color: var(--red); }
 
-        .hidden { display: none !important; }
-    </style>
+    .lab-actions { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .folio-panel { padding: 16px; }
+    .folio-panel h2, .folio-panel h3 {
+      border-bottom: 1px solid var(--rule); padding-bottom: 7px; margin-bottom: 11px;
+      text-transform: uppercase; letter-spacing: .1em;
+      font: 700 15px/1.2 var(--font-text);
+    }
+    .field-label { display: block; margin: 0 0 5px; font-size: 13px; font-weight: 700; }
+    select:not([size]) {
+      display: block; width: 100%; min-height: 39px; padding: 7px 11px;
+      border: 1px solid var(--rule); border-radius: 2px;
+      background: var(--paper); color: var(--ink);
+    }
+    select[size] { display: block; width: 100%; padding: 5px; border: 1px solid var(--rule); border-radius: 2px; background: var(--paper); color: var(--ink); }
+    select[size] option { padding: 8px 9px; min-height: 32px; }
+    select[size] option:checked { background: #dce9d4 linear-gradient(#dce9d4,#dce9d4); color: var(--green); font-weight: 700; }
+    #dataInfo { font-size: 13px; color: var(--muted); margin-top: 9px; }
+    #dataInfo span { color: var(--ink); font-variant-numeric: tabular-nums; }
+    #trainBtn {
+      width: 100%; min-height: 72px; padding: 12px 18px;
+      border: 4px double #f6e7d4; outline: 1px solid var(--red-dark);
+      background: var(--red); color: #fffaf1;
+      font: 700 23px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .07em;
+      transition: background-color .18s ease, transform .18s ease;
+    }
+    #trainBtn:hover { background: var(--red-dark); transform: translateY(-1px); }
+    #trainBtn:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+    .status-header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--rule); padding-bottom: 7px; margin-bottom: 8px; }
+    .status-header h2 { border: 0; padding: 0; margin: 0; }
+    .stat-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; color: var(--green); border: 1px solid var(--green); background: #dce9d4; font: 700 12px/1.2 var(--font-text); text-transform: uppercase; letter-spacing: .05em; }
+    .stat-badge.bg-green-600 { color: #fff; background: var(--green); }
+    .stat-badge.bg-purple-600 { color: #fff; background: var(--blue); border-color: var(--blue); }
+    .training-indicator { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .3; } }
+    .stat-list { margin: 0; }
+    .stat-list div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(134,118,93,.55); }
+    .stat-list div:last-child { border-bottom: 0; }
+    .stat-list dt { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 700; }
+    .stat-list dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 15px; }
+    .progress-track { height: 8px; border: 1px solid var(--rule); margin: 12px 0 5px; }
+    #progressBar { height: 100%; width: 0%; background: var(--green); }
+    #progressText { font-size: 12px; color: var(--muted); }
+    .secondary-actions { display: flex; gap: 7px; margin-top: auto; }
+    .secondary-actions button { flex: 1; border: 1px solid var(--rule); min-height: 39px; padding: 7px; color: var(--ink); background: var(--paper); font-size: 13px; font-weight: 700; }
+    .secondary-actions button:hover:not(:disabled) { background: var(--paper-deep); }
+    .secondary-actions button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .lower-spread { display: grid; grid-template-columns: 1fr 1fr 1.1fr 1.1fr; gap: 12px; margin-top: 18px; }
+    .lower-spread .folio-panel { min-height: 290px; }
+    .control-stack { display: grid; gap: 12px; }
+    .control-row { min-width: 0; }
+    .control-row label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .control-row output, .control-row label span { color: var(--red-dark); font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--red); cursor: pointer; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-top: 1px solid var(--rule); font-size: 13px; }
+    .toggle-row p { margin-top: 2px; color: var(--muted); }
+    .toggle-switch { display: inline-flex; align-items: center; gap: 6px; }
+    .toggle-switch input { width: 19px; height: 19px; accent-color: var(--red); }
+    .toggle-switch span { font-weight: 700; }
+    #modelBCard { margin-top: 14px; padding: 13px; border: 1px solid var(--rule); }
+    #modelBCard h3 { font-size: 13px; }
+    .chart-container { position: relative; height: 205px; }
+    .chart-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .study-section { margin-top: 32px; border-top: 3px double var(--rule); padding-top: 15px; }
+    .study-section h2 { font: 400 28px/1.2 var(--font-display); margin-bottom: 8px; }
+    .learning-sequence { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0; }
+    .learning-sequence article { padding: 8px 20px 9px 0; margin-right: 20px; border-right: 1px solid var(--rule); }
+    .learning-sequence article:last-child { border-right: 0; }
+    .learning-sequence h3 { font: 700 16px/1.2 var(--font-text); margin-bottom: 5px; }
+    .learning-sequence p { max-width: 64ch; color: var(--muted); font-size: 14px; }
+    .appendix { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 12px; margin-top: 30px; }
+    .appendix .folio-panel { min-height: 220px; }
+    .confusion-matrix { display: grid; grid-template-columns: auto 1fr 1fr; grid-template-rows: auto 1fr 1fr; gap: 4px; font-size: 12px; }
+    .cm-cell { display: flex; justify-content: center; align-items: center; padding: 8px; min-height: 42px; border: 1px solid var(--rule); font-weight: 700; }
+    .cm-header { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+    .cm-tp { color: var(--green); background: #dce9d4; } .cm-tn { color: var(--blue); background: #e0e9ef; }
+    .cm-fp, .cm-fn { color: var(--red-dark); background: #f2ddd4; }
+    #cmStats, #cmStatsA, #cmStatsB { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; font-size: 12px; }
+    .code-block { height: 210px; overflow: auto; padding: 10px; color: var(--ink); background: #eee4ce; border: 1px solid var(--rule); font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .code-block div { margin-bottom: 4px; }
+    .summary-list { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 0; }
+    .summary-list div { border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+    .summary-list dt { font-size: 12px; color: var(--muted); }
+    .summary-list dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+    @media (max-width: 1180px) {
+      .folio-masthead { grid-template-columns: 85px 1fr; }
+      .neuron-mark { width: 85px; }
+      .folio-index { grid-column: 1 / -1; justify-content: center; padding-bottom: 10px; }
+      .first-spread { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+      .lab-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: stretch; }
+      .lab-actions > #trainBtn { align-self: start; }
+      .lab-actions .secondary-actions { grid-column: 1 / -1; }
+      .lower-spread { grid-template-columns: 1fr 1fr; }
+      .appendix { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 720px) {
+      .djc-app-bar .djc-title, .bar-separator { display: none; }
+      .folio { padding: 12px 13px 60px; }
+      .folio-masthead { grid-template-columns: 57px 1fr; gap: 8px; min-height: 0; }
+      .neuron-mark { width: 57px; height: 60px; }
+      h1 { font-size: clamp(26px, 8vw, 38px); }
+      .masthead-deck { font-size: 13px; }
+      .folio-index { justify-content: space-between; gap: 0; overflow-x: auto; padding: 4px 0 8px; }
+      .folio-index a { flex: 0 0 auto; padding: 7px 4px; font-size: 11px; letter-spacing: .04em; }
+      .first-spread, .lower-spread, .appendix { display: flex; flex-direction: column; }
+      .lab-actions { display: contents; }
+      .dataset-panel { order: 0; }
+      #trainBtn { order: 1; }
+      .status-panel { order: 2; }
+      .network-plate { order: 3; }
+      .data-plate { order: 4; }
+      .secondary-actions { order: 5; margin: 0 0 8px; }
+      .folio-plate { min-height: 0; }
+      #networkVisualization { height: 280px; flex: auto; }
+      .data-plot { min-height: 260px; }
+      .plate-head { font-size: 11px; letter-spacing: .08em; }
+      .plate-head h2 { max-width: 65%; }
+      .lower-spread .folio-panel { min-height: 0; }
+      .learning-sequence { display: block; }
+      .learning-sequence article { border-right: 0; border-bottom: 1px solid var(--rule); margin-right: 0; padding: 11px 0; }
+      .comparison-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
 <body>
-<style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
-  .djc-app-bar a:hover{color:#67e8f9;}
-  .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;}
-</style>
-<div class="djc-app-bar">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <a href="/apps/">← Back to Projects</a>
-    <span style="color:#4b5563;">|</span>
-    <span class="djc-title">Edge AI Training Lab</span>
+  <div class="djc-app-bar">
+    <div class="bar-location"><a href="/apps/">Back to projects</a><span class="bar-separator">|</span><span class="djc-title">Edge AI Training Lab</span></div>
+    <a href="/" class="djc-logo" aria-label="Dennis J. Carroll home">DJC</a>
   </div>
-  <a href="/" class="djc-logo">DJC</a>
-</div>
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-        <!-- Header -->
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold mb-3" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                Edge AI Training Lab
-            </h1>
-            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                Real-time neural network training with TensorFlow.js. Train models directly in your browser, visualize learning dynamics, and experiment with hyperparameters.
-            </p>
-        </header>
+  <main class="folio">
+    <header class="folio-masthead">
+      <img class="neuron-mark" src="../../assets/plates/neuron-mark.png" alt="" width="112" height="72">
+      <div class="masthead-copy"><h1>Edge AI Training Lab</h1><p class="masthead-deck">Choose data. Train a network. Watch its predictions change.</p></div>
+      <nav class="folio-index" aria-label="Lab sections"><a href="#data">Data</a><a href="#network">Network</a><a href="#training">Training</a><a href="#results">Results</a></nav>
+    </header>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Left Column: Controls -->
-            <div class="space-y-6">
-                <!-- Dataset Selection -->
-                <div class="glass-card p-6 glow-cyan">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                        <span class="text-2xl">[+]</span> Dataset
-                    </h2>
-                    <select id="datasetSelect" class="w-full mb-4">
-                        <option value="xor">XOR Problem (Classification)</option>
-                        <option value="circle">Circle Dataset (Classification)</option>
-                        <option value="spiral">Spiral Dataset (Classification)</option>
-                        <option value="regression">Sine Wave (Regression)</option>
-                    </select>
-                    <div id="dataInfo" class="text-sm text-gray-400">
-                        <p>XOR: Classic non-linear classification problem</p>
-                        <p class="mt-1">Samples: <span class="text-cyan-400 font-mono">200</span></p>
-                    </div>
-                </div>
+    <div class="first-spread">
+      <figure class="folio-plate network-plate" id="network">
+        <div class="plate-head"><span>Plate I.</span><h2>Neural network topology</h2></div>
+        <div class="diagram-labels"><span>Input<small>(2)</small></span><span>Hidden<small id="archSummary">(4)</small></span><span>Output<small>(1)</small></span></div>
+        <div id="networkVisualization" role="img" aria-label="Current neural network architecture"></div>
+        <figcaption><span class="figure-number">Fig. 1.</span> Fully connected network. Change hidden layers or neurons below to redraw this plate.</figcaption>
+      </figure>
 
-                <!-- Comparison Mode Toggle -->
-                <div class="glass-card p-4 flex items-center justify-between">
-                    <div>
-                        <span class="font-bold text-sm">Comparison Mode</span>
-                        <p class="text-xs text-gray-400 mt-0.5">Train two architectures side-by-side</p>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="comparisonToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-                <!-- Model A Architecture -->
-                <div class="glass-card p-6 glow-purple">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                        <span class="text-2xl">[=]</span> Architecture <span id="modelALabel" class="model-label model-a-label hidden">Model A</span>
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Hidden Layers</label>
-                            <select id="hiddenLayers" class="w-full">
-                                <option value="1">1 Layer</option>
-                                <option value="2" selected>2 Layers</option>
-                                <option value="3">3 Layers</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Neurons per Layer: <span id="neuronsValue" class="text-cyan-400">8</span></label>
-                            <input type="range" id="neuronsPerLayer" min="2" max="32" value="8" class="w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Activation Function</label>
-                            <select id="activation" class="w-full">
-                                <option value="relu">ReLU</option>
-                                <option value="sigmoid">Sigmoid</option>
-                                <option value="tanh" selected>Tanh</option>
-                                <option value="leakyReLU">Leaky ReLU</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Model B Architecture (comparison mode) -->
-                <div id="modelBCard" class="glass-card p-6 hidden" style="border-color: rgba(249,115,22,0.3); box-shadow: 0 0 20px rgba(249,115,22,0.15);">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                        <span class="text-2xl">[=]</span> Architecture <span class="model-label model-b-label">Model B</span>
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Hidden Layers</label>
-                            <select id="hiddenLayersB" class="w-full">
-                                <option value="1">1 Layer</option>
-                                <option value="2">2 Layers</option>
-                                <option value="3" selected>3 Layers</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Neurons per Layer: <span id="neuronsValueB" class="text-orange-400">16</span></label>
-                            <input type="range" id="neuronsPerLayerB" min="2" max="32" value="16" class="w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Activation Function</label>
-                            <select id="activationB" class="w-full">
-                                <option value="relu" selected>ReLU</option>
-                                <option value="sigmoid">Sigmoid</option>
-                                <option value="tanh">Tanh</option>
-                                <option value="leakyReLU">Leaky ReLU</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Training Parameters -->
-                <div class="glass-card p-6 glow-green">
-                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                        <span class="text-2xl">[x]</span> Training
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Learning Rate: <span id="lrValue" class="text-green-400">0.1</span></label>
-                            <input type="range" id="learningRate" min="-3" max="0" step="0.1" value="-1" class="w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Epochs: <span id="epochsValue" class="text-green-400">100</span></label>
-                            <input type="range" id="epochs" min="10" max="500" step="10" value="100" class="w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Batch Size: <span id="batchValue" class="text-green-400">16</span></label>
-                            <input type="range" id="batchSize" min="4" max="64" step="4" value="16" class="w-full">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-1">Optimizer</label>
-                            <select id="optimizer" class="w-full">
-                                <option value="sgd">SGD</option>
-                                <option value="adam" selected>Adam</option>
-                                <option value="rmsprop">RMSprop</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Control Buttons -->
-                <div class="flex gap-3 flex-wrap">
-                    <button id="trainBtn" class="btn-primary flex-1 flex items-center justify-center gap-2">
-                        <span>[>]</span> Train Model
-                    </button>
-                    <button id="stopBtn" class="btn-secondary" disabled>
-                        [||] Stop
-                    </button>
-                    <button id="exportBtn" class="btn-export" disabled title="Export trained model weights">
-                        ⬇ Export Weights
-                    </button>
-                </div>
+      <figure class="folio-plate data-plate" id="results">
+        <div class="plate-head"><span>Plate II.</span><h2>Data in feature space</h2></div>
+        <div class="data-plot">
+          <div class="plot-figure"><div class="plot-frame">
+            <span class="plot-axis plot-axis-y" id="plotYAxis">x₂</span>
+            <div id="singleCanvasWrap" class="canvas-wrap"><canvas id="decisionCanvas" width="500" height="350" role="img" aria-label="Dataset points and learned decision boundary"></canvas></div>
+            <div id="comparisonCanvasWrap" class="canvas-wrap comparison-grid hidden">
+              <div><span class="model-label model-a-label">Model A</span><canvas id="decisionCanvasA" width="250" height="250" role="img" aria-label="Model A decision boundary"></canvas></div>
+              <div><span class="model-label model-b-label">Model B</span><canvas id="decisionCanvasB" width="250" height="250" role="img" aria-label="Model B decision boundary"></canvas></div>
             </div>
-
-            <!-- Middle Column: Visualization -->
-            <div class="space-y-6">
-                <!-- Network Visualization -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4 flex items-center justify-between">
-                        <span>Network Architecture</span>
-                        <span id="trainingStatus" class="stat-badge bg-gray-700 text-gray-300">Idle</span>
-                    </h2>
-                    <div id="networkVisualization"></div>
-                    <div class="mt-4 text-center text-sm text-gray-400">
-                        <span>Input (2) → </span>
-                        <span id="archSummary">Hidden (8, 8)</span>
-                        <span> → Output (1)</span>
-                    </div>
-                </div>
-
-                <!-- Training Progress -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Training Progress</h2>
-                    <div class="grid grid-cols-3 gap-4 mb-4">
-                        <div class="text-center">
-                            <div class="text-2xl font-mono font-bold text-cyan-400" id="currentEpoch">0</div>
-                            <div class="text-xs text-gray-400">Epoch</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-mono font-bold text-green-400" id="currentLoss">-</div>
-                            <div class="text-xs text-gray-400">Loss</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-mono font-bold text-purple-400" id="currentAccuracy">-</div>
-                            <div class="text-xs text-gray-400">Accuracy</div>
-                        </div>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
-                        <div id="progressBar" class="h-3 rounded-full transition-all duration-300" style="width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple))"></div>
-                    </div>
-                    <div class="text-center text-xs text-gray-400" id="progressText">Ready to train</div>
-                </div>
-
-                <!-- Decision Boundary Visualization -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Decision Boundary</h2>
-                    <div id="singleCanvasWrap">
-                        <canvas id="decisionCanvas" width="300" height="300" class="w-full border border-gray-700 rounded-lg"></canvas>
-                    </div>
-                    <div id="comparisonCanvasWrap" class="hidden comparison-grid">
-                        <div>
-                            <div class="text-center mb-2"><span class="model-label model-a-label">Model A</span></div>
-                            <canvas id="decisionCanvasA" width="250" height="250" class="w-full border border-gray-700 rounded-lg"></canvas>
-                        </div>
-                        <div>
-                            <div class="text-center mb-2"><span class="model-label model-b-label">Model B</span></div>
-                            <canvas id="decisionCanvasB" width="250" height="250" class="w-full border border-gray-700 rounded-lg"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Confusion Matrix -->
-                <div id="confusionMatrixCard" class="glass-card p-6 hidden">
-                    <h2 class="text-xl font-bold mb-4">Confusion Matrix</h2>
-                    <div id="singleCMWrap">
-                        <div id="confusionMatrix" class="confusion-matrix"></div>
-                        <div id="cmStats" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
-                    </div>
-                    <div id="comparisonCMWrap" class="hidden comparison-grid">
-                        <div>
-                            <div class="text-center mb-2"><span class="model-label model-a-label">Model A</span></div>
-                            <div id="confusionMatrixA" class="confusion-matrix"></div>
-                            <div id="cmStatsA" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
-                        </div>
-                        <div>
-                            <div class="text-center mb-2"><span class="model-label model-b-label">Model B</span></div>
-                            <div id="confusionMatrixB" class="confusion-matrix"></div>
-                            <div id="cmStatsB" class="mt-3 grid grid-cols-2 gap-2 text-xs font-mono"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Charts & Logs -->
-            <div class="space-y-6">
-                <!-- Loss Chart -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Loss Curve</h2>
-                    <div class="chart-container">
-                        <canvas id="lossChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Accuracy Chart -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Accuracy Curve</h2>
-                    <div class="chart-container">
-                        <canvas id="accuracyChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Training Log -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Training Log</h2>
-                    <div id="trainingLog" class="code-block h-40 overflow-y-auto text-gray-400">
-                        <div>[System] Edge AI Sandbox initialized</div>
-                        <div>[TensorFlow.js] Backend: <span class="text-green-400" id="tfBackend">loading...</span></div>
-                        <div>[Ready] Configure parameters and click Train</div>
-                    </div>
-                </div>
-
-                <!-- Model Info -->
-                <div class="glass-card p-6">
-                    <h2 class="text-xl font-bold mb-4">Model Summary</h2>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-400">Parameters:</span>
-                            <span id="paramCount" class="font-mono text-cyan-400 ml-2">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400">Memory:</span>
-                            <span id="memoryUsage" class="font-mono text-green-400 ml-2">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400">Inference:</span>
-                            <span id="inferenceTime" class="font-mono text-purple-400 ml-2">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400">Training Time:</span>
-                            <span id="trainingTime" class="font-mono text-orange-400 ml-2">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <span class="plot-axis plot-axis-x" id="plotXAxis">x₁</span>
+          </div>
+          <div id="plotLegend" class="plot-legend"><span class="plot-key"><i class="plot-swatch" aria-hidden="true"></i>Class 0</span><span class="plot-key"><i class="plot-swatch red" aria-hidden="true"></i>Class 1</span></div></div>
         </div>
+        <figcaption><span class="figure-number">Fig. 2.</span> Dataset points appear before training. Model predictions appear after training.</figcaption>
+      </figure>
+
+      <aside class="lab-actions" id="data" aria-label="Experiment controls">
+        <section class="folio-panel dataset-panel">
+          <h2>Dataset</h2>
+          <label class="field-label" for="datasetSelect">Choose training data</label>
+          <select id="datasetSelect" size="4" aria-describedby="dataInfo">
+            <option value="xor" selected>XOR classification</option>
+            <option value="circle">Circle classification</option>
+            <option value="spiral">Spiral classification</option>
+            <option value="regression">Sine wave fitting</option>
+          </select>
+          <div id="dataInfo" aria-live="polite"><p>XOR: Classic non-linear classification problem</p><p>Samples: 200</p></div>
+        </section>
+        <button id="trainBtn" type="button" disabled>Train model</button>
+        <section class="folio-panel status-panel" aria-label="Training status">
+          <div class="status-header"><h2>Training status</h2><span id="trainingStatus" class="stat-badge" role="status" aria-live="polite">Idle</span></div>
+          <dl class="stat-list"><div><dt>Epoch</dt><dd id="currentEpoch">—</dd></div><div><dt>Loss</dt><dd id="currentLoss">—</dd></div><div><dt id="accuracyLabel">Last epoch accuracy</dt><dd id="currentAccuracy">—</dd></div></dl>
+          <div class="progress-track" role="progressbar" aria-label="Training progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressBar" style="width:0%"></div></div>
+          <div id="progressText">Ready to train</div>
+        </section>
+        <div class="secondary-actions"><button id="stopBtn" type="button" disabled>Stop training</button><button id="exportBtn" type="button" disabled title="Export trained model weights">Export weights</button></div>
+      </aside>
     </div>
+
+    <div class="lower-spread" id="training">
+      <section class="folio-panel" aria-labelledby="architectureHeading">
+        <h2 id="architectureHeading">Architecture settings <span id="modelALabel" class="model-label model-a-label hidden">Model A</span></h2>
+        <div class="control-stack">
+          <div class="control-row"><label for="hiddenLayers">Hidden layers</label><select id="hiddenLayers"><option value="1" selected>1 layer</option><option value="2">2 layers</option><option value="3">3 layers</option></select></div>
+          <div class="control-row"><label for="neuronsPerLayer">Neurons per layer: <span id="neuronsValue">4</span></label><input type="range" id="neuronsPerLayer" min="2" max="32" value="4"></div>
+          <div class="control-row"><label for="activation">Activation function</label><select id="activation"><option value="relu">ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh" selected>Tanh</option><option value="leakyReLU">Leaky ReLU</option></select></div>
+          <div class="toggle-row"><div><strong>Comparison mode</strong><p>Train two architectures side by side</p></div><label class="toggle-switch"><input type="checkbox" id="comparisonToggle"><span>Compare</span></label></div>
+        </div>
+        <div id="modelBCard" class="hidden"><h3>Architecture <span class="model-label model-b-label">Model B</span></h3><div class="control-stack">
+          <div class="control-row"><label for="hiddenLayersB">Hidden layers</label><select id="hiddenLayersB"><option value="1">1 layer</option><option value="2">2 layers</option><option value="3" selected>3 layers</option></select></div>
+          <div class="control-row"><label for="neuronsPerLayerB">Neurons per layer: <span id="neuronsValueB">16</span></label><input type="range" id="neuronsPerLayerB" min="2" max="32" value="16"></div>
+          <div class="control-row"><label for="activationB">Activation function</label><select id="activationB"><option value="relu" selected>ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh">Tanh</option><option value="leakyReLU">Leaky ReLU</option></select></div>
+        </div></div>
+      </section>
+
+      <section class="folio-panel" aria-labelledby="trainingHeading"><h2 id="trainingHeading">Training settings</h2><div class="control-stack">
+        <div class="control-row"><label for="learningRate">Learning rate: <span id="lrValue">0.1</span></label><input type="range" id="learningRate" min="-3" max="0" step="0.1" value="-1"></div>
+        <div class="control-row"><label for="epochs">Epochs: <span id="epochsValue">100</span></label><input type="range" id="epochs" min="10" max="500" step="10" value="100"></div>
+        <div class="control-row"><label for="batchSize">Batch size: <span id="batchValue">16</span></label><input type="range" id="batchSize" min="4" max="64" step="4" value="16"></div>
+        <div class="control-row"><label for="optimizer">Optimizer</label><select id="optimizer"><option value="sgd">SGD</option><option value="adam" selected>Adam</option><option value="rmsprop">RMSprop</option></select></div>
+      </div></section>
+
+      <section class="folio-panel" aria-labelledby="lossHeading"><h2 id="lossHeading">Loss curve</h2><div class="chart-container"><canvas id="lossChart" role="img" aria-label="Loss by epoch"></canvas></div><p class="chart-note">Lower loss means model predictions fit selected data more closely.</p></section>
+      <section class="folio-panel" aria-labelledby="accuracyHeading"><h2 id="accuracyHeading">Accuracy curve</h2><div class="chart-container"><canvas id="accuracyChart" role="img" aria-label="Classification accuracy by epoch"></canvas></div><p class="chart-note" id="accuracyNote">Accuracy applies to classification datasets.</p></section>
+    </div>
+
+    <section class="study-section" aria-labelledby="studyHeading"><h2 id="studyHeading">How training changes model</h2><div class="learning-sequence">
+      <article><h3>Forward prediction</h3><p>Inputs pass through weighted connections and activation functions to produce prediction.</p></article>
+      <article><h3>Loss</h3><p id="lossExplanation">Binary cross-entropy compares prediction with class label. Lower values mean smaller error.</p></article>
+      <article><h3>Update</h3><p>Optimizer adjusts weights using loss gradient. Repeating this process changes model's predictions.</p></article>
+    </div></section>
+
+    <div class="appendix">
+      <section id="confusionMatrixCard" class="folio-panel hidden" aria-labelledby="cmHeading"><h2 id="cmHeading">Confusion matrix</h2><div id="singleCMWrap"><div id="confusionMatrix" class="confusion-matrix"></div><div id="cmStats"></div></div><div id="comparisonCMWrap" class="comparison-grid hidden"><div><span class="model-label model-a-label">Model A</span><div id="confusionMatrixA" class="confusion-matrix"></div><div id="cmStatsA"></div></div><div><span class="model-label model-b-label">Model B</span><div id="confusionMatrixB" class="confusion-matrix"></div><div id="cmStatsB"></div></div></div></section>
+      <section class="folio-panel" aria-labelledby="logHeading"><h2 id="logHeading">Training log</h2><div id="trainingLog" class="code-block" role="log" aria-live="polite" aria-relevant="additions"><div>[System] Edge AI Sandbox initialized</div><div>[TensorFlow.js] Backend: <span id="tfBackend">loading...</span></div><div>[Ready] Configure parameters and click Train</div></div></section>
+      <section class="folio-panel" aria-labelledby="summaryHeading"><h2 id="summaryHeading">Model summary</h2><dl class="summary-list"><div><dt>Parameters</dt><dd id="paramCount">—</dd></div><div><dt>Memory</dt><dd id="memoryUsage">—</dd></div><div><dt>Inference</dt><dd id="inferenceTime">—</dd></div><div><dt>Training time</dt><dd id="trainingTime">—</dd></div></dl></section>
+    </div>
+  </main>
 
     <script>
         // ============ GLOBALS ============
@@ -523,6 +394,7 @@
         let accuracyHistoryB = [];
         let lossChart, accuracyChart;
         let comparisonMode = false;
+        let activeDataset = null;
         
         // ============ DATASET GENERATION ============
         function generateXORData(n = 200) {
@@ -577,6 +449,24 @@
         
         function loadDataset() {
             const dataset = document.getElementById('datasetSelect').value;
+            if (activeDataset !== null && dataset !== activeDataset) {
+                if (model) { model.dispose(); model = null; }
+                if (modelB) { modelB.dispose(); modelB = null; }
+                lossHistory = []; accuracyHistory = [];
+                lossHistoryB = []; accuracyHistoryB = [];
+                updateCharts();
+                document.getElementById('currentEpoch').textContent = '—';
+                document.getElementById('currentLoss').textContent = '—';
+                document.getElementById('progressBar').style.width = '0%';
+                document.querySelector('.progress-track').setAttribute('aria-valuenow', '0');
+                document.getElementById('progressText').textContent = 'Ready to train';
+                document.getElementById('trainingStatus').textContent = 'Idle';
+                document.getElementById('trainingStatus').className = 'stat-badge';
+                ['paramCount', 'memoryUsage', 'inferenceTime', 'trainingTime'].forEach(id => {
+                    document.getElementById(id).textContent = '—';
+                });
+                document.getElementById('exportBtn').disabled = true;
+            }
             if (trainingData) {
                 trainingData.xs.dispose();
                 trainingData.ys.dispose();
@@ -590,6 +480,7 @@
             };
             
             trainingData = dataFuncs[dataset]();
+            activeDataset = dataset;
             
             const descriptions = {
                 xor: 'XOR: Classic non-linear classification problem',
@@ -600,8 +491,29 @@
             
             document.getElementById('dataInfo').innerHTML = `
                 <p>${descriptions[dataset]}</p>
-                <p class="mt-1">Samples: <span class="text-cyan-400 font-mono">200</span></p>
+                <p>Samples: <span>200</span></p>
             `;
+            const isRegression = dataset === 'regression';
+            document.getElementById('plotXAxis').textContent = isRegression ? 'Input x' : 'x₁';
+            document.getElementById('plotYAxis').textContent = isRegression ? 'Target y' : 'x₂';
+            document.getElementById('plotLegend').innerHTML = isRegression
+                ? '<span class="plot-key"><i class="plot-swatch" aria-hidden="true"></i>Target samples</span><span class="plot-key"><i class="plot-swatch red line" aria-hidden="true"></i>Model prediction</span>'
+                : '<span class="plot-key"><i class="plot-swatch" aria-hidden="true"></i>Class 0</span><span class="plot-key"><i class="plot-swatch red" aria-hidden="true"></i>Class 1</span>';
+            const plotDescription = isRegression
+                ? 'Sine fitting: blue target samples and red learned prediction curve, input x versus normalized target y'
+                : 'Classification points: blue class 0 and red class 1, plotted by features x one and x two with learned decision boundary';
+            ['decisionCanvas', 'decisionCanvasA', 'decisionCanvasB'].forEach(id => {
+                document.getElementById(id).setAttribute('aria-label', plotDescription);
+            });
+            document.getElementById('accuracyNote').textContent = isRegression
+                ? 'Accuracy is not defined for this regression task; follow loss instead.'
+                : 'Accuracy applies to classification datasets.';
+            document.getElementById('lossExplanation').textContent = isRegression
+                ? 'Mean squared error compares predicted values with sine targets. Lower values mean smaller error.'
+                : 'Binary cross-entropy compares prediction with class label. Lower values mean smaller error.';
+            if (isRegression) document.getElementById('currentAccuracy').textContent = 'N/A';
+            else if (!isTraining) document.getElementById('currentAccuracy').textContent = '—';
+            document.getElementById('confusionMatrixCard').classList.add('hidden');
             
             drawDecisionBoundary();
             log(`Dataset loaded: ${dataset}`);
@@ -614,7 +526,8 @@
             for (let i = 1; i < nLayers; i++) {
                 m.add(tf.layers.dense({ units: nNeurons, activation: actFn }));
             }
-            m.add(tf.layers.dense({ units: 1, activation: 'sigmoid' }));
+            const isRegression = document.getElementById('datasetSelect').value === 'regression';
+            m.add(tf.layers.dense({ units: 1, activation: isRegression ? 'linear' : 'sigmoid' }));
             const optName = document.getElementById('optimizer').value;
             const lr = Math.pow(10, parseFloat(document.getElementById('learningRate').value));
             let opt;
@@ -623,7 +536,11 @@
                 case 'adam': opt = tf.train.adam(lr); break;
                 case 'rmsprop': opt = tf.train.rmsprop(lr); break;
             }
-            m.compile({ optimizer: opt, loss: 'binaryCrossentropy', metrics: ['accuracy'] });
+            m.compile({
+                optimizer: opt,
+                loss: isRegression ? 'meanSquaredError' : 'binaryCrossentropy',
+                metrics: isRegression ? [] : ['accuracy']
+            });
             return m;
         }
 
@@ -667,10 +584,17 @@
             const hiddenLayers = parseInt(document.getElementById('hiddenLayers').value);
             const neurons = parseInt(document.getElementById('neuronsPerLayer').value);
             const archStr = Array(hiddenLayers).fill(neurons).join(', ');
-            document.getElementById('archSummary').textContent = `Hidden (${archStr})`;
+            document.getElementById('archSummary').textContent = `(${archStr})`;
         }
         
         // ============ TRAINING ============
+        function setExperimentControlsDisabled(disabled) {
+            [
+                'datasetSelect', 'comparisonToggle', 'hiddenLayers', 'neuronsPerLayer', 'activation',
+                'hiddenLayersB', 'neuronsPerLayerB', 'activationB', 'learningRate', 'epochs', 'batchSize', 'optimizer'
+            ].forEach(id => { document.getElementById(id).disabled = disabled; });
+        }
+
         async function _trainSingle(mdl, histLoss, histAcc, label, epochs, batchSize, startTime) {
             await mdl.fit(trainingData.xs, trainingData.ys, {
                 epochs, batchSize, shuffle: true,
@@ -678,12 +602,13 @@
                     onEpochEnd: async (epoch, logs) => {
                         if (stopTraining) { mdl.stopTraining = true; return; }
                         histLoss.push(logs.loss);
-                        histAcc.push(logs.acc);
+                        histAcc.push(logs.acc ?? null);
                         document.getElementById('currentEpoch').textContent = epoch + 1;
                         document.getElementById('currentLoss').textContent = logs.loss.toFixed(4);
-                        document.getElementById('currentAccuracy').textContent = (logs.acc * 100).toFixed(1) + '%';
+                        document.getElementById('currentAccuracy').textContent = logs.acc == null ? 'N/A' : (logs.acc * 100).toFixed(1) + '%';
                         const p = ((epoch + 1) / epochs) * 100;
                         document.getElementById('progressBar').style.width = `${p}%`;
+                        document.querySelector('.progress-track').setAttribute('aria-valuenow', Math.round(p));
                         document.getElementById('progressText').textContent = `${label} — Epoch ${epoch + 1}/${epochs}`;
                         updateCharts();
                         if ((epoch + 1) % 10 === 0) drawDecisionBoundary();
@@ -699,16 +624,21 @@
             stopTraining = false;
             lossHistory = []; accuracyHistory = [];
             lossHistoryB = []; accuracyHistoryB = [];
+            document.getElementById('currentEpoch').textContent = '—';
+            document.getElementById('currentLoss').textContent = '—';
+            document.getElementById('currentAccuracy').textContent = document.getElementById('datasetSelect').value === 'regression' ? 'N/A' : '—';
+            document.getElementById('progressBar').style.width = '0%';
+            document.querySelector('.progress-track').setAttribute('aria-valuenow', '0');
 
             document.getElementById('trainBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
             document.getElementById('exportBtn').disabled = true;
+            setExperimentControlsDisabled(true);
             document.getElementById('trainingStatus').className = 'stat-badge bg-green-600 text-white flex items-center gap-2';
             document.getElementById('trainingStatus').innerHTML = '<div class="training-indicator"></div> Training';
 
             buildModel();
             if (comparisonMode) buildModelB();
-            loadDataset();
 
             const epochs = parseInt(document.getElementById('epochs').value);
             const batchSize = parseInt(document.getElementById('batchSize').value);
@@ -716,6 +646,7 @@
 
             log(`Training started: ${epochs} epochs, batch size ${batchSize}${comparisonMode ? ' [Comparison Mode]' : ''}`);
 
+            let trainingError = false;
             try {
                 // Train Model A
                 log('▸ Training Model A...');
@@ -732,26 +663,40 @@
 
                 // Measure inference time
                 const inferenceStart = performance.now();
-                for (let i = 0; i < 100; i++) { const pred = model.predict(tf.tensor2d([[0, 0]])); pred.dispose(); }
+                for (let i = 0; i < 100; i++) {
+                    tf.tidy(() => model.predict(tf.tensor2d([[0, 0]])).dataSync()[0]);
+                }
                 document.getElementById('inferenceTime').textContent = `${((performance.now() - inferenceStart) / 100).toFixed(2)}ms`;
 
-                drawDecisionBoundary();
-                updateCharts();
-                const ds = document.getElementById('datasetSelect').value;
-                if (ds !== 'regression') computeConfusionMatrix();
-                document.getElementById('exportBtn').disabled = false;
-
-                log(`✓ Training complete! Model A accuracy: ${(accuracyHistory[accuracyHistory.length - 1] * 100).toFixed(1)}%`);
-                if (comparisonMode && accuracyHistoryB.length) {
-                    log(`✓ Model B accuracy: ${(accuracyHistoryB[accuracyHistoryB.length - 1] * 100).toFixed(1)}%`);
+                if (lossHistory.length) {
+                    drawDecisionBoundary();
+                    updateCharts();
+                    const ds = document.getElementById('datasetSelect').value;
+                    if (ds !== 'regression') computeConfusionMatrix();
+                    document.getElementById('exportBtn').disabled = false;
+                    const resultPrefix = stopTraining ? 'Training stopped.' : 'Training complete.';
+                    if (ds === 'regression') {
+                        log(`${resultPrefix} Final loss: ${lossHistory[lossHistory.length - 1].toFixed(4)}`);
+                    } else {
+                        log(`${resultPrefix} Model A accuracy: ${(accuracyHistory[accuracyHistory.length - 1] * 100).toFixed(1)}%`);
+                    }
+                    if (ds !== 'regression' && comparisonMode && accuracyHistoryB.length) {
+                        log(`Model B accuracy: ${(accuracyHistoryB[accuracyHistoryB.length - 1] * 100).toFixed(1)}%`);
+                    }
+                } else if (stopTraining) {
+                    log('Training stopped before first epoch completed.');
                 }
-            } catch (e) { log(`Training error: ${e.message}`); }
+            } catch (e) { trainingError = true; log(`Training error: ${e.message}`); }
 
             isTraining = false;
             document.getElementById('trainBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
-            document.getElementById('trainingStatus').textContent = 'Complete';
-            document.getElementById('trainingStatus').className = 'stat-badge bg-purple-600 text-white';
+            setExperimentControlsDisabled(false);
+            const finalStatus = trainingError ? 'Error' : stopTraining ? 'Stopped' : 'Complete';
+            document.getElementById('trainingStatus').textContent = finalStatus;
+            document.getElementById('trainingStatus').className = 'stat-badge bg-purple-600';
+            if (trainingError) document.getElementById('progressText').textContent = 'Training failed. Check log and try again.';
+            if (stopTraining) document.getElementById('progressText').textContent = 'Training stopped.';
         }
 
         function stopTrainingFn() { stopTraining = true; log('Training stopped by user'); }
@@ -805,7 +750,7 @@
         // ============ CONFUSION MATRIX ============
         function _computeCM(mdl) {
             if (!mdl || !trainingData) return null;
-            const preds = mdl.predict(trainingData.xs).dataSync();
+            const preds = tf.tidy(() => mdl.predict(trainingData.xs).dataSync());
             const labels = trainingData.ys.dataSync();
             let tp = 0, fp = 0, tn = 0, fn = 0;
             for (let i = 0; i < labels.length; i++) {
@@ -841,7 +786,7 @@
                 <div class="cm-cell cm-tp">${cm.tp}</div>
             `;
             statsEl.innerHTML = `
-                <div><span class="text-gray-400">Accuracy:</span> <span class="text-green-400">${accuracy}%</span></div>
+                <div><span>Full dataset accuracy:</span> <span>${accuracy}%</span></div>
                 <div><span class="text-gray-400">Precision:</span> <span class="text-cyan-400">${precision}%</span></div>
                 <div><span class="text-gray-400">Recall:</span> <span class="text-purple-400">${recall}%</span></div>
                 <div><span class="text-gray-400">F1 Score:</span> <span class="text-orange-400">${f1}%</span></div>
@@ -872,7 +817,7 @@
             
             const layers = [2, ...Array(hiddenLayers).fill(neurons), 1];
             const containerWidth = container.offsetWidth;
-            const containerHeight = 200;
+            const containerHeight = container.clientHeight || 280;
             
             const layerSpacing = containerWidth / (layers.length + 1);
             const neuronElements = [];
@@ -887,8 +832,8 @@
                     const y = neuronSpacing * (i + 1);
                     const neuron = document.createElement('div');
                     neuron.className = 'neuron';
-                    neuron.style.left = `${x - 12}px`;
-                    neuron.style.top = `${y - 12}px`;
+                    neuron.style.left = `${x - 11}px`;
+                    neuron.style.top = `${y - 11}px`;
                     neuron.textContent = layerIdx === 0 ? `x${i+1}` : layerIdx === layers.length - 1 ? 'y' : '';
                     container.appendChild(neuron);
                     neuronElements[layerIdx].push({ x, y });
@@ -924,15 +869,45 @@
             const ctx = canvas.getContext('2d');
             const width = canvas.width, height = canvas.height;
             ctx.clearRect(0, 0, width, height);
+            if (document.getElementById('datasetSelect').value === 'regression') {
+                ctx.strokeStyle = 'rgba(134,118,93,.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
+                if (mdl) {
+                    const samples = 120;
+                    const inputs = Array.from({ length: samples + 1 }, (_, i) => [-2 + 4 * i / samples, 0]);
+                    const values = tf.tidy(() => mdl.predict(tf.tensor2d(inputs)).dataSync());
+                    ctx.beginPath();
+                    for (let i = 0; i <= samples; i++) {
+                        const px = i * width / samples;
+                        const py = (1.1 - values[i]) * height / 1.2;
+                        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.strokeStyle = '#ad3023'; ctx.lineWidth = 2.5; ctx.stroke();
+                }
+                if (trainingData && trainingData.raw) {
+                    const { xs, ys } = trainingData.raw;
+                    for (let i = 0; i < xs.length; i++) {
+                        ctx.beginPath();
+                        ctx.arc((xs[i][0] + 2) * width / 4, (1.1 - ys[i][0]) * height / 1.2, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#165d9f'; ctx.fill();
+                    }
+                }
+                return;
+            }
             if (mdl) {
                 const res = 30, step = 2 / res;
+                const inputs = [];
+                for (let i = 0; i < res; i++) {
+                    for (let j = 0; j < res; j++) inputs.push([-1 + i * step, -1 + j * step]);
+                }
+                const values = tf.tidy(() => mdl.predict(tf.tensor2d(inputs)).dataSync());
                 for (let i = 0; i < res; i++) {
                     for (let j = 0; j < res; j++) {
                         const x = -1 + i * step, y = -1 + j * step;
-                        const pred = mdl.predict(tf.tensor2d([[x, y]]));
-                        const val = pred.dataSync()[0]; pred.dispose();
-                        const r = Math.floor(val * 168), g = Math.floor(val * 85 + (1 - val) * 212), b = Math.floor(val * 247 + (1 - val) * 255);
-                        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
+                        const val = values[i * res + j];
+                        const r = Math.floor(224 + val * 18), g = Math.floor(233 - val * 12), b = Math.floor(239 - val * 27);
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                         ctx.fillRect((x + 1) * width / 2, (1 - y) * height / 2, width / res + 1, height / res + 1);
                     }
                 }
@@ -942,8 +917,8 @@
                 for (let i = 0; i < xs.length; i++) {
                     const x = (xs[i][0] + 1) * width / 2, y = (1 - xs[i][1]) * height / 2;
                     ctx.beginPath(); ctx.arc(x, y, 3, 0, 2 * Math.PI);
-                    ctx.fillStyle = ys[i][0] > 0.5 ? '#a855f7' : '#00d4ff';
-                    ctx.fill(); ctx.strokeStyle = 'white'; ctx.lineWidth = 1; ctx.stroke();
+                    ctx.fillStyle = ys[i][0] > 0.5 ? '#ad3023' : '#165d9f';
+                    ctx.fill(); ctx.strokeStyle = '#f8f2e0'; ctx.lineWidth = 1; ctx.stroke();
                 }
             }
         }
@@ -966,9 +941,10 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: { duration: 0 },
+                font: { family: 'Georgia' },
                 scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, title: { display: true, text: 'Epoch', color: '#9ca3af' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' }, beginAtZero: true }
+                    x: { grid: { color: 'rgba(134,118,93,0.22)' }, ticks: { color: '#514735' }, title: { display: true, text: 'Epoch', color: '#514735' } },
+                    y: { grid: { color: 'rgba(134,118,93,0.22)' }, ticks: { color: '#514735' }, beginAtZero: true }
                 },
                 plugins: { legend: { display: false } }
             };
@@ -978,8 +954,8 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Model A', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 },
-                        { label: 'Model B', data: [], borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
+                        { label: 'Model A', data: [], borderColor: '#ad3023', backgroundColor: 'rgba(173, 48, 35, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Model B', data: [], borderColor: '#165d9f', backgroundColor: 'rgba(22, 93, 159, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
                     ]
                 },
                 options: { ...chartOptions, plugins: { legend: { display: false } } }
@@ -990,8 +966,8 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Model A', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
-                        { label: 'Model B', data: [], borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
+                        { label: 'Model A', data: [], borderColor: '#1e6841', backgroundColor: 'rgba(30, 104, 65, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Model B', data: [], borderColor: '#165d9f', backgroundColor: 'rgba(22, 93, 159, 0.1)', fill: false, tension: 0.3, borderDash: [6, 3], hidden: true }
                     ]
                 },
                 options: { ...chartOptions, plugins: { legend: { display: false } }, scales: { ...chartOptions.scales, y: { ...chartOptions.scales.y, max: 1 } } }
@@ -1067,6 +1043,7 @@
             loadDataset();
             updateNetworkVisualization();
             setTimeout(updateNetworkVisualization, 100);
+            document.getElementById('trainBtn').disabled = false;
         };
 
         window.addEventListener('resize', updateNetworkVisualization);
