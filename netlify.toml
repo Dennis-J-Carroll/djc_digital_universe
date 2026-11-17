@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci --prefix apps/convergence-game && npm run build"
+  command = "npm ci --prefix apps/convergence-game && npm run clean && npm run build"
   publish = "public"
   functions = "netlify/functions"
 
@@ -31,6 +31,37 @@
   from = "/apps-projects/*"
   to = "/apps/:splat"
   status = 301
+
+# Retired apps: override any files left in a cached publish directory.
+[[redirects]]
+  from = "/apps/sphere-chat-interface.html"
+  to = "/apps/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/apps/prose-trainer-app.html"
+  to = "/apps/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/apps/write_paradigm.html"
+  to = "/apps/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/apps/studio/"
+  to = "/apps/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/apps/studio/*"
+  to = "/apps/"
+  status = 302
+  force = true
 
 # Mech Interp Viz — redirect to standalone Next.js app on Railway
 [[redirects]]
