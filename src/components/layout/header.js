@@ -158,7 +158,7 @@ const Header = ({ siteTitle }) => {
               width: "2rem",
               height: "2rem",
               borderRadius: "0.5rem",
-              background: "linear-gradient(135deg, var(--primary-color), var(--secondary-color))",
+              background: "linear-gradient(135deg, var(--fill-signal-a), var(--fill-signal-b))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

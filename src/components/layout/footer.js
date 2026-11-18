@@ -210,7 +210,7 @@ const Footer = ({ siteTitle }) => {
                 width: "2.5rem",
                 height: "2.5rem",
                 borderRadius: "0.5rem",
-                background: "linear-gradient(135deg, var(--primary-color), var(--secondary-color))",
+                background: "linear-gradient(135deg, var(--fill-signal-a), var(--fill-signal-b))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -229,7 +229,7 @@ const Footer = ({ siteTitle }) => {
               <span style={{
                 fontSize: "1.5rem",
                 fontWeight: "600",
-                backgroundImage: "linear-gradient(90deg, var(--text-primary), var(--primary-color))",
+                backgroundImage: "linear-gradient(90deg, var(--text-primary), #4dd9ec)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent"
               }}>
@@ -524,7 +524,7 @@ const Footer = ({ siteTitle }) => {
                   borderRadius: "8px",
                   border: "none",
                   background: "var(--primary-color)",
-                  color: "var(--bg-dark)",
+                  color: "var(--bg-primary)",
                   fontWeight: "600",
                   cursor: newsletterStatus === 'submitting' ? 'wait' : 'pointer',
                   transition: "all 0.2s ease",

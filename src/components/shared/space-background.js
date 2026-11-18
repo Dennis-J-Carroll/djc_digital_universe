@@ -154,7 +154,7 @@ const SpaceBackground = () => {
             triangles: { enable: false },
           },
           move: {
-            enable: true,
+            enable: !(typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches),
             outModes: { default: "out" },
             random: false,
             speed: 1.6,

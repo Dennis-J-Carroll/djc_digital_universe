@@ -5,6 +5,9 @@
   --primary-color: #00bcd4;
   --secondary-color: #7c4dff;
   --accent-color: #798996;
+  /* Filled surfaces that carry white text (4.5:1+); --primary-color is for strokes and text on dark */
+  --fill-signal-a: #007a92;
+  --fill-signal-b: #5a2bcc;
   --bg-primary: #0a0e14;
   --bg-secondary: #0f1419;
   --text-primary: #ffffff;
@@ -456,7 +459,7 @@ body.light-theme h6 {
 .btn {
   display: inline-block;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--fill-signal-a), var(--fill-signal-b));
   color: white;
   font-weight: 600;
   border: none;
@@ -972,7 +975,7 @@ body.tokyo-afternoon-theme .blog-post-card p {
 .section-badge {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--fill-signal-a), var(--fill-signal-b));
   color: white;
   font-size: 0.75rem;
   font-weight: 600;

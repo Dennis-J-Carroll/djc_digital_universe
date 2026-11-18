@@ -190,7 +190,7 @@ const IndexPage = ({ location }) => {
                   className="glow-on-hover btn btn-secondary"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.getElementById('contact')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
                   }}
                 >
                   Contact Me
@@ -349,7 +349,7 @@ const IndexPage = ({ location }) => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {formStatus.submitted && formStatus.success ? (
-              <div className="contact-success" role="alert" aria-live="polite">
+              <div className="contact-success" role="status">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>

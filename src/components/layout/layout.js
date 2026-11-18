@@ -1,5 +1,6 @@
 import React, { useEffect, lazy, Suspense } from "react"
 import { useStaticQuery, graphql } from "gatsby"
+import { MotionConfig } from "framer-motion"
 import "../../styles/global.css"
 import "../../styles/futuristic-ui.css"
 import Header from "./header.js"
@@ -60,7 +61,7 @@ const Layout = ({ children, pageContext, location }) => {
   const isHomePage = location?.pathname === "/";
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       {/* Interactive Cursor Effect */}
       <InteractiveCursor />
 
@@ -88,7 +89,7 @@ const Layout = ({ children, pageContext, location }) => {
 
         <Footer siteTitle={siteTitle} />
       </div>
-    </>
+    </MotionConfig>
   )
 }
 
