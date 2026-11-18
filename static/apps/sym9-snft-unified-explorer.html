@@ -4,425 +4,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sym9 & SNFT Unified Explorer — Digit Symbology & Number Theory</title>
+    <title>Sym9 &amp; SNFT Unified Explorer — Digit Symbology & Number Theory</title>
     <meta name="description" content="Explore Symbolic Numerical Field Theory (SNFT) and Sym9 transformations, analyzing patterns, resonance, and attractor convergence in number theory.">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IM+Fell+French+Canon:ital@0;1&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#121c3b">
     <style>
         :root {
-            --bg-primary: #0a0e14;
-            --bg-secondary: #111820;
-            --bg-card: rgba(17, 24, 32, 0.92);
-            --bg-card-hover: rgba(22, 30, 40, 0.96);
-            --accent-cyan: #00d4ff;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --accent-yellow: #fbbf24;
-            --accent-orange: #f97316;
-            --accent-pink: #ec4899;
-            --accent-teal: #14b8a6;
-            --text-primary: #e5e7eb;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border-color: rgba(0, 212, 255, 0.15);
-            --border-hover: rgba(0, 212, 255, 0.4);
-            --glow-cyan: rgba(0, 212, 255, 0.12);
-            --glow-purple: rgba(168, 85, 247, 0.12);
+            color-scheme: dark;
+            /* Ultramarine ground, vellum ink, gold leaf, vermilion rubrication */
+            --ground: #121c3b;
+            --ground-deep: #0c1430;
+            --plate: #172346;
+            --ink: #efe4c8;
+            --ink-2: #d8ccaa;
+            --ink-3: #bfae82;
+            --gold: #d8b25a;
+            --gold-dim: rgba(216, 178, 90, 0.38);
+            --rule: rgba(216, 178, 90, 0.22);
+            --rule-faint: rgba(239, 228, 200, 0.10);
+            --rubric: #b83a26;
+            --rubric-ink: #f27a5e;
+            --lapis: #8ea9ea;
+            --verdigris: #6fc0ad;
+            --display: 'IM Fell French Canon', 'EB Garamond', Georgia, serif;
+            --text: 'EB Garamond', Georgia, 'Times New Roman', serif;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html { scrollbar-color: var(--gold-dim) var(--ground); }
+
         body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: var(--text);
+            font-size: 1.125rem;
+            line-height: 1.55;
+            font-variant-numeric: lining-nums;
+            background: var(--ground);
+            color: var(--ink);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Background animated gradient */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 80% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
+        ::selection { background: var(--rubric); color: #fbf1d6; }
+        input, select { caret-color: var(--gold); accent-color: var(--rubric-ink); }
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
-        .app-container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .app-container { max-width: 1160px; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
 
-        /* Header */
+        /* Masthead */
         .header {
-            text-align: center;
-            padding: 3rem 1rem 2rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 17rem;
+            gap: 2.5rem 3.5rem;
+            align-items: end;
+            padding: 3.5rem 0 2rem;
         }
-
         .header h1 {
-            font-size: clamp(2rem, 5vw, 3.2rem);
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-teal));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.75rem;
-            line-height: 1.15;
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: clamp(2.3rem, 5.4vw, 4rem);
+            line-height: 1.04;
+            letter-spacing: -0.01em;
+            color: var(--ink);
+            margin-bottom: 1rem;
+            text-wrap: balance;
         }
+        .header p { color: var(--ink-2); font-size: 1.2rem; max-width: 46ch; text-wrap: pretty; }
 
-        .header p {
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
+        /* Durer's square: the page's one signature move */
+        .square { width: 17rem; max-width: 100%; justify-self: end; }
+        .square-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--plate);
+            border: 1px solid var(--gold-dim);
+            border-radius: 0;
+            box-shadow: inset 0 0 0 5px var(--plate), inset 0 0 0 6px var(--rule);
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
         }
+        .square-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px; }
+        .sq {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--display);
+            font-size: 1.55rem;
+            color: var(--ink-2);
+            border: 1px solid var(--rule-faint);
+            margin: -0.5px;
+            transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out);
+        }
+        .sq.on { background: rgba(216, 178, 90, 0.18); color: var(--gold); }
+        .sq.date { text-decoration: underline; text-decoration-color: var(--rubric-ink); text-decoration-thickness: 1px; text-underline-offset: 7px; }
+        .square-cap { margin-top: 0.75rem; font-size: 0.98rem; line-height: 1.4; color: var(--ink-3); text-wrap: pretty; }
+        .square-sum { display: block; margin-top: 0.4rem; min-height: 1.4em; color: var(--gold); font-variant-numeric: tabular-nums; }
 
-        /* Tab Navigation */
+        /* Tab navigation: running head with a double rule */
         .tab-nav {
             display: flex;
-            gap: 4px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 5px;
-            margin: 1.5rem auto 2.5rem;
+            border-bottom: 3px double var(--gold-dim);
+            margin: 1rem 0 2.25rem;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             max-width: 100%;
         }
         .tab-nav::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            flex-shrink: 0;
-            padding: 0.65rem 1.25rem;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
             position: relative;
+            flex-shrink: 0;
+            padding: 0.8rem 1.4rem;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: var(--ink-2);
+            font-family: var(--text);
+            font-size: 1.2rem;
+            font-weight: 500;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s var(--ease-out);
         }
+        .tab-btn + .tab-btn::before { content: ''; position: absolute; left: 0; top: 30%; bottom: 30%; width: 1px; background: var(--rule); }
+        .tab-btn:hover { color: var(--ink); }
+        .tab-btn.active { color: var(--gold); box-shadow: inset 0 -3px 0 var(--rubric-ink); }
+        .tab-btn:focus-visible { outline-offset: -3px; }
 
-        .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
-        }
-
-        .tab-btn .tab-icon { margin-right: 6px; }
-
-        /* Tab Content */
-        .tab-panel { display: none; animation: fadeInUp 0.45s ease forwards; }
-        .tab-panel.active { display: block; }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(18px); }
+        /* Panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: panelIn 0.45s var(--ease-out); }
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Glass Card */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.75rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.35s ease;
+        /* A folio: set directly on the ground, divided by a single rule */
+        .folio { padding: 0 0 2.5rem; margin-bottom: 2.5rem; border-bottom: 1px solid var(--rule); }
+        .folio:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 1rem; }
+        .folio h2 {
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: clamp(1.7rem, 3.2vw, 2.3rem);
+            line-height: 1.15;
+            color: var(--ink);
+            margin-bottom: 1.1rem;
+            text-wrap: balance;
+        }
+        /* Rubricated initial */
+        .folio > .content-text:first-of-type::first-letter {
+            font-family: var(--display);
+            float: left;
+            font-size: 3.7em;
+            line-height: 0.82;
+            padding: 0.06em 0.1em 0 0;
+            color: var(--rubric-ink);
         }
 
-        .glass-card:hover {
-            border-color: var(--border-hover);
-            box-shadow: 0 0 35px var(--glow-cyan);
-        }
+        .content-text { color: var(--ink-2); margin-bottom: 1rem; max-width: 66ch; text-wrap: pretty; }
+        .content-text strong { color: var(--rubric-ink); font-weight: 500; }
 
-        .glass-card h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-
-        .glass-card h3 {
-            font-size: 1.15rem;
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem 2.5rem; margin-top: 1.75rem; }
+        .feature-card { border-top: 1px solid var(--rule); padding-top: 1rem; }
+        .feature-card h3, .sub-label {
+            font-size: 1.2rem;
             font-weight: 600;
-            color: var(--accent-teal);
-            margin: 1.25rem 0 0.75rem;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.05em;
+            color: var(--gold);
         }
+        .feature-card h3 { margin-bottom: 0.4rem; }
+        .feature-card p { font-size: 1.04rem; color: var(--ink-2); line-height: 1.55; }
+        .sub-label { margin: 1.25rem 0 0.4rem; }
 
-        .section-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
+        .rule-list { color: var(--ink-2); margin-left: 1.25rem; font-size: 1.08rem; max-width: 68ch; }
+        .rule-list li { margin-bottom: 0.65rem; padding-left: 0.3rem; }
+        .rule-list strong { color: var(--rubric-ink); font-weight: 500; }
 
-        /* Feature Cards Grid */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.25rem;
-            margin-top: 1rem;
-        }
-
-        .feature-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            border-color: var(--accent-cyan);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.1);
-        }
-
-        .feature-card h4 {
+        /* Forms: ruled lines, not boxes */
+        .control-group { margin-bottom: 1.15rem; }
+        .control-group label {
+            display: block;
+            margin-bottom: 0.1rem;
+            color: var(--ink-3);
             font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--accent-cyan);
-            margin-bottom: 0.5rem;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.05em;
         }
-
-        .feature-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; }
-
-        /* Forms & Inputs */
-        .control-group { margin-bottom: 1rem; }
-        .control-group label { display: block; margin-bottom: 0.4rem; color: var(--accent-teal); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
         .control-group input, .control-group select {
             width: 100%;
-            padding: 0.7rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.2s;
+            padding: 0.4rem 0 0.45rem;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--gold-dim);
+            border-radius: 0;
+            color: var(--ink);
+            font-family: var(--text);
+            font-size: 1.2rem;
+            font-variant-numeric: lining-nums tabular-nums;
+            transition: border-color 0.2s var(--ease-out);
         }
-        .control-group input:focus, .control-group select:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 10px var(--glow-cyan);
-        }
+        .control-group input:hover, .control-group select:hover { border-bottom-color: var(--gold); }
+        .control-group input:focus-visible, .control-group select:focus-visible { border-bottom-color: var(--rubric-ink); }
+        .control-group input::placeholder { color: var(--ink-3); }
+        select option { background: var(--ground-deep); color: var(--ink); }
 
         button.btn-primary {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 0.8rem 1.5rem;
+            background: var(--rubric);
+            color: #fbf1d6;
+            border: 1px solid var(--gold-dim);
+            border-radius: 0;
+            font-family: var(--text);
+            font-size: 1.15rem;
+            font-weight: 500;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            transition: background-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
         }
-        button.btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
-        }
-        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        button.btn-primary:hover:not(:disabled) { background: #c2402a; }
+        button.btn-primary:active { transform: translateY(1px); }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
         button.btn-secondary {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--gold-dim);
+            border-radius: 0;
+            font-family: var(--text);
+            font-size: 1.1rem;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.1em;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-            font-family: 'JetBrains Mono', monospace;
+            transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
         }
-        button.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-cyan); }
+        button.btn-secondary:hover:not(:disabled) { color: var(--gold); border-color: var(--gold); }
+        button.btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        /* Two column layout */
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1.5rem;
-            align-items: start;
-        }
-        @media (max-width: 768px) {
-            .two-col { grid-template-columns: 1fr; }
-        }
+        .btn-row { display: flex; gap: 10px; margin-top: 1rem; }
+        .btn-row .btn-primary { flex: 1; }
 
-        /* Chart Containers */
+        .form-msg { min-height: 1.5rem; margin-top: 0.6rem; font-size: 1rem; color: var(--rubric-ink); }
+
+        /* Layout */
+        .two-col { display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem 3rem; align-items: start; }
+        .two-col.even { grid-template-columns: 1fr 1fr; }
+
+        /* Plates: charts framed with a double rule */
         .chart-container {
             position: relative;
             width: 100%;
-            margin: 1rem auto;
-            min-height: 400px;
+            height: 350px;
+            margin: 1.25rem 0;
+            background: var(--plate);
+            box-shadow: 0 0 0 1px var(--gold-dim), 0 0 0 6px var(--ground), 0 0 0 7px var(--rule);
         }
-
-        /* KPI Badges & Metrics */
-        .kpi-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            border-radius: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin: 0.25rem;
+        .chart-container:empty::before {
+            content: attr(data-empty);
+            display: flex; align-items: center; justify-content: center;
+            height: 100%;
+            padding: 1.25rem;
+            text-align: center;
+            font-style: italic;
+            color: var(--ink-3);
+            font-size: 1.05rem;
         }
+        .chart-note { font-size: 0.98rem; font-style: italic; color: var(--ink-3); margin-top: 0.6rem; max-width: 66ch; }
+        .key-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 0.35rem 0 0.1rem; background: var(--rubric-ink); }
 
+        /* Readouts */
         .metric-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
+            gap: 0 2rem;
             margin-top: 1rem;
+            border-top: 3px double var(--gold-dim);
+            border-bottom: 1px solid var(--rule);
         }
-
-        .metric-card {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1.25rem;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-
+        .metric-card { padding: 0.75rem 0 0.85rem; }
+        .metric-label { font-size: 1.05rem; font-variant-caps: all-small-caps; letter-spacing: 0.05em; color: var(--ink-3); }
         .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.95rem;
+            font-weight: 500;
+            line-height: 1.25;
+            color: var(--gold);
+            font-variant-numeric: lining-nums tabular-nums;
+            overflow-wrap: anywhere;
         }
+        .metric-value.metric-text { font-size: 1.15rem; line-height: 1.5; font-weight: 500; color: var(--ink); }
 
-        .metric-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
-
-        /* Logs & Output */
         .log-area {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
+            background: var(--ground-deep);
+            border: 1px solid var(--rule);
+            padding: 10px 12px;
             height: 200px;
             overflow-y: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.98rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink-2);
             margin-top: 1rem;
         }
-        .log-entry { margin: 2px 0; padding: 2px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .log-info { color: var(--accent-cyan); }
-        .log-success { color: var(--accent-green); }
-        .log-warning { color: var(--accent-yellow); }
-        .log-error { color: var(--accent-pink); }
+        .log-entry { padding: 2px 0; border-bottom: 1px solid var(--rule-faint); }
+        .log-info { color: var(--lapis); }
+        .log-success { color: var(--verdigris); }
 
-        .progress-bar {
-            width: 100%; height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px; overflow: hidden; margin: 10px 0;
-        }
-        .progress-fill {
-            height: 100%; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
-            width: 0%; transition: width 0.3s ease;
-        }
-
-        .content-text { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
-        .content-text strong { color: var(--accent-teal); }
+        .progress-bar { width: 100%; height: 3px; background: var(--rule-faint); margin: 1rem 0 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.3s var(--ease-out); }
 
         .path-display {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            background: var(--ground-deep);
+            border: 1px solid var(--rule);
             padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--text-primary);
+            font-size: 1.15rem;
+            font-variant-numeric: lining-nums tabular-nums;
+            color: var(--ink);
             max-height: 150px;
             overflow-y: auto;
-            word-wrap: break-word;
-            line-height: 1.5;
+            overflow-wrap: anywhere;
+            line-height: 1.7;
         }
+        .path-display .arrow { color: var(--rubric-ink); }
+
+        .finding {
+            border: 1px solid rgba(242, 122, 94, 0.45);
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            color: var(--ink-2);
+        }
+        .finding strong { color: var(--rubric-ink); font-weight: 500; letter-spacing: 0.06em; }
 
         /* Table */
-        .pattern-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
-        .pattern-table th, .pattern-table td {
-            padding: 0.75rem; text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .pattern-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 1.08rem; }
+        .pattern-table th, .pattern-table td { padding: 0.7rem 0.75rem; text-align: left; border-bottom: 1px solid var(--rule-faint); }
+        .pattern-table th {
+            color: var(--gold);
+            font-weight: 500;
+            font-size: 1.05rem;
+            font-variant-caps: all-small-caps;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--gold-dim);
         }
-        .pattern-table th { color: var(--accent-cyan); font-weight: 600; background: rgba(0,0,0,0.2); }
-        .pattern-table tr:hover { background: rgba(255,255,255,0.02); }
+        .pattern-table .num { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+        .pattern-table tbody tr:hover { background: rgba(216, 178, 90, 0.06); }
+        .pattern-table .empty { text-align: center; font-style: italic; color: var(--ink-3); }
+        .pattern-table .attractor { color: var(--lapis); font-variant-numeric: lining-nums tabular-nums; }
+        .chip {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            font-size: 1rem;
+            font-variant-numeric: lining-nums tabular-nums;
+        }
+
+        footer { color: var(--ink-3); font-style: italic; font-size: 0.98rem; padding: 1.5rem 0 1rem; margin-top: 2rem; border-top: 3px double var(--gold-dim); }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--ground); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dim); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        @media (max-width: 900px) {
+            .header { grid-template-columns: minmax(0, 1fr); padding-top: 2.5rem; }
+            .square { justify-self: start; width: 15rem; max-width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .two-col, .two-col.even { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+            .control-group input, .control-group select { font-size: 1.15rem; }
+        }
+        @media (max-width: 560px) {
+            .app-container { padding: 1rem; }
+            .tab-btn { padding: 0.75rem 1rem; }
+            .square { width: 11.5rem; }
+            .sq { font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
     </style>
 </head>
 
 <body>
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
-  .djc-app-bar a:hover{color:#67e8f9;}
-  .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
+  .djc-app-bar{position:sticky;top:0;z-index:99999;background:var(--ground-deep);border-bottom:1px solid var(--rule);padding:0.55rem 1rem;min-height:48px;display:flex;align-items:center;justify-content:space-between;font-family:var(--text);}
+  .djc-app-bar a{color:var(--gold);text-decoration:none;font-size:1rem;font-weight:500;}
+  .djc-app-bar a:hover{color:var(--ink);}
+  .djc-app-bar .djc-title{color:var(--ink-2);font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
+  .djc-app-bar .djc-logo{color:var(--gold);font-weight:600;letter-spacing:0.08em;flex-shrink:0;}
 </style>
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
     <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
     <span style="color:#4b5563;flex-shrink:0;">|</span>
-    <span class="djc-title">Sym9 & SNFT Explorer</span>
+    <span class="djc-title">Sym9 &amp; SNFT Explorer</span>
   </div>
   <a href="/" class="djc-logo">DJC</a>
 </div>
     <div class="app-container">
         <!-- Header -->
         <header class="header">
-            <h1>Sym9 & SNFT Unified Explorer</h1>
-            <p>An interactive hub for exploring Symbolic Numerical Field Theory (SNFT) convergence, scaling laws, digit symbology, and non-linear numerical attractors.</p>
+            <div class="header-copy">
+                <h1>Sym9 &amp; SNFT Unified Explorer</h1>
+                <p>An interactive hub for exploring Symbolic Numerical Field Theory (SNFT) convergence, scaling laws, digit symbology, and non-linear numerical attractors.</p>
+            </div>
+            <figure class="square">
+                <button type="button" class="square-btn" id="squareBtn" aria-describedby="squareCap" aria-label="Dürer's magic square. Activate to highlight its next line and show the sum.">
+                    <div class="square-grid" aria-hidden="true"><span class="sq" data-r="0" data-c="0">16</span><span class="sq" data-r="0" data-c="1">3</span><span class="sq" data-r="0" data-c="2">2</span><span class="sq" data-r="0" data-c="3">13</span><span class="sq" data-r="1" data-c="0">5</span><span class="sq" data-r="1" data-c="1">10</span><span class="sq" data-r="1" data-c="2">11</span><span class="sq" data-r="1" data-c="3">8</span><span class="sq" data-r="2" data-c="0">9</span><span class="sq" data-r="2" data-c="1">6</span><span class="sq" data-r="2" data-c="2">7</span><span class="sq" data-r="2" data-c="3">12</span><span class="sq" data-r="3" data-c="0">4</span><span class="sq date" data-r="3" data-c="1">15</span><span class="sq date" data-r="3" data-c="2">14</span><span class="sq" data-r="3" data-c="3">1</span></div>
+                </button>
+                <figcaption class="square-cap" id="squareCap">Dürer's square, from <i>Melencolia I</i> (1514). Every row, column and diagonal sums to 34. Select it to step through the ten lines.<span class="square-sum" id="squareSum" aria-live="polite"></span></figcaption>
+            </figure>
         </header>
 
         <!-- Tab Navigation -->
-        <nav class="tab-nav" role="tablist">
-            <button class="tab-btn active" onclick="switchTab('overview')" role="tab">
-                <span class="tab-icon">◉</span>Theory & Symbology
-            </button>
-            <button class="tab-btn" onclick="switchTab('sym9')" role="tab">
-                <span class="tab-icon">↘</span>Sym9 Single Path
-            </button>
-            <button class="tab-btn" onclick="switchTab('snft')" role="tab">
-                <span class="tab-icon">⊞</span>SNFT Batch Space
-            </button>
-            <button class="tab-btn" onclick="switchTab('discoveries')" role="tab">
-                <span class="tab-icon">✨</span>Discoveries
-            </button>
+        <nav class="tab-nav" role="tablist" aria-label="Explorer sections">
+            <button class="tab-btn active" id="tabbtn-overview" onclick="switchTab('overview')" role="tab" aria-selected="true" aria-controls="tab-overview" tabindex="0">Theory &amp; Symbology</button>
+            <button class="tab-btn" id="tabbtn-sym9" onclick="switchTab('sym9')" role="tab" aria-selected="false" aria-controls="tab-sym9" tabindex="-1">Sym9 Single Path</button>
+            <button class="tab-btn" id="tabbtn-snft" onclick="switchTab('snft')" role="tab" aria-selected="false" aria-controls="tab-snft" tabindex="-1">SNFT Batch Space</button>
+            <button class="tab-btn" id="tabbtn-discoveries" onclick="switchTab('discoveries')" role="tab" aria-selected="false" aria-controls="tab-discoveries" tabindex="-1">Discoveries</button>
         </nav>
 
         <!-- ==================== TAB: OVERVIEW ==================== -->
-        <div id="tab-overview" class="tab-panel active" role="tabpanel">
-            <div class="glass-card">
+        <div id="tab-overview" aria-labelledby="tabbtn-overview" class="tab-panel active" role="tabpanel" tabindex="0">
+            <div class="folio">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));">◉</span>
                     Digit Symbology & Number Theory
                 </h2>
                 <p class="content-text">
@@ -434,29 +455,26 @@
                 </p>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <span class="card-icon" style="color: var(--accent-purple);">↘</span>
-                        <h4>Sym9 Adaptive Transforms</h4>
+                        <h3>Sym9 Adaptive Transforms</h3>
                         <p>Single-path simulations focusing on the "Sym9" rulesets — highly non-linear, adaptive maps incorporating digit sums, modular arithmetic, and cubic gates (e.g., subtracting cubes of first/last digits).</p>
                     </div>
                     <div class="feature-card">
-                        <span class="card-icon" style="color: var(--accent-cyan);">⊞</span>
-                        <h4>SNFT 5-Digit Space</h4>
+                        <h3>SNFT 5-Digit Space</h3>
                         <p>Batch processing of numerical intervals to discover global <strong>attractors</strong>, convergence landscapes, and mapping macroscopic scaling behaviors across thousands of integers.</p>
                     </div>
                     <div class="feature-card">
-                        <span class="card-icon" style="color: var(--accent-yellow);">✨</span>
-                        <h4>Resonance Patterns</h4>
+                        <h3>Resonance Patterns</h3>
                         <p>Analysis of numbers displaying specific resonances (like containing "27", "127", or "3141") to see how symbol-level traits perturb macroscopic convergence.</p>
                     </div>
                 </div>
             </div>
             
-            <div class="glass-card">
-                <h3>Theoretical Foundations</h3>
+            <div class="folio">
+                <h2>Theoretical Foundations</h2>
                 <p class="content-text">
                     Numerical Attractor Descent Curves (NADCs) map the convergence from a highly energetic "seed" down to stable loops or static zeros. SNFT explores these paths not in continuous phase space, but in discrete, integer-based topology.
                 </p>
-                <ul style="list-style-type: square; color: var(--text-secondary); margin-left: 2rem; font-size: 0.95rem; line-height: 1.6;">
+                <ul class="rule-list">
                     <li><strong>Universality:</strong> We often find that regardless of the initial starting band (10000 vs 90000), halting times fall into universal statistical distributions.</li>
                     <li><strong>Gate Functions:</strong> Specific transform steps (like the 27-Gate or Cubic Gate) act as filters, rapidly collapsing entropy for specific sets of integers.</li>
                     <li><strong>Attractors:</strong> Terminal nodes (like 0, 90, 729, or cycle-loops) represent the lowest energy states of the arithmetic field.</li>
@@ -465,10 +483,9 @@
         </div>
 
         <!-- ==================== TAB: SYM9 ==================== -->
-        <div id="tab-sym9" class="tab-panel" role="tabpanel">
-            <div class="glass-card">
+        <div id="tab-sym9" aria-labelledby="tabbtn-sym9" class="tab-panel" role="tabpanel" tabindex="0">
+            <div class="folio">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">↘</span>
                     Sym9 Transformation Explorer
                 </h2>
                 <p class="content-text">
@@ -478,15 +495,15 @@
                 <div class="two-col">
                     <div>
                         <div class="control-group">
-                            <label>Initial Number (Seed)</label>
+                            <label for="sym9_initial">Initial Number (Seed)</label>
                             <input type="number" id="sym9_initial" value="1234">
                         </div>
                         <div class="control-group">
-                            <label>Max Steps</label>
+                            <label for="sym9_max_steps">Max Steps</label>
                             <input type="number" id="sym9_max_steps" value="50">
                         </div>
                         <div class="control-group">
-                            <label>Step 4 Rule (Cubic Gate)</label>
+                            <label for="sym9_rule4">Step 4 Rule (Cubic Gate)</label>
                             <select id="sym9_rule4">
                                 <option value="cubic_ft_lt">n - (first³ + last³)</option>
                                 <option value="sum27_to_729">If sum_digits=27, n=729 else n-(f³+l³)</option>
@@ -494,7 +511,7 @@
                             </select>
                         </div>
                         <div class="control-group">
-                            <label>Step 6 Rule (27-Gate)</label>
+                            <label for="sym9_rule6">Step 6 Rule (27-Gate)</label>
                             <select id="sym9_rule6">
                                 <option value="adaptive_default">Default (n%27 or sum%27)</option>
                                 <option value="mul3_mod27">n = (n * 3) % 27</option>
@@ -502,14 +519,15 @@
                             </select>
                         </div>
                         <div class="control-group">
-                            <label>Target Attractor (Optional)</label>
+                            <label for="sym9_target">Target Attractor (Optional)</label>
                             <input type="number" id="sym9_target" placeholder="e.g., 90">
                         </div>
                         <button class="btn-primary" onclick="runSym9Simulation()">Run Sym9 Simulation</button>
+                        <p class="form-msg" id="sym9_msg" role="status"></p>
                     </div>
 
                     <div>
-                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;">
+                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;" aria-live="polite">
                             <div class="metric-card">
                                 <div class="metric-label">Final Value</div>
                                 <div class="metric-value" id="sym9_final">-</div>
@@ -518,13 +536,18 @@
                                 <div class="metric-label">Steps Taken</div>
                                 <div class="metric-value" id="sym9_steps">-</div>
                             </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Stopped Because</div>
+                                <div class="metric-value metric-text" id="sym9_stop">-</div>
+                            </div>
                         </div>
-                        <div class="chart-container" style="min-height: 300px; height: 300px;">
-                            <canvas id="sym9Chart"></canvas>
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="sym9Chart" role="img" aria-label="Line chart of the Sym9 value at each iteration step"></canvas>
                         </div>
-                        <div style="margin-top: 1rem;">
-                            <h4 style="color: var(--accent-teal); font-size: 0.9rem; margin-bottom: 0.5rem;">Path Trajectory</h4>
-                            <div class="path-display" id="sym9_path">Awaiting simulation...</div>
+                        <p class="chart-note"><span class="key-dot"></span>Red points are the results of step 4 (cubic gate) and step 6 (27-gate), the two steps the rule selectors change.</p>
+                        <div>
+                            <h3 class="sub-label">Path Trajectory</h3>
+                            <div class="path-display" id="sym9_path" aria-live="polite">Awaiting simulation...</div>
                         </div>
                     </div>
                 </div>
@@ -532,10 +555,9 @@
         </div>
 
         <!-- ==================== TAB: SNFT ==================== -->
-        <div id="tab-snft" class="tab-panel" role="tabpanel">
-            <div class="glass-card">
+        <div id="tab-snft" aria-labelledby="tabbtn-snft" class="tab-panel" role="tabpanel" tabindex="0">
+            <div class="folio">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));">⊞</span>
                     SNFT 5-Digit Batch Framework
                 </h2>
                 <p class="content-text">
@@ -545,15 +567,15 @@
                 <div class="two-col">
                     <div>
                         <div class="control-group">
-                            <label>Range Start</label>
+                            <label for="snft_start">Range Start</label>
                             <input type="number" id="snft_start" value="10000" min="10000" max="99999">
                         </div>
                         <div class="control-group">
-                            <label>Range End</label>
+                            <label for="snft_end">Range End</label>
                             <input type="number" id="snft_end" value="11000" min="10000" max="99999">
                         </div>
                         <div class="control-group">
-                            <label>Sampling Strategy</label>
+                            <label for="snft_strategy">Sampling Strategy</label>
                             <select id="snft_strategy">
                                 <option value="all">All Numbers</option>
                                 <option value="random">Random Sample</option>
@@ -562,11 +584,11 @@
                             </select>
                         </div>
                         <div class="control-group">
-                            <label>Sample Size</label>
+                            <label for="snft_size">Sample Size</label>
                             <input type="number" id="snft_size" value="1000" min="100" max="10000">
                         </div>
                         <div class="control-group">
-                            <label>Base Transformation Rule</label>
+                            <label for="snft_rule">Base Transformation Rule</label>
                             <select id="snft_rule">
                                 <option value="standard5">Standard (1000a + e)</option>
                                 <option value="extended5">Extended (100a + 10b + e)</option>
@@ -575,20 +597,21 @@
                             </select>
                         </div>
                         
-                        <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                        <div class="btn-row">
                             <button class="btn-primary" id="snft_start_btn" onclick="startSNFTExperiment()">Start Batch</button>
-                            <button class="btn-secondary" id="snft_pause_btn" onclick="pauseSNFTExperiment()" disabled>Pause</button>
+                            <button class="btn-secondary" type="button" id="snft_pause_btn" onclick="pauseSNFTExperiment()" disabled>Pause</button>
                         </div>
                         
-                        <div class="progress-bar">
+                        <p class="form-msg" id="snft_msg" role="status"></p>
+                        <div class="progress-bar" role="progressbar" aria-label="Batch progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="snft_bar">
                             <div class="progress-fill" id="snft_progress"></div>
                         </div>
 
-                        <div class="log-area" id="snft_log"></div>
+                        <div class="log-area" id="snft_log" role="log" tabindex="0" aria-label="Batch log"></div>
                     </div>
 
                     <div>
-                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;">
+                        <div class="metric-grid" style="margin-top: 0; margin-bottom: 1rem;" aria-live="polite">
                             <div class="metric-card">
                                 <div class="metric-label">Processed</div>
                                 <div class="metric-value" id="snft_processed">0</div>
@@ -600,28 +623,27 @@
                         </div>
 
                         <!-- Plotly Charts -->
-                        <div id="snft_scatter" class="chart-container" style="height: 350px;"></div>
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <button class="btn-secondary" onclick="exportSNFTResults()">Download CSV</button>
+                        <div id="snft_scatter" class="chart-container" data-empty="Run a batch to plot convergence steps per starting number."></div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-secondary" type="button" onclick="exportSNFTResults()">Download CSV</button>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="glass-card" style="margin-top: 1.5rem;">
-                <h3 style="margin-top: 0;">Attractor Landscape & Patterns</h3>
-                <div class="two-col">
-                    <div id="snft_attractor_pie" class="chart-container" style="height: 350px;"></div>
-                    <div id="snft_pattern_heatmap" class="chart-container" style="height: 350px;"></div>
+            <div class="folio" style="margin-top: 1.5rem;">
+                <h2>Attractor Landscape &amp; Patterns</h2>
+                <div class="two-col even">
+                    <div id="snft_attractor_pie" class="chart-container" data-empty="Attractor distribution appears after a batch runs."></div>
+                    <div id="snft_pattern_heatmap" class="chart-container" data-empty="Pattern metrics appear when the batch finds resonance patterns."></div>
                 </div>
             </div>
         </div>
 
         <!-- ==================== TAB: DISCOVERIES ==================== -->
-        <div id="tab-discoveries" class="tab-panel" role="tabpanel">
-            <div class="glass-card">
+        <div id="tab-discoveries" aria-labelledby="tabbtn-discoveries" class="tab-panel" role="tabpanel" tabindex="0">
+            <div class="folio">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));">✨</span>
                     Discoveries & Anomalies
                 </h2>
                 <p class="content-text">
@@ -645,18 +667,19 @@
                     <table class="pattern-table" id="discoveryTable">
                         <thead>
                             <tr>
-                                <th>Pattern Type</th>
-                                <th>Count</th>
-                                <th>Avg Steps</th>
-                                <th>Efficiency</th>
-                                <th>Primary Attractor</th>
+                                <th scope="col">Pattern Type</th>
+                                <th scope="col" class="num">Count</th>
+                                <th scope="col" class="num">Avg Steps</th>
+                                <th scope="col" class="num">Efficiency</th>
+                                <th scope="col">Primary Attractor</th>
                             </tr>
                         </thead>
                         <tbody id="discoveryBody">
-                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Run an SNFT Batch Analysis to populate discoveries.</td></tr>
+                            <tr><td colspan="5" class="empty">Run an SNFT Batch Analysis to populate discoveries.</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <p class="chart-note">Efficiency is the mean absolute step size divided by (its standard deviation + 1), averaged over numbers containing the pattern. Higher means larger, steadier jumps toward the attractor.</p>
             </div>
         </div>
 
@@ -666,14 +689,24 @@
     </div>
 
     <script>
-        // Tab switching logic
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-            
-            event.currentTarget.classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
+        // Tab switching (roving tabindex + arrow-key navigation)
+        const TAB_IDS = ['overview', 'sym9', 'snft', 'discoveries'];
+        function switchTab(tabId, focus) {
+            TAB_IDS.forEach(id => {
+                const on = id === tabId;
+                const btn = document.getElementById('tabbtn-' + id);
+                btn.classList.toggle('active', on);
+                btn.setAttribute('aria-selected', on ? 'true' : 'false');
+                btn.tabIndex = on ? 0 : -1;
+                document.getElementById('tab-' + id).classList.toggle('active', on);
+            });
+            if (focus) document.getElementById('tabbtn-' + tabId).focus();
+            // Charts drawn while their panel was hidden have no size; refit on show.
+            if (window.Plotly) document.querySelectorAll('#tab-' + tabId + ' .js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+            if (tabId === 'sym9' && sym9ChartInstance) sym9ChartInstance.resize();
         }
+
+        function setMsg(id, text) { document.getElementById(id).textContent = text || ''; }
 
         // ==========================================
         // SYM9 LOGIC
@@ -749,19 +782,29 @@
             let target = parseInt(document.getElementById('sym9_target').value);
             if (isNaN(target)) target = null;
 
-            if (isNaN(initialN) || isNaN(maxSteps)) return alert('Valid Initial Number and Max Steps required.');
+            if (isNaN(initialN) || isNaN(maxSteps) || maxSteps < 1) {
+                return setMsg('sym9_msg', 'Enter a seed and a Max Steps value of at least 1.');
+            }
+            setMsg('sym9_msg', '');
 
             const path = enhancedAdaptiveTransformJS(initialN, maxSteps, r4, r6, target);
 
             document.getElementById('sym9_final').textContent = path[path.length - 1];
             document.getElementById('sym9_steps').textContent = path.length - 1;
-            document.getElementById('sym9_path').innerHTML = path.join(' <span style="color:var(--accent-cyan);">→</span> ');
+            const last = path[path.length - 1];
+            let stop;
+            if (target !== null && last === target) stop = 'Reached target';
+            else if (path.length - 1 >= maxSteps) stop = 'Step limit';
+            else stop = 'Fixed point or repeat';
+            document.getElementById('sym9_stop').textContent = stop;
+            document.getElementById('sym9_path').innerHTML = path.join(' <span class="arrow">→</span> ');
 
             if (sym9ChartInstance) sym9ChartInstance.destroy();
             const ctx = document.getElementById('sym9Chart').getContext('2d');
             
-            Chart.defaults.color = '#9ca3af';
-            Chart.defaults.font.family = "'JetBrains Mono', monospace";
+            Chart.defaults.color = '#d8ccaa';
+            Chart.defaults.font.family = "'EB Garamond', Georgia, serif";
+            Chart.defaults.font.size = 14;
 
             sym9ChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -770,21 +813,21 @@
                     datasets: [{
                         label: 'Value',
                         data: path,
-                        borderColor: '#a855f7',
-                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        borderColor: '#d8b25a',
+                        backgroundColor: 'rgba(216, 178, 90, 0.08)',
                         tension: 0.1,
                         fill: true,
-                        pointBackgroundColor: '#00d4ff',
-                        pointBorderColor: '#0a0e14',
-                        pointRadius: 4,
+                        pointBackgroundColor: path.map((_, i) => (i === 5 || i === 7) ? '#f27a5e' : '#efe4c8'),
+                        pointBorderColor: '#172346',
+                        pointRadius: path.map((_, i) => (i === 5 || i === 7) ? 6 : 4),
                         pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false }, title: { display: true, text: 'Iteration Step' } }
+                        y: { grid: { color: 'rgba(239,228,200,0.10)' }, title: { display: true, text: 'Value', color: '#efe4c8' } },
+                        x: { grid: { display: false }, title: { display: true, text: 'Iteration Step', color: '#efe4c8' } }
                     },
                     plugins: {
                         legend: { display: false }
@@ -895,7 +938,7 @@
                     if(!nums.includes(r)) nums.push(r);
                 }
             } else if (strategy === 'systematic') {
-                const step = Math.floor((end - start) / size);
+                const step = Math.max(1, Math.floor((end - start) / size));
                 for (let i = start; i <= end && nums.length < size; i += step) nums.push(i);
             }
             return nums.sort((a,b) => a-b);
@@ -903,14 +946,24 @@
 
         async function startSNFTExperiment() {
             if (isRunning) return;
-            isRunning = true; isPaused = false;
-            experimentData = []; discoveries.clear(); patternStats.clear();
 
             const start = parseInt(document.getElementById('snft_start').value);
             const end = parseInt(document.getElementById('snft_end').value);
             const strat = document.getElementById('snft_strategy').value;
             const size = parseInt(document.getElementById('snft_size').value);
             const rule = document.getElementById('snft_rule').value;
+
+            if ([start, end, size].some(isNaN)) return setMsg('snft_msg', 'Range start, range end and sample size must be numbers.');
+            if (start < 10000 || end > 99999) return setMsg('snft_msg', 'Range must stay within 10000 to 99999.');
+            if (end < start) return setMsg('snft_msg', 'Range end must be at least range start.');
+            if (size < 1) return setMsg('snft_msg', 'Sample size must be at least 1.');
+            setMsg('snft_msg', '');
+
+            isRunning = true; isPaused = false;
+            experimentData = []; discoveries.clear(); patternStats.clear();
+            document.getElementById('disc_patterns').textContent = '0';
+            document.getElementById('disc_anomalies').textContent = '0';
+            document.getElementById('snft_pause_btn').textContent = 'Pause';
 
             const numbers = generateSample(start, end, strat, size);
             snftLog('info', `Batch init: ${numbers.length} nums. Rule: ${rule}`);
@@ -919,7 +972,7 @@
             document.getElementById('snft_pause_btn').disabled = false;
 
             for (let i = 0; i < numbers.length; i++) {
-                if (!isRunning || isPaused) break;
+                while (isPaused) await new Promise(r => setTimeout(r, 120));
                 
                 const res = analyzeNumber(numbers[i], rule, 150);
                 experimentData.push(res);
@@ -937,7 +990,9 @@
                 if (res.cycleLength > 3) addDisc('long_cycle', res);
 
                 if (i % 50 === 0 || i === numbers.length - 1) {
-                    document.getElementById('snft_progress').style.width = ((i+1)/numbers.length*100) + '%';
+                    const pct = (i+1)/numbers.length*100;
+                    document.getElementById('snft_progress').style.width = pct + '%';
+                    document.getElementById('snft_bar').setAttribute('aria-valuenow', Math.round(pct));
                     document.getElementById('snft_processed').textContent = experimentData.length;
                     
                     const avg = experimentData.reduce((s, d) => s + d.steps, 0) / experimentData.length;
@@ -948,9 +1003,10 @@
                 }
             }
 
-            isRunning = false;
+            isRunning = false; isPaused = false;
             document.getElementById('snft_start_btn').disabled = false;
             document.getElementById('snft_pause_btn').disabled = true;
+            document.getElementById('snft_pause_btn').textContent = 'Pause';
             snftLog('success', `Batch complete.`);
             updateDiscoveryTable();
         }
@@ -968,13 +1024,16 @@
             document.getElementById('disc_anomalies').textContent = Array.from(discoveries.values()).reduce((sum, a) => sum + a.length, 0);
         }
 
+        const AXIS_TXT = '#efe4c8';
+        const SERIF = "'EB Garamond', Georgia, serif";
+        const plotAxis = (title) => ({ gridcolor: 'rgba(239,228,200,0.10)', zerolinecolor: 'rgba(239,228,200,0.25)', linecolor: 'rgba(216,178,90,0.38)', title: title ? { text: title, font: { color: AXIS_TXT } } : undefined });
         const layoutDark = {
             paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0.2)',
-            font: { color: '#9ca3af', family: "'JetBrains Mono', monospace" },
-            xaxis: { gridcolor: 'rgba(255,255,255,0.05)', title: { font: { color: '#e5e7eb' } } },
-            yaxis: { gridcolor: 'rgba(255,255,255,0.05)', title: { font: { color: '#e5e7eb' } } }
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#d8ccaa', family: SERIF, size: 14 },
+            title: { font: { color: AXIS_TXT, size: 19, family: "'IM Fell French Canon', 'EB Garamond', serif" } }
         };
+        const plotConfig = { responsive: true, displaylogo: false };
 
         function updatePlotly() {
             // Scatter
@@ -985,74 +1044,84 @@
                 marker: {
                     size: 5,
                     color: experimentData.map(d => d.efficiency),
-                    colorscale: 'Viridis', showscale: true
+                    colorscale: [[0, '#6f8fd8'], [0.5, '#d8b25a'], [1, '#f27a5e']], showscale: true,
+                    colorbar: { title: { text: 'Efficiency' }, thickness: 12 }
                 },
                 text: experimentData.map(d => `N:${d.number}<br>Steps:${d.steps}<br>Attr:${d.attractor}`),
                 hoverinfo: 'text'
             };
-            Plotly.react('snft_scatter', [sc_trace], {...layoutDark, title: 'Convergence Landscape', margin: {t:40, r:20, l:40, b:40}});
+            Plotly.react('snft_scatter', [sc_trace], {...layoutDark, title: { ...layoutDark.title, text: 'Convergence Landscape' }, xaxis: plotAxis('Starting number'), yaxis: plotAxis('Steps to converge'), margin: {t:40, r:20, l:50, b:50}}, plotConfig);
 
-            // Attractors Pie
+            // Attractors pie: top 7 plus an aggregate, so large batches stay legible
             const ac = {};
             experimentData.forEach(d => ac[d.attractor] = (ac[d.attractor]||0)+1);
+            const entries = Object.entries(ac).sort((a, b) => b[1] - a[1]);
+            const top = entries.slice(0, 7);
+            const rest = entries.slice(7).reduce((sum, e) => sum + e[1], 0);
+            if (rest > 0) top.push([`other (${entries.length - 7})`, rest]);
             const p_trace = {
-                labels: Object.keys(ac), values: Object.values(ac),
-                type: 'pie', textinfo: 'label+percent',
-                marker: { colors: ['#00d4ff', '#a855f7', '#10b981', '#fbbf24', '#f97316', '#ec4899'] },
+                labels: top.map(e => e[0]), values: top.map(e => e[1]),
+                type: 'pie', sort: false, textinfo: 'label+percent', textposition: 'inside',
+                marker: { colors: ['#e0644a', '#d8b25a', '#6fc0ad', '#7f9fe6', '#d9708f', '#e9e2cc', '#b08a5e', '#8693b0'], line: { color: '#172346', width: 1 } },
+                textfont: { color: '#0c1430', size: 14 },
                 hole: 0.4
             };
-            Plotly.react('snft_attractor_pie', [p_trace], {...layoutDark, title: 'Attractor Distribution', margin: {t:40, r:20, l:20, b:20}});
+            Plotly.react('snft_attractor_pie', [p_trace], {...layoutDark, title: { ...layoutDark.title, text: 'Attractor Distribution' }, showlegend: false, margin: {t:40, r:20, l:20, b:20}}, plotConfig);
 
-            // Heatmap
+            // Heatmap: columns have different units, so shade each column by its own maximum
             const pats = Array.from(patternStats.keys()).slice(0, 8);
             if (pats.length > 0) {
-                const z = pats.map(p => {
-                    const s = patternStats.get(p);
-                    return [s.count, s.steps/s.count, s.eff/s.count];
+                const raw = pats.map(p => {
+                    const st = patternStats.get(p);
+                    return [st.count, st.steps/st.count, st.eff/st.count];
                 });
+                const colMax = [0, 1, 2].map(c => Math.max(...raw.map(r => r[c])) || 1);
                 const h_trace = {
-                    z: z, x: ['Count', 'Avg Steps', 'Avg Eff'], y: pats,
-                    type: 'heatmap', colorscale: 'Plasma'
+                    z: raw.map(r => r.map((v, c) => v / colMax[c])),
+                    x: ['Count', 'Avg Steps', 'Avg Eff'], y: pats,
+                    type: 'heatmap', colorscale: [[0, '#1d2b5c'], [0.5, '#7a4a7e'], [1, '#c2452b']], showscale: false, xgap: 2, ygap: 2,
+                    textfont: { color: '#efe4c8', size: 14 },
+                    text: raw.map(r => r.map((v, c) => c === 0 ? String(v) : v.toFixed(2))),
+                    texttemplate: '%{text}', hoverinfo: 'text'
                 };
-                Plotly.react('snft_pattern_heatmap', [h_trace], {...layoutDark, title: 'Pattern Metrics', margin: {t:40, r:20, l:80, b:40}});
+                Plotly.react('snft_pattern_heatmap', [h_trace], {...layoutDark, title: { ...layoutDark.title, text: 'Pattern Metrics (shaded per column)' }, yaxis: { type: 'category' }, margin: {t:40, r:20, l:80, b:40}}, plotConfig);
             }
         }
 
         function updateDiscoveryTable() {
             const tbody = document.getElementById('discoveryBody');
+            const alerts = document.getElementById('discoveryAlerts');
             tbody.innerHTML = '';
-            
+            alerts.innerHTML = '';
+
             if (patternStats.size === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No patterns identified.</td></tr>`;
-                return;
+                tbody.innerHTML = '<tr><td colspan="5" class="empty">No patterns identified in this batch.</td></tr>';
             }
 
-            patternStats.forEach((s, p) => {
-                const topA = Array.from(s.attr.entries()).sort((a,b) => b[1]-a[1])[0]?.[0] || 'N/A';
+            patternStats.forEach((st, p) => {
+                const topA = Array.from(st.attr.entries()).sort((a,b) => b[1]-a[1])[0]?.[0] ?? 'N/A';
                 tbody.innerHTML += `
                     <tr>
-                        <td><span class="kpi-badge" style="font-size:0.8rem; background:rgba(0,212,255,0.1); color:var(--accent-cyan); padding:0.3rem 0.6rem;">${p}</span></td>
-                        <td>${s.count}</td>
-                        <td>${(s.steps/s.count).toFixed(2)}</td>
-                        <td>${(s.eff/s.count).toFixed(2)}</td>
-                        <td style="color:var(--accent-purple);">${topA}</td>
+                        <td><span class="chip">${p}</span></td>
+                        <td class="num">${st.count}</td>
+                        <td class="num">${(st.steps/st.count).toFixed(2)}</td>
+                        <td class="num">${(st.eff/st.count).toFixed(2)}</td>
+                        <td class="attractor">${topA}</td>
                     </tr>
                 `;
             });
 
-            const alerts = document.getElementById('discoveryAlerts');
-            alerts.innerHTML = '';
             discoveries.forEach((arr, type) => {
                 if (arr.length > 0) {
-                    alerts.innerHTML += `<div style="background: rgba(249,115,22,0.1); border-left: 3px solid var(--accent-orange); padding: 1rem; border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.9rem;">
-                        <strong style="color:var(--accent-orange);">${type.replace('_',' ').toUpperCase()}:</strong> ${arr.length} instances found. (e.g. ${arr.slice(0,3).map(a=>a.number).join(', ')})
+                    alerts.innerHTML += `<div class="finding">
+                        <strong>${type.replaceAll('_', ' ').toUpperCase()}:</strong> ${arr.length} instances found. (e.g. ${arr.slice(0,3).map(a=>a.number).join(', ')})
                     </div>`;
                 }
             });
         }
 
         function exportSNFTResults() {
-            if (experimentData.length === 0) return alert('No data to export.');
+            if (experimentData.length === 0) return setMsg('snft_msg', 'Nothing to export yet. Run a batch first.');
             const csv = Papa.unparse(experimentData.map(d => ({
                 Number: d.number, Steps: d.steps, Attractor: d.attractor, 
                 Efficiency: d.efficiency.toFixed(3), Patterns: d.patterns.join('|')
@@ -1063,8 +1132,42 @@
             a.click();
         }
 
-        // Initialize empty state
-        runSym9Simulation();
+        // Init once deferred libraries (Chart.js, Plotly, PapaParse) have loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            runSym9Simulation();
+
+            // Durer's square: step through its ten lines of sum 34
+            const DURER = [[16, 3, 2, 13], [5, 10, 11, 8], [9, 6, 7, 12], [4, 15, 14, 1]];
+            const LINES = [];
+            for (let r = 0; r < 4; r++) LINES.push({ name: 'Row ' + (r + 1), cells: [0, 1, 2, 3].map(c => [r, c]) });
+            for (let c = 0; c < 4; c++) LINES.push({ name: 'Column ' + (c + 1), cells: [0, 1, 2, 3].map(r => [r, c]) });
+            LINES.push({ name: 'Diagonal', cells: [0, 1, 2, 3].map(i => [i, i]) });
+            LINES.push({ name: 'Anti-diagonal', cells: [0, 1, 2, 3].map(i => [i, 3 - i]) });
+            let lineIdx = -1;
+            const sqCells = [...document.querySelectorAll('.sq')];
+            document.getElementById('squareBtn').addEventListener('click', () => {
+                lineIdx = (lineIdx + 1) % LINES.length;
+                const line = LINES[lineIdx];
+                const keys = new Set(line.cells.map(([r, c]) => r + ',' + c));
+                sqCells.forEach(el => el.classList.toggle('on', keys.has(el.dataset.r + ',' + el.dataset.c)));
+                const vals = line.cells.map(([r, c]) => DURER[r][c]);
+                document.getElementById('squareSum').textContent = line.name + ': ' + vals.join(' + ') + ' = ' + vals.reduce((a, b) => a + b, 0);
+            });
+
+            const tabs = document.querySelector('.tab-nav');
+            tabs.addEventListener('keydown', e => {
+                const i = TAB_IDS.indexOf(document.activeElement.id.replace('tabbtn-', ''));
+                if (i < 0) return;
+                const next = { ArrowRight: (i + 1) % TAB_IDS.length, ArrowLeft: (i + TAB_IDS.length - 1) % TAB_IDS.length, Home: 0, End: TAB_IDS.length - 1 }[e.key];
+                if (next === undefined) return;
+                e.preventDefault();
+                switchTab(TAB_IDS[next], true);
+            });
+
+            // Enter in any field runs its tab's primary action
+            document.querySelectorAll('#tab-sym9 input').forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') runSym9Simulation(); }));
+            document.querySelectorAll('#tab-snft input').forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') startSNFTExperiment(); }));
+        });
     </script>
 </body>
 </html>
