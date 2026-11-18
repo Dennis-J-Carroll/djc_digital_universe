@@ -65,6 +65,19 @@
     .hero-lead { max-width: 44rem; margin: 0; color: var(--muted); font-size: clamp(1.07rem, 1.8vw, 1.3rem); line-height: 1.5; }
     .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 34px; color: var(--subtle); font-size: 12px; }
     .hero-meta strong { color: var(--text); font-weight: 600; }
+    .hero-side { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .hero-diagram { width: min(100%, 360px); margin: 0 0 42px auto; }
+    .hero-diagram svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .diagram-label { fill: var(--subtle); font: 700 9px Arial, Helvetica, sans-serif; letter-spacing: .13em; }
+    .diagram-state { fill: var(--muted); font: 11px Arial, Helvetica, sans-serif; }
+    .diagram-wire { fill: none; stroke: var(--line-strong); stroke-width: 1; }
+    .diagram-wire.is-signal { stroke: var(--signal); stroke-width: 1.4; }
+    .diagram-node { fill: var(--bg); stroke: var(--line-strong); stroke-width: 1.2; }
+    .diagram-node.is-signal { stroke: var(--signal); }
+    .diagram-core { fill: var(--signal); }
+    .diagram-caption { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 10px; color: var(--subtle); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    @keyframes trace-evidence { from { stroke-dashoffset: 380; } to { stroke-dashoffset: 0; } }
+    .diagram-wire.is-signal { stroke-dasharray: 380; animation: trace-evidence 1.4s cubic-bezier(.16,1,.3,1) both; }
     .hero-vector { border-top: 1px solid var(--line-strong); padding-top: 18px; }
     .vector-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
     .vector-heading strong { font-size: 13px; font-weight: 600; }
@@ -182,6 +195,8 @@
     .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     @media (max-width: 850px) {
       .hero-grid { grid-template-columns: 1fr; }
+      .hero-side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 1fr); gap: 28px; align-items: end; }
+      .hero-diagram { margin: 0; }
       .hero-vector { max-width: 520px; }
       .section-intro { grid-template-columns: 1fr; gap: 20px; }
       .comparison, .workbench, .validation-grid { grid-template-columns: 1fr; }
@@ -194,6 +209,8 @@
       .hero { padding: 76px 0 62px; }
       h1 { font-size: clamp(3.35rem, 15vw, 5rem); }
       .hero-meta { margin-top: 27px; }
+      .hero-side { grid-template-columns: 1fr; gap: 30px; }
+      .hero-diagram { width: min(100%, 320px); }
       .section { padding: 66px 0; }
       .distribution-row { grid-template-columns: minmax(94px, 1fr) minmax(50px, 1fr) 83px; gap: 9px; }
       .distribution-row strong, .distribution-row output { font-size: 12px; }
@@ -208,6 +225,7 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      .diagram-wire.is-signal { stroke-dashoffset: 0; }
     }
   </style>
 </head>
@@ -228,14 +246,41 @@
           <p class="hero-lead">A label compresses uncertainty into one word. Bayesian inference keeps competing explanations visible as evidence changes their relative plausibility.</p>
           <div class="hero-meta"><span><strong>04</strong> circuit hypotheses</span><span><strong>01</strong> shared observation</span><span>Illustrative values, no live model data</span></div>
         </div>
-        <aside class="hero-vector" aria-label="Illustrative posterior vector: 55, 25, 15, and 5 percent">
+        <div class="hero-side">
+          <figure class="hero-diagram">
+            <svg viewBox="0 0 360 214" role="img" aria-labelledby="diagram-title diagram-description">
+              <title id="diagram-title">Bayesian inference, schematically</title>
+              <desc id="diagram-description">Four candidate circuit states meet one shared observation. Evidence reweights belief across all four states.</desc>
+              <text class="diagram-label" x="0" y="12">HYPOTHESES</text>
+              <text class="diagram-label" x="145" y="12">EVIDENCE</text>
+              <text class="diagram-label" x="284" y="12">POSTERIOR</text>
+              <path class="diagram-wire is-signal" d="M62 39 C109 39 129 88 162 107 M194 107 C232 102 263 39 307 39"/>
+              <path class="diagram-wire" d="M62 81 C109 81 131 96 162 107 M194 107 C232 104 266 81 307 81"/>
+              <path class="diagram-wire" d="M62 133 C109 133 131 117 162 107 M194 107 C232 112 266 133 307 133"/>
+              <path class="diagram-wire" d="M62 175 C109 175 129 127 162 107 M194 107 C232 115 263 175 307 175"/>
+              <text class="diagram-state" x="0" y="43">H1</text><circle class="diagram-node is-signal" cx="56" cy="39" r="5"/>
+              <text class="diagram-state" x="0" y="85">H2</text><circle class="diagram-node" cx="56" cy="81" r="5"/>
+              <text class="diagram-state" x="0" y="137">H3</text><circle class="diagram-node" cx="56" cy="133" r="5"/>
+              <text class="diagram-state" x="0" y="179">H4</text><circle class="diagram-node" cx="56" cy="175" r="5"/>
+              <circle class="diagram-node is-signal" cx="178" cy="107" r="16"/><circle class="diagram-core" cx="178" cy="107" r="3"/>
+              <text class="diagram-state" x="173" y="75">D</text>
+              <circle class="diagram-node is-signal" cx="313" cy="39" r="5"/>
+              <circle class="diagram-node" cx="313" cy="81" r="5"/>
+              <circle class="diagram-node" cx="313" cy="133" r="5"/>
+              <circle class="diagram-node" cx="313" cy="175" r="5"/>
+              <path class="diagram-wire" d="M330 39 h20 M330 81 h20 M330 133 h20 M330 175 h20"/>
+            </svg>
+            <figcaption class="diagram-caption"><span>One observation</span><span>Four revised beliefs</span></figcaption>
+          </figure>
+          <aside class="hero-vector" aria-label="Illustrative posterior vector: 55, 25, 15, and 5 percent">
           <div class="vector-heading"><strong>Belief, distributed</strong><span>Posterior / example</span></div>
           <div class="vector-row"><span>H1</span><div class="vector-track"><div class="vector-fill" style="--width:55%"></div></div><output>55%</output></div>
           <div class="vector-row"><span>H2</span><div class="vector-track"><div class="vector-fill" style="--width:25%"></div></div><output>25%</output></div>
           <div class="vector-row"><span>H3</span><div class="vector-track"><div class="vector-fill" style="--width:15%"></div></div><output>15%</output></div>
           <div class="vector-row"><span>H4</span><div class="vector-track"><div class="vector-fill" style="--width:5%"></div></div><output>5%</output></div>
           <p>One leading explanation. Three alternatives still present.</p>
-        </aside>
+          </aside>
+        </div>
       </div>
     </section>
 
