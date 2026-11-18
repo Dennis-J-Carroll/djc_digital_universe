@@ -9,7 +9,6 @@
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
 
     <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -18,8 +17,10 @@
         onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});"></script>
 
     <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
 
     <style>
@@ -38,7 +39,7 @@
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'IBM Plex Sans', sans-serif;
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
             background-attachment: fixed;
             min-height: 100vh;
@@ -67,7 +68,7 @@
         }
 
         .btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             padding: 0.75rem 1.5rem;
             border-radius: 12px;
             font-weight: 500;
@@ -95,7 +96,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-teal));
+            background: linear-gradient(135deg, #4338ca, #0f766e);
             color: white;
         }
 
@@ -106,12 +107,12 @@
 
         .btn-outline {
             background: transparent;
-            border: 2px solid var(--accent-indigo);
-            color: var(--accent-indigo);
+            border: 2px solid #818cf8;
+            color: #c7d2fe;
         }
 
         .btn-outline:hover {
-            background: var(--accent-indigo);
+            background: #4338ca;
             color: white;
         }
 
@@ -127,7 +128,7 @@
             gap: 0.5rem;
             padding: 0.5rem 1rem;
             border-radius: 50px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -146,7 +147,7 @@
             border-radius: 50%;
             align-items: center;
             justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-weight: 700;
             font-size: 0.8rem;
             margin-bottom: 0.75rem;
@@ -178,7 +179,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.75rem;
             background: rgba(99, 102, 241, 0.1);
             transition: all 0.3s ease;
@@ -216,16 +217,17 @@
         .probability-fill {
             height: 100%;
             border-radius: 12px;
-            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-teal));
+            background: linear-gradient(90deg, #4338ca, #0f766e);
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: flex-end;
             padding-right: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.75rem;
             font-weight: 600;
         }
+        .probability-value { min-width: 3rem; text-align: end; color: #e2e8f0; font: 600 .875rem 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
 
         .scenario-card {
             background: rgba(0, 0, 0, 0.3);
@@ -248,7 +250,7 @@
         }
 
         .code-block {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 12px;
             padding: 1rem;
@@ -293,6 +295,7 @@
         }
         .term-tooltip:hover { color: #67e8f9; }
         .term-tooltip .tt-content {
+            display: none;
             visibility: hidden;
             opacity: 0;
             position: absolute;
@@ -323,10 +326,12 @@
             border-top-color: var(--accent-cyan);
         }
         .term-tooltip:hover .tt-content {
+            display: block;
             visibility: visible;
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+        .term-tooltip:focus .tt-content { display: block; visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* Slider styles */
         .prior-slider-row {
@@ -366,7 +371,7 @@
         .prior-slider-row .slider-val {
             width: 52px;
             text-align: right;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.85rem;
             color: var(--accent-indigo);
         }
@@ -382,7 +387,7 @@
         .evidence-control:last-child { border-bottom: none; }
         .evidence-control label {
             width: 180px;
-            font-size: 0.8rem;
+            font-size: 0.875rem;
             color: #94a3b8;
             flex-shrink: 0;
         }
@@ -407,7 +412,7 @@
         .evidence-control .ev-val {
             width: 40px;
             text-align: right;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.8rem;
             color: var(--accent-teal);
         }
@@ -427,8 +432,76 @@
             transition: width 0.4s cubic-bezier(.4,0,.2,1);
             display: flex; align-items: center; justify-content: flex-end;
             padding-right: 8px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 0.7rem; font-weight: 600; color: white;
+        }
+
+        /* Keep charts and KaTeX inside their grid tracks at narrow widths. */
+        main, main section, main section > *, .chart-container { min-width: 0; }
+        .chart-container canvas { max-width: 100%; }
+        .math-formula { max-width: 100%; }
+        .math-formula .katex-display { overflow-x: auto; overflow-y: hidden; }
+        .term-tooltip .tt-content { max-width: min(280px, calc(100vw - 3rem)); }
+
+        .comparison-card { display: flex; flex-direction: column; gap: 1.25rem; }
+        .comparison-summary {
+            display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center;
+            padding: 1.1rem 1.25rem; background: rgba(99,102,241,.10);
+            border: 1px solid rgba(129,140,248,.38); border-radius: 14px;
+        }
+        .comparison-mark {
+            font: 700 clamp(1.55rem, 4vw, 2.4rem)/1 'IBM Plex Mono', monospace;
+            color: #c7d2fe; font-variant-numeric: tabular-nums;
+        }
+        .comparison-summary p { margin: 0; color: #cbd5e1; line-height: 1.45; }
+        .comparison-summary strong { display: block; color: #f1f5f9; }
+        .comparison-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+        .comparison-actions .btn { flex: 1 1 180px; }
+        .comparison-actions .btn[aria-pressed="true"] { color: white; background: var(--accent-indigo); border-color: var(--accent-indigo); }
+        .comparison-actions .btn[aria-pressed="false"] { color: #c7d2fe; background: transparent; border-color: rgba(165,180,252,.6); }
+        .comparison-note { color: #cbd5e1; font-size: .875rem; line-height: 1.5; }
+
+        .inference-key { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; color: #cbd5e1; font-size: .875rem; }
+        .inference-key span::before { content: ''; display: inline-block; width: .75rem; height: .45rem; margin-inline-end: .4rem; vertical-align: middle; border-radius: 2px; }
+        .inference-key .key-prior::before { border: 1px solid #a5b4fc; }
+        .inference-key .key-posterior::before { background: var(--accent-teal); }
+        .inference-row { padding: .9rem 0; border-top: 1px solid rgba(165,180,252,.16); }
+        .inference-top { display: flex; justify-content: space-between; gap: .8rem; align-items: baseline; margin-bottom: .55rem; }
+        .inference-top strong { font-size: .95rem; }
+        .inference-delta { color: #5eead4; font: 600 .875rem 'IBM Plex Mono', monospace; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .inference-delta.is-negative { color: #c7d2fe; }
+        .inference-line { display: grid; grid-template-columns: 4.6rem minmax(0,1fr) 4.2rem; gap: .55rem; align-items: center; margin-top: .35rem; }
+        .inference-line > span:first-child { color: #cbd5e1; font-size: .875rem; }
+        .inference-line output { text-align: end; font: 500 .875rem 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+        .inference-track { position: relative; height: .6rem; border-radius: 100px; background: rgba(148,163,184,.13); overflow: hidden; }
+        .inference-fill { position: absolute; inset: 0; transform: scaleX(var(--amount)); transform-origin: left center; border-radius: inherit; transition: transform .42s cubic-bezier(.16,1,.3,1); }
+        .prior-fill { background: #818cf8; opacity: .75; }
+        .posterior-fill { background: linear-gradient(90deg,#14b8a6,#5eead4); }
+        .inference-warning { padding: .8rem 1rem; border-radius: 10px; background: rgba(244,63,94,.12); color: #fecdd3; }
+        .scenario-card { display: block; width: 100%; text-align: start; color: inherit; font: inherit; }
+        .scenario-card:focus-visible, .btn:focus-visible, input[type=range]:focus-visible, a:focus-visible, .term-tooltip:focus-visible { outline: 3px solid #5eead4; outline-offset: 3px; }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        ::selection { background: #6366f1; color: white; }
+        input[type=range] { accent-color: var(--accent-teal); }
+        @media (max-width: 640px) {
+            main { padding-inline: 1rem !important; }
+            .glass-card { padding: 1.25rem !important; }
+            .comparison-summary { grid-template-columns: 1fr; gap: .4rem; }
+            .prior-slider-row, .evidence-control { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .5rem; }
+            .prior-slider-row label, .evidence-control label { width: auto; grid-column: 1 / -1; }
+            .prior-slider-row input, .evidence-control input { width: 100%; }
+            .posterior-result .pr-label { width: 7rem; flex-shrink: 0; }
+            #validation .flex.justify-between { flex-wrap: wrap; gap: .65rem; }
+            .code-block { overflow-wrap: anywhere; }
+            .term-tooltip .tt-content { position: fixed; inset: auto 1rem 1rem; width: auto; max-width: none; transform: none; }
+            .term-tooltip:hover .tt-content, .term-tooltip:focus .tt-content { transform: none; }
+            .term-tooltip .tt-content::after { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .inference-fill, .probability-fill, .glass-card, .btn, .btn::before, .scenario-card, .term-tooltip .tt-content { transition-duration: .01ms !important; }
+            .glass-card:hover, .btn-primary:hover { transform: none; }
+            .btn:hover::before { left: -100%; }
+            .neural-node.active { animation: none; }
         }
     </style>
 </head>
@@ -519,55 +592,50 @@
 
                 <div class="space-y-3">
                     <h4 class="font-bold text-sm text-gray-300">Interactive Comparison</h4>
-                    <div class="flex gap-3">
-                        <button onclick="updateUncertaintyChart('point')" class="btn btn-outline flex-1 text-sm">[=]
-                            Point Estimate</button>
-                        <button onclick="updateUncertaintyChart('bayesian')" class="btn btn-primary flex-1 text-sm">[~]
-                            Bayesian</button>
+                    <div class="comparison-actions" role="group" aria-label="Comparison view">
+                        <button id="point-view" type="button" onclick="updateUncertaintyChart('point')" aria-pressed="false" class="btn btn-outline text-sm">Point estimate</button>
+                        <button id="bayesian-view" type="button" onclick="updateUncertaintyChart('bayesian')" aria-pressed="true" class="btn btn-primary text-sm">Bayesian posterior</button>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-card p-8">
-                <h4 id="chart1-title" class="text-lg font-bold mb-4">Hypothesis Confidence Distribution</h4>
-                <div class="chart-container">
-                    <canvas id="uncertaintyChart"></canvas>
+            <div class="glass-card p-8 comparison-card">
+                <div class="comparison-summary" aria-live="polite">
+                    <span id="comparison-mark" class="comparison-mark">55 / 45</span>
+                    <p><strong id="comparison-headline">A leading hypothesis, not a settled label</strong><span id="comparison-explain">55% induction head; 45% remains across alternatives.</span></p>
                 </div>
-                <p id="chart1-desc" class="text-sm text-gray-500 mt-4 text-center italic">
-                    Viewing probability distribution over functional roles.
-                </p>
+                <h4 id="chart1-title" class="text-lg font-bold">Bayesian Posterior Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="uncertaintyChart" role="img" aria-label="Illustrative posterior probabilities: Induction Head 55%, Previous Token 25%, Duplicate Token 15%, Noise 5%"></canvas>
+                </div>
+                <p id="chart1-desc" class="comparison-note">Illustrative probabilities; no model data is loaded.</p>
             </div>
         </section>
 
         <!-- Interactive Probability Bars -->
         <section class="glass-card p-8">
-            <h3 class="text-xl font-bold mb-6">Posterior Probability Distribution — \(P(\mathcal{H}_i \mid \mathcal{D})\)</h3>
+            <h3 class="text-xl font-bold mb-2">Illustrative Posterior Distribution — \(P(\mathcal{H}_i \mid \mathcal{D})\)</h3>
+            <p class="comparison-note mb-6">Fixed example shown above. Use prior and likelihood sliders below to calculate your own posterior.</p>
             <div id="probabilityBars" class="space-y-4">
                 <div class="flex items-center gap-4">
                     <span class="w-32 text-sm text-gray-400">Induction Head</span>
-                    <div class="probability-bar flex-1">
-                        <div class="probability-fill" style="width: 55%;">55%</div>
-                    </div>
+                    <div class="probability-bar flex-1"><div class="probability-fill" style="width: 55%;"></div></div>
+                    <strong class="probability-value">55%</strong>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="w-32 text-sm text-gray-400">Previous Token</span>
-                    <div class="probability-bar flex-1">
-                        <div class="probability-fill"
-                            style="width: 25%; background: linear-gradient(90deg, #6366f1, #818cf8);">25%</div>
-                    </div>
+                    <div class="probability-bar flex-1"><div class="probability-fill" style="width: 25%; background: linear-gradient(90deg, #4338ca, #4f46e5);"></div></div>
+                    <strong class="probability-value">25%</strong>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="w-32 text-sm text-gray-400">Duplicate Token</span>
-                    <div class="probability-bar flex-1">
-                        <div class="probability-fill"
-                            style="width: 15%; background: linear-gradient(90deg, #818cf8, #a5b4fc);">15%</div>
-                    </div>
+                    <div class="probability-bar flex-1"><div class="probability-fill" style="width: 15%; background: linear-gradient(90deg, #4338ca, #4f46e5);"></div></div>
+                    <strong class="probability-value">15%</strong>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="w-32 text-sm text-gray-400">Noise</span>
-                    <div class="probability-bar flex-1">
-                        <div class="probability-fill" style="width: 5%; background: #94a3b8;">5%</div>
-                    </div>
+                    <div class="probability-bar flex-1"><div class="probability-fill" style="width: 5%; background: #475569;"></div></div>
+                    <strong class="probability-value">5%</strong>
                 </div>
             </div>
         </section>
@@ -582,13 +650,13 @@
                     <h3 class="text-xl font-bold mt-3">Adjust <span class="term-tooltip">Prior Beliefs<span class="tt-content"><strong>Prior Probability:</strong> Your initial belief about each hypothesis <em>before</em> observing any data. Priors encode domain knowledge or assumptions.</span></span></h3>
                     <p class="text-sm text-gray-400 mt-1">Drag the sliders to set prior weights for each hypothesis. Values are auto-normalized.</p>
                 </div>
-                <button onclick="resetPriors()" class="btn btn-outline text-xs">↻ Reset to Uniform</button>
+                <button onclick="resetPriors()" class="btn btn-outline">Reset to Uniform</button>
             </div>
             <div id="priorSliders">
-                <div class="prior-slider-row"><label>Induction Head</label><input type="range" min="1" max="100" value="25" data-hyp="0" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
-                <div class="prior-slider-row"><label>Previous Token</label><input type="range" min="1" max="100" value="25" data-hyp="1" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
-                <div class="prior-slider-row"><label>Duplicate Token</label><input type="range" min="1" max="100" value="25" data-hyp="2" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
-                <div class="prior-slider-row"><label>Noise</label><input type="range" min="1" max="100" value="25" data-hyp="3" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
+                <div class="prior-slider-row"><label for="prior-induction">Induction Head</label><input id="prior-induction" type="range" min="1" max="100" value="25" data-hyp="0" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
+                <div class="prior-slider-row"><label for="prior-previous">Previous Token</label><input id="prior-previous" type="range" min="1" max="100" value="25" data-hyp="1" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
+                <div class="prior-slider-row"><label for="prior-duplicate">Duplicate Token</label><input id="prior-duplicate" type="range" min="1" max="100" value="25" data-hyp="2" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
+                <div class="prior-slider-row"><label for="prior-noise">Noise</label><input id="prior-noise" type="range" min="1" max="100" value="25" data-hyp="3" oninput="onPriorChange()"><span class="slider-val">25%</span></div>
             </div>
             <div class="math-formula">
                 <span class="text-gray-500 text-xs">Normalized Priors →</span>
@@ -604,32 +672,28 @@
                         Live Inference Demo
                     </div>
                     <h3 class="text-xl font-bold">Adjust Evidence, Watch <span class="term-tooltip">Posteriors<span class="tt-content"><strong>Posterior Probability:</strong> The updated belief about a hypothesis <em>after</em> incorporating observed evidence. Computed via Bayes' theorem.</span></span> Update</h3>
-                    <p class="text-sm text-gray-400">Simulate how different types of observed evidence shift the posterior distribution in real time.</p>
+                    <p class="text-sm text-gray-400">For one illustrative observed pattern, set how likely it would be under each circuit hypothesis. Watch the prior become a posterior.</p>
 
                     <div class="space-y-1">
-                        <h4 class="text-sm font-bold text-gray-300 mb-2">Evidence Strengths (<span class="term-tooltip">Likelihoods<span class="tt-content"><strong>Likelihood:</strong> P(Data | Hypothesis) — How probable the observed data is, assuming a particular hypothesis is true.</span></span>)</h4>
-                        <div class="evidence-control"><label>Repeated-token pattern</label><input type="range" min="0" max="100" value="80" data-ev="induction" oninput="onEvidenceChange()"><span class="ev-val">0.80</span></div>
-                        <div class="evidence-control"><label>Adjacent-token copying</label><input type="range" min="0" max="100" value="40" data-ev="prev_token" oninput="onEvidenceChange()"><span class="ev-val">0.40</span></div>
-                        <div class="evidence-control"><label>Exact-duplicate signal</label><input type="range" min="0" max="100" value="30" data-ev="duplicate" oninput="onEvidenceChange()"><span class="ev-val">0.30</span></div>
-                        <div class="evidence-control"><label>Random-noise baseline</label><input type="range" min="0" max="100" value="10" data-ev="noise" oninput="onEvidenceChange()"><span class="ev-val">0.10</span></div>
+                        <h4 class="text-sm font-bold text-gray-300 mb-2">Likelihood of the Same Evidence (<span class="term-tooltip">P(D | H)<span class="tt-content"><strong>Likelihood:</strong> How probable the same observed data is, assuming each particular hypothesis is true.</span></span>)</h4>
+                        <div class="evidence-control"><label for="evidence-induction">If Induction Head</label><input id="evidence-induction" type="range" min="0" max="100" value="80" data-ev="induction" oninput="onEvidenceChange()"><span class="ev-val">0.80</span></div>
+                        <div class="evidence-control"><label for="evidence-previous">If Previous Token</label><input id="evidence-previous" type="range" min="0" max="100" value="40" data-ev="prev_token" oninput="onEvidenceChange()"><span class="ev-val">0.40</span></div>
+                        <div class="evidence-control"><label for="evidence-duplicate">If Duplicate Token</label><input id="evidence-duplicate" type="range" min="0" max="100" value="30" data-ev="duplicate" oninput="onEvidenceChange()"><span class="ev-val">0.30</span></div>
+                        <div class="evidence-control"><label for="evidence-noise">If Noise</label><input id="evidence-noise" type="range" min="0" max="100" value="10" data-ev="noise" oninput="onEvidenceChange()"><span class="ev-val">0.10</span></div>
                     </div>
-                    <button onclick="randomizeEvidence()" class="btn btn-outline text-xs">⚡ Randomize Evidence</button>
+                    <button onclick="randomizeEvidence()" class="btn btn-outline">Randomize Likelihoods</button>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
                         <h4 class="font-bold">Live <span class="term-tooltip">Posterior<span class="tt-content"><strong>Posterior:</strong> P(H|D) ∝ P(D|H) × P(H). The core output of Bayesian inference — combining prior beliefs with new evidence.</span></span> Distribution</h4>
                         <span id="live-entropy" class="phase-badge" style="background:rgba(245,158,11,0.2);color:var(--accent-amber);">Entropy: —</span>
                     </div>
-                    <div id="liveResults" class="space-y-3">
-                        <div class="posterior-result"><span class="pr-label">Induction Head</span><div class="pr-bar"><div class="pr-fill" style="width:0%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div></div>
-                        <div class="posterior-result"><span class="pr-label">Previous Token</span><div class="pr-bar"><div class="pr-fill" style="width:0%;background:linear-gradient(90deg,#818cf8,#a5b4fc);"></div></div></div>
-                        <div class="posterior-result"><span class="pr-label">Duplicate Token</span><div class="pr-bar"><div class="pr-fill" style="width:0%;background:linear-gradient(90deg,#a5b4fc,#c7d2fe);"></div></div></div>
-                        <div class="posterior-result"><span class="pr-label">Noise</span><div class="pr-bar"><div class="pr-fill" style="width:0%;background:#94a3b8;"></div></div></div>
-                    </div>
-                    <div class="chart-container" style="height:220px;">
-                        <canvas id="liveChart"></canvas>
-                    </div>
+                    <p class="comparison-note">Same hypotheses, before and after evidence. Difference measured in percentage points.</p>
+                    <div class="inference-key" aria-hidden="true"><span class="key-prior">Prior</span><span class="key-posterior">Posterior</span></div>
+                    <div id="liveResults" aria-label="Prior and posterior probability comparison"><p class="comparison-note">Default: uniform 25% priors update to 50% induction, 25% previous token, 18.75% duplicate token, and 6.25% noise.</p></div>
+                    <p id="inference-announcement" class="visually-hidden" role="status" aria-live="polite"></p>
+                    <p id="inference-warning" class="inference-warning" role="status" hidden>Evidence has zero likelihood under every hypothesis. Increase at least one likelihood to calculate a posterior.</p>
                     <div class="math-formula">
                         <span class="text-gray-500 text-xs">Formula →</span>
                         <span id="liveFormula" class="ml-2"></span>
@@ -712,7 +776,7 @@
                     <div class="space-y-3">
                         <h4 class="text-sm font-bold text-gray-300">Select Validation Scenario</h4>
 
-                        <div id="scenarioNoise" onclick="updateValidationChart('noise')" class="scenario-card">
+                        <button id="scenarioNoise" type="button" onclick="updateValidationChart('noise')" aria-pressed="false" class="scenario-card">
                             <div class="flex justify-between items-center">
                                 <div>
                                     <div class="font-bold text-rose-400">Scenario A: Coincidental Correlation</div>
@@ -720,9 +784,9 @@
                                 </div>
                                 <span class="text-gray-500">→</span>
                             </div>
-                        </div>
+                        </button>
 
-                        <div id="scenarioSignal" onclick="updateValidationChart('signal')" class="scenario-card active">
+                        <button id="scenarioSignal" type="button" onclick="updateValidationChart('signal')" aria-pressed="true" class="scenario-card active">
                             <div class="flex justify-between items-center">
                                 <div>
                                     <div class="font-bold text-teal-400">Scenario B: True Mechanism</div>
@@ -731,7 +795,7 @@
                                 </div>
                                 <span class="text-gray-500">→</span>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -740,7 +804,7 @@
                         <h4 class="font-bold">Predictive Check: Actual vs. Simulated</h4>
                         <span id="validation-status" class="phase-badge"
                             style="background: rgba(20, 184, 166, 0.2); color: var(--accent-teal);">
-                            PASS: Strong Correlation
+                            Illustrative: Tight Fit
                         </span>
                     </div>
                     <div class="chart-container" style="height: 280px;">
@@ -813,22 +877,40 @@
                 labels: ['Induction Head', 'Previous Token', 'Duplicate Token', 'Noise'],
                 data: [1.0, 0, 0, 0],
                 backgroundColor: ['#6366f1', '#374151', '#374151', '#374151'],
-                title: "Traditional Point Estimate",
-                desc: "Current methods force a single label, ignoring ambiguity and uncertainty."
+                title: "Selected Circuit Label",
+                desc: "Illustrative selection only. The 1/0 display is not a calibrated probability distribution.",
+                mark: "1 label",
+                headline: "One label, uncertainty hidden",
+                explain: "The selected mechanism is shown; alternatives carry no reported confidence."
             },
             bayesian: {
                 labels: ['Induction Head', 'Previous Token', 'Duplicate Token', 'Noise'],
                 data: [0.55, 0.25, 0.15, 0.05],
                 backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#94a3b8'],
                 title: "Bayesian Posterior Distribution",
-                desc: "Captures uncertainty: 55% Induction Head, but alternatives remain plausible."
+                desc: "Illustrative probabilities; no model data is loaded.",
+                mark: "55 / 45",
+                headline: "A leading hypothesis, not a settled label",
+                explain: "55% induction head; 45% remains across alternatives."
             }
         };
 
         // ============ UNCERTAINTY CHART ============
         let chart1Instance = null;
+        let currentComparisonMode = 'bayesian';
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        function showChartFallback(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            canvas.hidden = true;
+            const message = document.createElement('p');
+            message.className = 'comparison-note';
+            message.textContent = 'Chart unavailable. Values and comparison text remain available on this page.';
+            canvas.parentElement.appendChild(message);
+        }
 
         function initUncertaintyChart() {
+            if (typeof Chart === 'undefined') { showChartFallback('uncertaintyChart'); return; }
             const ctx = document.getElementById('uncertaintyChart').getContext('2d');
             const initial = uncertaintyData.bayesian;
 
@@ -851,7 +933,9 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: ctx => `Probability: ${(ctx.raw * 100).toFixed(0)}%`
+                                label: ctx => currentComparisonMode === 'point'
+                                    ? (ctx.raw ? 'Selected label' : 'Not selected')
+                                    : `Posterior probability: ${(ctx.raw * 100).toFixed(0)}%`
                             }
                         }
                     },
@@ -859,7 +943,7 @@
                         y: {
                             beginAtZero: true,
                             max: 1.1,
-                            title: { display: true, text: 'P(H|D)', color: '#94a3b8' },
+                            title: { display: true, text: 'Posterior probability', color: '#cbd5e1' },
                             grid: { color: 'rgba(255,255,255,0.1)' },
                             ticks: { color: '#94a3b8' }
                         },
@@ -868,36 +952,34 @@
                             ticks: { color: '#94a3b8' }
                         }
                     },
-                    animation: { duration: 800, easing: 'easeOutQuart' }
+                    animation: { duration: reduceMotion.matches ? 0 : 520, easing: 'easeOutQuart' }
                 }
             });
         }
 
         window.updateUncertaintyChart = function (mode) {
             const config = uncertaintyData[mode];
+            if (!config) return;
+            currentComparisonMode = mode;
 
-            chart1Instance.data.datasets[0].data = config.data;
-            chart1Instance.data.datasets[0].backgroundColor = config.backgroundColor;
-            chart1Instance.update();
+            if (chart1Instance) {
+                chart1Instance.data.datasets[0].data = config.data;
+                chart1Instance.data.datasets[0].backgroundColor = config.backgroundColor;
+                chart1Instance.options.scales.y.title.text = mode === 'point' ? 'Selection display' : 'Posterior probability';
+                chart1Instance.update(reduceMotion.matches ? 'none' : undefined);
+            }
 
             document.getElementById('chart1-title').textContent = config.title;
             document.getElementById('chart1-desc').textContent = config.desc;
-
-            // Animate probability bars
-            if (mode === 'bayesian') {
-                animateProbabilityBars([55, 25, 15, 5]);
-            } else {
-                animateProbabilityBars([100, 0, 0, 0]);
-            }
+            document.getElementById('comparison-mark').textContent = config.mark;
+            document.getElementById('comparison-headline').textContent = config.headline;
+            document.getElementById('comparison-explain').textContent = config.explain;
+            document.getElementById('point-view').setAttribute('aria-pressed', String(mode === 'point'));
+            document.getElementById('bayesian-view').setAttribute('aria-pressed', String(mode === 'bayesian'));
+            document.getElementById('uncertaintyChart').setAttribute('aria-label', mode === 'point'
+                ? 'Illustrative point estimate selects Induction Head; no probabilities are reported for alternatives.'
+                : 'Illustrative posterior probabilities: Induction Head 55%, Previous Token 25%, Duplicate Token 15%, Noise 5%.');
         };
-
-        function animateProbabilityBars(values) {
-            const bars = document.querySelectorAll('.probability-fill');
-            bars.forEach((bar, i) => {
-                bar.style.width = values[i] + '%';
-                bar.textContent = values[i] > 0 ? values[i] + '%' : '';
-            });
-        }
 
         // ============ VALIDATION CHART ============
         let chart2Instance = null;
@@ -918,6 +1000,7 @@
         }
 
         function initValidationChart() {
+            if (typeof Chart === 'undefined') { showChartFallback('validationChart'); return; }
             const ctx = document.getElementById('validationChart').getContext('2d');
             const initialData = generateScatterData('signal');
 
@@ -957,7 +1040,7 @@
                             ticks: { color: '#94a3b8' }
                         }
                     },
-                    animation: { duration: 800 }
+                    animation: { duration: reduceMotion.matches ? 0 : 450 }
                 }
             });
         }
@@ -968,25 +1051,27 @@
             const noiseCard = document.getElementById('scenarioNoise');
             const signalCard = document.getElementById('scenarioSignal');
 
-            chart2Instance.data.datasets[0].data = newData;
+            if (chart2Instance) chart2Instance.data.datasets[0].data = newData;
 
             if (type === 'signal') {
-                chart2Instance.data.datasets[0].backgroundColor = '#14b8a6';
-                statusEl.innerHTML = 'PASS: Strong Correlation';
+                if (chart2Instance) chart2Instance.data.datasets[0].backgroundColor = '#14b8a6';
+                statusEl.textContent = 'Illustrative: Tight Fit';
                 statusEl.style.background = 'rgba(20, 184, 166, 0.2)';
                 statusEl.style.color = '#14b8a6';
                 signalCard.classList.add('active');
                 noiseCard.classList.remove('active');
             } else {
-                chart2Instance.data.datasets[0].backgroundColor = '#f43f5e';
-                statusEl.innerHTML = 'FAIL: High Variance';
+                if (chart2Instance) chart2Instance.data.datasets[0].backgroundColor = '#f43f5e';
+                statusEl.textContent = 'Illustrative: Weak Fit';
                 statusEl.style.background = 'rgba(244, 63, 94, 0.2)';
                 statusEl.style.color = '#f43f5e';
                 noiseCard.classList.add('active');
                 signalCard.classList.remove('active');
             }
 
-            chart2Instance.update();
+            noiseCard.setAttribute('aria-pressed', String(type === 'noise'));
+            signalCard.setAttribute('aria-pressed', String(type === 'signal'));
+            if (chart2Instance) chart2Instance.update(reduceMotion.matches ? 'none' : undefined);
         };
 
         // ============ PRIOR SLIDERS ============
@@ -1005,6 +1090,7 @@
             const priors = getNormalizedPriors();
             priors.forEach((p, i) => {
                 vals[i].textContent = (p * 100).toFixed(0) + '%';
+                sliders[i].setAttribute('aria-valuetext', `Raw weight ${sliders[i].value} out of 100; normalized prior ${(p * 100).toFixed(2)} percent`);
             });
             const formulaEl = document.getElementById('priorFormula');
             const latex = priors.map((p, i) => `P(\\mathcal{H}_${i + 1})=${p.toFixed(2)}`).join(',\\;');
@@ -1023,7 +1109,14 @@
         };
 
         // ============ LIVE INFERENCE ============
-        let liveChartInstance = null;
+        function initInferenceRows() {
+            document.getElementById('liveResults').innerHTML = hypNames.map(name => `
+                <div class="inference-row">
+                    <div class="inference-top"><strong>${name}</strong><output class="inference-delta">—</output></div>
+                    <div class="inference-line"><span>Prior</span><div class="inference-track"><div class="inference-fill prior-fill" style="--amount:.25"></div></div><output class="prior-value">25.00%</output></div>
+                    <div class="inference-line"><span>Posterior</span><div class="inference-track"><div class="inference-fill posterior-fill" style="--amount:0"></div></div><output class="posterior-value">—</output></div>
+                </div>`).join('');
+        }
 
         function getEvidenceValues() {
             const sliders = document.querySelectorAll('.evidence-control input[type=range]');
@@ -1050,68 +1143,50 @@
             const likelihoods = getEvidenceValues();
             const unnorm = priors.map((p, i) => p * likelihoods[i]);
             const marginal = unnorm.reduce((a, b) => a + b, 0);
-            const posteriors = marginal > 0 ? unnorm.map(u => u / marginal) : priors.slice();
+            const posteriors = marginal > 0 ? unnorm.map(u => u / marginal) : null;
+            document.getElementById('inference-warning').hidden = posteriors !== null;
 
-            // Update bars
-            const fills = document.querySelectorAll('#liveResults .pr-fill');
-            fills.forEach((f, i) => {
-                const pct = (posteriors[i] * 100).toFixed(1);
-                f.style.width = pct + '%';
-                f.textContent = pct > 3 ? pct + '%' : '';
+            document.querySelectorAll('#liveResults .inference-row').forEach((row, i) => {
+                const posterior = posteriors ? posteriors[i] : 0;
+                const delta = posteriors ? (posterior - priors[i]) * 100 : null;
+                row.querySelector('.prior-fill').style.setProperty('--amount', priors[i]);
+                row.querySelector('.posterior-fill').style.setProperty('--amount', posterior);
+                row.querySelector('.prior-value').textContent = `${(priors[i] * 100).toFixed(2)}%`;
+                row.querySelector('.posterior-value').textContent = posteriors ? `${(posterior * 100).toFixed(2)}%` : '—';
+                const deltaEl = row.querySelector('.inference-delta');
+                deltaEl.textContent = delta === null ? 'Undefined' : `${Math.abs(delta) < .005 ? '±' : delta > 0 ? '+' : '−'}${Math.abs(delta) < .005 ? '0.00' : Math.abs(delta).toFixed(2)} pp`;
+                deltaEl.classList.toggle('is-negative', delta !== null && delta < -.005);
             });
 
-            // Entropy
+            if (!posteriors) {
+                document.getElementById('live-entropy').textContent = 'Entropy: —';
+                scheduleInferenceAnnouncement('Posterior undefined. All likelihoods are zero.');
+                return;
+            }
             let H = 0;
             posteriors.forEach(p => { if (p > 0) H -= p * Math.log2(p); });
             document.getElementById('live-entropy').textContent = `Entropy: ${H.toFixed(2)} bits`;
-
-            // Update live chart
-            if (liveChartInstance) {
-                liveChartInstance.data.datasets[0].data = posteriors;
-                liveChartInstance.update('none');
-            }
+            const leadingIndex = posteriors.indexOf(Math.max(...posteriors));
+            scheduleInferenceAnnouncement(`Leading posterior: ${hypNames[leadingIndex]} ${(posteriors[leadingIndex] * 100).toFixed(2)} percent. Entropy ${H.toFixed(2)} bits.`);
         }
 
-        function initLiveChart() {
-            const ctx = document.getElementById('liveChart').getContext('2d');
-            liveChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: hypNames,
-                    datasets: [{
-                        data: [0.25, 0.25, 0.25, 0.25],
-                        backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#94a3b8'],
-                        borderColor: 'rgba(15,20,25,0.8)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '55%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#94a3b8', font: { size: 11, family: "'JetBrains Mono'" }, padding: 12 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` ${ctx.label}: ${(ctx.raw * 100).toFixed(1)}%`
-                            }
-                        }
-                    },
-                    animation: { animateRotate: true, duration: 600 }
-                }
-            });
+        let inferenceAnnouncementTimer;
+        function scheduleInferenceAnnouncement(message) {
+            clearTimeout(inferenceAnnouncementTimer);
+            inferenceAnnouncementTimer = setTimeout(() => {
+                document.getElementById('inference-announcement').textContent = message;
+            }, 350);
         }
 
         // ============ INITIALIZATION ============
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Chart !== 'undefined') Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
             initUncertaintyChart();
             initValidationChart();
-            initLiveChart();
+            initInferenceRows();
             onPriorChange();
             onEvidenceChange();
+            document.querySelectorAll('.term-tooltip').forEach(term => term.setAttribute('tabindex', '0'));
 
             // Render live formula with KaTeX
             const liveFormulaEl = document.getElementById('liveFormula');
