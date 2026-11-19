@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T18:48:41.120Z",
+  "title": "Design System: Edge AI Training Lab",
+  "extensions": {
+    "colorMeta": {
+      "red": {
+        "role": "primary",
+        "displayName": "Vermilion",
+        "canonical": "#ad3023",
+        "tonalRamp": [
+          "oklch(15% 0.106 29.8)",
+          "oklch(27% 0.139 29.8)",
+          "oklch(39% 0.164 29.8)",
+          "oklch(51% 0.164 29.8)",
+          "oklch(63% 0.164 29.8)",
+          "oklch(75% 0.139 29.8)",
+          "oklch(85% 0.090 29.8)",
+          "oklch(95% 0.041 29.8)"
+        ]
+      },
+      "red-dark": {
+        "role": "primary",
+        "displayName": "Deep vermilion",
+        "canonical": "#842218",
+        "tonalRamp": [
+          "oklch(15% 0.088 29.8)",
+          "oklch(27% 0.114 29.8)",
+          "oklch(39% 0.135 29.8)",
+          "oklch(51% 0.135 29.8)",
+          "oklch(63% 0.135 29.8)",
+          "oklch(75% 0.114 29.8)",
+          "oklch(85% 0.074 29.8)",
+          "oklch(95% 0.034 29.8)"
+        ]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Scientific blue",
+        "canonical": "#165d9f",
+        "tonalRamp": [
+          "oklch(15% 0.082 251.4)",
+          "oklch(27% 0.107 251.4)",
+          "oklch(39% 0.126 251.4)",
+          "oklch(51% 0.126 251.4)",
+          "oklch(63% 0.126 251.4)",
+          "oklch(75% 0.107 251.4)",
+          "oklch(85% 0.069 251.4)",
+          "oklch(95% 0.031 251.4)"
+        ]
+      },
+      "green": {
+        "role": "tertiary",
+        "displayName": "Training green",
+        "canonical": "#1e6841",
+        "tonalRamp": [
+          "oklch(15% 0.063 156.0)",
+          "oklch(27% 0.082 156.0)",
+          "oklch(39% 0.096 156.0)",
+          "oklch(51% 0.096 156.0)",
+          "oklch(63% 0.096 156.0)",
+          "oklch(75% 0.082 156.0)",
+          "oklch(85% 0.053 156.0)",
+          "oklch(95% 0.024 156.0)"
+        ]
+      },
+      "green-wash": {
+        "role": "tertiary",
+        "displayName": "Green wash",
+        "canonical": "#dce9d4",
+        "tonalRamp": [
+          "oklch(15% 0.020 133.3)",
+          "oklch(27% 0.027 133.3)",
+          "oklch(39% 0.031 133.3)",
+          "oklch(51% 0.031 133.3)",
+          "oklch(63% 0.031 133.3)",
+          "oklch(75% 0.027 133.3)",
+          "oklch(85% 0.017 133.3)",
+          "oklch(95% 0.008 133.3)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Uncoated paper",
+        "canonical": "#f8f2e0",
+        "tonalRamp": [
+          "oklch(15% 0.016 91.6)",
+          "oklch(27% 0.021 91.6)",
+          "oklch(39% 0.025 91.6)",
+          "oklch(51% 0.025 91.6)",
+          "oklch(63% 0.025 91.6)",
+          "oklch(75% 0.021 91.6)",
+          "oklch(85% 0.014 91.6)",
+          "oklch(95% 0.006 91.6)"
+        ]
+      },
+      "paper-deep": {
+        "role": "neutral",
+        "displayName": "Deep paper",
+        "canonical": "#efe5cc",
+        "tonalRamp": [
+          "oklch(15% 0.023 88.8)",
+          "oklch(27% 0.030 88.8)",
+          "oklch(39% 0.035 88.8)",
+          "oklch(51% 0.035 88.8)",
+          "oklch(63% 0.035 88.8)",
+          "oklch(75% 0.030 88.8)",
+          "oklch(85% 0.019 88.8)",
+          "oklch(95% 0.009 88.8)"
+        ]
+      },
+      "plate-glaze": {
+        "role": "neutral",
+        "displayName": "Plate glaze",
+        "canonical": "rgba(248, 242, 224, .66)",
+        "tonalRamp": [
+          "oklch(15% 0.016 91.6)",
+          "oklch(27% 0.021 91.6)",
+          "oklch(39% 0.025 91.6)",
+          "oklch(51% 0.025 91.6)",
+          "oklch(63% 0.025 91.6)",
+          "oklch(75% 0.021 91.6)",
+          "oklch(85% 0.014 91.6)",
+          "oklch(95% 0.006 91.6)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Engraving ink",
+        "canonical": "#211b14",
+        "tonalRamp": [
+          "oklch(15% 0.010 71.2)",
+          "oklch(27% 0.014 71.2)",
+          "oklch(39% 0.016 71.2)",
+          "oklch(51% 0.016 71.2)",
+          "oklch(63% 0.016 71.2)",
+          "oklch(75% 0.014 71.2)",
+          "oklch(85% 0.009 71.2)",
+          "oklch(95% 0.004 71.2)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted ink",
+        "canonical": "#514735",
+        "tonalRamp": [
+          "oklch(15% 0.021 82.1)",
+          "oklch(27% 0.027 82.1)",
+          "oklch(39% 0.032 82.1)",
+          "oklch(51% 0.032 82.1)",
+          "oklch(63% 0.032 82.1)",
+          "oklch(75% 0.027 82.1)",
+          "oklch(85% 0.017 82.1)",
+          "oklch(95% 0.008 82.1)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Sepia rule",
+        "canonical": "#86765d",
+        "tonalRamp": [
+          "oklch(15% 0.027 78.8)",
+          "oklch(27% 0.035 78.8)",
+          "oklch(39% 0.042 78.8)",
+          "oklch(51% 0.042 78.8)",
+          "oklch(63% 0.042 78.8)",
+          "oklch(75% 0.035 78.8)",
+          "oklch(85% 0.023 78.8)",
+          "oklch(95% 0.010 78.8)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Folio page title."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Study section heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Compact uppercase panel headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanations, captions, and controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Primary Train action."
+      }
+    },
+    "shadows": [
+      {
+        "name": "printed-frame",
+        "value": "inset 0 0 0 5px var(--paper), inset 0 0 0 6px rgba(134,118,93,.7)",
+        "purpose": "Double inset rule on scientific plates and folio panels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "train-button",
+        "value": "background-color .18s ease, transform .18s ease",
+        "purpose": "Primary action hover response."
+      },
+      {
+        "name": "neuron-state",
+        "value": "background-color .2s ease, border-color .2s ease",
+        "purpose": "Active-neuron change."
+      },
+      {
+        "name": "training-pulse",
+        "value": "pulse 1s ease-in-out infinite",
+        "purpose": "Training indicator only; reduced-motion preference suppresses animation."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "spread-collapse",
+        "value": "1180px"
+      },
+      {
+        "name": "mobile-stack",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Train Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main experiment action in the right-hand column.",
+      "html": "<button class=\"ds-btn-train\" type=\"button\">Train model</button>",
+      "css": ".ds-btn-train { width: 100%; min-height: 72px; padding: 12px 18px; border: 4px double #f6e7d4; outline: 1px solid var(--red-dark, #842218); background: var(--red, #ad3023); color: #fffaf1; font: 700 23px/1.1 \"Zen Antique Soft\", Georgia, serif; text-transform: uppercase; letter-spacing: .07em; cursor: pointer; transition: background-color .18s ease, transform .18s ease; } .ds-btn-train:hover { background: var(--red-dark, #842218); transform: translateY(-1px); } .ds-btn-train:active { transform: none; } .ds-btn-train:focus-visible { outline: 3px solid var(--blue, #165d9f); outline-offset: 3px; } .ds-btn-train:disabled { opacity: .48; cursor: not-allowed; transform: none; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Stop and export actions below the status panel.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Export weights</button>",
+      "css": ".ds-btn-secondary { min-height: 39px; padding: 7px; border: 1px solid var(--rule, #86765d); background: var(--paper, #f8f2e0); color: var(--ink, #211b14); font: 700 13px/1.45 Georgia, \"Times New Roman\", serif; cursor: pointer; } .ds-btn-secondary:hover { background: var(--paper-deep, #efe5cc); } .ds-btn-secondary:active { background: var(--paper-deep, #efe5cc); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--blue, #165d9f); outline-offset: 3px; } .ds-btn-secondary:disabled { opacity: .5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Dataset Select",
+      "kind": "input",
+      "refersTo": "field-select",
+      "description": "Visible list for choosing the experiment data.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-dataset\">Choose training data</label><select class=\"ds-dataset\" id=\"ds-dataset\" size=\"4\"><option selected>XOR classification</option><option>Circle classification</option><option>Spiral classification</option><option>Sine wave fitting</option></select>",
+      "css": ".ds-field-label { display: block; margin-bottom: 5px; color: var(--ink, #211b14); font: 700 13px/1.45 Georgia, serif; } .ds-dataset { display: block; width: 100%; padding: 5px; border: 1px solid var(--rule, #86765d); border-radius: 2px; background: var(--paper, #f8f2e0); color: var(--ink, #211b14); font: 13px/1.45 Georgia, serif; cursor: pointer; } .ds-dataset option { padding: 8px 9px; min-height: 32px; } .ds-dataset option:checked { background: #dce9d4; color: var(--green, #1e6841); font-weight: 700; } .ds-dataset:focus-visible { outline: 3px solid var(--blue, #165d9f); outline-offset: 3px; } .ds-dataset:disabled { opacity: .55; cursor: not-allowed; }"
+    },
+    {
+      "name": "Scientific Plate",
+      "kind": "card",
+      "refersTo": "card-plate",
+      "description": "Numbered figure frame for network or dataset visualization.",
+      "html": "<figure class=\"ds-plate\"><div class=\"ds-plate-head\"><span>Plate I.</span><strong>Neural network topology</strong></div><div class=\"ds-plate-diagram\" aria-hidden=\"true\"><span>Input</span><span>Hidden</span><span>Output</span><svg viewBox=\"0 0 260 90\" width=\"100%\" height=\"90\"><path d=\"M35 20 130 20 225 45 M35 20 130 65 225 45 M35 65 130 20 225 45 M35 65 130 65 225 45\" fill=\"none\" stroke=\"#86765d\"/><g fill=\"#f8f2e0\" stroke=\"#211b14\" stroke-width=\"2\"><circle cx=\"35\" cy=\"20\" r=\"8\"/><circle cx=\"35\" cy=\"65\" r=\"8\"/><circle cx=\"130\" cy=\"20\" r=\"8\"/><circle cx=\"130\" cy=\"65\" r=\"8\"/><circle cx=\"225\" cy=\"45\" r=\"8\"/></g></svg></div><figcaption class=\"ds-plate-caption\">Fig. 1. Fully connected network.</figcaption></figure>",
+      "css": ".ds-plate { margin: 0; min-width: 0; padding: 11px; border: 1px solid var(--rule, #86765d); background: rgba(248,242,224,.66); box-shadow: inset 0 0 0 5px var(--paper, #f8f2e0), inset 0 0 0 6px rgba(134,118,93,.7); color: var(--ink, #211b14); font-family: Georgia, serif; } .ds-plate-head { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px 9px; border-bottom: 1px solid var(--rule, #86765d); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; } .ds-plate-diagram { padding: 14px 7px 7px; text-align: center; } .ds-plate-diagram span { display: inline-block; width: 33%; font-size: 12px; text-transform: uppercase; letter-spacing: .09em; } .ds-plate-caption { padding: 12px 12px 5px; border-top: 1px solid rgba(134,118,93,.6); text-align: center; font: italic 15px/1.35 Georgia, serif; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-idle",
+      "description": "Compact label for the actual training state.",
+      "html": "<span class=\"ds-status\" role=\"status\">Idle</span>",
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid var(--green, #1e6841); background: #dce9d4; color: var(--green, #1e6841); font: 700 12px/1.2 Georgia, serif; text-transform: uppercase; letter-spacing: .05em; }"
+    },
+    {
+      "name": "Folio Index",
+      "kind": "nav",
+      "refersTo": "nav-index",
+      "description": "Compact links to the lab sections.",
+      "html": "<nav class=\"ds-index\" aria-label=\"Lab sections\"><a href=\"#data\">Data</a><a href=\"#network\">Network</a><a href=\"#training\">Training</a><a href=\"#results\">Results</a></nav>",
+      "css": ".ds-index { display: flex; gap: 8px; overflow-x: auto; } .ds-index a { flex: 0 0 auto; padding: 7px 10px; border: 1px solid transparent; color: var(--ink, #211b14); text-decoration: none; text-transform: uppercase; letter-spacing: .13em; font: 700 12px/1.2 Georgia, serif; } .ds-index a:hover, .ds-index a:focus-visible { border-color: var(--rule, #86765d); background: var(--paper-deep, #efe5cc); } .ds-index a:focus-visible { outline: 3px solid var(--blue, #165d9f); outline-offset: 3px; } @media (max-width:720px) { .ds-index a { padding: 7px 4px; font-size: 11px; letter-spacing: .04em; } }"
+    },
+    {
+      "name": "Training Progress",
+      "kind": "custom",
+      "refersTo": "progress-track",
+      "description": "Small status track with actual progress value.",
+      "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-label=\"Training progress\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"35\"><div class=\"ds-progress-fill\"></div></div>",
+      "css": ".ds-progress { height: 8px; border: 1px solid var(--rule, #86765d); background: var(--paper, #f8f2e0); } .ds-progress-fill { height: 100%; width: 35%; background: var(--green, #1e6841); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Neural Field Guide",
+    "overview": "This document applies only to the standalone Edge AI Training Lab at `static/apps/edge-ai-sandbox.html`. It does not define the visual system for dennisjcarroll.com or the surrounding Gatsby site.\n\nThe lab presents an experiment as an illustrated technical folio. Warm uncoated paper, engraved rules, editorial serif type, and paired scientific plates make the network and data readable as related observations. Color has a bounded job: red identifies the main action and one data class, blue identifies the other class and focus, and green identifies active or successful state. This is the approved Neural Field Guide direction represented by `.impeccable/mocks/option-2.webp`; the implementation is the source for values and behavior.",
+    "keyCharacteristics": [
+      "A paper field with double rules and inset plate borders.",
+      "A large network plate beside a data plate, with a narrower action column on wide screens.",
+      "Typographic labels, figure numbers, and quiet captions around live graphics.",
+      "Immediate, visible training state with reduced-motion support."
+    ],
+    "rules": [
+      {
+        "name": "The Bounded Signal Rule",
+        "body": "Keep red, blue, and green attached to actions, data, and state. Let paper and ink carry the reading surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Figure Label Rule",
+        "body": "Use small uppercase labels and numbered captions to orient a graphic; preserve the plot and model as the main content.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paired Plate Rule",
+        "body": "On wide screens, keep topology and data at comparable visual weight; on narrow screens, stack them after the immediate experiment controls.",
+        "section": "layout"
+      },
+      {
+        "name": "The Printed Frame Rule",
+        "body": "Separate regions with rules and paper tone; do not turn the folio into elevated dashboard cards.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Truthful State Rule",
+        "body": "Keep idle, training, stopping, and completed states tied to actual experiment state; never present placeholder metrics as measured results.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do preserve the paired figure hierarchy and label each representation clearly.",
+      "Do use the observed paper, ink, and rule tokens for new lab panels.",
+      "Do keep keyboard focus visible in scientific blue and honor reduced-motion preference.",
+      "Do show unavailable results as unavailable until training produces them."
+    ],
+    "donts": [
+      "Don't extend this document's tokens to the Gatsby site without a separate design decision.",
+      "Don't replace the folio with equal-weight neon dashboard cards; the selected direction rejects that look.",
+      "Don't use color alone to distinguish classes, training state, or comparison models."
+    ]
+  }
+}

@@ -1,217 +1,216 @@
 ---
-name: Edge AI Training Lab
-description: A neural field guide for browser-based training experiments.
+name: dennisjcarroll.com
+description: A dark night-console portfolio where cyan signal and violet secondary frame ML experiments and fiction.
 colors:
-  red: "#ad3023"
-  red-dark: "#842218"
-  blue: "#165d9f"
-  green: "#1e6841"
-  green-wash: "#dce9d4"
-  paper: "#f8f2e0"
-  paper-deep: "#efe5cc"
-  plate-glaze: "rgba(248, 242, 224, .66)"
-  ink: "#211b14"
-  muted: "#514735"
-  rule: "#86765d"
+  ink-black: "#0a0e14"
+  ink-raised: "#0f1419"
+  panel-glass: "rgba(12, 18, 30, 0.92)"
+  signal-cyan: "#00bcd4"
+  signal-cyan-bright: "#00e5ff"
+  ultraviolet: "#7c4dff"
+  ultraviolet-light: "#b388ff"
+  tailwind-primary: "#0FA0CE"
+  tailwind-accent: "#8B5CF6"
+  tailwind-secondary: "#1A1F2C"
+  text-white: "#ffffff"
+  text-muted: "#b8b8b8"
+  text-dim: "#9ca3af"
+  slate-accent: "#798996"
+  cyan-rule: "rgba(0, 188, 212, 0.2)"
+  cyan-border: "rgba(0, 188, 212, 0.35)"
 typography:
   display:
-    fontFamily: "'Zen Antique Soft', Georgia, serif"
-    fontSize: "clamp(32px, 3vw, 47px)"
-    fontWeight: 400
-    lineHeight: 1.08
-    letterSpacing: "-.02em"
-  section:
-    fontFamily: "'Zen Antique Soft', Georgia, serif"
-    fontSize: "28px"
-    fontWeight: 400
-    lineHeight: 1.2
+    fontFamily: "Orbitron, 'Space Grotesk', sans-serif"
+    fontSize: "4rem"
+    fontWeight: 800
+    letterSpacing: "2px"
+  headline:
+    fontFamily: "'Space Grotesk', sans-serif"
+    fontSize: "clamp(2.25rem, 4vw, 3rem)"
+    fontWeight: 700
   title:
-    fontFamily: "Georgia, 'Times New Roman', serif"
-    fontSize: "15px"
+    fontFamily: "Orbitron, 'Space Grotesk', sans-serif"
+    fontSize: "1.6rem"
     fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: ".1em"
+    letterSpacing: "0.5px"
   body:
-    fontFamily: "Georgia, 'Times New Roman', serif"
-    lineHeight: 1.45
+    fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.6
+  ui:
+    fontFamily: "'Space Grotesk', sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.7
   label:
-    fontFamily: "Georgia, 'Times New Roman', serif"
-    fontSize: "13px"
-    fontWeight: 700
-  action:
-    fontFamily: "'Zen Antique Soft', Georgia, serif"
-    fontSize: "23px"
-    fontWeight: 700
-    lineHeight: 1.1
-    letterSpacing: ".07em"
+    fontFamily: "'Space Grotesk', sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 600
+    letterSpacing: "1px"
+  mono:
+    fontFamily: "'Fira Code', monospace"
+    fontSize: "0.9rem"
 rounded:
-  square: "0px"
-  control: "2px"
-  circle: "50%"
+  sm: "8px"
+  md: "12px"
+  lg: "20px"
+  pill: "50px"
 spacing:
-  compact: "12px"
-  panel: "16px"
+  xs: "0.5rem"
+  sm: "1rem"
+  md: "1.5rem"
+  lg: "3rem"
+  section: "6rem"
 components:
   button-primary:
-    backgroundColor: "{colors.red}"
-    textColor: "#fffaf1"
-    typography: "{typography.action}"
-    rounded: "{rounded.square}"
-    padding: "12px 18px"
-    height: "72px"
-  button-primary-hover:
-    backgroundColor: "{colors.red-dark}"
+    backgroundColor: "rgba(0, 188, 212, 0.18)"
+    textColor: "{colors.text-white}"
+    rounded: "{rounded.pill}"
+    padding: "0.75rem 1.5rem"
   button-secondary:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.square}"
-    padding: "7px"
-    height: "39px"
-  button-secondary-hover:
-    backgroundColor: "{colors.paper-deep}"
-  field-select:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "7px 11px"
-    height: "39px"
-  card-plate:
-    backgroundColor: "{colors.plate-glaze}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.square}"
-  status-idle:
-    backgroundColor: "{colors.green-wash}"
-    textColor: "{colors.green}"
-    rounded: "{rounded.square}"
-    padding: "3px 8px"
-  nav-index:
-    textColor: "{colors.ink}"
-    rounded: "{rounded.square}"
-    padding: "7px 10px"
-  progress-track:
-    backgroundColor: "{colors.paper}"
-    rounded: "{rounded.square}"
-    height: "8px"
+    backgroundColor: "rgba(255, 255, 255, 0.06)"
+    textColor: "{colors.signal-cyan-bright}"
+    rounded: "{rounded.pill}"
+    padding: "0.75rem 1.5rem"
+  button-ghost:
+    backgroundColor: "rgba(255, 255, 255, 0.05)"
+    textColor: "{colors.text-white}"
+    rounded: "{rounded.pill}"
+    padding: "0.75rem 1.5rem"
+  section-badge:
+    backgroundColor: "{colors.signal-cyan}"
+    textColor: "{colors.text-white}"
+    rounded: "{rounded.pill}"
+    padding: "0.5rem 1rem"
+  feature-card:
+    backgroundColor: "rgba(15, 20, 30, 0.9)"
+    textColor: "{colors.text-white}"
+    rounded: "{rounded.lg}"
+    padding: "2.5rem"
+  form-input:
+    backgroundColor: "rgba(15, 20, 30, 0.8)"
+    textColor: "{colors.text-white}"
+    rounded: "{rounded.md}"
+    padding: "1rem"
 ---
 
-# Design System: Edge AI Training Lab
+# Design System: dennisjcarroll.com
 
 ## Overview
 
-**Creative North Star: "The Neural Field Guide"**
+**Creative North Star: "The Night Instrument Panel"**
 
-This document applies only to the standalone Edge AI Training Lab at `static/apps/edge-ai-sandbox.html`. It does not define the visual system for dennisjcarroll.com or the surrounding Gatsby site.
+A dark console where cyan is the live signal and violet is the secondary channel. The site holds ML experiments, data tools, and fiction under one skin: a working lab readout that happens to host stories. Dark is the only theme; the Light, Tokyo Afternoon, and 80s Retro variants were removed (see THEME.md) and their CSS is dead code.
 
-The lab presents an experiment as an illustrated technical folio. Warm uncoated paper, engraved rules, editorial serif type, and paired scientific plates make the network and data readable as related observations. Color has a bounded job: red identifies the main action and one data class, blue identifies the other class and focus, and green identifies active or successful state. This is the approved Neural Field Guide direction represented by `.impeccable/mocks/option-2.webp`; the implementation is the source for values and behavior.
+Density is moderate. Sections are full-bleed with an inner `max-w-6xl` column, generous vertical rhythm (`py-24`), centered section heads (badge, gradient headline, muted lede), then a card grid. The current implementation leans heavily on neon glow, glassmorphism blur, animated gradient text, and a custom cursor with HUD corners. These are the present signature and also the main source of drift: they are applied almost everywhere, so none of them signals anything.
 
 **Key Characteristics:**
-
-- A paper field with double rules and inset plate borders.
-- A large network plate beside a data plate, with a narrower action column on wide screens.
-- Typographic labels, figure numbers, and quiet captions around live graphics.
-- Immediate, visible training state with reduced-motion support.
+- Single dark theme on near-black navy (#0a0e14), flat with no per-page gradients.
+- Cyan (#00bcd4) as the signal color; violet (#7c4dff) as its pair, mostly in gradients.
+- Four type roles: Orbitron display, Space Grotesk UI, Georgia-class serif body, Fira Code mono.
+- Pill buttons and 20px glass cards with cyan hairline borders.
+- No emoji anywhere; SVG icons or geometric glyphs only (THEME.md).
 
 ## Colors
 
-The palette is warm and restrained so experiment signals remain distinct.
+Cool near-black ground, one cyan signal, one violet partner, white text.
 
 ### Primary
-
-- **Vermilion (`red`, #ad3023):** Train action, range accent, active network connections, and one plotted class.
-- **Deep vermilion (`red-dark`, #842218):** Primary hover and numeric control emphasis.
+- **Signal Cyan** (#00bcd4): links, borders, glows, focus rings, primary CTA tint. Tailwind's `primary` (#0FA0CE) is a near-duplicate used in utility classes.
+- **Bright Signal Cyan** (#00e5ff): the top of the hero name gradient and secondary button text.
 
 ### Secondary
-
-- **Scientific blue (`blue`, #165d9f):** Other plotted class, comparison label, and keyboard focus outline.
-
-### Tertiary
-
-- **Training green (`green`, #1e6841):** Active neurons, progress, and status; **green wash** (`green-wash`, #dce9d4) backs selected and positive states.
+- **Ultraviolet** (#7c4dff): the second stop in every gradient (buttons, badges, gradient text, card glow). Light variant #b388ff for accent letters. Tailwind's `accent` (#8B5CF6) is a near-duplicate.
 
 ### Neutral
+- **Ink Black** (#0a0e14): page and site-wrapper background.
+- **Ink Raised** (#0f1419): secondary surface.
+- **Panel Glass** (rgba(12, 18, 30, 0.92)): card background; form fields use rgba(15, 20, 30, 0.8).
+- **White** (#ffffff): primary text. **Muted** (#b8b8b8) for card body; Tailwind `text-gray-400` (#9ca3af) for section ledes.
+- **Slate** (#798996): accent-color token, rarely used.
+- **Cyan Rule** (rgba(0, 188, 212, 0.2) / 0.35): the border color for dividers and cards.
 
-- **Uncoated paper (`paper`, #f8f2e0):** Main canvas and controls; **deep paper** (`paper-deep`, #efe5cc) separates the site bar and hover surfaces.
-- **Plate glaze (`plate-glaze`, rgba(248, 242, 224, .66)):** Lightly translucent plate and panel surface over the paper texture.
-- **Engraving ink (`ink`, #211b14):** Primary text and diagram outlines; **muted ink** (`muted`, #514735) supports captions and secondary text.
-- **Sepia rule (`rule`, #86765d):** Dividers, plate borders, axes, and control strokes.
-
-**The Bounded Signal Rule.** Keep red, blue, and green attached to actions, data, and state. Let paper and ink carry the reading surface.
+### Named Rules
+**The One Signal Rule.** Cyan means live or interactive. Violet only ever pairs with cyan in a gradient; it never stands alone as a fill.
+**The Single Ground Rule.** One flat dark background site-wide. No per-section gradient seams.
 
 ## Typography
 
-**Display Font:** Zen Antique Soft (Georgia, serif fallback).
-**Body Font:** Georgia (Times New Roman, serif fallback).
-**Log Font:** System monospace stack in the training log.
+**Display Font:** Orbitron (with Space Grotesk, sans-serif fallback)
+**Body Font:** ui-serif / Georgia (system serif, no webfont)
+**UI Font:** Space Grotesk (300 to 700)
+**Mono Font:** Fira Code (JetBrains Mono in the research paper template)
 
-**Character:** The display face gives the folio its printed title and action mark. Georgia carries compact explanations and scientific labels; numeric readouts use tabular figures.
+**Character:** Orbitron is the machine voice for the name and card titles; Space Grotesk carries UI and cards; the serif body is the inherited default that quietly sets the tone for long prose. The split is real in code, though the serif often gets overridden by Tailwind sans on pages.
 
 ### Hierarchy
+- **Display** (800, 4rem, Orbitron, 2px tracking): hero name, letter-by-letter reveal.
+- **Headline** (700, `text-4xl md:text-5xl`, Space Grotesk): section titles, rendered with `.gradient-text`.
+- **Title** (700, 1.6rem, Orbitron): feature card titles.
+- **Body** (400, 1rem, line-height 1.6 to 1.7): section ledes at `text-lg`, max ~`max-w-2xl`.
+- **Label** (600, 0.75rem, 1px tracking, uppercase): section badges and eyebrow text (`text-sm uppercase tracking-widest text-teal-400`).
+- **Mono** (Fira Code): code and `pre` blocks.
 
-- **Display** (400, `clamp(32px, 3vw, 47px)`, 1.08): Page title; reduced to `clamp(26px, 8vw, 38px)` on small screens.
-- **Section** (400, 28px, 1.2): The study section heading.
-- **Title** (700, 15px, 1.2, `.1em`, uppercase): Panel headings.
-- **Body** (Georgia, 1.45): Explanations, captions, and controls; the study text is limited to 64ch.
-- **Label** (700, 13px): Field labels and compact figure headings; uppercase plate labels carry additional tracking.
-- **Action** (700, 23px, 1.1, `.07em`, uppercase): The Train button.
-
-**The Figure Label Rule.** Use small uppercase labels and numbered captions to orient a graphic; preserve the plot and model as the main content.
+### Named Rules
+**The Machine Voice Rule.** Orbitron is for the name and card titles only. Never for paragraphs.
 
 ## Layout
 
-The folio has a 1680px maximum width. Its first spread uses two equal, flexible plates and a narrower action column (`minmax(265px, .55fr)`) with 12px gaps. Detailed controls and curves begin in a four-column lower spread. The default plates have a 555px minimum height so the diagrams dominate the first view.
-
-At 1180px, the action column moves below the two plates and divides into three columns; lower controls become two columns. At 720px, the layout becomes one column. The dataset picker, Train button, and status appear before the stacked network and data plates, keeping the action reachable without burying the diagrams. The index remains horizontally scrollable. Panels use 16px internal padding, while plate framing uses 11px.
-
-**The Paired Plate Rule.** On wide screens, keep topology and data at comparable visual weight; on narrow screens, stack them after the immediate experiment controls.
+Full-bleed sections, each constraining content to `max-w-6xl mx-auto` with `px-4 md:px-8 lg:px-16` and `py-24`. `main` caps at 1200px except the homepage (`home-full-bleed`). Feature grids go 1 column to `md:grid-cols-3` with `gap-8`. Section heads are centered with `mb-16`. Forms use `auto-fit, minmax(250px, 1fr)`. One breakpoint rule at 768px in global CSS; otherwise Tailwind's `md`/`lg`.
 
 ## Elevation & Depth
 
-Depth comes from the repeated paper texture, tonal paper layers, sepia borders, and a double inset rule. Plates and panels use an inset shadow (`inset 0 0 0 5px var(--paper), inset 0 0 0 6px rgba(134,118,93,.7)`) to simulate a printed frame. There is no floating card shadow vocabulary.
+Hybrid of tonal layering and glow. Cards sit as translucent glass (backdrop blur 10 to 14px) over the flat ground, with a cyan hairline and a soft black drop shadow. Emphasis is expressed as cyan glow rather than lift. Currently glow and animated gradients appear at rest, not only on state. Flagged as drift: they should answer to hover/focus.
 
-**The Printed Frame Rule.** Separate regions with rules and paper tone; do not turn the folio into elevated dashboard cards.
+### Shadow Vocabulary
+- **Card rest** (`box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2)`): feature and contact cards.
+- **Button hover** (`0 6px 20px rgba(0, 0, 0, 0.3), var(--neon-glow)`): lift plus cyan glow.
+- **Neon glow** (`0 0 10px #00bcd4, 0 0 20px rgba(0, 128, 128, 0.5)`): `--neon-glow`, used on hover and on the cursor.
+- **Primary glass CTA** (`0 4px 24px rgba(0, 188, 212, 0.18), inset 0 1px 0 rgba(255,255,255,0.12)`).
+
+### Named Rules
+**The Glow Answers Rule (aspirational, not yet true).** Glow appears only in response to hover, focus, or active state. At rest, surfaces are flat.
 
 ## Shapes
 
-Panels and plates are square-cornered. Select controls use a subtle 2px radius; neurons, plot dots, and the training indicator are circular. Fine 1px strokes define most boundaries, while the masthead uses a 3px double rule and the primary action uses a 4px double border.
+Soft and rounded: pill (50px) for buttons and badges, 20px for feature and contact cards, 12px for inputs, 8px for code blocks. Hairline 1px cyan borders at low alpha define edges instead of fills. HUD corner brackets (2px cyan, 100px, partial border) and a ring cursor (20px circle, difference blend) are the decorative geometry.
 
 ## Components
 
 ### Buttons
-
-- **Primary Train:** Full-width vermilion stamp, at least 72px high, with cream lettering, double border, and dark red hover. Hover lifts by 1px; disabled state fades and removes movement. Keyboard focus has a 3px blue outline offset by 3px.
-- **Secondary actions:** Square paper buttons with a single sepia rule, 39px minimum height, deep-paper hover, and disabled opacity.
+- **Shape:** full pill (50px), uppercase, 0.9rem, 1px tracking, 600 weight, `0.75rem 1.5rem`.
+- **Primary (`btn-primary-enhanced`):** cyan-tinted glass (rgba(0,188,212,0.18)), 1px cyan border at 0.55, white text, blur 14px.
+- **Secondary:** white 6% glass, cyan border at 0.45, bright cyan text (rgba(0,220,240,0.95)).
+- **Ghost:** white 5% glass, white 18% border, white 82% text.
+- **Hover:** `translateY(-2px)`, stronger fill and border, deeper glow. Base `.btn` is a cyan-to-violet gradient; hero variants override it with `!important`.
 
 ### Cards / Containers
-
-- **Scientific plate:** Translucent paper, inset double frame, uppercase plate heading, and caption separated by a rule. Figures contain the live network or data canvas.
-- **Folio panel:** The same frame treatment around dataset selection, status, settings, curves, and summary blocks.
+- **Feature card:** 20px radius, 2.5rem padding, dark glass gradient (rgba(15,20,30,0.9) to rgba(20,25,35,0.85)), 1px cyan hairline at 0.12, blur 12px, animated faint gradient overlay; on hover the border glows and the icon scales 1.05; title turns gradient.
+- **Link:** cyan "read more" with a gradient underline that grows to 100% width.
 
 ### Inputs / Fields
-
-- **Select:** Paper fill, sepia rule, 2px corners, and at least 39px height for single-row controls. The visible dataset list marks selection with green wash.
-- **Range and toggle:** Native controls with vermilion accent. Visible numeric outputs use tabular figures.
+- **Style:** 12px radius, 1px cyan hairline at 0.2, dark glass fill, white text, 1rem padding.
+- **Focus:** border to solid cyan plus `0 0 0 2px rgba(0,188,212,0.2)` ring. Global rule also forces dark input fill with `!important`.
 
 ### Navigation
+Space Grotesk 600, 0.5px tracking, pill-shaped items with a sliding indicator (rgba(0,243,255,0.15) with cyan border and glow). Wraps and centers below 768px.
 
-The small uppercase shoulder index links to Data, Network, Training, and Results. Hover or keyboard focus adds a sepia border and deep-paper fill. On mobile, links stay in one horizontally scrollable row.
-
-### Status and progress
-
-The status badge has a green border and wash in the idle state. A compact definition list shows epoch, loss, and accuracy; an 8px progress track uses green fill. The training indicator pulses, except under reduced-motion preference.
-
-**The Truthful State Rule.** Keep idle, training, stopping, and completed states tied to actual experiment state; never present placeholder metrics as measured results.
+### Section Badge
+Pill, cyan-to-violet gradient fill, 0.75rem uppercase 1px tracking, white text. Sits above each section headline.
 
 ## Do's and Don'ts
 
 ### Do:
-
-- **Do** preserve the paired figure hierarchy and label each representation clearly.
-- **Do** use the observed paper, ink, and rule tokens for new lab panels.
-- **Do** keep keyboard focus visible in scientific blue and honor reduced-motion preference.
-- **Do** show unavailable results as unavailable until training produces them.
+- **Do** keep a single dark ground (#0a0e14) and carry hierarchy with white, muted gray, and cyan hairlines.
+- **Do** use cyan for interactive or live state and pair violet only inside gradients.
+- **Do** use pill radius for actions and 20px for cards; keep hairline borders at 0.12 to 0.35 cyan alpha.
+- **Do** use inline SVG or geometric glyphs for icons (THEME.md).
+- **Do** keep Orbitron to the name and card titles, Space Grotesk for UI, Fira Code for code.
 
 ### Don't:
-
-- **Don't** extend this document's tokens to the Gatsby site without a separate design decision.
-- **Don't** replace the folio with equal-weight neon dashboard cards; the selected direction rejects that look.
-- **Don't** use color alone to distinguish classes, training state, or comparison models.
+- **Don't** add emoji anywhere in site pages or `static/apps/` HTML.
+- **Don't** re-introduce theme switching without a full token pass; hardcoded Tailwind dark classes ignore theme classes (THEME.md).
+- **Don't** add more gradient text, resting glow, or glass blur; they are already overused and should narrow, not spread.
+- **Don't** rely on `!important` to win button variants; fold them into the `.btn` token set.
+- **Don't** treat Tailwind `primary`/`accent` (#0FA0CE, #8B5CF6) as separate from the CSS cyan/violet; they should converge.

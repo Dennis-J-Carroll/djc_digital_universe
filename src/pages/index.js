@@ -177,7 +177,7 @@ const IndexPage = ({ location }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
-                className="flex flex-wrap justify-center gap-4 mb-16"
+                className="flex flex-wrap justify-center gap-4 mb-4 md:mb-16"
               >
                 <Link to="/apps" className="glow-on-hover btn btn-primary-enhanced">
                   Apps & Projects
@@ -190,7 +190,7 @@ const IndexPage = ({ location }) => {
                   className="glow-on-hover btn btn-secondary"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.getElementById('contact')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
                   }}
                 >
                   Contact Me
@@ -205,7 +205,7 @@ const IndexPage = ({ location }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+                className="flex flex-col items-center md:absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2"
               >
                 <Suspense fallback={null}>
                   <InteractiveCube />
@@ -349,7 +349,7 @@ const IndexPage = ({ location }) => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {formStatus.submitted && formStatus.success ? (
-              <div className="contact-success" role="alert" aria-live="polite">
+              <div className="contact-success" role="status">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>

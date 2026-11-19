@@ -6,6 +6,9 @@ const InteractiveCursor = () => {
     const cursorDotRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
+    // Server and first client render must match: mount the cursor elements after hydration.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
     const mousePos = useRef({ x: 0, y: 0 });
     const cursorPos = useRef({ x: 0, y: 0 });
     const rafIdRef = useRef(null);
@@ -65,7 +68,7 @@ const InteractiveCursor = () => {
         };
     }, []);
 
-    if (typeof window === 'undefined') return null;
+    if (!mounted) return null;
 
     return (
         <>
