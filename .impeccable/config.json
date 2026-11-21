@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "createdAt": "2026-11-21T15:57:43.344Z",
+        "reason": "Space Grotesk is the site's documented UI face (DESIGN.md, THEME.md); app must match the site"
+      }
+    ]
+  }
+}
