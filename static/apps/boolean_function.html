@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boolean Analysis & Neural Networks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            slate: { 50:'#f1f5f9', 100:'#e5eaf0', 200:'#d5dce5', 300:'#bcc6d2', 400:'#9aa6b5', 500:'#7d8a9b', 600:'#3a4756', 700:'#232f3c', 800:'#131b25', 900:'#0a0e14', 950:'#070a10' },
+            cyan: { 300:'#67f0ff', 400:'#00e5ff', 500:'#00bcd4', 600:'#0097a7' },
+            purple: { 300:'#c9a8ff', 400:'#b388ff', 500:'#7c4dff' },
+            pink: { 300:'#c9a8ff', 400:'#b388ff', 500:'#7c4dff' }
+        } } } };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         MathJax = {
@@ -14,24 +25,49 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        .math-font { font-family: 'JetBrains Mono', monospace; }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 1rem;
-        }
-        .bar-fill { transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        :root { --rule: rgba(0,188,212,0.2); --rule-strong: rgba(0,188,212,0.45); --ease-out: cubic-bezier(0.16, 1, 0.3, 1); }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0e14; color: #e5eaf0; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+            background-image: linear-gradient(rgba(0,188,212,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(0,188,212,0.045) 1px, transparent 1px);
+            background-size: 48px 48px; -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 15%, #000 20%, transparent 78%); mask-image: radial-gradient(ellipse 90% 70% at 50% 15%, #000 20%, transparent 78%); }
+        .app-wrap { position: relative; z-index: 1; }
+        ::selection { background: rgba(0,229,255,0.28); color:#fff; }
+        :focus-visible { outline: 2px solid #00e5ff; outline-offset: 3px; border-radius: 4px; }
+        .math-font { font-family: 'Fira Code', monospace; }
+        .glass-panel { position: relative; background: rgba(12,18,30,0.92); border: 1px solid var(--rule) !important; border-radius: 12px; transition: border-color .35s var(--ease-out); }
+        .glass-panel::before, .glass-panel::after { content:''; position:absolute; width:22px; height:22px; border:2px solid #00bcd4; opacity:.75; pointer-events:none; transition: width .4s var(--ease-out), height .4s var(--ease-out), border-color .3s; }
+        .glass-panel::before { top:-1px; left:-1px; border-right:0; border-bottom:0; border-top-left-radius:12px; }
+        .glass-panel::after { bottom:-1px; right:-1px; border-left:0; border-top:0; border-bottom-right-radius:12px; }
+        .glass-panel:hover::before, .glass-panel:hover::after, .glass-panel:focus-within::before, .glass-panel:focus-within::after { width:44px; height:44px; border-color:#00e5ff; }
+        .glass-panel:hover { border-color: var(--rule-strong) !important; }
+        h1.hero-title, h2.section-header { font-family: 'Orbitron','Space Grotesk',sans-serif; letter-spacing: .5px; }
+        h2.section-header { font-size: clamp(1.05rem, 3.6vw, 1.4rem); line-height: 1.25; }
+        .acc { position: relative; }
+        .acc::before { content:''; position:absolute; left:0; top:1rem; width:3px; height:24px; border-radius:0 2px 2px 0; background: var(--acc,#00bcd4); transition: height .5s var(--ease-out); }
+        .acc:hover::before { height: calc(100% - 2rem); }
+        .btn { font-family:'Fira Code',monospace; font-size:.78rem; letter-spacing:.04em; color:#f1f5f9; background:rgba(0,188,212,.14); border:1px solid var(--rule-strong); border-radius:50px; padding:.5rem 1.1rem; min-height:40px; cursor:pointer; transition: background .2s, border-color .2s, transform .15s var(--ease-out); }
+        .btn:hover { background:rgba(0,188,212,.26); border-color:#00e5ff; }
+        .btn:active { transform: scale(.96); }
+        .btn.ghost { background:rgba(255,255,255,.05); color:#00e5ff; }
+        .btn.train { background:rgba(124,77,255,.2); border-color:rgba(179,136,255,.5); }
+        .btn.train:hover { background:rgba(124,77,255,.34); border-color:#b388ff; }
+        .btn.stop { background:rgba(239,68,68,.18); border-color:rgba(239,68,68,.6); }
+        .btn:disabled { opacity:.4; cursor:not-allowed; }
+        select { min-height: 40px; }
+        .bar-fill { transition: height 0.6s var(--ease-out); }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-track { background: #0a0e14; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,188,212,.35); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,.6); }
+        * { scrollbar-color: rgba(0,188,212,.4) #0a0e14; scrollbar-width: thin; }
 
-        input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; background: #334155; border-radius: 2px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #22d3ee; cursor: pointer; }
-        input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #22d3ee; cursor: pointer; border: none; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #00bcd4 var(--fill,50%), rgba(255,255,255,.12) var(--fill,50%)); }
+        input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.12); }
+        input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: #00bcd4; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: #0a0e14; border: 2px solid #00e5ff; transition: transform .25s var(--ease-out); }
+        input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #0a0e14; border: 2px solid #00e5ff; }
+        input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
 
         .notation-card { background: rgba(15,23,42,0.5); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
         .notation-card:last-child { margin-bottom: 0; }
@@ -43,6 +79,50 @@
         .nn-node { transition: fill 0.3s; }
         .nn-edge { transition: stroke-opacity 0.3s, stroke-width 0.3s; }
 
+
+        /* ===== Hero ===== */
+        .hero { display:grid; grid-template-columns:minmax(0,1fr); gap:1.75rem; align-items:center; margin-bottom:2.5rem; padding-top:.5rem; }
+        @media (min-width: 960px) { .hero { grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:3rem; } }
+        .hero-title { font-weight:800; font-size:clamp(1.5rem,7vw,3.2rem); line-height:1.06; text-transform:uppercase; letter-spacing:1px; margin-bottom:1.1rem; text-wrap:balance; }
+        .hero-title span { display:block; color:#00e5ff; }
+        .scope { padding:.9rem; }
+        .scope-head { display:flex; justify-content:space-between; gap:1rem; font-family:'Fira Code',monospace; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:#8c97a6; margin-bottom:.5rem; }
+        .scope-head b { color:#00e5ff; font-weight:500; text-transform:none; }
+        #heroCanvas { display:block; width:100%; height:300px; border-radius:6px; background:#070a10; cursor:crosshair; touch-action:pan-y; }
+        @media (min-width: 960px) { #heroCanvas { height:340px; } }
+        .scope-read { font-family:'Fira Code',monospace; font-size:.78rem; color:#bcc6d2; margin-top:.6rem; min-height:2.4em; }
+        .scope-read b { color:#00e5ff; font-weight:500; }
+
+        /* ===== History timeline ===== */
+        .hist-year { font-family:'Orbitron',sans-serif; font-weight:800; font-size:clamp(3rem,14vw,6rem); line-height:1; letter-spacing:2px; color:#00e5ff; font-variant-numeric:tabular-nums; margin-bottom:1rem; }
+        .hist-track { position:relative; overflow-x:auto; padding:.4rem 0 .2rem; scrollbar-width:none; }
+        .hist-track::-webkit-scrollbar { display:none; }
+        .hist-rail { position:absolute; left:0; right:0; top:17px; height:2px; background:rgba(255,255,255,.12); min-width:100%; }
+        .hist-rail i { position:absolute; inset:0; background:#00bcd4; transform-origin:left; transform:scaleX(0); transition:transform .7s var(--ease-out); }
+        .hist-nodes { list-style:none; display:flex; justify-content:space-between; gap:.5rem; min-width:560px; position:relative; }
+        .hist-nodes li { flex:1 1 0; display:flex; justify-content:center; }
+        .hist-node { background:none; border:0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:.55rem; min-width:56px; min-height:44px; font-family:'Fira Code',monospace; font-size:.78rem; color:#8c97a6; transition:color .25s; }
+        .hist-node::before { content:''; width:14px; height:14px; border-radius:50%; background:#0a0e14; border:2px solid var(--rule-strong); transition:transform .4s var(--ease-out), border-color .25s, background .25s; z-index:1; margin-top:11px; }
+        .hist-node:hover { color:#f1f5f9; }
+        .hist-node:hover::before { border-color:#00e5ff; }
+        .hist-node.past::before { border-color:#00bcd4; background:#00bcd4; }
+        .hist-node[aria-current="true"] { color:#00e5ff; }
+        .hist-node[aria-current="true"]::before { transform:scale(1.5); border-color:#00e5ff; background:#00e5ff; }
+        .hist-card { margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid var(--rule); }
+        .hist-card.swap { animation:histIn .5s var(--ease-out) both; }
+        @keyframes histIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+        .hist-card h3 { font-family:'Orbitron',sans-serif; font-size:clamp(1.05rem,3.8vw,1.45rem); font-weight:700; letter-spacing:.5px; margin:0 0 .35rem; color:#fff; }
+        .hist-who { font-family:'Fira Code',monospace; font-size:.8rem; color:#b388ff; margin-bottom:.9rem; }
+        .hist-card p.body { font-size:.95rem; line-height:1.7; color:#bcc6d2; max-width:75ch; margin-bottom:.9rem; }
+
+        .butterfly-path.flow { stroke-dasharray: 7 5; animation: bfFlow .9s linear infinite; }
+        @keyframes bfFlow { to { stroke-dashoffset: -12; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+            .butterfly-path.flow { animation:none; }
+        }
+
         @media (max-width: 640px) {
             .section-header { font-size: 1.1rem; }
             .control-row { flex-direction: column; gap: 0.75rem; }
@@ -52,11 +132,11 @@
 <body class="min-h-screen">
 
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
+  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(10,14,20,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,188,212,0.2);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .djc-app-bar a{color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;}
   .djc-app-bar a:hover{color:#67e8f9;}
   .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
+  .djc-app-bar .djc-logo{color:#00e5ff;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
 </style>
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
@@ -67,17 +147,23 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
 
-<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-4 py-8 app-wrap">
 
     <!-- Header -->
-    <header class="mb-10 text-center">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-3">
-            Boolean Analysis <span class="text-slate-500">&amp;</span> Neural Nets
-        </h1>
-        <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base">
-            Why are some logic functions easy for AI to learn, while others are nearly impossible?
-            The answer lies in the <span class="text-cyan-400 font-bold">Fourier Spectrum</span>.
-        </p>
+    <header class="hero">
+        <div>
+            <h1 class="hero-title">Boolean Analysis <span>&amp; Neural Nets</span></h1>
+            <p class="text-slate-300 max-w-xl text-base md:text-lg leading-relaxed">
+                Why are some logic functions easy for AI to learn, while others are nearly impossible?
+                The answer lies in the <span class="text-cyan-400 font-bold">Fourier Spectrum</span>.
+            </p>
+            <p class="math-font text-xs text-slate-500 mt-5 leading-relaxed">LIVE: the grid is the Walsh-Hadamard matrix for the function chosen below. Hover a column to read its coefficient; change the function or n and the transform re-runs.</p>
+        </div>
+        <div class="glass-panel scope">
+            <div class="scope-head"><span>Walsh-Hadamard transform</span><b id="heroSummary">n = 3 · AND</b></div>
+            <canvas id="heroCanvas" tabindex="0" role="img" aria-label="Walsh-Hadamard matrix with the current Boolean function as the left column and its Fourier coefficients as bars underneath. Use left and right arrow keys to inspect a coefficient."></canvas>
+            <div class="scope-read" id="heroRead" aria-live="polite"></div>
+        </div>
     </header>
 
     <main class="space-y-8">
@@ -86,7 +172,7 @@
         <section class="glass-panel p-6 md:p-8">
             <div class="flex flex-col md:flex-row gap-8 items-center">
                 <div class="flex-1">
-                    <h2 class="text-xl font-bold text-white mb-3 section-header">1. The Notation Shift</h2>
+                    <h2 class="text-xl font-bold text-white mb-3 section-header">The Notation Shift</h2>
                     <p class="text-slate-300 mb-4 text-sm leading-relaxed">
                         Standard logic uses <span class="math-font text-pink-400">{0, 1}</span>.
                         Fourier analysis prefers <span class="math-font text-cyan-400">{-1, +1}</span>.
@@ -127,13 +213,12 @@
         </section>
 
         <!-- SECTION 2: Interactive Analyzer -->
-        <section class="glass-panel p-6 md:p-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
-
+        <section class="glass-panel p-6 md:p-8 relative overflow-hidden" id="analyzerSection">
+            
             <!-- Controls -->
             <div class="flex flex-wrap items-end justify-between gap-4 mb-6 border-b border-slate-700 pb-5">
                 <div>
-                    <h2 class="text-xl font-bold text-white section-header">2. Interactive Spectrum Analyzer</h2>
+                    <h2 class="text-xl font-bold text-white section-header">Interactive Spectrum Analyzer</h2>
                     <p class="text-slate-400 text-xs mt-1">Adjust variables, select a function, or build your own.</p>
                 </div>
                 <div class="flex flex-wrap items-end gap-5">
@@ -160,7 +245,7 @@
                             <option value="innerProduct">INNER PRODUCT — Pairwise cryptic</option>
                             <option value="random">RANDOM — Uniform typical case</option>
                             <option value="dictator">DICTATOR — x₁ decides all</option>
-                            <option value="custom">★ CUSTOM — Click output cells to edit</option>
+                            <option value="custom">◆ CUSTOM — Click output cells to edit</option>
                         </select>
                     </div>
                 </div>
@@ -222,45 +307,45 @@
                             <span class="text-xs text-slate-500 math-font">\(\hat{f}(S) = \mathbb{E}[f \cdot \chi_S]\)</span>
                         </div>
                         <div id="formulaPanel" class="text-slate-200 overflow-x-auto min-h-8 text-sm"></div>
-                        <div class="text-xs text-slate-600 mt-2">Terms with |f̂(S)| &lt; 0.001 omitted for clarity.</div>
+                        <div class="text-xs text-slate-500 mt-2">Terms with |f̂(S)| &lt; 0.001 omitted for clarity.</div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- SECTION 3: Mathematical Foundations -->
-        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(34,211,238,0.15);">
-            <h2 class="text-xl font-bold text-white mb-1 section-header">3. Mathematical Foundations</h2>
+        <section class="glass-panel p-6 md:p-8" >
+            <h2 class="text-xl font-bold text-white mb-1 section-header">Mathematical Foundations</h2>
             <p class="text-slate-400 text-xs mb-5">The definitions that make the spectrum meaningful.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Encoding map -->
-                <div class="notation-card" style="border-left: 3px solid #22d3ee;">
+                <div class="notation-card acc" style="--acc:#22d3ee;">
                     <h3 class="text-xs font-semibold mb-2 text-cyan-400 uppercase tracking-wide">Encoding Map</h3>
                     <div id="mjx-encoding" class="text-sm mb-3 overflow-x-auto"></div>
                     <div class="flex items-center gap-3 mt-2" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
                         <span class="text-slate-500 text-xs">Try:</span>
-                        <button id="enc-bit-btn" class="px-3 py-1 rounded border text-cyan-400 cursor-pointer hover:bg-slate-700 transition-colors" style="background:#1e293b; border-color:#334155; font-size:0.85rem;">b = 0</button>
+                        <button id="enc-bit-btn" class="px-3 py-1 rounded border text-cyan-400 cursor-pointer hover:bg-slate-700 transition-colors" style="background:#131b25; border-color:#2d3b4a; font-size:0.85rem;">b = 0</button>
                         <span class="text-slate-500">→</span>
                         <span id="enc-result" class="text-pink-400 font-bold text-lg" style="transition: transform 0.15s ease; display:inline-block;">+1</span>
                     </div>
                 </div>
 
                 <!-- Walsh Characters -->
-                <div class="notation-card" style="border-left: 3px solid #a855f7;">
+                <div class="notation-card acc" style="--acc:#a855f7;">
                     <h3 class="text-xs font-semibold mb-2 text-purple-400 uppercase tracking-wide">Walsh Characters</h3>
                     <div id="mjx-walsh" class="text-sm mb-3 overflow-x-auto"></div>
                     <div id="walsh-demo" class="text-xs text-slate-500 math-font mt-2"></div>
                 </div>
 
                 <!-- Fourier Expansion -->
-                <div class="notation-card" style="border-left: 3px solid #22d3ee;">
+                <div class="notation-card acc" style="--acc:#22d3ee;">
                     <h3 class="text-xs font-semibold mb-2 text-cyan-400 uppercase tracking-wide">Fourier Expansion Theorem</h3>
                     <div id="mjx-fourier" class="text-sm overflow-x-auto"></div>
                 </div>
 
                 <!-- Parseval -->
-                <div class="notation-card" style="border-left: 3px solid #ec4899;">
+                <div class="notation-card acc" style="--acc:#ec4899;">
                     <h3 class="text-xs font-semibold mb-2 text-pink-400 uppercase tracking-wide">Parseval's Identity</h3>
                     <div id="mjx-parseval" class="text-sm mb-2 overflow-x-auto"></div>
                     <div id="parseval-check" class="math-font text-xs mt-2"></div>
@@ -269,13 +354,13 @@
         </section>
 
         <!-- SECTION 4: WHT Butterfly Diagram -->
-        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(34,211,238,0.15);">
-            <h2 class="text-xl font-bold text-white mb-1 section-header">4. Fast Walsh-Hadamard Transform</h2>
+        <section class="glass-panel p-6 md:p-8" >
+            <h2 class="text-xl font-bold text-white mb-1 section-header">Fast Walsh-Hadamard Transform</h2>
             <p class="text-slate-400 text-xs mb-4">The algorithm that computes all 2ⁿ Fourier coefficients in <span class="text-cyan-400 math-font">O(n·2ⁿ)</span> time.</p>
 
             <div class="flex flex-wrap gap-3 mb-4 items-center">
-                <button id="btnAnimateButterfly" class="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#22d3ee; color:#0f172a;">▶ Animate</button>
-                <button id="btnResetButterfly" class="px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#1e293b; color:#e2e8f0; border:1px solid #334155;">↺ Reset</button>
+                <button id="btnAnimateButterfly" class="btn">▶ Animate</button>
+                <button id="btnResetButterfly" class="btn ghost">↺ Reset</button>
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-slate-500">Show n =</span>
                     <select id="butterflyN" class="bg-slate-800 text-white border border-slate-600 rounded px-2 py-1 text-sm focus:outline-none">
@@ -299,8 +384,8 @@
         </section>
 
         <!-- SECTION 5: Per-Variable Influence -->
-        <section class="glass-panel p-6 md:p-8">
-            <h2 class="text-xl font-bold text-white mb-1 section-header">5. Variable Influence</h2>
+        <section class="glass-panel p-6 md:p-8" id="influenceSection">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">Variable Influence</h2>
             <p class="text-slate-400 text-xs mb-5">
                 Influence of variable \(i\): \(\mathbf{Inf}_i[f] = \sum_{S \ni i} \hat{f}(S)^2\).
                 Poincaré inequality: \(\mathbf{Var}[f] \leq \sum_i \mathbf{Inf}_i[f]\).
@@ -323,8 +408,8 @@
         </section>
 
         <!-- SECTION 6: Cumulative Spectral Mass & LMN -->
-        <section class="glass-panel p-6 md:p-8">
-            <h2 class="text-xl font-bold text-white mb-1 section-header">6. Spectral Mass &amp; the LMN Theorem</h2>
+        <section class="glass-panel p-6 md:p-8" id="lmnSection">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">Spectral Mass &amp; the LMN Theorem</h2>
             <p class="text-slate-400 text-xs mb-4 leading-relaxed">
                 The <strong class="text-slate-200">Linial-Mansour-Nisan (1993)</strong> theorem: AC⁰ circuits have spectra concentrated on low-degree coefficients.
                 Formally, \(\sum_{|S|>k} \hat{f}(S)^2 \leq \varepsilon\) for small \(k\).
@@ -357,8 +442,8 @@
         </section>
 
         <!-- SECTION 7: Neural Network Training -->
-        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(168,85,247,0.2);">
-            <h2 class="text-xl font-bold text-white mb-1 section-header">7. Neural Network Training</h2>
+        <section class="glass-panel p-6 md:p-8" id="trainSection">
+            <h2 class="text-xl font-bold text-white mb-1 section-header">Neural Network Training</h2>
             <p class="text-slate-400 text-xs mb-4">
                 Train a 2-layer network on the selected Boolean function. Watch the loss reflect the function's Fourier complexity.
             </p>
@@ -382,8 +467,8 @@
                             </div>
                         </div>
                         <div class="flex gap-2 pt-1">
-                            <button id="btnTrain" class="flex-1 px-3 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#a855f7; color:#fff;">▶ Train</button>
-                            <button id="btnResetNN" class="px-3 py-2 rounded-lg text-sm font-semibold cursor-pointer transition-colors" style="background:#1e293b; color:#e2e8f0; border:1px solid #334155;">↺ Reset</button>
+                            <button id="btnTrain" class="btn train flex-1">▶ Train</button>
+                            <button id="btnResetNN" class="btn ghost">↺ Reset</button>
                         </div>
                         <div class="flex gap-3 text-xs math-font">
                             <span class="text-slate-500">Epoch: <span id="epochNum" class="text-white">0</span></span>
@@ -429,11 +514,29 @@
             </div>
         </section>
 
+        <!-- SECTION: History -->
+        <section class="glass-panel p-6 md:p-8" id="historySection">
+            <h2 class="text-xl font-bold text-white mb-2 section-header">A Short History</h2>
+            <p class="text-slate-300 text-sm leading-relaxed mb-5 max-w-3xl">Spectral analysis of Boolean functions is a stack of older ideas: series expansions, orthogonal bases, and a long argument about what a single neuron can compute. Step through the dates; each has a demo above.</p>
+            <div class="hist-year" aria-hidden="true"><span id="histYear">1822</span></div>
+            <div class="hist-track" id="histTrack" role="group" aria-label="Timeline of milestones">
+                <div class="hist-rail" aria-hidden="true"><i id="histFill"></i></div>
+                <ol class="hist-nodes" id="histNodes"></ol>
+            </div>
+            <article class="hist-card" id="histCard" aria-live="polite">
+                <h3 id="histTitle"></h3>
+                <p class="hist-who" id="histWho"></p>
+                <p class="body" id="histWhat"></p>
+                <p class="body" id="histWhy"></p>
+                <div class="flex flex-wrap gap-3"><button class="btn" id="histTry" type="button"></button><button class="btn ghost" id="histPrev" type="button">Previous</button><button class="btn ghost" id="histNext" type="button">Next</button></div>
+            </article>
+        </section>
+
         <!-- SECTION 9: References -->
-        <section class="glass-panel p-6 md:p-8" style="border-color: rgba(148,163,184,0.15);">
+        <section class="glass-panel p-6 md:p-8" >
             <h2 class="text-xl font-bold text-white mb-4 section-header">References &amp; Further Reading</h2>
             <div class="space-y-4">
-                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #22d3ee;">
+                <article class="rounded-lg p-4 pl-6 transition-colors hover:bg-slate-800/40 acc" style="--acc:#22d3ee;">
                     <h3 class="text-sm font-semibold text-cyan-400 mb-1">Analysis of Boolean Functions</h3>
                     <p class="text-xs text-slate-400 math-font mb-2">Ryan O'Donnell. Cambridge University Press, 2014.
                         <a href="https://arxiv.org/abs/2105.10386" target="_blank" rel="noopener" class="text-cyan-500 hover:text-cyan-300 underline ml-2">arXiv:2105.10386</a>
@@ -441,7 +544,7 @@
                     <p class="text-sm text-slate-300 leading-relaxed">The definitive graduate-level textbook. Chapters 1–3 cover the Fourier expansion, Walsh characters, and spectral concentration theorems visualized in this app. The free online edition includes exercises that pair naturally with the interactive presets.</p>
                 </article>
 
-                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #8b5cf6;">
+                <article class="rounded-lg p-4 pl-6 transition-colors hover:bg-slate-800/40 acc" style="--acc:#8b5cf6;">
                     <h3 class="text-sm font-semibold text-purple-400 mb-1">Constant Depth Circuits, Fourier Transform, and Learnability</h3>
                     <p class="text-xs text-slate-400 math-font mb-2">N. Linial, Y. Mansour, N. Nisan. <em>JACM</em>, 40(3):607–620, 1993.
                         <a href="https://doi.org/10.1145/174130.174138" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline ml-2">DOI:10.1145/174130.174138</a>
@@ -449,7 +552,7 @@
                     <p class="text-sm text-slate-300 leading-relaxed">The foundational paper connecting Boolean Fourier analysis to PAC learning theory. Proves that AC⁰ circuits have spectra concentrated on low-degree coefficients — the pattern visible when selecting TRIBES or AND and observing cool-colored bars dominating the spectrum.</p>
                 </article>
 
-                <article class="rounded-lg p-4 transition-colors hover:bg-slate-800/40" style="border-left: 3px solid #ec4899;">
+                <article class="rounded-lg p-4 pl-6 transition-colors hover:bg-slate-800/40 acc" style="--acc:#ec4899;">
                     <h3 class="text-sm font-semibold text-pink-400 mb-1">Induced Subgraphs of Hypercubes and a Proof of the Sensitivity Conjecture</h3>
                     <p class="text-xs text-slate-400 math-font mb-2">Hao Huang. <em>Annals of Mathematics</em>, 190(3):949–955, 2019.
                         <a href="https://doi.org/10.4007/annals.2019.190.3.6" target="_blank" rel="noopener" class="text-pink-400 hover:text-pink-300 underline ml-2">DOI:10.4007/annals.2019.190.3.6</a>
@@ -464,7 +567,7 @@
 
     </main>
 
-    <footer class="mt-12 mb-8 text-center text-slate-600 text-sm">
+    <footer class="mt-12 mb-8 text-center text-slate-500 text-sm">
         <p>Boolean Analysis &amp; Neural Networks Explorer — dennisjcarroll.com</p>
     </footer>
 </div>
@@ -627,6 +730,7 @@ function renderAll() {
     renderCumulative(data);
     updateParsevalCheck(data.coeffs);
     updateWalshDemo();
+    if (typeof Hero !== 'undefined') Hero.update(data);
     return data;
 }
 
@@ -658,7 +762,7 @@ function renderTruthTable({ inputs, outputs }) {
 
         row.forEach(val => {
             const td = document.createElement('td');
-            td.className = `px-3 py-1.5 text-center text-xs ${val===1?'text-white':'text-slate-600'}`;
+            td.className = `px-3 py-1.5 text-center text-xs ${val===1?'text-white':'text-slate-500'}`;
             td.textContent = val===1 ? '+1' : '−1';
             tr.appendChild(td);
         });
@@ -680,6 +784,7 @@ function renderTruthTable({ inputs, outputs }) {
                     const d = computeAll();
                     renderSpectrum(d); renderMetrics(d); renderFormula(d.coeffs);
                     renderInfluence(d); renderCumulative(d); updateParsevalCheck(d.coeffs);
+                    Hero.update(d);
                 }, 80);
             });
             td.appendChild(btn);
@@ -723,8 +828,10 @@ function renderSpectrum({ coeffs }) {
 
             const bar = document.createElement('div');
             bar.className = 'w-full max-w-10 rounded-t-sm bar-fill hover:brightness-125 cursor-default';
-            bar.style.height = Math.abs(c) < 0.005 ? '2px' : `${heightPct}%`;
-            bar.style.backgroundColor = Math.abs(c) < 0.005 ? '#1e293b' : `hsl(${hue},${sat}%,${lit}%)`;
+            const targetH = Math.abs(c) < 0.005 ? '2px' : `${heightPct}%`;
+            if (reducedMotion()) bar.style.height = targetH;
+            else { bar.style.height = '2px'; bar.style.transitionDelay = `${Math.min(idx, 15) * 25}ms`; requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.height = targetH; })); }
+            bar.style.backgroundColor = Math.abs(c) < 0.005 ? '#131b25' : `hsl(${hue},${sat}%,${lit}%)`;
             bar.style.opacity = 0.4 + (Math.abs(c)/maxCoeff)*0.6;
             wrap.appendChild(bar);
             container.appendChild(wrap);
@@ -894,7 +1001,7 @@ function updateParsevalCheck(coeffs) {
     const holds = Math.abs(sumSq - 1.0) < 1e-8;
     const el = document.getElementById('parseval-check');
     el.innerHTML = holds
-        ? `<span style="color:#22d3ee;">✓ Σf̂(S)² = ${sumSq.toFixed(6)}</span> <span style="color:#64748b;">(identity holds)</span>`
+        ? `<span style="color:#22d3ee;">✓ Σf̂(S)² = ${sumSq.toFixed(6)}</span> <span style="color:#8c97a6;">(identity holds)</span>`
         : `<span style="color:#ef4444;">✗ Σf̂(S)² = ${sumSq.toFixed(6)}</span> <span style="color:#ef4444;">(numerical error)</span>`;
 }
 
@@ -968,8 +1075,8 @@ function renderCumulative({ cumulativeMass, degMass, totalMass }) {
                 labels,
                 datasets: [{
                     data,
-                    borderColor: '#22d3ee',
-                    backgroundColor: 'rgba(34,211,238,0.08)',
+                    borderColor: '#00e5ff',
+                    backgroundColor: 'rgba(0,229,255,0.08)',
                     pointBackgroundColor: colors,
                     pointRadius: 5,
                     tension: 0.3,
@@ -982,9 +1089,9 @@ function renderCumulative({ cumulativeMass, degMass, totalMass }) {
                     callbacks: { label: ctx => `Cum. mass: ${(ctx.parsed.y*100).toFixed(2)}%` }
                 }},
                 scales: {
-                    x: { ticks: { color:'#94a3b8', font:{size:10} }, grid: { color:'#1e293b' } },
-                    y: { min:0, max:1.05, ticks: { color:'#94a3b8', font:{size:10},
-                         callback: v => `${(v*100).toFixed(0)}%` }, grid: { color:'#1e293b' } }
+                    x: { ticks: { color:'#aab4c2', font:{size:10} }, grid: { color:'#131b25' } },
+                    y: { min:0, max:1.05, ticks: { color:'#aab4c2', font:{size:10},
+                         callback: v => `${(v*100).toFixed(0)}%` }, grid: { color:'#131b25' } }
                 }
             }
         });
@@ -1083,10 +1190,10 @@ function generateButterflyDiagram(n) {
                 const fB = nodes[stage][i+j+stride];
                 const tT = nodes[stage+1][i+j];
                 const tB = nodes[stage+1][i+j+stride];
-                const p1 = createSVGPath(fT.x,fT.y,tT.x,tT.y,'#334155',1.5);
-                const p2 = createSVGPath(fB.x,fB.y,tB.x,tB.y,'#334155',1.5);
-                const p3 = createSVGPath(fT.x,fT.y,tB.x,tB.y,'#334155',1);
-                const p4 = createSVGPath(fB.x,fB.y,tT.x,tT.y,'#334155',1);
+                const p1 = createSVGPath(fT.x,fT.y,tT.x,tT.y,'#2d3b4a',1.5);
+                const p2 = createSVGPath(fB.x,fB.y,tB.x,tB.y,'#2d3b4a',1.5);
+                const p3 = createSVGPath(fT.x,fT.y,tB.x,tB.y,'#2d3b4a',1);
+                const p4 = createSVGPath(fB.x,fB.y,tT.x,tT.y,'#2d3b4a',1);
                 [p1,p2,p3,p4].forEach(p => { p.dataset.stage=stage; svg.appendChild(p); });
                 stagePaths.push([p1,p2,p3,p4]);
             }
@@ -1098,10 +1205,10 @@ function generateButterflyDiagram(n) {
     for (let s = 0; s < cols; s++) {
         for (let i = 0; i < N; i++) {
             const {x,y} = nodes[s][i];
-            svg.appendChild(createSVGCircle(x,y,5,'#1e293b','#475569'));
+            svg.appendChild(createSVGCircle(x,y,5,'#131b25','#4a5a6c'));
             if (s === 0) {
                 const lbl = n<=3 ? `f(${i.toString(2).padStart(n,'0')})` : i.toString();
-                svg.appendChild(createSVGText(x-padX+10,y,lbl,'#64748b',8));
+                svg.appendChild(createSVGText(x-padX+10,y,lbl,'#8c97a6',8));
             }
         }
     }
@@ -1126,20 +1233,22 @@ function startButterflyAnimation() {
     if (_bfAnimId) { clearTimeout(_bfAnimId); }
     // Reset colors
     _bfStages.flat().flat().forEach(p => {
-        p.setAttribute('stroke','#334155'); p.setAttribute('stroke-width', p.dataset.cross?1:1.5);
+        p.setAttribute('stroke','#2d3b4a'); p.setAttribute('stroke-width', p.dataset.cross?1:1.5);
     });
     _bfStep = 0;
     const status = document.getElementById('butterfly-status');
 
     function step() {
         if (_bfStep >= _bfStages.length) {
+            _bfStages.flat().flat().forEach(p => p.classList.remove('flow'));
             status.textContent = 'Complete — all Fourier coefficients computed.';
             return;
         }
         // Dim previous stage
         if (_bfStep > 0) {
             _bfStages[_bfStep-1].flat().forEach(p => {
-                p.setAttribute('stroke','#1e3a4a'); p.setAttribute('stroke-width','1');
+                p.classList.remove('flow');
+                p.setAttribute('stroke','#12303c'); p.setAttribute('stroke-width','1');
             });
         }
         // Highlight current stage
@@ -1147,6 +1256,7 @@ function startButterflyAnimation() {
         const color = `hsl(${hue},80%,60%)`;
         _bfStages[_bfStep].flat().forEach(p => {
             p.setAttribute('stroke', color); p.setAttribute('stroke-width','2');
+            p.classList.add('flow');
         });
         status.textContent = `Stage ${_bfStep+1}/${_bfStages.length}: pairing elements at distance ${1<<_bfStep}.`;
         _bfStep++;
@@ -1159,7 +1269,8 @@ function resetButterflyAnimation() {
     if (_bfAnimId) { clearTimeout(_bfAnimId); _bfAnimId = null; }
     _bfStep = 0;
     _bfStages.flat().flat().forEach(p => {
-        p.setAttribute('stroke','#334155'); p.setAttribute('stroke-width','1.5');
+        p.classList.remove('flow');
+        p.setAttribute('stroke','#2d3b4a'); p.setAttribute('stroke-width','1.5');
     });
     document.getElementById('butterfly-status').textContent = '';
 }
@@ -1232,6 +1343,20 @@ function nnTrain(inputs, outputs, W, lr) {
     return loss / n;
 }
 
+let _nnEdges = null;
+function colourNNEdges() {
+    if (!_nnEdges || !_nnWeights) return;
+    const { W1, W2 } = _nnWeights;
+    const paint = (l, w) => {
+        const a = Math.min(1, Math.abs(w));
+        l.setAttribute('stroke', w >= 0 ? '#00e5ff' : '#b388ff');
+        l.setAttribute('stroke-opacity', (0.15 + 0.85 * a).toFixed(2));
+        l.setAttribute('stroke-width', (0.4 + 2.2 * a).toFixed(2));
+    };
+    _nnEdges.ih.forEach(e => { if (W1[e.h]) paint(e.l, W1[e.h][e.i]); });
+    _nnEdges.ho.forEach(e => paint(e.l, W2[e.h]));
+}
+
 function drawNNDiagram(n, hiddenSize) {
     const svg = document.getElementById('nnDiagram');
     svg.innerHTML = '';
@@ -1245,7 +1370,7 @@ function drawNNDiagram(n, hiddenSize) {
     function mkCircle(x,y,r,fill) {
         const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
         c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',r);
-        c.setAttribute('fill',fill); c.setAttribute('stroke','#475569'); c.setAttribute('stroke-width','1');
+        c.setAttribute('fill',fill); c.setAttribute('stroke','#4a5a6c'); c.setAttribute('stroke-width','1');
         c.setAttribute('class','nn-node');
         return c;
     }
@@ -1253,15 +1378,16 @@ function drawNNDiagram(n, hiddenSize) {
         const l = document.createElementNS('http://www.w3.org/2000/svg','line');
         l.setAttribute('x1',x1); l.setAttribute('y1',y1);
         l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-        l.setAttribute('stroke','#475569'); l.setAttribute('stroke-width','0.5');
+        l.setAttribute('stroke','#4a5a6c'); l.setAttribute('stroke-width','0.5');
         l.setAttribute('stroke-opacity', op); l.setAttribute('class','nn-edge');
         return l;
     }
-    // Edges
-    inputY.forEach(iy => hiddenY.forEach(hy => svg.appendChild(mkLine(layerX[0],iy,layerX[1],hy,0.3))));
-    hiddenY.forEach(hy => svg.appendChild(mkLine(layerX[1],hy,layerX[2],outputY[0],0.3)));
+    // Edges (kept in _nnEdges so training can colour them by weight)
+    _nnEdges = { ih: [], ho: [] };
+    inputY.forEach((iy, i) => hiddenY.forEach((hy, h) => { const l = mkLine(layerX[0],iy,layerX[1],hy,0.3); svg.appendChild(l); _nnEdges.ih.push({ l, h, i }); }));
+    hiddenY.forEach((hy, h) => { const l = mkLine(layerX[1],hy,layerX[2],outputY[0],0.3); svg.appendChild(l); _nnEdges.ho.push({ l, h }); });
     // Nodes
-    inputY.forEach(iy => svg.appendChild(mkCircle(layerX[0],iy,7,'#1e3a4a')));
+    inputY.forEach(iy => svg.appendChild(mkCircle(layerX[0],iy,7,'#12303c')));
     hiddenY.forEach(hy => svg.appendChild(mkCircle(layerX[1],hy,7,'#2d1b69')));
     svg.appendChild(mkCircle(layerX[2],outputY[0],9,'#0c4a6e'));
     // Labels
@@ -1272,9 +1398,9 @@ function drawNNDiagram(n, hiddenSize) {
         t.setAttribute('text-anchor','middle'); t.setAttribute('font-family',"'JetBrains Mono',monospace");
         t.textContent=txt; return t;
     }
-    svg.appendChild(mkText(layerX[0],H-8,`${n} in`,'#64748b'));
-    svg.appendChild(mkText(layerX[1],H-8,`${hidden} ReLU`,'#64748b'));
-    svg.appendChild(mkText(layerX[2],H-8,'tanh','#64748b'));
+    svg.appendChild(mkText(layerX[0],H-8,`${n} in`,'#8c97a6'));
+    svg.appendChild(mkText(layerX[1],H-8,`${hidden} ReLU`,'#8c97a6'));
+    svg.appendChild(mkText(layerX[2],H-8,'tanh','#8c97a6'));
 }
 
 function updatePredGrid(inputs, outputs) {
@@ -1315,22 +1441,22 @@ function startTraining() {
     _nnEpoch = 0;
     _nnTraining = true;
     document.getElementById('btnTrain').textContent = '■ Stop';
-    document.getElementById('btnTrain').style.background = '#ef4444';
+    document.getElementById('btnTrain').classList.add('stop');
 
     if (!_lossChart) {
         const ctx = document.getElementById('lossChart').getContext('2d');
         _lossChart = new Chart(ctx, {
             type:'line',
             data:{ labels:[], datasets:[{
-                data:[], borderColor:'#a855f7', backgroundColor:'rgba(168,85,247,0.08)',
+                data:[], borderColor:'#b388ff', backgroundColor:'rgba(179,136,255,0.08)',
                 tension:0.4, pointRadius:0, fill:true
             }]},
             options:{
                 responsive:true, maintainAspectRatio:false, animation:{duration:0},
                 plugins:{legend:{display:false}},
                 scales:{
-                    x:{ticks:{color:'#94a3b8',font:{size:9},maxTicksLimit:8},grid:{color:'#1e293b'}},
-                    y:{ticks:{color:'#94a3b8',font:{size:9}},grid:{color:'#1e293b'}}
+                    x:{ticks:{color:'#aab4c2',font:{size:9},maxTicksLimit:8},grid:{color:'#131b25'}},
+                    y:{ticks:{color:'#aab4c2',font:{size:9}},grid:{color:'#131b25'}}
                 }
             }
         });
@@ -1341,6 +1467,7 @@ function startTraining() {
     }
 
     drawNNDiagram(n, hidden);
+    colourNNEdges();
 
     const { inputs, outputs } = computeAll();
 
@@ -1361,6 +1488,7 @@ function startTraining() {
         });
         const acc = (correct/inputs.length*100).toFixed(1);
 
+        colourNNEdges();
         document.getElementById('epochNum').textContent = _nnEpoch;
         document.getElementById('lossNum').textContent = lastLoss.toFixed(4);
         document.getElementById('accNum').textContent = `${acc}%`;
@@ -1386,7 +1514,7 @@ function stopTraining() {
     _nnTraining = false;
     if (_nnRafId) { cancelAnimationFrame(_nnRafId); _nnRafId = null; }
     document.getElementById('btnTrain').textContent = '▶ Train';
-    document.getElementById('btnTrain').style.background = '#a855f7';
+    document.getElementById('btnTrain').classList.remove('stop');
 }
 
 function resetNN() {
@@ -1402,6 +1530,235 @@ function resetNN() {
     const n = currentN, hidden = parseInt(document.getElementById('hiddenSlider').value);
     drawNNDiagram(n, hidden);
 }
+
+
+/* =========================================================
+   MODULE H — Hero scope (Walsh-Hadamard matrix) & History
+   ========================================================= */
+
+const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+const reducedMotion = () => RM.matches;
+
+const Hero = (() => {
+    const c = document.getElementById('heroCanvas');
+    const ctx = c.getContext('2d');
+    const readEl = document.getElementById('heroRead');
+    const sumEl = document.getElementById('heroSummary');
+    let data = null, N = 8, n = 3, progress = 1, hover = -1, raf = 0, geo = null;
+
+    function fitCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const r = c.getBoundingClientRect();
+        const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+        return { W: w, H: h, dpr };
+    }
+
+    function chi(x, S) {            // Walsh character for row x, subset S (bitmasks)
+        let p = 1;
+        for (let i = 0; i < n; i++) if ((S >> i) & 1) p *= ((x >> i) & 1) ? 1 : -1;
+        return p;
+    }
+
+    function draw() {
+        if (!data) return;
+        const { W, H, dpr } = fitCanvas();
+        ctx.clearRect(0, 0, W, H);
+        const pad = 14 * dpr, barsH = Math.round(H * 0.24), gap = 10 * dpr;
+        const side = Math.min(W - 2 * pad - 20 * dpr - gap, H - 2 * pad - barsH - gap);
+        const cell = side / N;
+        const fx = (W - (side + gap + cell * 1.4)) / 2, mx = fx + cell * 1.4 + gap, my = pad;
+        geo = { mx, cell, N, W, H, dpr };
+        const done = Math.floor(progress * N + 0.0001);
+        const f = data.outputs, coeffs = data.coeffs;
+
+        // function column
+        for (let x = 0; x < N; x++) {
+            ctx.fillStyle = f[x] === 1 ? 'rgba(0,229,255,0.95)' : 'rgba(179,136,255,0.95)';
+            ctx.fillRect(fx, my + x * cell + 0.5, cell * 1.4 - 1, cell - 1);
+        }
+        // matrix
+        for (let S = 0; S < N; S++) {
+            const lit = S < done || progress >= 1;
+            const hov = S === hover;
+            for (let x = 0; x < N; x++) {
+                const v = chi(x, S);
+                const a = hov ? 1 : (lit ? 0.78 : 0.14);
+                ctx.fillStyle = v === 1 ? `rgba(0,188,212,${a})` : `rgba(124,77,255,${a})`;
+                ctx.fillRect(mx + S * cell + 0.5, my + x * cell + 0.5, cell - 1, cell - 1);
+            }
+        }
+        // hover column outline
+        if (hover >= 0) {
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5 * dpr;
+            ctx.strokeRect(mx + hover * cell, my, cell, side);
+        }
+        // coefficient bars under each column
+        const by = my + side + gap, bh = barsH - gap;
+        const mid = by + bh / 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = dpr;
+        ctx.beginPath(); ctx.moveTo(mx, mid); ctx.lineTo(mx + side, mid); ctx.stroke();
+        for (let S = 0; S < N; S++) {
+            const lit = S < done || progress >= 1;
+            if (!lit && S !== hover) continue;
+            const cv = coeffs[S], hgt = Math.abs(cv) * (bh / 2 - 2 * dpr);
+            ctx.fillStyle = cv >= 0 ? '#00e5ff' : '#b388ff';
+            ctx.fillRect(mx + S * cell + cell * 0.18, cv >= 0 ? mid - hgt : mid, cell * 0.64, Math.max(hgt, Math.abs(cv) > 1e-9 ? 1 : 0));
+        }
+        // sweep marker
+        if (progress < 1 && done < N) {
+            ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2 * dpr;
+            ctx.strokeRect(mx + done * cell, my, cell, side);
+        }
+    }
+
+    function label(i) {
+        if (i < 0) return '';
+        const cf = data.coeffs[i];
+        return `Column <b>${getLabel(i, n)}</b> (degree ${subsetDegree(i)}): f̂ = <b>${cf.toFixed(4)}</b>, mass ${(cf * cf).toFixed(4)}`;
+    }
+
+    function sweep() {
+        cancelAnimationFrame(raf);
+        if (reducedMotion()) { progress = 1; draw(); return; }
+        const t0 = performance.now(), dur = Math.min(1400, 250 + N * 22);
+        const tick = now => {
+            progress = Math.min(1, (now - t0) / dur);
+            draw();
+            if (progress < 1) raf = requestAnimationFrame(tick);
+        };
+        progress = 0; raf = requestAnimationFrame(tick);
+    }
+
+    function update(d) {
+        n = currentN; N = 1 << n;
+        const prev = data; data = d;
+        const sel = document.getElementById('funcSelector');
+        const name = isCustomMode ? 'CUSTOM' : sel.options[sel.selectedIndex].text.split(' — ')[0];
+        sumEl.textContent = `n = ${n} · ${name}`;
+        hover = -1;
+        readEl.innerHTML = `Rows are inputs, columns are Walsh characters. Each coefficient is the column's dot product with f, divided by ${N}.`;
+        sweep();
+    }
+
+    function colFromX(clientX) {
+        if (!geo) return -1;
+        const r = c.getBoundingClientRect();
+        const x = (clientX - r.left) * (c.width / r.width);
+        const i = Math.floor((x - geo.mx) / geo.cell);
+        return i >= 0 && i < geo.N ? i : -1;
+    }
+    function setHover(i) { if (i === hover) return; hover = i; readEl.innerHTML = i >= 0 ? label(i) : ''; draw(); }
+    c.addEventListener('pointermove', e => setHover(colFromX(e.clientX)));
+    c.addEventListener('pointerdown', e => setHover(colFromX(e.clientX)));
+    c.addEventListener('pointerleave', () => setHover(-1));
+    c.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const d = e.key === 'ArrowRight' ? 1 : -1;
+            setHover(hover < 0 ? 0 : (hover + d + N) % N);
+        } else if (e.key === 'Escape') setHover(-1);
+    });
+    window.addEventListener('resize', draw);
+    return { update };
+})();
+
+const History = (() => {
+    const E = [
+        { y: 1822, t: 'Heat flow as a sum of waves', who: 'Joseph Fourier, Théorie analytique de la chaleur',
+          what: 'Fourier argued that an arbitrary function can be written as a sum of sines and cosines. The claim was disputed for decades before it was made rigorous.',
+          why: 'The Boolean version swaps sines for products of signs: every function on the cube is a sum of characters. The expansion panel above prints that sum for the function you pick.',
+          go: 'Expand MAJORITY on 3 variables', demo: { fn: 'maj', n: 3, target: 'analyzerSection' } },
+        { y: 1923, t: 'A closed set of orthogonal functions', who: 'Joseph L. Walsh, American Journal of Mathematics',
+          what: 'Walsh built a complete orthonormal system of functions that take only the values +1 and −1.',
+          why: 'On the Boolean cube these are the characters χ_S, products of a subset of the inputs. PARITY is exactly one of them, which is why its spectrum is a single bar.',
+          go: 'See PARITY as one bar', demo: { fn: 'parity', n: 3, target: 'analyzerSection' } },
+        { y: 1958, t: 'The perceptron', who: 'Frank Rosenblatt',
+          what: 'Rosenblatt described a unit that weights its inputs, sums them, and thresholds the result, with a rule for adjusting the weights from examples.',
+          why: 'Such a unit can only use the degree-1 part of the spectrum directly. Functions with most of their mass there, like DICTATOR and AND, are within reach.',
+          go: 'Train on DICTATOR', demo: { fn: 'dictator', n: 3, target: 'trainSection', train: true } },
+        { y: 1969, t: 'What a single layer cannot do', who: 'Marvin Minsky and Seymour Papert, Perceptrons',
+          what: 'Minsky and Papert analyzed what perceptrons can compute and showed that functions such as parity cannot be computed by a perceptron that looks at only a few inputs at a time.',
+          why: 'In spectral terms PARITY has zero mass below degree n. Train on it here and compare the loss with the DICTATOR run.',
+          go: 'Train on PARITY', demo: { fn: 'parity', n: 4, target: 'trainSection', train: true } },
+        { y: 1988, t: 'How much does one variable matter?', who: 'Jeff Kahn, Gil Kalai and Nathan Linial',
+          what: 'Their paper "The influence of variables on Boolean functions" showed that every balanced Boolean function has a variable with influence at least on the order of (log n) / n.',
+          why: 'Influence is read straight off the spectrum: the sum of squared coefficients over sets containing the variable. The influence panel computes it.',
+          go: 'Compare influences for MAJORITY', demo: { fn: 'maj', n: 5, target: 'influenceSection' } },
+        { y: 1993, t: 'Low degree means learnable', who: 'Nathan Linial, Yishay Mansour and Noam Nisan, Journal of the ACM',
+          what: 'Constant-depth circuits (AC0) have Fourier spectra concentrated on low-degree coefficients, which gives a quasi-polynomial-time learning algorithm for them.',
+          why: 'The cumulative mass chart shows this directly: TRIBES climbs early, PARITY stays flat until the last degree.',
+          go: 'Compare TRIBES on 4 variables', demo: { fn: 'tribes', n: 4, target: 'lmnSection' } },
+        { y: 2019, t: 'The sensitivity conjecture falls', who: 'Hao Huang, Annals of Mathematics',
+          what: 'Huang proved that a Boolean function whose degree is d has sensitivity at least the square root of d, settling a question open since the late 1980s, with a short argument about signed hypercube graphs.',
+          why: 'It is a fresh example of Fourier-style structure on the cube settling a combinatorial question. Max degree and influence are both visible for AND and PARITY here.',
+          go: 'Look at AND on 4 variables', demo: { fn: 'and', n: 4, target: 'influenceSection' } }
+    ];
+    const nodes = document.getElementById('histNodes'), card = document.getElementById('histCard');
+    const yearEl = document.getElementById('histYear'), fill = document.getElementById('histFill'), tryBtn = document.getElementById('histTry');
+    let idx = 0, shown = E[0].y, raf = 0;
+
+    E.forEach((e, i) => {
+        const li = document.createElement('li'), b = document.createElement('button');
+        b.type = 'button'; b.className = 'hist-node'; b.textContent = e.y;
+        b.setAttribute('aria-label', e.y + ': ' + e.t);
+        b.addEventListener('click', () => select(i));
+        li.appendChild(b); nodes.appendChild(li);
+    });
+    const btns = () => nodes.querySelectorAll('.hist-node');
+
+    function tween(to) {
+        cancelAnimationFrame(raf);
+        if (reducedMotion()) { yearEl.textContent = to; shown = to; return; }
+        const from = shown, t0 = performance.now(), dur = 650;
+        const tick = now => {
+            const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+            shown = Math.round(from + (to - from) * e); yearEl.textContent = shown;
+            if (p < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+    }
+
+    function select(i, noScroll) {
+        idx = i; const e = E[i];
+        btns().forEach((b, j) => {
+            b.classList.toggle('past', j <= i);
+            if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+        });
+        fill.style.transform = 'scaleX(' + (i / (E.length - 1)) + ')';
+        tween(e.y);
+        document.getElementById('histTitle').textContent = e.t;
+        document.getElementById('histWho').textContent = e.who;
+        document.getElementById('histWhat').textContent = e.what;
+        document.getElementById('histWhy').textContent = e.why;
+        tryBtn.textContent = e.go;
+        card.classList.remove('swap'); void card.offsetWidth; if (!reducedMotion()) card.classList.add('swap');
+        document.getElementById('histPrev').disabled = i === 0;
+        document.getElementById('histNext').disabled = i === E.length - 1;
+        if (!noScroll) btns()[i].scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    function runDemo(d) {
+        const nS = document.getElementById('nSlider');
+        nS.value = d.n; nS.dispatchEvent(new Event('input'));
+        const fS = document.getElementById('funcSelector');
+        fS.value = d.fn; fS.dispatchEvent(new Event('change'));
+        const t = document.getElementById(d.target);
+        if (t) t.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+        if (d.train) setTimeout(() => { if (!_nnTraining) startTraining(); }, reducedMotion() ? 0 : 500);
+    }
+
+    tryBtn.addEventListener('click', () => runDemo(E[idx].demo));
+    document.getElementById('histPrev').addEventListener('click', () => select(Math.max(0, idx - 1)));
+    document.getElementById('histNext').addEventListener('click', () => select(Math.min(E.length - 1, idx + 1)));
+    document.getElementById('histTrack').addEventListener('keydown', e => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const n = Math.max(0, Math.min(E.length - 1, idx + (e.key === 'ArrowRight' ? 1 : -1)));
+        if (n === idx) return;
+        e.preventDefault(); select(n); btns()[n].focus();
+    });
+    select(0, true);
+})();
 
 /* =========================================================
    MODULE G — Event Wiring & Init
@@ -1486,6 +1843,12 @@ function init() {
         }, 200);
     }
 }
+
+function setFill(el) { el.style.setProperty('--fill', ((el.value - el.min) / (el.max - el.min) * 100) + '%'); }
+['nSlider', 'hiddenSlider', 'lrSlider'].forEach(id => {
+    const el = document.getElementById(id);
+    setFill(el); el.addEventListener('input', () => setFill(el));
+});
 
 // Kick off when DOM is ready
 if (document.readyState === 'loading') {
