@@ -541,6 +541,29 @@
         .stat dd { font-family: var(--font-mono); font-size: 0.98rem; color: var(--cyan-bright); font-variant-numeric: tabular-nums; margin-top: 2px; }
         .stat dd.v { color: var(--violet-light); }
 
+
+        /* ===== History timeline ===== */
+        .hist { padding: 1.4rem 1.4rem 1.6rem; margin-bottom: 1.5rem; }
+        .hist-year { font-family: var(--font-display); font-weight: 800; font-size: clamp(3rem, 14vw, 6rem); line-height: 1; letter-spacing: 2px; color: var(--cyan-bright); font-variant-numeric: tabular-nums; margin-bottom: 1rem; }
+        .hist-track { position: relative; overflow-x: auto; padding: 0.4rem 0 0.2rem; scrollbar-width: none; }
+        .hist-track::-webkit-scrollbar { display: none; }
+        .hist-rail { position: absolute; left: 0; right: 0; top: 17px; height: 2px; background: rgba(255,255,255,0.12); min-width: 100%; }
+        .hist-rail i { position: absolute; inset: 0; background: var(--cyan); transform-origin: left; transform: scaleX(0); transition: transform 0.7s var(--ease-out); }
+        .hist-nodes { list-style: none; display: flex; justify-content: space-between; gap: 0.5rem; min-width: 560px; position: relative; }
+        .hist-nodes li { flex: 1 1 0; display: flex; justify-content: center; }
+        .hist-node { background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.55rem; min-width: 56px; min-height: 44px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); transition: color 0.25s; }
+        .hist-node::before { content: ''; width: 14px; height: 14px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--rule-strong); transition: transform 0.4s var(--ease-out), border-color 0.25s, background 0.25s; z-index: 1; margin-top: 11px; }
+        .hist-node:hover { color: var(--text-primary); }
+        .hist-node:hover::before { border-color: var(--cyan-bright); }
+        .hist-node.past::before { border-color: var(--cyan); background: var(--cyan); }
+        .hist-node[aria-current="true"] { color: var(--cyan-bright); }
+        .hist-node[aria-current="true"]::before { transform: scale(1.5); border-color: var(--cyan-bright); background: var(--cyan-bright); }
+        .hist-card { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+        .hist-card.swap { animation: histIn 0.5s var(--ease-out) both; }
+        @keyframes histIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .hist-card h3 { font-family: var(--font-display); font-size: clamp(1.05rem, 3.8vw, 1.45rem); font-weight: 700; letter-spacing: 0.5px; margin: 0 0 0.35rem; }
+        .hist-who { font-family: var(--font-mono); font-size: 0.8rem; color: var(--violet-light); margin-bottom: 0.9rem; }
+
         footer { text-align: center; padding: 2rem 1rem; margin-top: 3rem; border-top: 1px solid var(--rule); color: var(--text-muted); font-size: 0.82rem; }
 
         @media (prefers-reduced-motion: reduce) {
@@ -620,6 +643,9 @@
             </button>
             <button class="tab-btn" id="tabbtn-mechanisms" onclick="switchTab('mechanisms')" role="tab" aria-selected="false" aria-controls="tab-mechanisms" tabindex="-1">
                 <span class="tab-icon"><svg class="ic"><use href="#i-atom"/></svg></span>Mechanisms
+            </button>
+            <button class="tab-btn" id="tabbtn-history" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="tab-history" tabindex="-1">
+                <span class="tab-icon">◷</span>History
             </button>
             <button class="tab-btn" id="tabbtn-compression" onclick="switchTab('compression')" role="tab" aria-selected="false" aria-controls="tab-compression" tabindex="-1">
                 <span class="tab-icon">⊞</span>Compression
@@ -957,6 +983,41 @@
             </div>
         </div>
 
+        <!-- ==================== TAB: HISTORY ==================== -->
+        <div id="tab-history" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-history">
+            <div class="glass-card">
+                <h2>
+                    <span class="section-icon">◷</span>
+                    How the Ideas Arrived
+                </h2>
+                <p class="content-text">
+                    Convergence theory was not planned. It came from a stability proof for the solar system, a rounding error in a weather model, a population equation, and a pocket calculator. Step through the dates; each one has a live demo.
+                </p>
+            </div>
+
+            <div class="panel hist" id="histLab">
+                <div class="hist-year" aria-hidden="true"><span id="histYear">1890</span></div>
+                <div class="hist-track" id="histTrack" role="group" aria-label="Timeline of dynamical systems milestones">
+                    <div class="hist-rail" aria-hidden="true"><i id="histFill"></i></div>
+                    <ol class="hist-nodes" id="histNodes"></ol>
+                </div>
+                <article class="hist-card" id="histCard" aria-live="polite" tabindex="-1">
+                    <h3 id="histTitle"></h3>
+                    <p class="hist-who" id="histWho"></p>
+                    <p class="content-text" id="histWhat"></p>
+                    <p class="content-text" id="histWhy"></p>
+                    <div class="btn-row"><button class="btn" id="histTry" type="button"></button><button class="btn ghost" id="histPrev" type="button">Previous</button><button class="btn ghost" id="histNext" type="button">Next</button></div>
+                </article>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="margin-top: 0;">The thread through all of it</h3>
+                <p class="content-text">
+                    Poincaré showed that a stable-looking system can hide sensitive dependence. Lorenz and May found it in equations small enough to run by hand. Feigenbaum measured how fast it arrives and found the number was the same everywhere, which is why this explorer's scaling laws exist at all.
+                </p>
+            </div>
+        </div>
+
         <!-- ==================== TAB: COMPRESSION ==================== -->
         <div id="tab-compression" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-compression">
             <div class="glass-card">
@@ -1062,7 +1123,7 @@
         // ============ SHARED ============
         const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
         const reduced = () => RM.matches;
-        const TAB_ORDER = ['overview', 'nadcs', 'scaling', 'mechanisms', 'compression', 'outlook'];
+        const TAB_ORDER = ['overview', 'nadcs', 'scaling', 'mechanisms', 'history', 'compression', 'outlook'];
         let currentTab = 'overview';
         let chartInstances = {};
 
@@ -1270,7 +1331,7 @@
 
             setFill(slider); label(); reseed();
             if (reduced()) staticRender(); else { step(300); draw(); start(); }
-            return { draw, warm(n) { step(n); draw(); } };
+            return { draw, warm(n) { step(n); draw(); }, setRho(v) { slider.value = v; setRho(v); } };
         })();
 
         // ============ LOGISTIC MAP LAB ============
@@ -1464,8 +1525,108 @@
                     active = true; off = null; drawAll(true);
                     if (!reduced()) play(true);
                 },
-                pause() { active = false; playing = false; }
+                pause() { active = false; playing = false; },
+                setR(v) { r = v; rS.value = v; onParam(); if (active) play(true); }
             };
+        })();
+
+
+        // ============ HISTORY TIMELINE ============
+        const History = (() => {
+            const E = [
+                { y: 1890, t: 'The three-body problem resists solution', who: 'Henri Poincaré, Acta Mathematica',
+                  what: 'Entered in a prize contest on the stability of the solar system, Poincaré found a flaw in his first submission and corrected it. The corrected paper described orbits that are bounded yet cross themselves in a tangle no formula can follow.',
+                  why: 'This is the first appearance of sensitive dependence: nearby starting points ending up far apart. Every descent curve in this explorer assumes you can tell when it has not settled.',
+                  go: 'Watch a trajectory that never settles', act: () => { switchTab('overview'); Lorenz.setRho(28); } },
+                { y: 1892, t: 'Stability gets a definition', who: 'Aleksandr Lyapunov, doctoral thesis',
+                  what: 'Lyapunov gave stability a precise form: a state is stable if trajectories that start near it stay near it. His methods measure whether a distance shrinks or grows.',
+                  why: 'The distance-to-attractor curves in the NADCs tab are exactly this quantity. Slope below 1 means shrinking; slope above 1 means the fixed point repels.',
+                  go: 'See the distance shrink at r = 2.8', act: () => { switchTab('nadcs'); Logistic.setR(2.8); } },
+                { y: 1963, t: 'A rounding error becomes a theory', who: 'Edward Lorenz, Journal of the Atmospheric Sciences',
+                  what: 'Lorenz reduced a model of convection to three equations. Restarting a run from a printout rounded to three decimals gave a completely different forecast. The paper is titled "Deterministic Nonperiodic Flow".',
+                  why: 'With σ = 10, β = 8/3 and ρ = 28 the trajectory never repeats and never leaves a bounded region. Lower ρ and it descends onto a fixed point instead, which is the hero panel on this page.',
+                  go: 'Set ρ to 28 in the hero', act: () => { switchTab('overview'); Lorenz.setRho(28); } },
+                { y: 1971, t: 'Turbulence and strange attractors', who: 'David Ruelle and Floris Takens',
+                  what: 'Ruelle and Takens proposed that turbulence is motion on a strange attractor, a bounded set with fractal structure, and not an endless pile-up of independent frequencies. They introduced the term.',
+                  why: 'It gave the butterfly shape a name and a mathematical status: an attractor you converge to without ever repeating.',
+                  go: 'Rotate the attractor', act: () => { switchTab('overview'); Lorenz.setRho(28); } },
+                { y: 1975, t: 'Period three implies chaos', who: 'Tien-Yien Li and James Yorke, American Mathematical Monthly',
+                  what: 'Li and Yorke proved that if a one-dimensional map has a period-3 orbit it has orbits of every period, and uncountably many that never settle. They gave the field the word "chaos" in its modern sense.',
+                  why: 'The logistic map has a period-3 window near r = 3.83. Drag r there and the diagram opens a narrow band of calm inside the chaos.',
+                  go: 'Jump to r = 3.83', act: () => { switchTab('nadcs'); Logistic.setR(3.83); } },
+                { y: 1976, t: 'A population equation with wild behavior', who: 'Robert May, Nature',
+                  what: 'May surveyed the logistic map x -> r x (1 - x) and argued that students should meet its range of behavior early: steady, cycling, then chaotic as r rises.',
+                  why: 'It is a one-line formula that exhibits the whole route from convergence to chaos, so it is the lab on the NADCs tab.',
+                  go: 'Try r = 3.9', act: () => { switchTab('nadcs'); Logistic.setR(3.9); } },
+                { y: 1978, t: 'The same ratio everywhere', who: 'Mitchell Feigenbaum (also Coullet and Tresser)',
+                  what: 'Working with a programmable calculator, Feigenbaum noticed that successive period-doubling points converge geometrically at a rate of about 4.669, and that other maps gave the same number. His paper is "Quantitative universality for a class of nonlinear transformations".',
+                  why: 'The ratio does not depend on the map. That is universality in the sense used throughout this explorer, and the gap ratios under the bifurcation diagram let you recompute it.',
+                  go: 'Go to the accumulation point', act: () => { switchTab('nadcs'); Logistic.setR(3.5699); } },
+                { y: 1982, t: 'Experiments agree, and renormalization explains', who: 'Albert Libchaber and Jean Maurer; Kenneth Wilson',
+                  what: 'Libchaber and Maurer saw period doubling in convecting liquid helium, in the early 1980s. In the same period Wilson received the 1982 Nobel Prize in Physics for the renormalization group, the framework used to explain Feigenbaum universality.',
+                  why: 'A pocket-calculator pattern held up in a lab, and the theory behind it is the one covered in the Mechanisms tab.',
+                  go: 'Read the mechanisms', act: () => { switchTab('mechanisms'); } }
+            ];
+            const nodes = document.getElementById('histNodes');
+            const card = document.getElementById('histCard');
+            const yearEl = document.getElementById('histYear');
+            const fill = document.getElementById('histFill');
+            const tryBtn = document.getElementById('histTry');
+            let idx = 0, shownYear = E[0].y, raf = 0;
+
+            E.forEach((e, i) => {
+                const li = document.createElement('li');
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'hist-node'; b.textContent = e.y;
+                b.setAttribute('aria-label', e.y + ': ' + e.t);
+                b.addEventListener('click', () => select(i));
+                li.appendChild(b); nodes.appendChild(li);
+            });
+            const btns = () => nodes.querySelectorAll('.hist-node');
+
+            function tween(to) {
+                cancelAnimationFrame(raf);
+                if (reduced()) { yearEl.textContent = to; shownYear = to; return; }
+                const from = shownYear, t0 = performance.now(), dur = 650;
+                const tick = now => {
+                    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+                    shownYear = Math.round(from + (to - from) * e);
+                    yearEl.textContent = shownYear;
+                    if (p < 1) raf = requestAnimationFrame(tick);
+                };
+                raf = requestAnimationFrame(tick);
+            }
+
+            function select(i, noFocus) {
+                idx = i; const e = E[i];
+                btns().forEach((b, j) => {
+                    b.classList.toggle('past', j <= i);
+                    if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+                });
+                fill.style.transform = 'scaleX(' + (i / (E.length - 1)) + ')';
+                tween(e.y);
+                document.getElementById('histTitle').textContent = e.t;
+                document.getElementById('histWho').textContent = e.who;
+                document.getElementById('histWhat').textContent = e.what;
+                document.getElementById('histWhy').textContent = e.why;
+                tryBtn.textContent = e.go;
+                card.classList.remove('swap'); void card.offsetWidth; if (!reduced()) card.classList.add('swap');
+                document.getElementById('histPrev').disabled = i === 0;
+                document.getElementById('histNext').disabled = i === E.length - 1;
+                const cur = btns()[i];
+                if (cur && !noFocus) cur.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            tryBtn.addEventListener('click', () => E[idx].act());
+            document.getElementById('histPrev').addEventListener('click', () => select(Math.max(0, idx - 1)));
+            document.getElementById('histNext').addEventListener('click', () => select(Math.min(E.length - 1, idx + 1)));
+            document.getElementById('histTrack').addEventListener('keydown', e => {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                const n = Math.max(0, Math.min(E.length - 1, idx + (e.key === 'ArrowRight' ? 1 : -1)));
+                if (n === idx) return;
+                e.preventDefault(); select(n); btns()[n].focus();
+            });
+            select(0, true);
         })();
 
         // ============ CHART.JS SETUP ============
