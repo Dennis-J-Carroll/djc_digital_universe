@@ -9,159 +9,153 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0a0e14;
-            --bg-secondary: #111820;
-            --bg-card: rgba(17, 24, 32, 0.92);
-            --bg-card-hover: rgba(22, 30, 40, 0.96);
-            --accent-cyan: #00d4ff;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --accent-yellow: #fbbf24;
-            --accent-orange: #f97316;
-            --accent-pink: #ec4899;
-            --accent-teal: #14b8a6;
-            --text-primary: #e5e7eb;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border-color: rgba(0, 212, 255, 0.15);
-            --border-hover: rgba(0, 212, 255, 0.4);
-            --glow-cyan: rgba(0, 212, 255, 0.12);
-            --glow-purple: rgba(168, 85, 247, 0.12);
+            --bg-raised: #0f1419;
+            --bg-card: rgba(12, 18, 30, 0.92);
+            --cyan: #00bcd4;
+            --cyan-bright: #00e5ff;
+            --violet: #7c4dff;
+            --violet-light: #b388ff;
+            --text-primary: #f1f5f9;
+            --text-secondary: #b8c0cc;
+            --text-muted: #8c97a6;
+            --rule: rgba(0, 188, 212, 0.2);
+            --rule-strong: rgba(0, 188, 212, 0.45);
+            --font-display: 'Orbitron', 'Space Grotesk', sans-serif;
+            --font-ui: 'Space Grotesk', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html { scroll-behavior: auto; }
+
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-ui);
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Background animated gradient */
+        ::selection { background: rgba(0, 229, 255, 0.28); color: #fff; }
+
+        :focus-visible { outline: 2px solid var(--cyan-bright); outline-offset: 3px; border-radius: 4px; }
+
+        /* Faint instrument grid behind everything */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 80% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 60%);
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 188, 212, 0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 188, 212, 0.045) 1px, transparent 1px);
+            background-size: 48px 48px;
+            -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, #000 20%, transparent 78%);
+            mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, #000 20%, transparent 78%);
             pointer-events: none;
             z-index: 0;
         }
 
         .app-container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
 
-        /* Header */
-        .header {
-            text-align: center;
-            padding: 3rem 1rem 2rem;
+        .ic { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; vertical-align: -0.125em; }
+
+        /* ===== Hero ===== */
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1.75rem;
+            padding: 2.25rem 0 1.5rem;
+            align-items: center;
         }
 
-        .header h1 {
-            font-size: clamp(2rem, 5vw, 3.2rem);
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-teal));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.75rem;
-            line-height: 1.15;
+        @media (min-width: 960px) {
+            .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 3rem; padding-top: 3rem; }
         }
 
-        .header p {
+        .hero h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.55rem, 7.2vw, 3.5rem);
+            line-height: 1.05;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.1rem;
+            text-wrap: balance;
+        }
+
+        .hero h1 span { display: block; color: var(--cyan-bright); }
+
+        .hero .lede {
             color: var(--text-secondary);
-            font-size: 1.05rem;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
+            font-size: 1.08rem;
+            line-height: 1.65;
+            max-width: 52ch;
         }
 
-        /* Tab Navigation */
-        .tab-nav {
-            display: flex;
-            gap: 4px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 5px;
-            margin: 1.5rem auto 2.5rem;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            max-width: 100%;
-        }
-        .tab-nav::-webkit-scrollbar { display: none; }
-
-        .tab-btn {
-            flex-shrink: 0;
-            padding: 0.65rem 1.25rem;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
+        .hero-copy .legend-line {
+            margin-top: 1.4rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
             color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+        }
+
+        /* Panels with HUD corner brackets */
+        .panel, .glass-card {
             position: relative;
-        }
-
-        .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
-        }
-
-        .tab-btn .tab-icon { margin-right: 6px; }
-
-        /* Tab Content */
-        .tab-panel { display: none; animation: fadeInUp 0.45s ease forwards; }
-        .tab-panel.active { display: block; }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(18px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Glass Card */
-        .glass-card {
             background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.75rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.35s ease;
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            transition: border-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
         }
 
-        .glass-card:hover {
-            border-color: var(--border-hover);
-            box-shadow: 0 0 35px var(--glow-cyan);
+        .panel::before, .panel::after,
+        .glass-card::before, .glass-card::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--cyan);
+            opacity: 0.75;
+            pointer-events: none;
+            transition: width 0.4s var(--ease-out), height 0.4s var(--ease-out), opacity 0.3s, border-color 0.3s;
         }
+        .panel::before, .glass-card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
+        .panel::after, .glass-card::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; }
+
+        .panel:hover::before, .panel:hover::after,
+        .glass-card:hover::before, .glass-card:hover::after,
+        .panel:focus-within::before, .panel:focus-within::after { width: 44px; height: 44px; opacity: 1; border-color: var(--cyan-bright); }
+
+        .glass-card { padding: 1.75rem; margin-bottom: 1.5rem; }
+        .glass-card:hover { border-color: var(--rule-strong); box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.7); }
 
         .glass-card h2 {
-            font-size: 1.5rem;
+            font-family: var(--font-display);
+            font-size: clamp(1.05rem, 3.6vw, 1.45rem);
             font-weight: 700;
-            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            line-height: 1.25;
+            margin-bottom: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.8rem;
         }
 
         .glass-card h3 {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--accent-teal);
+            font-family: var(--font-ui);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin: 1.25rem 0 0.75rem;
         }
 
@@ -169,326 +163,421 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            font-size: 1rem;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            color: var(--cyan-bright);
+            background: rgba(0, 188, 212, 0.1);
+            border: 1px solid var(--rule-strong);
             flex-shrink: 0;
         }
 
-        /* Feature Cards Grid */
+        /* Hero scope */
+        .scope { padding: 0.9rem 0.9rem 0.8rem; }
+        .scope-head {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em;
+            color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;
+        }
+        .scope-head b { color: var(--cyan-bright); font-weight: 500; text-transform: none; }
+        .scope canvas {
+            display: block; width: 100%; height: 280px; cursor: grab; touch-action: pan-y;
+            border-radius: 6px;
+            background:
+                radial-gradient(ellipse 70% 70% at 50% 50%, rgba(0, 188, 212, 0.07), transparent 70%),
+                #070a10;
+        }
+        .scope canvas:active { cursor: grabbing; }
+        @media (min-width: 960px) { .scope canvas { height: 340px; } }
+
+        .readout-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.4rem 1rem;
+            align-items: center;
+            margin-top: 0.9rem;
+        }
+
+        .ctl-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .ctl-label output { color: var(--cyan-bright); font-variant-numeric: tabular-nums; }
+
+        .regime {
+            grid-column: 1 / -1;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            min-height: 2.6em;
+        }
+        .regime b { color: var(--cyan-bright); font-weight: 600; }
+
+        /* Range inputs */
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 28px; background: transparent; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--cyan) var(--fill, 50%), rgba(255, 255, 255, 0.12) var(--fill, 50%)); }
+        input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+        input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--cyan); }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%;
+            background: var(--bg-primary); border: 2px solid var(--cyan-bright);
+            transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 14px; height: 14px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--cyan-bright);
+        }
+        input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+        input[type="range"]:focus-visible { outline-offset: 2px; }
+
+        .btn {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            letter-spacing: 0.04em;
+            color: var(--text-primary);
+            background: rgba(0, 188, 212, 0.14);
+            border: 1px solid var(--rule-strong);
+            border-radius: 50px;
+            padding: 0.55rem 1.1rem;
+            min-height: 40px;
+            cursor: pointer;
+            transition: background 0.2s var(--ease-out), border-color 0.2s, transform 0.15s var(--ease-out);
+        }
+        .btn:hover { background: rgba(0, 188, 212, 0.26); border-color: var(--cyan-bright); }
+        .btn:active { transform: scale(0.96); }
+        .btn.ghost { background: rgba(255, 255, 255, 0.05); color: var(--cyan-bright); }
+
+        .toggle { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); cursor: pointer; min-height: 40px; }
+        .toggle input { accent-color: var(--cyan); width: 18px; height: 18px; }
+
+        /* ===== Tabs ===== */
+        .tab-nav {
+            position: relative;
+            display: flex;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            padding: 5px;
+            margin: 1.5rem auto 2.25rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            max-width: 100%;
+        }
+        .tab-nav::-webkit-scrollbar { display: none; }
+
+        .tab-ind {
+            position: absolute; left: 0; top: 5px; bottom: 5px; width: 100px;
+            border-radius: 8px;
+            background: rgba(0, 188, 212, 0.16);
+            border: 1px solid var(--cyan);
+            box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.6);
+            transform-origin: left center;
+            transition: transform 0.5s var(--ease-out);
+            pointer-events: none;
+        }
+
+        .tab-btn {
+            position: relative; z-index: 1;
+            flex-shrink: 0;
+            padding: 0.7rem 1.15rem;
+            min-height: 44px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.25s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active { color: #fff; }
+        .tab-btn .tab-icon { margin-right: 6px; color: var(--cyan-bright); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: panelIn 0.55s var(--ease-out) both; }
+
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(14px); clip-path: inset(0 0 12% 0); }
+            to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+        }
+
+        /* ===== Feature cards ===== */
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 1.25rem;
             margin-top: 1rem;
+            margin-bottom: 1.5rem;
         }
+        .glass-card .feature-grid { margin-bottom: 0; }
 
         .feature-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
+            position: relative;
+            background: rgba(0, 0, 0, 0.32);
+            border: 1px solid var(--rule);
             border-radius: 12px;
-            padding: 1.25rem;
-            transition: all 0.3s ease;
+            padding: 1.35rem;
+            transition: border-color 0.3s var(--ease-out), transform 0.35s var(--ease-out), background 0.3s;
             cursor: default;
+            overflow: hidden;
+            --mx: 50%; --my: 0%;
         }
-
-        .feature-card:hover {
-            border-color: var(--accent-cyan);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.1);
+        .feature-card::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+            background: radial-gradient(220px circle at var(--mx) var(--my), rgba(0, 229, 255, 0.14), transparent 70%);
+            transition: opacity 0.3s;
         }
+        .feature-card:hover { border-color: var(--cyan-bright); transform: translateY(-3px); }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card[onclick] { cursor: pointer; }
 
         .feature-card .card-icon {
-            font-size: 2rem;
-            margin-bottom: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 1.9rem;
+            line-height: 1;
+            margin-bottom: 0.85rem;
             display: block;
+            color: var(--cyan-bright);
+            transition: transform 0.45s var(--ease-out);
         }
+        .feature-card:hover .card-icon { transform: translateX(5px) scale(1.08); }
+        .feature-card .card-icon .ic { width: 1.9rem; height: 1.9rem; }
 
-        .feature-card h4 {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--accent-cyan);
-            margin-bottom: 0.5rem;
-        }
+        .feature-card h4, .feature-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .feature-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
 
-        .feature-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; }
-
-        /* Process Flow */
-        .process-flow {
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 1.25rem 0;
-        }
+        /* ===== Process flow ===== */
+        .process-flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; justify-content: center; margin: 1.25rem 0; }
 
         .process-step {
             flex: 1 1 200px;
             max-width: 250px;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.38);
+            border: 1px solid var(--rule);
             border-radius: 12px;
             padding: 1.25rem 1rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s var(--ease-out), background 0.3s, transform 0.3s var(--ease-out);
             position: relative;
+            font: inherit; color: inherit;
         }
+        .process-step:hover { border-color: var(--cyan-bright); background: rgba(0, 188, 212, 0.07); transform: translateY(-2px); }
+        .process-step.expanded { border-color: var(--cyan-bright); background: rgba(0, 188, 212, 0.09); }
 
-        .process-step:hover {
-            border-color: var(--accent-teal);
-            background: rgba(20, 184, 166, 0.06);
-            transform: translateY(-2px);
-        }
+        .process-step .step-icon { display: block; font-size: 2.2rem; margin: 0 auto 0.6rem; color: var(--cyan-bright); width: 2.2rem; height: 2.2rem; }
+        .process-step h4 { font-weight: 600; font-size: 0.98rem; color: var(--text-primary); }
 
-        .process-step.expanded { border-color: var(--accent-cyan); }
-
-        .process-step .step-icon { font-size: 2.2rem; margin-bottom: 0.5rem; display: block; }
-        .process-step h4 { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .step-detail-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-out); }
+        .process-step.expanded .step-detail-wrap { grid-template-rows: 1fr; }
+        .step-detail-wrap > div { overflow: hidden; }
         .process-step .step-detail {
-            display: none;
-            margin-top: 0.75rem;
-            font-size: 0.82rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            padding-top: 0.75rem;
-            border-top: 1px solid var(--border-color);
+            margin-top: 0.75rem; padding-top: 0.75rem;
+            font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;
+            border-top: 1px solid var(--rule);
+            text-align: left;
         }
 
-        .process-step.expanded .step-detail { display: block; }
-
-        .process-arrow {
-            display: flex;
-            align-items: center;
-            font-size: 1.6rem;
-            color: var(--accent-cyan);
-            padding: 0 0.4rem;
-            opacity: 0.5;
-        }
+        .process-arrow { display: flex; align-items: center; font-size: 1.6rem; color: var(--cyan); padding: 0 0.5rem; opacity: 0.6; }
 
         @media (max-width: 768px) {
             .process-arrow { transform: rotate(90deg); padding: 0.3rem 0; }
             .process-flow { flex-direction: column; align-items: center; }
-            .process-step { max-width: 100%; }
+            .process-step { max-width: 100%; width: 100%; }
         }
 
-        /* KaTeX display */
+        /* ===== Formulas, charts ===== */
         .formula-block {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--rule);
             border-radius: 8px;
             padding: 0.75rem 1rem;
             margin: 0.5rem 0;
             overflow-x: auto;
             font-size: 0.9rem;
+            font-family: var(--font-mono);
         }
-
         .katex { font-size: 1.05em !important; }
 
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 650px;
-            margin: 1rem auto;
-            height: 320px;
-        }
+        .chart-container { position: relative; width: 100%; max-width: 700px; margin: 1rem auto; height: 320px; }
+        @media (min-width: 768px) { .chart-container { height: 360px; } }
 
-        @media (min-width: 768px) {
-            .chart-container { height: 360px; max-width: 700px; }
-        }
-
-        /* KPI Badges */
         .kpi-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            border-radius: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            font-size: 1.1rem;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1.2rem; border-radius: 50px;
+            font-family: var(--font-mono); font-weight: 600; font-size: 1.1rem;
+            font-variant-numeric: tabular-nums;
             margin: 0.25rem;
+            background: rgba(0, 188, 212, 0.1);
+            border: 1px solid var(--rule-strong);
+            color: var(--cyan-bright);
         }
+        .kpi-badge.alt { background: rgba(124, 77, 255, 0.12); border-color: rgba(179, 136, 255, 0.45); color: var(--violet-light); }
 
-        /* Interactive List */
+        .kpi-big { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem, 7vw, 2.6rem); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+
+        /* ===== Interactive list ===== */
         .interactive-item {
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: background 0.25s var(--ease-out), border-color 0.25s;
             border: 1px solid transparent;
             margin-bottom: 0.5rem;
+            text-align: left; width: 100%; font: inherit; color: var(--text-secondary); background: none; display: block;
+            line-height: 1.6;
         }
+        .interactive-item:hover { background: rgba(0, 188, 212, 0.05); border-color: var(--rule); }
+        .interactive-item.expanded { background: rgba(0, 188, 212, 0.07); border-color: var(--rule-strong); }
+        .interactive-item strong { color: var(--cyan-bright); font-weight: 600; }
 
-        .interactive-item:hover { background: rgba(0,212,255,0.04); border-color: var(--border-color); }
-        .interactive-item.expanded { background: rgba(0,212,255,0.06); border-color: var(--accent-cyan); }
-
-        .interactive-item strong { color: var(--accent-teal); }
-
+        .item-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-out); }
+        .interactive-item.expanded .item-wrap { grid-template-rows: 1fr; }
+        .item-wrap > div { overflow: hidden; }
         .item-detail {
-            display: none;
-            margin-top: 0.6rem;
-            padding: 0.75rem 1rem;
-            background: rgba(0,0,0,0.25);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            line-height: 1.55;
-            border-left: 3px solid var(--accent-cyan);
+            margin-top: 0.6rem; padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.3); border-radius: 8px;
+            font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;
+            border: 1px solid var(--rule);
         }
 
-        .interactive-item.expanded .item-detail { display: block; }
-
-        /* Mechanism Cards */
+        /* ===== Mechanism cards ===== */
         .mechanism-card {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 14px;
-            padding: 1.5rem;
-            border-left: 4px solid;
-            transition: all 0.3s ease;
+            position: relative;
+            background: rgba(0, 0, 0, 0.32);
+            border: 1px solid var(--rule);
+            border-radius: 12px;
+            padding: 1.6rem;
+            transition: border-color 0.3s var(--ease-out), transform 0.35s var(--ease-out);
         }
-
-        .mechanism-card:hover { transform: translateX(4px); }
-
-        .mechanism-card h3 { margin-top: 0; }
+        .mechanism-card::before {
+            content: ''; position: absolute; left: 0; top: 1.6rem; width: 3px; height: 28px;
+            background: var(--cyan); border-radius: 0 2px 2px 0;
+            transition: height 0.5s var(--ease-out);
+        }
+        .mechanism-card.alt::before { background: var(--violet-light); }
+        .mechanism-card:hover { border-color: var(--rule-strong); transform: translateY(-3px); }
+        .mechanism-card:hover::before { height: calc(100% - 3.2rem); }
+        .mechanism-card h3 { margin-top: 0; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--cyan-bright); letter-spacing: 0.5px; margin-bottom: 0.9rem; }
+        .mechanism-card.alt h3 { color: var(--violet-light); }
 
         .mechanism-card .analogy {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            background: rgba(255,255,255,0.04);
-            padding: 0.6rem 0.8rem;
-            border-radius: 8px;
-            margin-top: 0.75rem;
-            font-style: italic;
+            display: flex; gap: 0.6rem; align-items: flex-start;
+            font-size: 0.84rem; color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.7rem 0.85rem; border-radius: 8px; margin-top: 0.85rem; line-height: 1.55;
         }
+        .mechanism-card .analogy .ic { margin-top: 2px; color: var(--violet-light); width: 1.1rem; height: 1.1rem; }
 
-        /* Insight list */
         .insight-list { list-style: none; padding: 0; }
-        .insight-list li {
-            position: relative;
-            padding: 0.5rem 0 0.5rem 1.5rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.55;
-        }
-        .insight-list li::before {
-            content: '▸';
-            position: absolute;
-            left: 0;
-            color: var(--accent-cyan);
-            font-weight: 700;
-        }
+        .insight-list li { position: relative; padding: 0.55rem 0 0.55rem 1.5rem; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; }
+        .insight-list li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan-bright); font-weight: 700; }
 
-        /* Question grid */
-        .question-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
+        .question-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
         .question-card {
-            background: rgba(0,0,0,0.25);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            font-size: 0.88rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            transition: all 0.3s ease;
+            display: flex; gap: 0.65rem; align-items: flex-start;
+            background: rgba(0, 0, 0, 0.28); border: 1px solid var(--rule); border-radius: 10px;
+            padding: 0.9rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55;
+            transition: border-color 0.3s, transform 0.3s var(--ease-out);
         }
-
-        .question-card:hover { border-color: var(--accent-purple); }
+        .question-card:hover { border-color: var(--violet-light); transform: translateX(3px); }
         .question-card::before {
-            content: '?';
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-right: 0.5rem;
-            flex-shrink: 0;
+            content: '?'; display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(124, 77, 255, 0.25); border: 1px solid var(--violet-light);
+            color: var(--violet-light); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
         }
 
-        /* Compression visual */
-        .compression-visual {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            padding: 2rem;
-            font-size: 3.5rem;
-            flex-wrap: wrap;
-        }
+        /* ===== Compression visual (SVG, motion on hover only) ===== */
+        .compression-visual { display: flex; align-items: center; justify-content: center; gap: 1.25rem; padding: 1.5rem; color: var(--cyan-bright); }
+        .compression-visual .ic { width: 4rem; height: 4rem; stroke-width: 1.2; }
+        .compression-visual .arrow-icon { width: 2.4rem; height: 2.4rem; color: var(--cyan); transition: transform 0.5s var(--ease-out); }
+        .compression-visual:hover .arrow-icon { transform: translateX(8px); }
+        .compression-visual .box-ic { color: var(--violet-light); transition: transform 0.5s var(--ease-out); }
+        .compression-visual:hover .box-ic { transform: scale(0.82); }
 
-        .compression-visual .arrow-icon {
-            font-size: 2rem;
-            color: var(--accent-cyan);
-            animation: arrowPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes arrowPulse {
-            0%, 100% { opacity: 0.4; transform: translateX(0); }
-            50% { opacity: 1; transform: translateX(6px); }
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 188, 212, 0.35); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 229, 255, 0.6); }
+        * { scrollbar-color: rgba(0, 188, 212, 0.4) var(--bg-primary); scrollbar-width: thin; }
 
-        /* Content text */
-        .content-text {
-            font-size: 0.92rem;
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 1rem;
-        }
-
+        .content-text { font-size: 0.98rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; max-width: 75ch; }
         .content-text strong { color: var(--text-primary); }
+        .small-note { font-size: 0.84rem; color: var(--text-muted); line-height: 1.55; }
 
-        /* Two column layout */
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            align-items: start;
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        /* ===== Labs (logistic map, decay controls) ===== */
+        .lab { padding: 1.1rem; margin-bottom: 1.5rem; }
+        .lab-canvas {
+            display: block; width: 100%; border-radius: 6px; background: #070a10;
+        }
+        #bifCanvas { height: 190px; cursor: ew-resize; touch-action: pan-y; }
+        #cobwebCanvas, #distCanvas { height: 280px; }
+        .lab-title { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0.85rem 0 0.4rem; display: flex; justify-content: space-between; gap: 1rem; }
+        .lab-title b { color: var(--cyan-bright); font-weight: 500; }
+        .lab-controls { display: grid; grid-template-columns: 1fr; gap: 0.2rem 1.5rem; margin-top: 0.9rem; }
+        @media (min-width: 720px) { .lab-controls { grid-template-columns: 1fr 1fr; } }
+        .ctl { display: grid; grid-template-columns: 1fr; gap: 0; }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-top: 0.8rem; }
+
+        .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; margin-top: 0.9rem; }
+        .stat { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--rule); border-radius: 8px; padding: 0.55rem 0.75rem; }
+        .stat dt { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+        .stat dd { font-family: var(--font-mono); font-size: 0.98rem; color: var(--cyan-bright); font-variant-numeric: tabular-nums; margin-top: 2px; }
+        .stat dd.v { color: var(--violet-light); }
+
+        footer { text-align: center; padding: 2rem 1rem; margin-top: 3rem; border-top: 1px solid var(--rule); color: var(--text-muted); font-size: 0.82rem; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            .tab-panel.active { animation: none; }
+            .feature-card:hover, .process-step:hover, .mechanism-card:hover { transform: none; }
         }
 
-        @media (max-width: 768px) {
-            .two-col { grid-template-columns: 1fr; }
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2rem 1rem;
-            margin-top: 3rem;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-muted);
-            font-size: 0.8rem;
+        @media (max-width: 480px) {
+            .app-container { padding: 1rem; }
+            .glass-card { padding: 1.25rem; }
+            .tab-btn { padding: 0.7rem 0.9rem; }
         }
     </style>
 </head>
 
 <body>
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
-  .djc-app-bar a:hover{color:#67e8f9;}
+  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(10,14,20,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,188,212,0.2);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .djc-app-bar a{color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;}
+  .djc-app-bar a:hover{color:#67f0ff;}
   .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
+  .djc-app-bar .djc-logo{color:#00e5ff;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
 </style>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></symbol>
+  <symbol id="i-curve" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M6 8c3 0 4 10 7 10s3-4 6-4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+  <symbol id="i-atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M3 12h16M13 6l6 6-6 6"/></symbol>
+</svg>
+
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
     <a href="/apps/" style="flex-shrink:0;">← Back to Projects</a>
@@ -498,39 +587,53 @@
   <a href="/" class="djc-logo">DJC</a>
 </div>
     <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <h1>Dynamical Systems Explorer</h1>
-            <p>An interactive journey through universal scaling laws, attractor dynamics, and the mathematics of convergence in complex systems.</p>
+        <!-- Hero -->
+        <header class="hero">
+            <div class="hero-copy">
+                <h1>Dynamical Systems <span>Explorer</span></h1>
+                <p class="lede">An interactive journey through universal scaling laws, attractor dynamics, and the mathematics of convergence in complex systems.</p>
+                <p class="legend-line">LIVE: Lorenz system, σ = 10, β = 8/3. Drag the trace to rotate, move ρ to change what it converges to.</p>
+            </div>
+
+            <div class="panel scope">
+                <div class="scope-head"><span>Lorenz trajectory</span><b id="lorenzReadout">ρ = 28.0</b></div>
+                <canvas id="lorenzCanvas" tabindex="0" role="img" aria-label="Lorenz system trajectory. Drag or use the left and right arrow keys to rotate the view; use the rho slider to change the parameter."></canvas>
+                <div class="readout-row">
+                    <label class="ctl-label" for="rho">ρ <output id="rhoOut">28.0</output></label>
+                    <input type="range" id="rho" min="0" max="40" step="0.1" value="28" aria-describedby="lorenzRegime">
+                    <p class="regime" id="lorenzRegime" aria-live="polite"></p>
+                </div>
+            </div>
         </header>
 
         <!-- Tab Navigation -->
-        <nav class="tab-nav" role="tablist" aria-label="Explorer sections">
-            <button class="tab-btn active" onclick="switchTab('overview')" role="tab" aria-selected="true">
+        <nav class="tab-nav" role="tablist" aria-label="Explorer sections" id="tabNav">
+            <span class="tab-ind" id="tabInd" aria-hidden="true"></span>
+            <button class="tab-btn active" id="tabbtn-overview" onclick="switchTab('overview')" role="tab" aria-selected="true" aria-controls="tab-overview" tabindex="0">
                 <span class="tab-icon">◉</span>Overview
             </button>
-            <button class="tab-btn" onclick="switchTab('nadcs')" role="tab" aria-selected="false">
+            <button class="tab-btn" id="tabbtn-nadcs" onclick="switchTab('nadcs')" role="tab" aria-selected="false" aria-controls="tab-nadcs" tabindex="-1">
                 <span class="tab-icon">↘</span>NADCs
             </button>
-            <button class="tab-btn" onclick="switchTab('scaling')" role="tab" aria-selected="false">
+            <button class="tab-btn" id="tabbtn-scaling" onclick="switchTab('scaling')" role="tab" aria-selected="false" aria-controls="tab-scaling" tabindex="-1">
                 <span class="tab-icon">∝</span>Scaling Laws
             </button>
-            <button class="tab-btn" onclick="switchTab('mechanisms')" role="tab" aria-selected="false">
-                <span class="tab-icon">⚛</span>Mechanisms
+            <button class="tab-btn" id="tabbtn-mechanisms" onclick="switchTab('mechanisms')" role="tab" aria-selected="false" aria-controls="tab-mechanisms" tabindex="-1">
+                <span class="tab-icon"><svg class="ic"><use href="#i-atom"/></svg></span>Mechanisms
             </button>
-            <button class="tab-btn" onclick="switchTab('compression')" role="tab" aria-selected="false">
+            <button class="tab-btn" id="tabbtn-compression" onclick="switchTab('compression')" role="tab" aria-selected="false" aria-controls="tab-compression" tabindex="-1">
                 <span class="tab-icon">⊞</span>Compression
             </button>
-            <button class="tab-btn" onclick="switchTab('outlook')" role="tab" aria-selected="false">
+            <button class="tab-btn" id="tabbtn-outlook" onclick="switchTab('outlook')" role="tab" aria-selected="false" aria-controls="tab-outlook" tabindex="-1">
                 <span class="tab-icon">◈</span>Outlook
             </button>
         </nav>
 
         <!-- ==================== TAB: OVERVIEW ==================== -->
-        <div id="tab-overview" class="tab-panel active" role="tabpanel">
+        <div id="tab-overview" class="tab-panel active" role="tabpanel" aria-labelledby="tabbtn-overview">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));">◉</span>
+                    <span class="section-icon">◉</span>
                     The Science of Convergence
                 </h2>
                 <p class="content-text">
@@ -544,53 +647,53 @@
             <div class="feature-grid">
                 <div class="feature-card" onclick="switchTab('nadcs')">
                     <span class="card-icon">↘</span>
-                    <h4>Attractor Descent Curves</h4>
+                    <h3>Attractor Descent Curves</h3>
                     <p>The computational paths traced by numerical algorithms as they converge from initial conditions towards attractors.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('scaling')">
                     <span class="card-icon">∝</span>
-                    <h4>Scaling Laws & Universality</h4>
+                    <h3>Scaling Laws & Universality</h3>
                     <p>Mathematical relationships showing that macroscopic convergence properties are independent of microscopic system details.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('mechanisms')">
-                    <span class="card-icon">⚛</span>
-                    <h4>Theoretical Mechanisms</h4>
+                    <span class="card-icon"><svg class="ic"><use href="#i-atom"/></svg></span>
+                    <h3>Theoretical Mechanisms</h3>
                     <p>Renormalization Group theory, Bifurcation theory, and the frameworks that explain why universality emerges.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('compression')">
                     <span class="card-icon">⊞</span>
-                    <h4>Data Compression Link</h4>
+                    <h3>Data Compression Link</h3>
                     <p>Universality implies structure, and structure implies compressibility — connecting dynamics to information theory.</p>
                 </div>
             </div>
 
-            <div class="glass-card" style="text-align: center;">
+            <div class="glass-card" style="text-align: center;" id="constantsCard">
                 <h2 style="justify-content: center;">
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));">δ</span>
+                    <span class="section-icon">δ</span>
                     Key Constants
                 </h2>
-                <p class="content-text" style="margin-bottom: 1.5rem;">
+                <p class="content-text" style="margin: 0 auto 1.5rem;">
                     These universal constants appear across entirely different dynamical systems — a hallmark of universality.
                 </p>
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
-                    <div class="kpi-badge" style="background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); color: var(--accent-orange);">
-                        <span>δ ≈ 4.669</span>
+                    <div class="kpi-badge">
+                        <span>δ ≈ <span data-count="4.669" data-dp="3">4.669</span></span>
                     </div>
-                    <div class="kpi-badge" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--accent-purple);">
-                        <span>α ≈ 2.503</span>
+                    <div class="kpi-badge alt">
+                        <span>α ≈ <span data-count="2.503" data-dp="3">2.503</span></span>
                     </div>
                 </div>
-                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 1rem;">
-                    Feigenbaum's constants — governing period-doubling cascades in routes to chaos.
+                <p class="small-note" style="margin-top: 1rem;">
+                    Feigenbaum's constants — governing period-doubling cascades in routes to chaos. The NADCs tab lets you watch them emerge.
                 </p>
             </div>
         </div>
 
         <!-- ==================== TAB: NADCs ==================== -->
-        <div id="tab-nadcs" class="tab-panel" role="tabpanel">
+        <div id="tab-nadcs" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-nadcs">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-teal), var(--accent-green));">↘</span>
+                    <span class="section-icon">↘</span>
                     Numerical Attractor Descent Curves
                 </h2>
                 <p class="content-text">
@@ -601,72 +704,113 @@
                 </p>
             </div>
 
-            <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">How are NADCs Generated?</h3>
-                <p class="content-text">NADCs arise from various numerical techniques. Click each method to learn more:</p>
-                <div class="process-flow">
-                    <div class="process-step" onclick="toggleStep(this)">
-                        <span class="step-icon">🔄</span>
-                        <h4>Iterative Maps</h4>
-                        <div class="step-detail">
-                            For systems defined by discrete maps (e.g., logistic map), the NADC is the sequence of values generated by repeatedly applying the map function from a starting point. This is foundational in chaos theory.
-                        </div>
+            <!-- Logistic map lab -->
+            <div class="panel lab" id="logisticLab">
+                <div class="lab-title" style="margin-top:0"><span>Logistic map x<sub>n+1</sub> = r x<sub>n</sub> (1 − x<sub>n</sub>) · bifurcation diagram</span><b id="bifReadout">r = 2.80</b></div>
+                <canvas id="bifCanvas" class="lab-canvas" role="img" aria-label="Bifurcation diagram of the logistic map. Drag horizontally to set r."></canvas>
+                <p class="small-note" id="feigenRatios" style="margin-top:0.5rem"></p>
+
+                <div class="lab-controls">
+                    <div class="ctl">
+                        <label class="ctl-label" for="rSlider">r <output id="rOut">2.80</output></label>
+                        <input type="range" id="rSlider" min="2.5" max="4" step="0.005" value="2.8">
                     </div>
-                    <div class="process-arrow">→</div>
-                    <div class="process-step" onclick="toggleStep(this)">
-                        <span class="step-icon">📈</span>
-                        <h4>ODE Solvers</h4>
-                        <div class="step-detail">
-                            For continuous systems (Ordinary Differential Equations), methods like Euler or Runge-Kutta compute a sequence of points approximating the true solution. This sequence forms the NADC.
-                        </div>
+                    <div class="ctl">
+                        <label class="ctl-label" for="x0Slider">x<sub>0</sub> <output id="x0Out">0.20</output></label>
+                        <input type="range" id="x0Slider" min="0.05" max="0.95" step="0.01" value="0.2">
                     </div>
-                    <div class="process-arrow">→</div>
-                    <div class="process-step" onclick="toggleStep(this)">
-                        <span class="step-icon">🌐</span>
-                        <h4>PDE Discretizations</h4>
-                        <div class="step-detail">
-                            For systems described by Partial Differential Equations (e.g., fluid flow), numerical methods discretize space and time. The evolution of this discretized state vector creates a high-dimensional NADC.
-                        </div>
+                </div>
+
+                <div class="two-col" style="margin-top:0.4rem">
+                    <div>
+                        <div class="lab-title"><span>Cobweb: the path being descended</span><b id="stepReadout">n = 0</b></div>
+                        <canvas id="cobwebCanvas" class="lab-canvas" role="img" aria-label="Cobweb diagram of the logistic map iteration"></canvas>
                     </div>
+                    <div>
+                        <div class="lab-title"><span>Distance |x<sub>n</sub> − x*| (log)</span><b id="distReadout">&nbsp;</b></div>
+                        <canvas id="distCanvas" class="lab-canvas" role="img" aria-label="Log-scale distance from the fixed point against iteration number"></canvas>
+                    </div>
+                </div>
+
+                <dl class="stat-strip" aria-live="polite">
+                    <div class="stat"><dt>Fixed point x*</dt><dd id="statFixed">0.6429</dd></div>
+                    <div class="stat"><dt>|f′(x*)| = |2 − r|</dt><dd id="statSlope" class="v">0.800</dd></div>
+                    <div class="stat"><dt>Regime</dt><dd id="statRegime">fixed point</dd></div>
+                </dl>
+                <p class="regime" id="logisticNote" style="margin-top:0.7rem"></p>
+
+                <div class="btn-row">
+                    <button class="btn" id="playBtn" type="button">Replay descent</button>
+                    <button class="btn ghost" id="stepBtn" type="button">Step +1</button>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Significance of Studying NADCs</h3>
+                <h3 style="margin-top: 0;">How are NADCs Generated?</h3>
+                <p class="content-text">NADCs arise from various numerical techniques. Click each method to learn more:</p>
+                <div class="process-flow">
+                    <button class="process-step" onclick="toggleStep(this)" aria-expanded="false">
+                        <svg class="ic step-icon"><use href="#i-loop"/></svg>
+                        <h4>Iterative Maps</h4>
+                        <div class="step-detail-wrap"><div><div class="step-detail">
+                            For systems defined by discrete maps (e.g., logistic map), the NADC is the sequence of values generated by repeatedly applying the map function from a starting point. This is foundational in chaos theory.
+                        </div></div></div>
+                    </button>
+                    <div class="process-arrow" aria-hidden="true">→</div>
+                    <button class="process-step" onclick="toggleStep(this)" aria-expanded="false">
+                        <svg class="ic step-icon"><use href="#i-curve"/></svg>
+                        <h4>ODE Solvers</h4>
+                        <div class="step-detail-wrap"><div><div class="step-detail">
+                            For continuous systems (Ordinary Differential Equations), methods like Euler or Runge-Kutta compute a sequence of points approximating the true solution. This sequence forms the NADC.
+                        </div></div></div>
+                    </button>
+                    <div class="process-arrow" aria-hidden="true">→</div>
+                    <button class="process-step" onclick="toggleStep(this)" aria-expanded="false">
+                        <svg class="ic step-icon"><use href="#i-grid"/></svg>
+                        <h4>PDE Discretizations</h4>
+                        <div class="step-detail-wrap"><div><div class="step-detail">
+                            For systems described by Partial Differential Equations (e.g., fluid flow), numerical methods discretize space and time. The evolution of this discretized state vector creates a high-dimensional NADC.
+                        </div></div></div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 style="margin-top: 0;">Significance of Studying NADCs</h3>
                 <p class="content-text">Studying NADCs provides crucial insights into system dynamics. Click each point for details:</p>
 
-                <div class="interactive-item" onclick="toggleItem(this)">
+                <button class="interactive-item" onclick="toggleItem(this)" aria-expanded="false">
                     <strong>Visualizing Convergence</strong> — NADCs show how trajectories navigate phase space towards an attractor.
-                    <div class="item-detail">
+                    <div class="item-wrap"><div><div class="item-detail">
                         They offer a direct visual representation of the path taken towards an attractor, revealing the geometry of the flow and the structure of the attractor itself. This direct visualization is invaluable for building intuition about system behavior.
-                    </div>
-                </div>
-                <div class="interactive-item" onclick="toggleItem(this)">
+                    </div></div></div>
+                </button>
+                <button class="interactive-item" onclick="toggleItem(this)" aria-expanded="false">
                     <strong>Basin of Attraction Analysis</strong> — Mapping NADCs from various starting points helps define attractor regions.
-                    <div class="item-detail">
+                    <div class="item-wrap"><div><div class="item-detail">
                         By starting simulations from various initial conditions, one can numerically determine which starting points lead to which attractors, outlining these critical basin boundaries that separate qualitatively different long-term behaviors.
-                    </div>
-                </div>
-                <div class="interactive-item" onclick="toggleItem(this)">
+                    </div></div></div>
+                </button>
+                <button class="interactive-item" onclick="toggleItem(this)" aria-expanded="false">
                     <strong>Convergence Rate Estimation</strong> — The speed and manner of approach quantify stability.
-                    <div class="item-detail">
+                    <div class="item-wrap"><div><div class="item-detail">
                         This provides quantitative data on the attractor's stability and the numerical method's efficiency. Slow convergence can indicate proximity to bifurcations or weak stability, while fast convergence suggests a strongly stable attractor.
-                    </div>
-                </div>
-                <div class="interactive-item" onclick="toggleItem(this)">
+                    </div></div></div>
+                </button>
+                <button class="interactive-item" onclick="toggleItem(this)" aria-expanded="false">
                     <strong>Understanding Transients</strong> — NADCs capture initial complex behaviors before settling.
-                    <div class="item-detail">
+                    <div class="item-wrap"><div><div class="item-detail">
                         The initial part of an NADC reflects transient dynamics, which can be lengthy and intricate, especially near bifurcations or in chaotic systems, before the system asymptotically approaches the attractor. These transients often contain rich phenomena.
-                    </div>
-                </div>
+                    </div></div></div>
+                </button>
             </div>
         </div>
 
         <!-- ==================== TAB: SCALING LAWS ==================== -->
-        <div id="tab-scaling" class="tab-panel" role="tabpanel">
+        <div id="tab-scaling" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-scaling">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">∝</span>
+                    <span class="section-icon">∝</span>
                     Universality & Scaling Laws
                 </h2>
                 <p class="content-text">
@@ -675,32 +819,32 @@
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Manifestation of Scaling Laws in NADCs</h3>
+                <h3 style="margin-top: 0;">Manifestation of Scaling Laws in NADCs</h3>
                 <p class="content-text">
                     The convergence process detailed by NADCs is not random or system-specific. Quantitative measures of convergence exhibit predictable, universal patterns:
                 </p>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4 style="color: var(--accent-teal);">Distance Scaling</h4>
+                        <h4>Distance Scaling</h4>
                         <p>How the distance from the current state to the attractor decreases with iteration number.</p>
                         <div class="formula-block" id="katex-distance"></div>
                     </div>
                     <div class="feature-card">
-                        <h4 style="color: var(--accent-orange);">Parameter Scaling</h4>
+                        <h4>Parameter Scaling</h4>
                         <p>Feigenbaum-type geometric convergence of bifurcation parameters, characterized by universal constants.</p>
-                        <div class="kpi-badge" style="background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: var(--accent-orange); margin-top: 0.5rem;">
+                        <div class="kpi-badge" style="margin-top: 0.5rem;">
                             δ ≈ 4.669
                         </div>
                     </div>
                     <div class="feature-card" style="grid-column: 1 / -1;">
-                        <h4 style="color: var(--accent-purple);">Halting Time Scaling</h4>
+                        <h4>Halting Time Scaling</h4>
                         <p>For numerical algorithms, the time taken to reach a solution within a given tolerance can show universal statistical properties. When scaled by their mean and standard deviation, the probability distribution of halting times converges to a universal, non-Gaussian shape for large problem dimensions.</p>
                     </div>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Mathematical Forms of Scaling Laws</h3>
+                <h3 style="margin-top: 0;">Mathematical Forms of Scaling Laws</h3>
                 <div class="two-col">
                     <div>
                         <p class="content-text" style="margin-bottom: 1.5rem;">
@@ -708,33 +852,48 @@
                         </p>
 
                         <div style="margin-bottom: 1rem;">
-                            <h4 style="color: var(--accent-teal); font-size: 0.95rem; margin-bottom: 0.3rem;">Power Laws</h4>
+                            <h4 style="color: var(--cyan-bright); font-size: 0.95rem; margin-bottom: 0.3rem;">Power Laws</h4>
                             <div class="formula-block" id="katex-power"></div>
-                            <p style="font-size: 0.82rem; color: var(--text-muted);">Where ζ is the scaling exponent. Common in critical phenomena and distance decay.</p>
+                            <p class="small-note">Where ζ is the scaling exponent. Common in critical phenomena and distance decay.</p>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <h4 style="color: var(--accent-orange); font-size: 0.95rem; margin-bottom: 0.3rem;">Geometric Scaling (Feigenbaum)</h4>
+                            <h4 style="color: var(--violet-light); font-size: 0.95rem; margin-bottom: 0.3rem;">Geometric Scaling (Feigenbaum)</h4>
                             <div class="formula-block" id="katex-feigenbaum"></div>
-                            <p style="font-size: 0.82rem; color: var(--text-muted);">Describes discrete rescaling in bifurcation cascades.</p>
+                            <p class="small-note">Describes discrete rescaling in bifurcation cascades.</p>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <h4 style="color: var(--accent-green); font-size: 0.95rem; margin-bottom: 0.3rem;">Logarithmic Scaling</h4>
+                            <h4 style="color: var(--cyan-bright); font-size: 0.95rem; margin-bottom: 0.3rem;">Logarithmic Scaling</h4>
                             <div class="formula-block" id="katex-log"></div>
-                            <p style="font-size: 0.82rem; color: var(--text-muted);">Appears in some non-equilibrium systems or as corrections to power laws.</p>
+                            <p class="small-note">Appears in some non-equilibrium systems or as corrections to power laws.</p>
                         </div>
                         <div>
-                            <h4 style="color: var(--accent-purple); font-size: 0.95rem; margin-bottom: 0.3rem;">Universal Statistical Distributions</h4>
+                            <h4 style="color: var(--violet-light); font-size: 0.95rem; margin-bottom: 0.3rem;">Universal Statistical Distributions</h4>
                             <div class="formula-block" id="katex-stat"></div>
-                            <p style="font-size: 0.82rem; color: var(--text-muted);">The PDF of a scaled variable converges to a universal function for quantities like halting times.</p>
+                            <p class="small-note">The PDF of a scaled variable converges to a universal function for quantities like halting times.</p>
                         </div>
                     </div>
                     <div>
-                        <h4 style="color: var(--accent-cyan); text-align: center; margin-bottom: 0.75rem;">Conceptual Decay Comparison</h4>
+                        <h4 style="color: var(--cyan-bright); text-align: center; margin-bottom: 0.75rem;">Conceptual Decay Comparison</h4>
                         <div class="chart-container">
                             <canvas id="decayChart"></canvas>
                         </div>
-                        <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
-                            Comparing how a quantity decreases following exponential decay vs. power-law decay. Power laws indicate scale-free behavior.
+                        <div class="lab-controls">
+                            <div class="ctl">
+                                <label class="ctl-label" for="zetaSlider">power-law exponent ζ <output id="zetaOut">1.0</output></label>
+                                <input type="range" id="zetaSlider" min="0.5" max="3" step="0.1" value="1">
+                            </div>
+                            <div class="ctl">
+                                <label class="ctl-label" for="gammaSlider">exponential rate γ <output id="gammaOut">0.50</output></label>
+                                <input type="range" id="gammaSlider" min="0.1" max="1.2" step="0.05" value="0.5">
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <label class="toggle"><input type="checkbox" id="logToggle"> Log y-axis</label>
+                            <button class="btn ghost" type="button" id="decayReset">Reset</button>
+                        </div>
+                        <p class="regime" id="decayReadout" aria-live="polite" style="margin-top:0.6rem"></p>
+                        <p class="small-note" style="text-align: center; margin-top: 0.5rem;">
+                            Comparing how a quantity decreases following exponential decay, 100·e<sup>−γt</sup>, vs. power-law decay, 100·(t+1)<sup>−ζ</sup>. On a log axis the exponential is a straight line; the power law bends. Power laws indicate scale-free behavior.
                         </p>
                     </div>
                 </div>
@@ -742,10 +901,10 @@
         </div>
 
         <!-- ==================== TAB: MECHANISMS ==================== -->
-        <div id="tab-mechanisms" class="tab-panel" role="tabpanel">
+        <div id="tab-mechanisms" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-mechanisms">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));">⚛</span>
+                    <span class="section-icon"><svg class="ic"><use href="#i-atom"/></svg></span>
                     Mechanisms Behind Universality
                 </h2>
                 <p class="content-text">
@@ -753,9 +912,9 @@
                 </p>
             </div>
 
-            <div class="two-col">
-                <div class="mechanism-card" style="border-left-color: var(--accent-orange);">
-                    <h3 style="color: var(--accent-orange); margin-top: 0;">Renormalization Group (RG) Theory</h3>
+            <div class="two-col" style="margin-bottom: 1.5rem;">
+                <div class="mechanism-card">
+                    <h3>Renormalization Group (RG) Theory</h3>
                     <p class="content-text">
                         Originating from statistical physics, RG involves a process of iteratively "zooming out" (coarse-graining) and rescaling a system. Systems that flow to the same <strong>"fixed point"</strong> under this transformation belong to the same universality class, exhibiting identical critical exponents.
                     </p>
@@ -763,12 +922,13 @@
                         This framework elegantly explains Feigenbaum universality in period-doubling routes to chaos. The iterative doubling operator has a fixed-point function, and the eigenvalues at that fixed point give the universal constants δ and α.
                     </p>
                     <div class="analogy">
-                        💡 Analogy: Repeatedly averaging groups of pixels in an image. If the large-scale structure remains similar after many such steps, the system exhibits scale invariance — a hallmark of RG fixed points.
+                        <svg class="ic"><use href="#i-note"/></svg>
+                        <span><strong>Analogy:</strong> Repeatedly averaging groups of pixels in an image. If the large-scale structure remains similar after many such steps, the system exhibits scale invariance — a hallmark of RG fixed points.</span>
                     </div>
                 </div>
 
-                <div class="mechanism-card" style="border-left-color: var(--accent-teal);">
-                    <h3 style="color: var(--accent-teal); margin-top: 0;">Bifurcation Theory</h3>
+                <div class="mechanism-card alt">
+                    <h3>Bifurcation Theory</h3>
                     <p class="content-text">
                         This branch of dynamical systems studies how qualitative behavior changes as a control parameter is varied. Near <strong>bifurcation points</strong> — where behavior changes dramatically (e.g., a stable state becomes unstable or splits) — the system's dynamics can often be simplified into <strong>"normal forms"</strong> that are universal for that class of bifurcation.
                     </p>
@@ -776,20 +936,21 @@
                         Scaling laws derived from these normal forms capture the essential features of transitions, explaining how convergence rates change near critical parameter values.
                     </p>
                     <div class="analogy">
-                        💡 Analogy: A river (stable flow) hitting a rock (parameter change) and splitting into two streams (bifurcation). The way it splits follows universal patterns regardless of the specific river or rock.
+                        <svg class="ic"><use href="#i-note"/></svg>
+                        <span><strong>Analogy:</strong> A river (stable flow) hitting a rock (parameter change) and splitting into two streams (bifurcation). The way it splits follows universal patterns regardless of the specific river or rock.</span>
                     </div>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Additional Frameworks</h3>
+                <h3 style="margin-top: 0;">Additional Frameworks</h3>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h4 style="color: var(--accent-yellow);">Statistical Mechanics</h4>
+                        <h4>Statistical Mechanics</h4>
                         <p>Drawing parallels with phase transitions in physical systems, where universal behavior emerges at critical points regardless of microscopic details.</p>
                     </div>
                     <div class="feature-card">
-                        <h4 style="color: var(--accent-green);">Stable/Unstable Manifolds</h4>
+                        <h4>Stable/Unstable Manifolds</h4>
                         <p>Core dynamical systems concepts defining regions of predictable behavior. Hyperbolicity conditions ensure structural stability of the convergence dynamics.</p>
                     </div>
                 </div>
@@ -797,24 +958,24 @@
         </div>
 
         <!-- ==================== TAB: COMPRESSION ==================== -->
-        <div id="tab-compression" class="tab-panel" role="tabpanel">
+        <div id="tab-compression" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-compression">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));">⊞</span>
+                    <span class="section-icon">⊞</span>
                     The Link to Data Compression
                 </h2>
                 <p class="content-text">
                     The existence of universal scaling laws in NADCs suggests a fascinating — though often theoretical — connection to data compression. The fundamental principle is:
                 </p>
-                <div style="text-align: center; padding: 1.5rem; margin: 1rem 0; border-radius: 12px; background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(168,85,247,0.08)); border: 1px solid var(--border-color);">
-                    <p style="font-size: 1.15rem; font-weight: 600; color: var(--accent-cyan);">
+                <div style="text-align: center; padding: 1.5rem; margin: 1rem 0; border-radius: 10px; background: rgba(0, 188, 212, 0.07); border: 1px solid var(--rule-strong);">
+                    <p style="font-family: var(--font-display); font-size: clamp(0.95rem, 3.4vw, 1.25rem); font-weight: 700; letter-spacing: 0.4px; line-height: 1.4; color: var(--cyan-bright);">
                         Universality implies structure, and structure implies compressibility.
                     </p>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Information, Predictability & Structure</h3>
+                <h3 style="margin-top: 0;">Information, Predictability & Structure</h3>
                 <div class="two-col" style="align-items: center;">
                     <div>
                         <p class="content-text">
@@ -827,16 +988,16 @@
                             From a <strong>Kolmogorov complexity</strong> perspective (the shortest program to describe an object), NADCs governed by universal laws have lower complexity than random data streams, making them theoretically more compressible.
                         </p>
                     </div>
-                    <div class="compression-visual">
-                        <span>📜</span>
-                        <span class="arrow-icon">→</span>
-                        <span>📦</span>
+                    <div class="compression-visual" aria-hidden="true">
+                        <svg class="ic"><use href="#i-doc"/></svg>
+                        <svg class="ic arrow-icon"><use href="#i-arrow"/></svg>
+                        <svg class="ic box-ic"><use href="#i-box"/></svg>
                     </div>
                 </div>
             </div>
 
             <div class="glass-card">
-                <h3 style="color: var(--accent-cyan); margin-top: 0;">Connection to Modern AI</h3>
+                <h3 style="margin-top: 0;">Connection to Modern AI</h3>
                 <p class="content-text">
                     This connection is analogous to how modern <strong>Large Language Models</strong> are increasingly understood as powerful compressors of their vast training data, with their performance also exhibiting scaling laws. The structure inherent in the NADC, revealed by universality, is key to its potential compressibility.
                 </p>
@@ -847,10 +1008,10 @@
         </div>
 
         <!-- ==================== TAB: OUTLOOK ==================== -->
-        <div id="tab-outlook" class="tab-panel" role="tabpanel">
+        <div id="tab-outlook" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-outlook">
             <div class="glass-card">
                 <h2>
-                    <span class="section-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));">◈</span>
+                    <span class="section-icon">◈</span>
                     Synthesis & Future Horizons
                 </h2>
                 <p class="content-text">
@@ -860,7 +1021,7 @@
 
             <div class="two-col">
                 <div class="glass-card">
-                    <h3 style="color: var(--accent-green); margin-top: 0;">Key Insights</h3>
+                    <h3 style="margin-top: 0;">Key Insights</h3>
                     <ul class="insight-list">
                         <li>NADCs reveal the dynamic process of convergence, not just endpoints.</li>
                         <li>Universality shows that common behaviors emerge in vastly diverse systems.</li>
@@ -872,7 +1033,7 @@
                 </div>
 
                 <div class="glass-card">
-                    <h3 style="color: var(--accent-orange); margin-top: 0;">Open Questions</h3>
+                    <h3 style="margin-top: 0;">Open Questions</h3>
                     <div class="question-grid" style="grid-template-columns: 1fr;">
                         <div class="question-card">How broadly does universality apply in numerical convergence beyond known examples?</div>
                         <div class="question-card">What are the precise mechanisms driving universality in general algorithms?</div>
@@ -885,7 +1046,7 @@
             </div>
 
             <div class="glass-card" style="text-align: center;">
-                <p class="content-text" style="max-width: 700px; margin: 0 auto;">
+                <p class="content-text" style="margin: 0 auto;">
                     The exploration of universal scaling laws in NADCs sits at a fascinating intersection of <strong>dynamical systems, numerical analysis, statistical physics, and information theory</strong> — promising continued insights into the fundamental nature of complexity and computation.
                 </p>
             </div>
@@ -898,57 +1059,445 @@
     </div>
 
     <script>
-        // ============ TAB MANAGEMENT ============
+        // ============ SHARED ============
+        const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const reduced = () => RM.matches;
+        const TAB_ORDER = ['overview', 'nadcs', 'scaling', 'mechanisms', 'compression', 'outlook'];
+        let currentTab = 'overview';
         let chartInstances = {};
 
-        function switchTab(tabId) {
-            // Deactivate all
+        function setFill(input) {
+            const f = (input.value - input.min) / (input.max - input.min) * 100;
+            input.style.setProperty('--fill', f + '%');
+        }
+
+        function fitCanvas(c) {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const r = c.getBoundingClientRect();
+            const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+            if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+            return { w, h, dpr };
+        }
+
+        // ============ TAB MANAGEMENT ============
+        function moveIndicator() {
+            const ind = document.getElementById('tabInd');
+            const btn = document.getElementById('tabbtn-' + currentTab);
+            if (!ind || !btn) return;
+            ind.style.width = btn.offsetWidth + 'px';
+            ind.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+        }
+
+        function switchTab(tabId, opts) {
+            opts = opts || {};
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => {
                 b.classList.remove('active');
                 b.setAttribute('aria-selected', 'false');
+                b.tabIndex = -1;
             });
 
-            // Activate selected
+            currentTab = tabId;
             const panel = document.getElementById('tab-' + tabId);
             if (panel) panel.classList.add('active');
 
-            const btns = document.querySelectorAll('.tab-btn');
-            const tabMap = ['overview', 'nadcs', 'scaling', 'mechanisms', 'compression', 'outlook'];
-            const idx = tabMap.indexOf(tabId);
-            if (idx >= 0 && btns[idx]) {
-                btns[idx].classList.add('active');
-                btns[idx].setAttribute('aria-selected', 'true');
-                btns[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            const btn = document.getElementById('tabbtn-' + tabId);
+            if (btn) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+                btn.tabIndex = 0;
+                btn.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+                if (opts.focus) btn.focus();
             }
+            moveIndicator();
 
-            // Initialize charts when scaling tab is opened
-            if (tabId === 'scaling') {
-                setTimeout(initCharts, 100);
-            }
+            if (tabId === 'scaling') setTimeout(initCharts, 100);
+            if (tabId === 'nadcs') requestAnimationFrame(() => Logistic.activate());
+            else Logistic.pause();
 
-            // Scroll to top of content
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!opts.noScroll) window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
         }
+
+        document.getElementById('tabNav').addEventListener('keydown', e => {
+            const i = TAB_ORDER.indexOf(currentTab);
+            let n = -1;
+            if (e.key === 'ArrowRight') n = (i + 1) % TAB_ORDER.length;
+            else if (e.key === 'ArrowLeft') n = (i - 1 + TAB_ORDER.length) % TAB_ORDER.length;
+            else if (e.key === 'Home') n = 0;
+            else if (e.key === 'End') n = TAB_ORDER.length - 1;
+            if (n >= 0) { e.preventDefault(); switchTab(TAB_ORDER[n], { focus: true, noScroll: true }); }
+        });
 
         // ============ INTERACTIVE ELEMENTS ============
         function toggleStep(el) {
-            el.classList.toggle('expanded');
+            const on = el.classList.toggle('expanded');
+            el.setAttribute('aria-expanded', on);
+        }
+        function toggleItem(el) {
+            const on = el.classList.toggle('expanded');
+            el.setAttribute('aria-expanded', on);
         }
 
-        function toggleItem(el) {
-            el.classList.toggle('expanded');
-        }
+        // ============ LORENZ HERO ============
+        const Lorenz = (() => {
+            const c = document.getElementById('lorenzCanvas');
+            const ctx = c.getContext('2d');
+            const slider = document.getElementById('rho');
+            const out = document.getElementById('rhoOut');
+            const ro = document.getElementById('lorenzReadout');
+            const regime = document.getElementById('lorenzRegime');
+            const SIG = 10, BET = 8 / 3, MAXT = 900;
+            let rho = 28, s, trail = [], angle = -0.75, vel = 0, dragging = false, lastX = 0, running = false, visible = true;
+
+            function reseed() { s = [1.2, 0.9, 1.5 + Math.random() * 0.01]; trail = []; }
+            function deriv(p) { return [SIG * (p[1] - p[0]), p[0] * (rho - p[2]) - p[1], p[0] * p[1] - BET * p[2]]; }
+            function rk4(h) {
+                const k1 = deriv(s);
+                const k2 = deriv([s[0] + h / 2 * k1[0], s[1] + h / 2 * k1[1], s[2] + h / 2 * k1[2]]);
+                const k3 = deriv([s[0] + h / 2 * k2[0], s[1] + h / 2 * k2[1], s[2] + h / 2 * k2[2]]);
+                const k4 = deriv([s[0] + h * k3[0], s[1] + h * k3[1], s[2] + h * k3[2]]);
+                s = [0, 1, 2].map(i => s[i] + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+            }
+            function step(n) {
+                for (let i = 0; i < n; i++) { rk4(0.006); if (i % 2 === 0) { trail.push(s.slice()); } }
+                if (trail.length > MAXT) trail.splice(0, trail.length - MAXT);
+            }
+
+            function proj(p, W, H) {
+                const ca = Math.cos(angle), sa = Math.sin(angle);
+                const xr = p[0] * ca - p[1] * sa;
+                const scale = Math.min(W / 58, H / 60);
+                return [W / 2 + xr * scale, H * 0.92 - p[2] * scale * 1.05];
+            }
+
+            function draw() {
+                const { w: W, h: H, dpr } = fitCanvas(c);
+                ctx.clearRect(0, 0, W, H);
+                // baseline grid ticks
+                ctx.strokeStyle = 'rgba(0,188,212,0.12)'; ctx.lineWidth = dpr;
+                ctx.beginPath(); ctx.moveTo(0, H * 0.92); ctx.lineTo(W, H * 0.92); ctx.stroke();
+
+                // fixed points
+                if (rho > 1) {
+                    const a = Math.sqrt(BET * (rho - 1));
+                    [[a, a, rho - 1], [-a, -a, rho - 1]].forEach(q => {
+                        const [x, y] = proj(q, W, H);
+                        ctx.strokeStyle = 'rgba(179,136,255,0.85)'; ctx.lineWidth = 1.5 * dpr;
+                        ctx.beginPath(); ctx.arc(x, y, 5 * dpr, 0, 6.2832); ctx.stroke();
+                    });
+                }
+                const o = proj([0, 0, 0], W, H);
+                ctx.strokeStyle = 'rgba(0,229,255,0.5)'; ctx.lineWidth = 1.5 * dpr;
+                ctx.beginPath(); ctx.arc(o[0], o[1], 4 * dpr, 0, 6.2832); ctx.stroke();
+
+                // trail in chunks with rising alpha
+                const n = trail.length; if (n < 2) return;
+                const chunks = 24, per = Math.ceil(n / chunks);
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                for (let k = 0; k < chunks; k++) {
+                    const a = k * per, b = Math.min(n - 1, a + per);
+                    if (a >= n - 1) break;
+                    const t = (k + 1) / chunks;
+                    ctx.strokeStyle = 'rgba(' + Math.round(124 + 0 * t) + ',' + Math.round(77 + 152 * t) + ',255,' + (0.12 + 0.88 * t * t).toFixed(3) + ')';
+                    ctx.lineWidth = (0.8 + 1.4 * t) * dpr;
+                    ctx.beginPath();
+                    let q = proj(trail[a], W, H); ctx.moveTo(q[0], q[1]);
+                    for (let i = a + 1; i <= b; i++) { q = proj(trail[i], W, H); ctx.lineTo(q[0], q[1]); }
+                    ctx.stroke();
+                }
+                const h = proj(trail[n - 1], W, H);
+                ctx.fillStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 14 * dpr;
+                ctx.beginPath(); ctx.arc(h[0], h[1], 3.2 * dpr, 0, 6.2832); ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            function label() {
+                out.textContent = rho.toFixed(1);
+                ro.textContent = 'ρ = ' + rho.toFixed(1);
+                if (rho < 1) regime.innerHTML = '<b>Origin is stable.</b> Every trajectory decays to (0, 0, 0).';
+                else if (rho < 24.74) regime.innerHTML = '<b>Two stable fixed points.</b> The trajectory descends onto one of them: an attractor descent curve in three dimensions.';
+                else regime.innerHTML = '<b>Chaotic regime.</b> Both fixed points are unstable; the trajectory never settles and traces the butterfly.';
+            }
+
+            let lastF = 0;
+            function frame(t) {
+                if (!running) return;
+                const dtF = lastF ? Math.min(100, t - lastF) : 16.7; lastF = t;
+                if (!dragging) { angle += vel; vel *= 0.94; if (Math.abs(vel) < 0.0004) vel = 0; }
+                step(Math.max(2, Math.round(dtF / 16.7 * 6)));
+                draw();
+                requestAnimationFrame(frame);
+            }
+            function start() {
+                if (reduced() || running || !visible || document.hidden) return;
+                running = true; lastF = 0; requestAnimationFrame(frame);
+            }
+            function stop() { running = false; }
+
+            function staticRender() {
+                reseed(); step(3600); draw();
+            }
+
+            function setRho(v) {
+                rho = v; setFill(slider); label();
+                reseed();
+                if (reduced()) staticRender(); else start();
+            }
+
+            slider.addEventListener('input', () => setRho(parseFloat(slider.value)));
+
+            c.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; c.setPointerCapture(e.pointerId); });
+            c.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                const dx = e.clientX - lastX; lastX = e.clientX;
+                angle += dx * 0.01; vel = dx * 0.01;
+                if (reduced() || !running) draw();
+            });
+            const end = () => { dragging = false; };
+            c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
+            c.addEventListener('keydown', e => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault(); const d = e.key === 'ArrowLeft' ? -0.12 : 0.12;
+                    angle += d; vel = reduced() ? 0 : d * 0.15;
+                    if (reduced() || !running) draw();
+                }
+            });
+
+            new IntersectionObserver(es => { visible = es[0].isIntersecting; visible ? start() : stop(); }).observe(c);
+            document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+            window.addEventListener('resize', () => { if (!running) draw(); });
+            RM.addEventListener('change', () => { if (reduced()) { stop(); staticRender(); } else { reseed(); start(); } });
+
+            setFill(slider); label(); reseed();
+            if (reduced()) staticRender(); else { step(300); draw(); start(); }
+            return { draw, warm(n) { step(n); draw(); } };
+        })();
+
+        // ============ LOGISTIC MAP LAB ============
+        const Logistic = (() => {
+            const bif = document.getElementById('bifCanvas');
+            const cob = document.getElementById('cobwebCanvas');
+            const dis = document.getElementById('distCanvas');
+            const rS = document.getElementById('rSlider'), x0S = document.getElementById('x0Slider');
+            const rOut = document.getElementById('rOut'), x0Out = document.getElementById('x0Out');
+            const bifRead = document.getElementById('bifReadout'), stepRead = document.getElementById('stepReadout'), distRead = document.getElementById('distReadout');
+            const sFixed = document.getElementById('statFixed'), sSlope = document.getElementById('statSlope'), sReg = document.getElementById('statRegime');
+            const note = document.getElementById('logisticNote');
+            const playBtn = document.getElementById('playBtn'), stepBtn = document.getElementById('stepBtn');
+            const R0 = 2.5, R1 = 4.0, N = 50;
+            const FEIG = [3, 3.449490, 3.544090, 3.564407, 3.568759, 3.569692];
+            let r = 2.8, x0 = 0.2, seq = [], k = N, playing = false, active = false, lastT = 0, acc = 0, off = null, offW = 0, offH = 0;
+            const f = x => r * x * (1 - x);
+
+            function compute() {
+                seq = [x0];
+                for (let i = 0; i < N; i++) seq.push(f(seq[i]));
+            }
+
+            function renderBifOffscreen(W, H) {
+                off = document.createElement('canvas'); off.width = W; off.height = H;
+                const g = off.getContext('2d');
+                g.fillStyle = '#070a10'; g.fillRect(0, 0, W, H);
+                g.fillStyle = 'rgba(0,229,255,0.28)';
+                for (let i = 0; i < W; i++) {
+                    const rr = R0 + (R1 - R0) * i / (W - 1);
+                    let x = 0.4;
+                    for (let j = 0; j < 260; j++) x = rr * x * (1 - x);
+                    for (let j = 0; j < 140; j++) {
+                        x = rr * x * (1 - x);
+                        g.fillRect(i, Math.round((1 - x) * (H - 4)) + 2, 1, 1);
+                    }
+                }
+                offW = W; offH = H;
+            }
+
+            function drawBif() {
+                const { w: W, h: H, dpr } = fitCanvas(bif);
+                if (!off || offW !== W || offH !== H) renderBifOffscreen(W, H);
+                const g = bif.getContext('2d');
+                g.drawImage(off, 0, 0);
+                // period-doubling ticks
+                g.strokeStyle = 'rgba(179,136,255,0.55)'; g.lineWidth = dpr;
+                FEIG.forEach(rp => {
+                    const x = (rp - R0) / (R1 - R0) * (W - 1);
+                    g.beginPath(); g.moveTo(x, H); g.lineTo(x, H - 12 * dpr); g.stroke();
+                });
+                const x = (r - R0) / (R1 - R0) * (W - 1);
+                g.strokeStyle = '#00e5ff'; g.lineWidth = 1.5 * dpr;
+                g.shadowColor = '#00e5ff'; g.shadowBlur = 10 * dpr;
+                g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke();
+                g.shadowBlur = 0;
+            }
+
+            function drawCobweb() {
+                const { w: W, h: H, dpr } = fitCanvas(cob);
+                const g = cob.getContext('2d');
+                const P = 14 * dpr, pw = W - 2 * P, ph = H - 2 * P;
+                const X = v => P + v * pw, Y = v => H - P - v * ph;
+                g.fillStyle = '#070a10'; g.fillRect(0, 0, W, H);
+                g.strokeStyle = 'rgba(0,188,212,0.12)'; g.lineWidth = dpr;
+                for (let i = 0; i <= 4; i++) { g.beginPath(); g.moveTo(X(i / 4), Y(0)); g.lineTo(X(i / 4), Y(1)); g.moveTo(X(0), Y(i / 4)); g.lineTo(X(1), Y(i / 4)); g.stroke(); }
+                // diagonal
+                g.strokeStyle = 'rgba(255,255,255,0.3)'; g.setLineDash([5 * dpr, 5 * dpr]);
+                g.beginPath(); g.moveTo(X(0), Y(0)); g.lineTo(X(1), Y(1)); g.stroke(); g.setLineDash([]);
+                // parabola
+                g.strokeStyle = '#b388ff'; g.lineWidth = 2 * dpr; g.beginPath();
+                for (let i = 0; i <= 120; i++) { const x = i / 120, y = Math.min(1, f(x)); i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)); }
+                g.stroke();
+                // fixed point
+                const xs = 1 - 1 / r;
+                g.strokeStyle = 'rgba(0,229,255,0.9)'; g.lineWidth = 1.5 * dpr;
+                g.beginPath(); g.arc(X(xs), Y(xs), 5 * dpr, 0, 6.2832); g.stroke();
+                // path
+                g.strokeStyle = '#00e5ff'; g.lineWidth = 1.3 * dpr; g.beginPath();
+                g.moveTo(X(seq[0]), Y(0));
+                const m = Math.min(k, N);
+                for (let i = 0; i < m; i++) { g.lineTo(X(seq[i]), Y(seq[i + 1])); g.lineTo(X(seq[i + 1]), Y(seq[i + 1])); }
+                g.stroke();
+                const hx = seq[m];
+                g.fillStyle = '#00e5ff'; g.shadowColor = '#00e5ff'; g.shadowBlur = 12 * dpr;
+                g.beginPath(); g.arc(X(hx), Y(hx), 3.5 * dpr, 0, 6.2832); g.fill(); g.shadowBlur = 0;
+            }
+
+            function drawDist() {
+                const { w: W, h: H, dpr } = fitCanvas(dis);
+                const g = dis.getContext('2d');
+                const L = 38 * dpr, B = 22 * dpr, T = 10 * dpr, Rr = 10 * dpr;
+                const pw = W - L - Rr, ph = H - T - B;
+                const LO = -12, HI = 0;
+                const X = n => L + n / N * pw, Y = d => T + (HI - Math.max(LO, Math.min(HI, Math.log10(Math.max(d, 1e-14))))) / (HI - LO) * ph;
+                g.fillStyle = '#070a10'; g.fillRect(0, 0, W, H);
+                g.font = (10 * dpr) + 'px "Fira Code", monospace'; g.fillStyle = '#8c97a6'; g.textAlign = 'right'; g.textBaseline = 'middle';
+                g.strokeStyle = 'rgba(0,188,212,0.12)'; g.lineWidth = dpr;
+                for (let e = 0; e >= -12; e -= 3) { g.beginPath(); g.moveTo(L, Y(Math.pow(10, e))); g.lineTo(W - Rr, Y(Math.pow(10, e))); g.stroke(); g.fillText('1e' + e, L - 5 * dpr, Y(Math.pow(10, e))); }
+                g.textAlign = 'center'; g.textBaseline = 'top';
+                [0, 25, 50].forEach(n => g.fillText(n, X(n), H - B + 5 * dpr));
+                const xs = 1 - 1 / r, m = Math.min(k, N);
+                const slope = Math.abs(2 - r);
+                // predicted geometric rate for stable case
+                if (slope < 1 && slope > 0) {
+                    g.strokeStyle = 'rgba(179,136,255,0.55)'; g.setLineDash([4 * dpr, 4 * dpr]); g.lineWidth = dpr;
+                    g.beginPath();
+                    const d0 = Math.abs(seq[0] - xs);
+                    for (let n = 0; n <= N; n++) { const y = Y(d0 * Math.pow(slope, n)); n ? g.lineTo(X(n), y) : g.moveTo(X(n), y); }
+                    g.stroke(); g.setLineDash([]);
+                }
+                g.strokeStyle = '#00e5ff'; g.lineWidth = 1.6 * dpr; g.beginPath();
+                for (let n = 0; n <= m; n++) { const y = Y(Math.abs(seq[n] - xs)); n ? g.lineTo(X(n), y) : g.moveTo(X(n), y); }
+                g.stroke();
+                g.fillStyle = '#00e5ff';
+                for (let n = 0; n <= m; n++) { g.beginPath(); g.arc(X(n), Y(Math.abs(seq[n] - xs)), 2.2 * dpr, 0, 6.2832); g.fill(); }
+            }
+
+            function labels() {
+                rOut.textContent = r.toFixed(2); x0Out.textContent = x0.toFixed(2);
+                bifRead.textContent = 'r = ' + r.toFixed(2);
+                const xs = 1 - 1 / r, sl = Math.abs(2 - r);
+                sFixed.textContent = xs.toFixed(4); sSlope.textContent = sl.toFixed(3);
+                let reg, msg;
+                if (r < 3) { reg = 'fixed point'; msg = 'The slope at the fixed point is below 1, so distance shrinks by about |2 − r| each step: a straight line on the log plot. At r = 3 the slope hits 1 and descent stalls.'; }
+                else if (r < 3.5699) { reg = 'period ' + (r < 3.4495 ? '2' : r < 3.5441 ? '4' : r < 3.5644 ? '8' : '16+'); msg = 'The fixed point is unstable, so the distance never decays. The orbit settles onto a cycle instead; each doubling arrives about 4.669 times sooner than the last.'; }
+                else { reg = 'chaotic'; msg = 'Past r ≈ 3.5699 the orbit does not settle onto a finite cycle. Narrow periodic windows still appear inside this band.'; }
+                sReg.textContent = reg; note.textContent = msg;
+                const n = Math.min(k, N), d = Math.abs(seq[n] - xs);
+                stepRead.textContent = 'n = ' + n; distRead.textContent = '|x − x*| = ' + (d < 1e-12 ? '< 1e-12' : d.toExponential(2));
+            }
+
+            function drawAll(withBif) { if (withBif !== false) drawBif(); drawCobweb(); drawDist(); labels(); }
+
+            function setReplay(on) { playing = on; playBtn.textContent = on ? 'Pause' : (k >= N ? 'Replay descent' : 'Resume'); }
+
+            function loop(t) {
+                if (!playing || !active) return;
+                const dt = lastT ? t - lastT : 0; lastT = t; acc += dt;
+                const per = 110;
+                let moved = false;
+                while (acc >= per && k < N) { acc -= per; k++; moved = true; }
+                if (moved) drawAll(false);
+                if (k >= N) { setReplay(false); lastT = 0; return; }
+                requestAnimationFrame(loop);
+            }
+
+            function play(fromZero) {
+                if (reduced()) { k = N; setReplay(false); drawAll(false); return; }
+                if (fromZero || k >= N) k = 0;
+                acc = 0; lastT = 0; setReplay(true); drawAll(false);
+                requestAnimationFrame(loop);
+            }
+
+            function onParam(fromDrag) {
+                compute(); setFill(rS); setFill(x0S);
+                k = N; setReplay(false); drawAll(true);
+            }
+
+            rS.addEventListener('input', () => { r = parseFloat(rS.value); onParam(); });
+            x0S.addEventListener('input', () => { x0 = parseFloat(x0S.value); onParam(); });
+            rS.addEventListener('change', () => play(true));
+            x0S.addEventListener('change', () => play(true));
+
+            // drag on bifurcation canvas sets r
+            let drag = false;
+            const setFromPointer = e => {
+                const b = bif.getBoundingClientRect();
+                const t = Math.max(0, Math.min(1, (e.clientX - b.left) / b.width));
+                r = Math.round((R0 + t * (R1 - R0)) / 0.005) * 0.005; rS.value = r; onParam();
+            };
+            bif.addEventListener('pointerdown', e => { drag = true; bif.setPointerCapture(e.pointerId); setFromPointer(e); });
+            bif.addEventListener('pointermove', e => { if (drag) setFromPointer(e); });
+            const endDrag = () => { if (drag) { drag = false; play(true); } };
+            bif.addEventListener('pointerup', endDrag); bif.addEventListener('pointercancel', endDrag);
+
+            playBtn.addEventListener('click', () => { if (playing) { setReplay(false); } else play(k >= N); });
+            stepBtn.addEventListener('click', () => { setReplay(false); if (k >= N) k = 0; k++; drawAll(false); playBtn.textContent = k >= N ? 'Replay descent' : 'Resume'; });
+
+            // Feigenbaum ratios from known period-doubling points
+            const ratios = [];
+            for (let i = 0; i + 2 < FEIG.length; i++) ratios.push((FEIG[i + 1] - FEIG[i]) / (FEIG[i + 2] - FEIG[i + 1]));
+            document.getElementById('feigenRatios').textContent =
+                'Violet ticks mark period-doubling points. Successive gap ratios: ' + ratios.map(v => v.toFixed(3)).join(', ') + ' → 4.669.';
+
+            window.addEventListener('resize', () => { if (active) { off = null; drawAll(true); } });
+
+            compute(); setFill(rS); setFill(x0S);
+            return {
+                activate() {
+                    active = true; off = null; drawAll(true);
+                    if (!reduced()) play(true);
+                },
+                pause() { active = false; playing = false; }
+            };
+        })();
 
         // ============ CHART.JS SETUP ============
-        function initCharts() {
-            if (chartInstances.decay) return; // Already initialized
+        function decayData(zeta, gamma) {
+            const t = Array.from({ length: 12 }, (_, i) => i);
+            return {
+                exp: t.map(i => 100 * Math.exp(-gamma * i)),
+                pow: t.map(i => 100 / Math.pow(i + 1, zeta))
+            };
+        }
 
+        function updateDecayReadout() {
+            const z = parseFloat(document.getElementById('zetaSlider').value);
+            const g = parseFloat(document.getElementById('gammaSlider').value);
+            const d = decayData(z, g);
+            const fmt = v => v >= 1 ? v.toFixed(1) : v.toFixed(2);
+            document.getElementById('zetaOut').textContent = z.toFixed(1);
+            document.getElementById('gammaOut').textContent = g.toFixed(2);
+            const t = 11, e = d.exp[t], p = d.pow[t];
+            document.getElementById('decayReadout').innerHTML =
+                'At t = 11: exponential <b>' + fmt(e) + '</b>, power law <b>' + fmt(p) + '</b>. ' +
+                (p > e ? 'The power-law tail is ' + (p / e).toFixed(1) + '× larger.' : 'Here the exponential is still the heavier tail.');
+        }
+
+        function initCharts() {
+            if (chartInstances.decay) return;
             const ctx = document.getElementById('decayChart');
             if (!ctx) return;
 
-            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.color = '#b8c0cc';
             Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+            const d0 = decayData(1, 0.5);
 
             chartInstances.decay = new Chart(ctx.getContext('2d'), {
                 type: 'line',
@@ -957,79 +1506,94 @@
                     datasets: [
                         {
                             label: 'Exponential Decay',
-                            data: [100, 60.6, 36.8, 22.3, 13.5, 8.2, 5.0, 3.0, 1.8, 1.1, 0.7, 0.4],
-                            borderColor: '#f97316',
-                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
-                            tension: 0.3,
-                            fill: true,
-                            borderWidth: 2.5,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#f97316',
-                            pointBorderColor: 'transparent'
+                            data: d0.exp,
+                            borderColor: '#b388ff',
+                            backgroundColor: 'rgba(179, 136, 255, 0.08)',
+                            tension: 0.3, fill: true, borderWidth: 2.5, pointRadius: 3,
+                            pointBackgroundColor: '#b388ff', pointBorderColor: 'transparent'
                         },
                         {
                             label: 'Power-Law Decay',
-                            data: [100, 50.0, 33.3, 25.0, 20.0, 16.7, 14.3, 12.5, 11.1, 10.0, 9.1, 8.3],
-                            borderColor: '#14b8a6',
-                            backgroundColor: 'rgba(20, 184, 166, 0.08)',
-                            tension: 0.3,
-                            fill: true,
-                            borderWidth: 2.5,
-                            pointRadius: 3,
-                            pointBackgroundColor: '#14b8a6',
-                            pointBorderColor: 'transparent'
+                            data: d0.pow,
+                            borderColor: '#00e5ff',
+                            backgroundColor: 'rgba(0, 229, 255, 0.08)',
+                            tension: 0.3, fill: true, borderWidth: 2.5, pointRadius: 3,
+                            pointBackgroundColor: '#00e5ff', pointBorderColor: 'transparent'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: { duration: reduced() ? 0 : 700, easing: 'easeOutExpo' },
                     plugins: {
-                        legend: {
-                            labels: {
-                                color: '#e5e7eb',
-                                font: { size: 11, family: 'JetBrains Mono' },
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 16
-                            }
-                        },
+                        legend: { labels: { color: '#f1f5f9', font: { size: 11, family: 'Fira Code' }, usePointStyle: true, pointStyle: 'circle', padding: 16 } },
                         tooltip: {
                             backgroundColor: 'rgba(10, 14, 20, 0.95)',
-                            titleColor: '#00d4ff',
-                            bodyColor: '#e5e7eb',
-                            borderColor: 'rgba(0, 212, 255, 0.3)',
-                            borderWidth: 1,
-                            padding: 12,
-                            titleFont: { weight: 'bold', size: 12, family: 'JetBrains Mono' },
-                            bodyFont: { size: 11, family: 'JetBrains Mono' },
-                            cornerRadius: 8,
-                            displayColors: true,
+                            titleColor: '#00e5ff', bodyColor: '#f1f5f9',
+                            borderColor: 'rgba(0, 188, 212, 0.4)', borderWidth: 1, padding: 12,
+                            titleFont: { weight: 'bold', size: 12, family: 'Fira Code' },
+                            bodyFont: { size: 11, family: 'Fira Code' },
+                            cornerRadius: 8, displayColors: true,
                             callbacks: {
                                 title: function (tooltipItems) {
                                     const item = tooltipItems[0];
                                     let label = item.chart.data.labels[item.dataIndex];
                                     return Array.isArray(label) ? label.join(' ') : label;
-                                }
+                                },
+                                label: function (item) { return item.dataset.label + ': ' + item.parsed.y.toFixed(2); }
                             }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,255,255,0.04)' },
-                            ticks: { color: '#6b7280', font: { size: 10, family: 'JetBrains Mono' } },
-                            title: { display: true, text: 'Value', color: '#9ca3af', font: { size: 11 } }
+                            type: 'linear', beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8c97a6', font: { size: 10, family: 'Fira Code' } },
+                            title: { display: true, text: 'Value', color: '#b8c0cc', font: { size: 11 } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#6b7280', font: { size: 10, family: 'JetBrains Mono' } },
-                            title: { display: true, text: 'Steps / Time', color: '#9ca3af', font: { size: 11 } }
+                            ticks: { color: '#8c97a6', font: { size: 10, family: 'Fira Code' } },
+                            title: { display: true, text: 'Steps / Time', color: '#b8c0cc', font: { size: 11 } }
                         }
                     }
                 }
             });
+            updateDecayReadout();
         }
+
+        function refreshDecay() {
+            const ch = chartInstances.decay;
+            const z = parseFloat(document.getElementById('zetaSlider').value);
+            const g = parseFloat(document.getElementById('gammaSlider').value);
+            setFill(document.getElementById('zetaSlider')); setFill(document.getElementById('gammaSlider'));
+            updateDecayReadout();
+            if (!ch) return;
+            const d = decayData(z, g);
+            ch.data.datasets[0].data = d.exp; ch.data.datasets[1].data = d.pow;
+            ch.options.animation.duration = reduced() ? 0 : 450;
+            ch.update();
+        }
+
+        function setLogAxis(on) {
+            const ch = chartInstances.decay; if (!ch) return;
+            const y = ch.options.scales.y;
+            y.type = on ? 'logarithmic' : 'linear';
+            y.beginAtZero = !on;
+            if (on) { y.min = 0.1; y.max = 100; } else { delete y.min; delete y.max; }
+            ch.options.animation.duration = reduced() ? 0 : 600;
+            ch.update();
+        }
+
+        document.getElementById('zetaSlider').addEventListener('input', refreshDecay);
+        document.getElementById('gammaSlider').addEventListener('input', refreshDecay);
+        document.getElementById('logToggle').addEventListener('change', e => setLogAxis(e.target.checked));
+        document.getElementById('decayReset').addEventListener('click', () => {
+            document.getElementById('zetaSlider').value = 1; document.getElementById('gammaSlider').value = 0.5;
+            const t = document.getElementById('logToggle'); if (t.checked) { t.checked = false; setLogAxis(false); }
+            refreshDecay();
+        });
 
         // ============ KaTeX RENDERING ============
         function renderFormulas() {
@@ -1040,26 +1604,56 @@
                 'katex-log': 'y \\propto \\ln(x)',
                 'katex-stat': 'P(\\tau), \\quad \\tau = \\frac{T - \\langle T \\rangle}{\\sigma_T}'
             };
-
             for (const [id, formula] of Object.entries(formulas)) {
                 const el = document.getElementById(id);
-                if (el) {
-                    try {
-                        katex.render(formula, el, { displayMode: true, throwOnError: false });
-                    } catch (e) { /* silent */ }
+                if (el && window.katex) {
+                    try { katex.render(formula, el, { displayMode: true, throwOnError: false }); } catch (e) { /* silent */ }
                 }
             }
+        }
+
+        // ============ COUNT-UP FOR KEY CONSTANTS ============
+        function countUps() {
+            const els = document.querySelectorAll('[data-count]');
+            if (reduced() || !('IntersectionObserver' in window)) return;
+            const io = new IntersectionObserver((es, o) => es.forEach(en => {
+                if (!en.isIntersecting) return;
+                o.unobserve(en.target);
+                const el = en.target, end = parseFloat(el.dataset.count), dp = parseInt(el.dataset.dp, 10);
+                const t0 = performance.now(), dur = 900;
+                const tick = now => {
+                    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+                    el.textContent = (end * e).toFixed(dp);
+                    if (p < 1) requestAnimationFrame(tick); else el.textContent = end.toFixed(dp);
+                };
+                requestAnimationFrame(tick);
+            }), { threshold: 0.6 });
+            els.forEach(el => io.observe(el));
         }
 
         // ============ INITIALIZATION ============
         document.addEventListener('DOMContentLoaded', () => {
             renderFormulas();
+            moveIndicator();
+            setFill(document.getElementById('zetaSlider')); setFill(document.getElementById('gammaSlider'));
+            updateDecayReadout();
+            countUps();
 
-            // Make feature cards on overview clickable with cursor
             document.querySelectorAll('.feature-card[onclick]').forEach(card => {
-                card.style.cursor = 'pointer';
+                card.tabIndex = 0; card.setAttribute('role', 'link');
+                card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+            });
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('pointermove', e => {
+                    const b = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', (e.clientX - b.left) + 'px');
+                    card.style.setProperty('--my', (e.clientY - b.top) + 'px');
+                });
             });
         });
+        window.addEventListener('load', moveIndicator);
+        window.addEventListener('resize', moveIndicator);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveIndicator);
     </script>
 </body>
 
