@@ -355,7 +355,7 @@
         .feature-card:hover .card-icon { transform: translateX(5px) scale(1.08); }
         .feature-card .card-icon .ic { width: 1.9rem; height: 1.9rem; }
 
-        .feature-card h4 { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .feature-card h4, .feature-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
         .feature-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
 
         /* ===== Process flow ===== */
@@ -647,22 +647,22 @@
             <div class="feature-grid">
                 <div class="feature-card" onclick="switchTab('nadcs')">
                     <span class="card-icon">↘</span>
-                    <h4>Attractor Descent Curves</h4>
+                    <h3>Attractor Descent Curves</h3>
                     <p>The computational paths traced by numerical algorithms as they converge from initial conditions towards attractors.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('scaling')">
                     <span class="card-icon">∝</span>
-                    <h4>Scaling Laws & Universality</h4>
+                    <h3>Scaling Laws & Universality</h3>
                     <p>Mathematical relationships showing that macroscopic convergence properties are independent of microscopic system details.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('mechanisms')">
                     <span class="card-icon"><svg class="ic"><use href="#i-atom"/></svg></span>
-                    <h4>Theoretical Mechanisms</h4>
+                    <h3>Theoretical Mechanisms</h3>
                     <p>Renormalization Group theory, Bifurcation theory, and the frameworks that explain why universality emerges.</p>
                 </div>
                 <div class="feature-card" onclick="switchTab('compression')">
                     <span class="card-icon">⊞</span>
-                    <h4>Data Compression Link</h4>
+                    <h3>Data Compression Link</h3>
                     <p>Universality implies structure, and structure implies compressibility — connecting dynamics to information theory.</p>
                 </div>
             </div>
