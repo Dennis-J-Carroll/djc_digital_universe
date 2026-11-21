@@ -6,272 +6,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linear Algebra Learning Lab - Executable Matrix Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            gray: { 100: '#e5eaf0', 200: '#d5dce5', 300: '#bcc6d2', 400: '#aab4c2', 500: '#8c97a6', 600: '#3a4756', 700: '#2a3644', 800: '#131b25', 900: '#0a0e14' },
+            cyan: { 300: '#67f0ff', 400: '#00e5ff', 500: '#00bcd4' },
+            purple: { 400: '#b388ff', 500: '#7c4dff' },
+            pink: { 400: '#b388ff' }
+        } } } };
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0a0e14;
-            --bg-secondary: #141b24;
-            --bg-card: rgba(20, 27, 36, 0.95);
-            --accent-cyan: #00d4ff;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --accent-yellow: #fbbf24;
-            --accent-pink: #ec4899;
-            --text-primary: #e5e7eb;
-            --text-secondary: #9ca3af;
-            --border-color: rgba(0, 212, 255, 0.2);
+            --bg-card: rgba(12, 18, 30, 0.92);
+            --cyan: #00bcd4;
+            --cyan-bright: #00e5ff;
+            --violet: #7c4dff;
+            --violet-light: #b388ff;
+            --text-primary: #f1f5f9;
+            --text-secondary: #aab4c2;
+            --text-dim: #8c97a6;
+            --rule: rgba(0, 188, 212, 0.2);
+            --rule-strong: rgba(0, 188, 212, 0.45);
+            --ok: #4ade80;
+            --bad: #f87171;
+            --font-display: 'Orbitron', 'Space Grotesk', sans-serif;
+            --font-ui: 'Space Grotesk', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-ui);
             background: var(--bg-primary);
             min-height: 100vh;
             color: var(--text-primary);
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image: linear-gradient(rgba(0, 188, 212, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 188, 212, 0.045) 1px, transparent 1px);
+            background-size: 48px 48px;
+            -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 12%, #000 20%, transparent 78%);
+            mask-image: radial-gradient(ellipse 90% 70% at 50% 12%, #000 20%, transparent 78%);
+        }
+        .app-root { position: relative; z-index: 1; }
+        ::selection { background: rgba(0, 229, 255, 0.28); color: #fff; }
+        :focus-visible { outline: 2px solid var(--cyan-bright); outline-offset: 3px; border-radius: 4px; }
+        * { scrollbar-color: rgba(0, 188, 212, 0.4) var(--bg-primary); scrollbar-width: thin; }
 
+        /* Panels with HUD corner brackets */
         .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            transition: all 0.3s ease;
+            position: relative; background: var(--bg-card); border: 1px solid var(--rule); border-radius: 12px;
+            transition: border-color 0.35s var(--ease-out);
         }
+        .glass-card::before, .glass-card::after {
+            content: ''; position: absolute; width: 22px; height: 22px; border: 2px solid var(--cyan); opacity: 0.75; pointer-events: none;
+            transition: width 0.4s var(--ease-out), height 0.4s var(--ease-out), border-color 0.3s;
+        }
+        .glass-card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-top-left-radius: 12px; }
+        .glass-card::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-bottom-right-radius: 12px; }
+        .glass-card:hover { border-color: var(--rule-strong); }
+        .glass-card:hover::before, .glass-card:hover::after, .glass-card:focus-within::before, .glass-card:focus-within::after { width: 44px; height: 44px; border-color: var(--cyan-bright); }
 
-        .glass-card:hover {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
-        }
+        .hero-title { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; line-height: 1.06; font-size: clamp(1.5rem, 6.4vw, 3.1rem); text-wrap: balance; }
+        .hero-title span { display: block; color: var(--cyan-bright); }
+        .glass-card h2 { font-family: var(--font-display); letter-spacing: 0.5px; line-height: 1.25; font-size: clamp(1.05rem, 3.6vw, 1.35rem); }
+        .glass-card h2.text-2xl { font-size: clamp(1.15rem, 4vw, 1.6rem); }
+        .glass-card h2 > span:first-child:not(.sr-only) { font-family: var(--font-mono); font-size: 0.85em; }
 
-        .gradient-text {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        #visualization3d {
-            width: 100%;
-            height: 450px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #0a0e14, #141b24);
-        }
+        #visualization3d { width: 100%; height: 450px; border-radius: 8px; overflow: hidden; background: #070a10; border: 1px solid var(--rule); }
+        @media (max-width: 640px) { #visualization3d { height: 340px; } }
 
         .btn {
-            font-family: 'JetBrains Mono', monospace;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            font-family: var(--font-mono); padding: 0.55rem 1.1rem; min-height: 40px; border-radius: 50px; font-weight: 500; font-size: 0.8rem; letter-spacing: 0.03em;
+            cursor: pointer; border: 1px solid var(--rule-strong); transition: background 0.2s, border-color 0.2s, transform 0.15s var(--ease-out), color 0.2s;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-        }
-
-        .btn-outline:hover {
-            background: var(--accent-cyan);
-            color: var(--bg-primary);
-        }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary { background: rgba(0, 188, 212, 0.18); color: #fff; }
+        .btn-primary:hover { background: rgba(0, 188, 212, 0.32); border-color: var(--cyan-bright); }
+        .btn-outline { background: rgba(255, 255, 255, 0.04); color: var(--cyan-bright); }
+        .btn-outline:hover { background: rgba(0, 188, 212, 0.16); border-color: var(--cyan-bright); color: #fff; }
+        .btn-alert { background: rgba(124, 77, 255, 0.22); border-color: rgba(179, 136, 255, 0.55); color: #fff; }
+        .btn-alert:hover { background: rgba(124, 77, 255, 0.38); border-color: var(--violet-light); }
 
         .matrix-input {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            padding: 0.75rem;
-            resize: none;
+            font-family: var(--font-mono); background: rgba(0, 0, 0, 0.45); border: 1px solid var(--rule); border-radius: 8px;
+            color: var(--text-primary); padding: 0.75rem; resize: none; transition: border-color 0.2s;
         }
-
-        .matrix-input:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-        }
+        .matrix-input:focus { outline: none; border-color: var(--cyan-bright); }
 
         .result-display {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            min-height: 100px;
-            white-space: pre-wrap;
+            font-family: var(--font-mono); background: rgba(0, 0, 0, 0.5); border: 1px solid var(--rule); border-radius: 8px;
+            padding: 1rem; min-height: 100px; white-space: pre-wrap; overflow-x: auto;
         }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.06); }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .katex { font-size: 1.1em !important; }
+        .eigenvalue-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 50px; font-family: var(--font-mono); font-size: 0.9rem; }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
+        select, .num-input {
+            background: rgba(0, 0, 0, 0.45); border: 1px solid var(--rule); border-radius: 8px; padding: 0.5rem 1rem; min-height: 40px;
+            color: var(--text-primary); cursor: pointer; font-family: var(--font-ui);
         }
+        .num-input { cursor: text; width: 100%; font-family: var(--font-mono); padding: 0.4rem 0.6rem; }
+        select:focus, .num-input:focus { outline: none; border-color: var(--cyan-bright); }
 
-        .color-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; width: 100%; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--cyan) var(--fill, 0%), rgba(255, 255, 255, 0.12) var(--fill, 0%)); }
+        input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+        input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--cyan); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--cyan-bright); transition: transform 0.25s var(--ease-out); }
+        input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--cyan-bright); }
+        input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+        input[type="checkbox"] { accent-color: var(--cyan); }
 
-        .tab-btn {
-            padding: 0.75rem 1.5rem;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-        }
+        .view-toggle { display: flex; gap: 2px; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--rule); border-radius: 50px; padding: 3px; }
+        .view-toggle button { padding: 6px 16px; min-height: 34px; border-radius: 50px; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); background: transparent; transition: background 0.25s, color 0.25s; }
+        .view-toggle button.active { background: rgba(0, 188, 212, 0.2); color: #fff; }
 
-        .tab-btn.active {
-            color: var(--accent-cyan);
-            border-bottom-color: var(--accent-cyan);
-        }
+        #visualization2d { width: 100%; height: 450px; border-radius: 8px; overflow: hidden; background: #070a10; border: 1px solid var(--rule); display: none; touch-action: none; cursor: grab; }
+        #visualization2d.dragging { cursor: grabbing; }
+        @media (max-width: 640px) { #visualization2d { height: 340px; } }
+        .viz-hint { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; min-height: 1.2em; }
 
-        .katex {
-            font-size: 1.1em !important;
-        }
+        /* Decomposition */
+        .decomp-step { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem; transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out), border-color 0.4s; opacity: 0.4; transform: translateY(10px); }
+        .decomp-step.active { opacity: 1; transform: none; border-color: var(--cyan-bright); }
+        .decomp-step.completed { opacity: 0.85; transform: none; border-color: rgba(74, 222, 128, 0.5); }
+        .decomp-step .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; flex-shrink: 0; font-family: var(--font-mono); }
+        .decomp-step .step-num.pending { background: rgba(255, 255, 255, 0.1); color: var(--text-secondary); }
+        .decomp-step .step-num.active { background: var(--cyan-bright); color: var(--bg-primary); }
+        .decomp-step .step-num.done { background: var(--ok); color: var(--bg-primary); }
+        .decomp-matrix { font-family: var(--font-mono); font-size: 0.78rem; background: rgba(0, 0, 0, 0.45); padding: 0.6rem; border-radius: 6px; margin-top: 0.5rem; white-space: pre; overflow-x: auto; }
+        .decomp-progress { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; margin: 1rem 0; }
+        .decomp-progress-bar { height: 100%; background: var(--cyan-bright); border-radius: 2px; transition: width 0.5s var(--ease-out); }
 
-        .eigenvalue-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-        }
-
-        select {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            height: 6px;
-            width: 100%;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-cyan);
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--accent-cyan);
-        }
-
-        /* View Mode Toggle */
-        .view-toggle { display: flex; gap: 4px; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 3px; }
-        .view-toggle button { padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-secondary); background: transparent; transition: all 0.3s ease; }
-        .view-toggle button.active { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: white; }
-
-        /* 2D Canvas */
-        #visualization2d { width: 100%; height: 450px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #0a0e14, #141b24); display: none; }
-
-        /* Decomposition Panel */
-        .decomp-step { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; transition: all 0.5s ease; opacity: 0.4; transform: translateY(10px); }
-        .decomp-step.active { opacity: 1; transform: translateY(0); border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
-        .decomp-step.completed { opacity: 0.8; transform: translateY(0); border-color: var(--accent-green); }
-        .decomp-step .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; }
-        .decomp-step .step-num.pending { background: rgba(255,255,255,0.1); color: var(--text-secondary); }
-        .decomp-step .step-num.active { background: var(--accent-cyan); color: var(--bg-primary); }
-        .decomp-step .step-num.done { background: var(--accent-green); color: var(--bg-primary); }
-        .decomp-matrix { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: rgba(0,0,0,0.4); padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem; }
-        .decomp-progress { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin: 1rem 0; }
-        .decomp-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); border-radius: 2px; transition: width 0.5s ease; }
-
-        /* Quiz Mode */
-        .quiz-overlay { position: relative; }
-        .quiz-option { background: rgba(0,0,0,0.35); border: 2px solid var(--border-color); border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.3s ease; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: left; color: var(--text-primary); width: 100%; }
-        .quiz-option:hover { border-color: var(--accent-cyan); background: rgba(0,212,255,0.05); transform: translateX(4px); }
-        .quiz-option.correct { border-color: var(--accent-green) !important; background: rgba(16,185,129,0.15) !important; }
-        .quiz-option.incorrect { border-color: #ef4444 !important; background: rgba(239,68,68,0.1) !important; }
-        .quiz-option.disabled { pointer-events: none; opacity: 0.6; }
-        .quiz-score-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-        .quiz-score-fill { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); border-radius: 3px; transition: width 0.5s ease; }
-        .quiz-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .anim-fade-in { animation: fadeInUp 0.4s ease forwards; }
+        /* Quiz */
+        .quiz-option { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem; min-height: 48px; cursor: pointer; transition: border-color 0.25s, background 0.25s, transform 0.3s var(--ease-out); font-family: var(--font-mono); font-size: 0.85rem; text-align: left; color: var(--text-primary); width: 100%; }
+        .quiz-option:hover { border-color: var(--cyan-bright); background: rgba(0, 188, 212, 0.07); transform: translateX(4px); }
+        .quiz-option.correct { border-color: var(--ok) !important; background: rgba(74, 222, 128, 0.12) !important; }
+        .quiz-option.incorrect { border-color: var(--bad) !important; background: rgba(248, 113, 113, 0.1) !important; }
+        .quiz-option.disabled { pointer-events: none; opacity: 0.65; }
+        .quiz-score-bar { height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
+        .quiz-score-fill { height: 100%; background: var(--cyan-bright); border-radius: 3px; transition: width 0.5s var(--ease-out); }
+        .quiz-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; font-family: var(--font-mono); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
+        .anim-fade-in { animation: fadeInUp 0.45s var(--ease-out) forwards; }
 
         /* Dense learning loop */
-        .matrix-status { min-height: 1.25rem; margin-top: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); }
-        .matrix-status.valid { color: var(--accent-green); }
-        .matrix-status.invalid { color: #f87171; }
+        .matrix-status { min-height: 1.25rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-secondary); }
+        .matrix-status.valid { color: var(--ok); }
+        .matrix-status.invalid { color: var(--bad); }
         #calculatorGrid > * { min-width: 0; }
         .dense-section-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
         .dense-section-header > .flex { flex-wrap: wrap; }
         .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
-        .stat-cell { min-width: 0; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(0,0,0,0.25); }
-        .stat-label { display: flex; align-items: center; gap: 0.35rem; color: var(--text-secondary); font-size: 0.7rem; line-height: 1; }
-        .stat-value { display: block; overflow: hidden; margin-top: 0.4rem; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
-        .concept-link { display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem; border: 1px solid var(--border-color); border-radius: 50%; color: var(--accent-cyan); font: 600 0.65rem/1 'JetBrains Mono', monospace; }
-        .concept-link:hover, .concept-link:focus-visible { border-color: var(--accent-cyan); background: rgba(0,212,255,0.1); outline: none; }
+        .stat-cell { min-width: 0; padding: 0.65rem; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; background: rgba(0, 0, 0, 0.28); }
+        .stat-label { display: flex; align-items: center; gap: 0.35rem; color: var(--text-secondary); font-size: 0.75rem; line-height: 1; }
+        .stat-value { display: block; overflow: hidden; margin-top: 0.4rem; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .stat-value.tick { animation: tick 0.6s var(--ease-out); }
+        @keyframes tick { 0% { color: #fff; text-shadow: none; transform: translateY(-3px); opacity: 0.3; } 100% { transform: none; opacity: 1; } }
+        .concept-link { display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; border: 1px solid var(--rule-strong); border-radius: 50%; color: var(--cyan-bright); font: 600 0.65rem/1 var(--font-mono); cursor: pointer; background: none; }
+        .concept-link:hover, .concept-link:focus-visible { border-color: var(--cyan-bright); background: rgba(0, 188, 212, 0.14); }
         .property-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
-        .property-badge { padding: 0.3rem 0.55rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; color: var(--text-secondary); font: 500 0.68rem/1 'JetBrains Mono', monospace; }
-        .property-badge.active { border-color: rgba(16,185,129,0.45); background: rgba(16,185,129,0.1); color: #6ee7b7; }
+        .property-badge { padding: 0.35rem 0.65rem; min-height: 28px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 50px; color: var(--text-secondary); font: 500 0.72rem/1 var(--font-mono); background: none; cursor: pointer; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+        .property-badge.active { border-color: var(--rule-strong); background: rgba(0, 188, 212, 0.14); color: var(--cyan-bright); }
         .learning-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: center; }
-        .learning-search { width: 100%; padding: 0.7rem 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.35); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
-        .learning-search:focus { border-color: var(--accent-cyan); outline: none; box-shadow: 0 0 0 3px rgba(0,212,255,0.08); }
-        .guided-toggle { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text-secondary); font-size: 0.8rem; white-space: nowrap; }
-        .learning-progress { min-width: 7rem; color: var(--text-secondary); font: 500 0.75rem/1 'JetBrains Mono', monospace; text-align: right; }
-        .learning-progress-track { height: 4px; margin-top: 0.4rem; overflow: hidden; border-radius: 2px; background: rgba(255,255,255,0.1); }
-        .learning-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); transition: width 0.3s ease; }
+        .learning-search { width: 100%; padding: 0.7rem 0.85rem; min-height: 44px; border: 1px solid var(--rule); border-radius: 8px; background: rgba(0, 0, 0, 0.4); color: var(--text-primary); font-family: var(--font-mono); font-size: 0.8rem; }
+        .learning-search:focus { border-color: var(--cyan-bright); outline: none; }
+        .guided-toggle { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text-secondary); font-size: 0.82rem; white-space: nowrap; }
+        .learning-progress { min-width: 7rem; color: var(--text-secondary); font: 500 0.78rem/1 var(--font-mono); text-align: right; }
+        .learning-progress-track { height: 4px; margin-top: 0.4rem; overflow: hidden; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
+        .learning-progress-fill { height: 100%; border-radius: inherit; background: var(--cyan-bright); transition: width 0.5s var(--ease-out); }
         .theory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1rem; }
-        .theory-card { scroll-margin-top: 4rem; border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; background: rgba(0,0,0,0.25); transition: border-color 0.2s ease, background 0.2s ease; }
-        .theory-card[open], .theory-card:focus-within { border-color: var(--border-color); background: rgba(0,0,0,0.38); }
-        .theory-card.visited .theory-check { border-color: var(--accent-green); background: var(--accent-green); color: var(--bg-primary); }
-        .theory-card summary { display: grid; grid-template-columns: auto 1fr auto; gap: 0.65rem; align-items: center; padding: 0.8rem; cursor: pointer; list-style: none; }
+        .theory-card { scroll-margin-top: 4rem; border: 1px solid var(--rule); border-radius: 10px; background: rgba(0, 0, 0, 0.28); transition: border-color 0.25s, background 0.25s; }
+        .theory-card[open], .theory-card:focus-within { border-color: var(--rule-strong); background: rgba(0, 0, 0, 0.42); }
+        .theory-card.visited .theory-check { border-color: var(--cyan-bright); background: var(--cyan-bright); color: var(--bg-primary); }
+        .theory-card summary { display: grid; grid-template-columns: auto 1fr auto; gap: 0.65rem; align-items: center; padding: 0.8rem; min-height: 48px; cursor: pointer; list-style: none; }
         .theory-card summary::-webkit-details-marker { display: none; }
-        .theory-check { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border: 1px solid rgba(255,255,255,0.18); border-radius: 50%; color: transparent; font-size: 0.7rem; }
+        .theory-check { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 50%; color: transparent; font-size: 0.7rem; transition: background 0.3s, border-color 0.3s; }
         .theory-title { font-weight: 650; }
-        .theory-group { color: var(--text-secondary); font: 500 0.65rem/1 'JetBrains Mono', monospace; text-transform: uppercase; }
-        .theory-chevron { color: var(--text-secondary); transition: transform 0.2s ease; }
+        .theory-group { color: var(--text-dim); font: 500 0.7rem/1 var(--font-mono); text-transform: uppercase; }
+        .theory-chevron { color: var(--cyan-bright); transition: transform 0.35s var(--ease-out); }
         .theory-card[open] .theory-chevron { transform: rotate(90deg); }
         .theory-body { padding: 0 0.85rem 0.9rem 2.75rem; }
-        .theory-definition { overflow-x: auto; padding: 0.65rem; border-left: 2px solid var(--accent-purple); border-radius: 0 8px 8px 0; background: rgba(168,85,247,0.07); }
-        .theory-intuition { margin-top: 0.7rem; color: #d1d5db; font-size: 0.85rem; line-height: 1.55; }
-        .theory-takeaway { margin-top: 0.55rem; color: var(--text-secondary); font-size: 0.78rem; line-height: 1.45; }
+        .theory-definition { overflow-x: auto; padding: 0.65rem; border-radius: 8px; background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(179, 136, 255, 0.25); }
+        .theory-intuition { margin-top: 0.7rem; color: #d5dce5; font-size: 0.9rem; line-height: 1.6; }
+        .theory-takeaway { margin-top: 0.55rem; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; }
         .example-list, .related-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
-        .example-chip, .related-chip { padding: 0.38rem 0.55rem; border-radius: 7px; font: 500 0.7rem/1.2 'JetBrains Mono', monospace; cursor: pointer; }
-        .example-chip { border: 1px solid rgba(0,212,255,0.35); background: rgba(0,212,255,0.07); color: #67e8f9; }
-        .example-chip:hover, .example-chip:focus-visible { border-color: var(--accent-cyan); background: rgba(0,212,255,0.14); outline: none; }
-        .related-chip { border: 0; background: rgba(255,255,255,0.06); color: var(--text-secondary); }
-        .related-chip:hover, .related-chip:focus-visible { color: var(--text-primary); outline: 1px solid var(--border-color); }
+        .example-chip, .related-chip { padding: 0.45rem 0.7rem; min-height: 32px; border-radius: 50px; font: 500 0.74rem/1.2 var(--font-mono); cursor: pointer; }
+        .example-chip { border: 1px solid var(--rule-strong); background: rgba(0, 188, 212, 0.1); color: var(--cyan-bright); }
+        .example-chip:hover, .example-chip:focus-visible { border-color: var(--cyan-bright); background: rgba(0, 188, 212, 0.22); }
+        .related-chip { border: 0; background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); }
+        .related-chip:hover, .related-chip:focus-visible { color: var(--text-primary); background: rgba(255, 255, 255, 0.12); }
         .empty-theory { grid-column: 1 / -1; padding: 2rem; color: var(--text-secondary); text-align: center; }
-        .share-status { min-height: 1rem; color: var(--accent-green); font-size: 0.7rem; text-align: right; }
+        .share-status { min-height: 1rem; color: var(--ok); font-size: 0.75rem; text-align: right; }
+
+        /* ===== Math Lab ===== */
+        .lab-tabs { position: relative; display: flex; gap: 2px; padding: 5px; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--rule); border-radius: 12px; overflow-x: auto; scrollbar-width: none; margin-bottom: 1.25rem; }
+        .lab-tabs::-webkit-scrollbar { display: none; }
+        .lab-ind { position: absolute; left: 0; top: 5px; bottom: 5px; width: 100px; border-radius: 8px; background: rgba(0, 188, 212, 0.16); border: 1px solid var(--cyan); transition: transform 0.5s var(--ease-out), width 0.5s var(--ease-out); pointer-events: none; }
+        .lab-tab { position: relative; z-index: 1; flex-shrink: 0; padding: 0.65rem 1.1rem; min-height: 44px; border: 0; border-radius: 8px; background: transparent; color: var(--text-dim); font-family: var(--font-mono); font-size: 0.8rem; cursor: pointer; transition: color 0.25s; white-space: nowrap; }
+        .lab-tab:hover { color: var(--text-primary); }
+        .lab-tab[aria-selected="true"] { color: #fff; }
+        .lab-panel { display: none; }
+        .lab-panel.active { display: block; animation: fadeInUp 0.5s var(--ease-out) both; }
+        .lab-note { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; max-width: 70ch; line-height: 1.6; }
+        .lab-tex { overflow-x: auto; padding: 0.7rem 0.9rem; border-radius: 8px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--rule); margin-bottom: 1rem; }
+        .lab-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .lab-card { padding: 0.9rem; border-radius: 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--rule); animation: fadeInUp 0.4s var(--ease-out) both; }
+        .lab-card h4 { font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan-bright); margin-bottom: 0.4rem; font-weight: 500; }
+        .lab-card .v { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+        .lab-card .m { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.3rem; }
+        .lab-facts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .chip { font-family: var(--font-mono); font-size: 0.76rem; padding: 0.35rem 0.8rem; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.14); color: var(--text-secondary); }
+        .chip.ok { border-color: rgba(74, 222, 128, 0.5); color: var(--ok); background: rgba(74, 222, 128, 0.08); }
+        .chip.warn { border-color: rgba(179, 136, 255, 0.55); color: var(--violet-light); background: rgba(124, 77, 255, 0.12); }
+        .chip.sig { border-color: var(--rule-strong); color: var(--cyan-bright); background: rgba(0, 188, 212, 0.1); }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.8rem; }
+        .lab-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+        @media (min-width: 768px) { .lab-grid { grid-template-columns: 1fr 1fr; } }
+        .lab-pre { font-family: var(--font-mono); font-size: 0.8rem; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--rule); border-radius: 8px; padding: 0.8rem 1rem; white-space: pre; overflow-x: auto; color: var(--text-primary); line-height: 1.55; }
+        .b-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.4rem; }
+        .ctl-label { display: block; font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.03em; color: var(--text-secondary); }
+        .ctl-label output { color: var(--cyan-bright); font-variant-numeric: tabular-nums; }
+        .lab-steps { display: grid; gap: 0.5rem; margin-bottom: 1rem; }
+        .lab-step { display: grid; grid-template-columns: 1fr; gap: 0.3rem; padding: 0.7rem 0.9rem; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--rule); animation: fadeInUp 0.4s var(--ease-out) both; }
+        .lab-step .op { font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-bright); }
+        .lab-step pre { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-primary); white-space: pre; overflow-x: auto; }
+        .lab-result { padding: 0.9rem 1rem; border-radius: 10px; background: rgba(0, 188, 212, 0.07); border: 1px solid var(--rule-strong); font-size: 0.92rem; line-height: 1.7; color: var(--text-primary); }
+        .lab-result b { color: var(--cyan-bright); font-weight: 600; }
+        .lab-result .mono { font-family: var(--font-mono); font-size: 0.85rem; }
+        .sv-bars { display: grid; gap: 0.5rem; margin-bottom: 1rem; }
+        .sv-row { display: grid; grid-template-columns: 2.5rem 1fr 5.5rem; align-items: center; gap: 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; }
+        .sv-track { height: 12px; background: rgba(255, 255, 255, 0.07); border-radius: 6px; overflow: hidden; }
+        .sv-fill { height: 100%; width: 0; background: var(--cyan); border-radius: 6px; transition: width 0.7s var(--ease-out), background 0.3s, opacity 0.3s; }
+        .sv-row.dropped .sv-fill { background: rgba(255, 255, 255, 0.25); }
+        .sv-row .val { text-align: right; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+        .qr-out { display: grid; gap: 0.4rem; margin-top: 0.8rem; }
+        .qr-row { display: grid; grid-template-columns: 3rem 1fr 6rem; gap: 0.6rem; align-items: center; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); }
+        .qr-bar { height: 10px; border-radius: 5px; background: rgba(255, 255, 255, 0.07); position: relative; overflow: hidden; }
+        .qr-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--violet-light); transition: width 0.25s var(--ease-out); }
+        .ctl { margin-bottom: 0.4rem; }
+
+        /* ===== History ===== */
+        .hist-year { font-family: var(--font-display); font-weight: 800; font-size: clamp(3rem, 14vw, 6rem); line-height: 1; letter-spacing: 2px; color: var(--cyan-bright); font-variant-numeric: tabular-nums; margin-bottom: 1rem; }
+        .hist-track { position: relative; overflow-x: auto; padding: 0.4rem 0 0.2rem; scrollbar-width: none; }
+        .hist-track::-webkit-scrollbar { display: none; }
+        .hist-rail { position: absolute; left: 0; right: 0; top: 17px; height: 2px; background: rgba(255, 255, 255, 0.12); min-width: 100%; }
+        .hist-rail i { position: absolute; inset: 0; background: var(--cyan); transform-origin: left; transform: scaleX(0); transition: transform 0.7s var(--ease-out); }
+        .hist-nodes { list-style: none; display: flex; justify-content: space-between; gap: 0.5rem; min-width: 720px; position: relative; padding: 0; }
+        .hist-nodes li { flex: 1 1 0; display: flex; justify-content: center; }
+        .hist-node { background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.55rem; min-width: 56px; min-height: 44px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim); transition: color 0.25s; }
+        .hist-node::before { content: ''; width: 14px; height: 14px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--rule-strong); transition: transform 0.4s var(--ease-out), border-color 0.25s, background 0.25s; z-index: 1; margin-top: 11px; }
+        .hist-node:hover { color: var(--text-primary); }
+        .hist-node:hover::before { border-color: var(--cyan-bright); }
+        .hist-node.past::before { border-color: var(--cyan); background: var(--cyan); }
+        .hist-node[aria-current="true"] { color: var(--cyan-bright); }
+        .hist-node[aria-current="true"]::before { transform: scale(1.5); border-color: var(--cyan-bright); background: var(--cyan-bright); }
+        .hist-card { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+        .hist-card.swap { animation: fadeInUp 0.5s var(--ease-out) both; }
+        .glass-card .hist-card h3 { font-family: var(--font-display); font-size: clamp(1.05rem, 3.8vw, 1.45rem); letter-spacing: 0.5px; margin: 0 0 0.35rem; color: #fff; font-weight: 700; }
+        .hist-who { font-family: var(--font-mono); font-size: 0.8rem; color: var(--violet-light); margin-bottom: 0.9rem; }
+        .hist-card p.body { font-size: 0.95rem; line-height: 1.7; color: #bcc6d2; max-width: 75ch; margin-bottom: 0.9rem; }
 
         @media (max-width: 767px) {
             .learning-toolbar { grid-template-columns: 1fr; }
@@ -281,6 +289,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
             *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
     </style>
@@ -288,11 +297,11 @@
 
 <body>
 <style>
-  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(34,211,238,0.15);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-  .djc-app-bar a{color:#22d3ee;text-decoration:none;font-size:13px;font-weight:500;}
+  .djc-app-bar{position:sticky;top:0;z-index:99999;background:rgba(10,14,20,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,188,212,0.2);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .djc-app-bar a{color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;}
   .djc-app-bar a:hover{color:#67e8f9;}
   .djc-app-bar .djc-title{color:#d1d5db;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50vw;}
-  .djc-app-bar .djc-logo{color:#22d3ee;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
+  .djc-app-bar .djc-logo{color:#00e5ff;font-weight:700;letter-spacing:0.05em;flex-shrink:0;}
 </style>
 <div class="djc-app-bar">
   <div style="display:flex;align-items:center;gap:12px;overflow:hidden;">
@@ -302,13 +311,11 @@
   </div>
   <a href="/" class="djc-logo">DJC</a>
 </div>
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl app-root">
         <!-- Header -->
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold mb-3 gradient-text">
-                Linear Algebra Learning Lab
-            </h1>
-            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+        <header class="mb-10">
+            <h1 class="hero-title mb-4">Linear Algebra <span>Learning Lab</span></h1>
+            <p class="text-gray-300 text-lg max-w-2xl leading-relaxed">
                 Learn linear algebra by running it. Edit a matrix, see the geometry and invariants update,
                 then launch executable examples from the concept library.
             </p>
@@ -379,7 +386,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="showEigenvectors" class="w-4 h-4">
-                            <label for="showEigenvectors" class="text-sm">Show Eigenvectors (2D only)</label>
+                            <label for="showEigenvectors" class="text-sm">Show Eigenvectors (real, 3D)</label>
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="showUnitCube" checked class="w-4 h-4">
@@ -449,7 +456,8 @@
                         </div>
                     </div>
                     <div id="visualization3d"></div>
-                    <canvas id="visualization2d"></canvas>
+                    <canvas id="visualization2d" tabindex="0" aria-label="2D transformation view. Drag the two violet handles to edit the matrix columns, or press 1 or 2 to pick a handle and use the arrow keys."></canvas>
+                    <p class="viz-hint" id="vizHint">3D: drag to orbit, scroll to zoom. 2D: drag the violet handles to edit the matrix directly.</p>
 
                     <!-- Legend -->
                     <div class="mt-4 flex flex-wrap gap-3">
@@ -466,11 +474,11 @@
                             <span class="text-sm">Z-axis (e₃)</span>
                         </div>
                         <div class="legend-item">
-                            <div class="color-dot" style="background: #ff851b;"></div>
+                            <div class="color-dot" style="background: #b388ff;"></div>
                             <span class="text-sm">Transformed</span>
                         </div>
                         <div class="legend-item">
-                            <div class="color-dot" style="background: #b10dc9;"></div>
+                            <div class="color-dot" style="background: #f1f5f9;"></div>
                             <span class="text-sm">Eigenvectors</span>
                         </div>
                     </div>
@@ -532,11 +540,102 @@
             </div>
         </div>
 
+        <!-- Math Lab -->
+        <section id="lab" class="glass-card p-6 mt-6" aria-labelledby="labTitle">
+            <div class="dense-section-header mb-4">
+                <h2 id="labTitle" class="text-2xl font-bold">Math Lab</h2>
+                <p class="text-sm text-gray-400 max-w-xl">Every tool reads the matrix currently in the visualizer. Change it above, or load a result back into it.</p>
+            </div>
+            <div class="lab-tabs" role="tablist" aria-label="Math Lab tools" id="labTabs">
+                <span class="lab-ind" id="labInd" aria-hidden="true"></span>
+                <button class="lab-tab" role="tab" id="labtab-eigen" aria-controls="lab-eigen" aria-selected="true" data-tab="eigen" type="button">Eigen</button>
+                <button class="lab-tab" role="tab" id="labtab-solve" aria-controls="lab-solve" aria-selected="false" tabindex="-1" data-tab="solve" type="button">Solve Ax = b</button>
+                <button class="lab-tab" role="tab" id="labtab-space" aria-controls="lab-space" aria-selected="false" tabindex="-1" data-tab="space" type="button">Subspaces</button>
+                <button class="lab-tab" role="tab" id="labtab-svd" aria-controls="lab-svd" aria-selected="false" tabindex="-1" data-tab="svd" type="button">SVD &amp; Low Rank</button>
+                <button class="lab-tab" role="tab" id="labtab-power" aria-controls="lab-power" aria-selected="false" tabindex="-1" data-tab="power" type="button">Powers &amp; Flow</button>
+            </div>
+
+            <div id="lab-eigen" class="lab-panel active" role="tabpanel" aria-labelledby="labtab-eigen">
+                <p class="lab-note">Characteristic polynomial, eigenvalues with algebraic and geometric multiplicity, a diagonalization check, and the Cayley-Hamilton identity evaluated on your matrix.</p>
+                <div id="eigTex" class="lab-tex"></div>
+                <div id="eigCards" class="lab-cards" aria-live="polite"></div>
+                <div id="eigFacts" class="lab-facts"></div>
+                <div class="btn-row">
+                    <button class="btn btn-outline" id="eigShow3d" type="button">Show eigenvectors in 3D</button>
+                    <button class="btn btn-primary" id="qrRun" type="button">Run QR algorithm</button>
+                </div>
+                <div id="qrOut" class="qr-out" aria-live="polite"></div>
+            </div>
+
+            <div id="lab-solve" class="lab-panel" role="tabpanel" aria-labelledby="labtab-solve">
+                <p class="lab-note">Solve A x = b by row reduction. The system classifies itself as a unique solution, a line or plane of solutions, or inconsistent, and each row operation is shown.</p>
+                <div class="lab-grid">
+                    <div>
+                        <span class="ctl-label" id="bLabel">Right-hand side b</span>
+                        <div class="b-inputs" role="group" aria-labelledby="bLabel">
+                            <input class="num-input" type="number" id="b0" value="1" step="any" aria-label="b1">
+                            <input class="num-input" type="number" id="b1" value="2" step="any" aria-label="b2">
+                            <input class="num-input" type="number" id="b2" value="3" step="any" aria-label="b3">
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" id="solveRun" type="button">Row-reduce step by step</button>
+                            <button class="btn btn-outline" id="solveRandom" type="button">Pick b in the column space</button>
+                        </div>
+                    </div>
+                    <div id="solveSystem" class="lab-pre" aria-label="The system A x = b"></div>
+                </div>
+                <div id="solveSteps" class="lab-steps"></div>
+                <div id="solveResult" class="lab-result" aria-live="polite"></div>
+            </div>
+
+            <div id="lab-space" class="lab-panel" role="tabpanel" aria-labelledby="labtab-space">
+                <p class="lab-note">The four fundamental subspaces of A with a basis for each, read off the reduced row echelon form.</p>
+                <div id="spaceCards" class="lab-cards" aria-live="polite"></div>
+                <div id="spaceFacts" class="lab-facts"></div>
+            </div>
+
+            <div id="lab-svd" class="lab-panel" role="tabpanel" aria-labelledby="labtab-svd">
+                <p class="lab-note">Full singular value decomposition A = U Σ Vᵀ, four matrix norms, the Moore-Penrose pseudo-inverse, and the best rank-k approximation. Drag k and watch the error match the dropped singular values.</p>
+                <div id="svdBars" class="sv-bars" aria-live="polite"></div>
+                <div class="lab-grid">
+                    <div><span class="ctl-label">U</span><div id="svdU" class="lab-pre"></div></div>
+                    <div><span class="ctl-label">Vᵀ</span><div id="svdVt" class="lab-pre"></div></div>
+                </div>
+                <div class="ctl">
+                    <label class="ctl-label" for="kSlider">Keep k = <output id="kOut">3</output> singular values</label>
+                    <input type="range" id="kSlider" min="0" max="3" step="1" value="3">
+                </div>
+                <div class="lab-grid">
+                    <div><span class="ctl-label">A<sub>k</sub> (rank-k approximation)</span><div id="svdAk" class="lab-pre"></div></div>
+                    <div><span class="ctl-label">A⁺ (pseudo-inverse)</span><div id="svdPinv" class="lab-pre"></div></div>
+                </div>
+                <div id="svdFacts" class="lab-facts"></div>
+                <div class="btn-row"><button class="btn btn-primary" id="loadLowRank" type="button">Load A<sub>k</sub> into the visualizer</button></div>
+            </div>
+
+            <div id="lab-power" class="lab-panel" role="tabpanel" aria-labelledby="labtab-power">
+                <p class="lab-note">Repeated application Aⁿ, and the matrix exponential e<sup>tA</sup>, the transformation produced by following the linear flow dx/dt = A x for time t. Play the flow to watch it run in the visualizer.</p>
+                <div class="lab-grid">
+                    <div>
+                        <div class="ctl"><label class="ctl-label" for="nSlider">Power n <output id="nOut">2</output></label><input type="range" id="nSlider" min="0" max="12" step="1" value="2"></div>
+                        <div id="powOut" class="lab-pre"></div>
+                        <div id="powFacts" class="lab-facts" style="margin-top:0.6rem"></div>
+                        <div class="btn-row"><button class="btn btn-outline" id="loadPow" type="button">Load Aⁿ</button></div>
+                    </div>
+                    <div>
+                        <div class="ctl"><label class="ctl-label" for="tFlow">Time t <output id="tFlowOut">1.00</output></label><input type="range" id="tFlow" min="0" max="2" step="0.05" value="1"></div>
+                        <div id="expOut" class="lab-pre"></div>
+                        <div id="expFacts" class="lab-facts" style="margin-top:0.6rem"></div>
+                        <div class="btn-row"><button class="btn btn-primary" id="playFlow" type="button">Play flow</button><button class="btn btn-outline" id="loadExp" type="button">Load e<sup>tA</sup></button></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Executable Theory Library -->
         <section id="learn" class="glass-card p-6 mt-6" aria-labelledby="learnTitle">
             <div class="mb-4">
-                <p class="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-1">Learn ↔ edit ↔ see</p>
-                <h2 id="learnTitle" class="text-2xl font-bold">Executable Linear Algebra</h2>
+                                <h2 id="learnTitle" class="text-2xl font-bold">Executable Linear Algebra</h2>
                 <p class="text-sm text-gray-400 mt-1">Open a concept, then load an example directly into the visualizer. Every definition is attached to something you can run.</p>
             </div>
             <div class="learning-toolbar">
@@ -586,6 +685,23 @@
                 </div>
             </div>
         </div>
+        <!-- History -->
+        <section id="history" class="glass-card p-6 md:p-8 mt-6" aria-labelledby="histTitleH">
+            <h2 id="histTitleH" class="text-2xl font-bold mb-2">A Short History</h2>
+            <p class="text-gray-300 text-sm leading-relaxed mb-5 max-w-3xl">Linear algebra grew from solving systems of equations, then from asking what a matrix is. Step through the dates; each has a jump to the tool that runs the idea.</p>
+            <div class="hist-year" aria-hidden="true"><span id="histYear">100</span></div>
+            <div class="hist-track" id="histTrack" role="group" aria-label="Timeline of milestones">
+                <div class="hist-rail" aria-hidden="true"><i id="histFill"></i></div>
+                <ol class="hist-nodes" id="histNodes"></ol>
+            </div>
+            <article class="hist-card" id="histCard" aria-live="polite">
+                <h3 id="histTitle"></h3>
+                <p class="hist-who" id="histWho"></p>
+                <p class="body" id="histWhat"></p>
+                <p class="body" id="histWhy"></p>
+                <div class="btn-row"><button class="btn btn-primary" id="histTry" type="button"></button><button class="btn btn-outline" id="histPrev" type="button">Previous</button><button class="btn btn-outline" id="histNext" type="button">Next</button></div>
+            </article>
+        </section>
     </div>
 
     <script>
@@ -968,7 +1084,7 @@
             controls.dampingFactor = 0.05;
 
             // Grid
-            gridHelper = new THREE.GridHelper(6, 12, 0x00d4ff, 0x333333);
+            gridHelper = new THREE.GridHelper(6, 12, 0x00bcd4, 0x2a3644);
             gridHelper.material.opacity = 0.3;
             gridHelper.material.transparent = true;
             scene.add(gridHelper);
@@ -1024,7 +1140,7 @@
 
                 // Transformed
                 const tv = multiplyMatrixVector(currentMatrix, v);
-                const tArrow = createArrow(tv, [0, 0, 0], 0xff851b, vectorLength(tv));
+                const tArrow = createArrow(tv, [0, 0, 0], 0xb388ff, vectorLength(tv));
                 transformedArrows.push(tArrow);
                 if (document.getElementById('showTransformed').checked) {
                     scene.add(tArrow);
@@ -1073,7 +1189,7 @@
             transformedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             unitCubeTransformed = new THREE.LineSegments(
                 transformedGeometry,
-                new THREE.LineBasicMaterial({ color: 0x00d4ff, linewidth: 2 })
+                new THREE.LineBasicMaterial({ color: 0x00e5ff, linewidth: 2 })
             );
 
             if (document.getElementById('showUnitCube').checked) {
@@ -1092,21 +1208,13 @@
         function updateEigenvectors() {
             eigenvectorArrows.forEach(a => scene.remove(a));
             eigenvectorArrows = [];
-
             if (!document.getElementById('showEigenvectors').checked) return;
-
-            // Only for 2x2 submatrix
-            const m = [[currentMatrix[0][0], currentMatrix[0][1]],
-            [currentMatrix[1][0], currentMatrix[1][1]]];
-            const eigen = calculateEigen2x2(m);
-
-            if (eigen.eigenvectors) {
-                eigen.eigenvectors.forEach(v => {
-                    const arrow = createArrow([v[0], v[1], 0], [0, 0, 0], 0xb10dc9, 2);
-                    eigenvectorArrows.push(arrow);
-                    scene.add(arrow);
-                });
-            }
+            const eg = LabMath.eigen3(currentMatrix);
+            eg.groups.forEach(g => g.vectors.forEach(v => {
+                const arrow = createArrow(v, [0, 0, 0], 0xf1f5f9, 2);
+                eigenvectorArrows.push(arrow);
+                scene.add(arrow);
+            }));
         }
 
         function animate() {
@@ -1327,6 +1435,14 @@
             document.getElementById('tDisplay').textContent = document.getElementById('tSlider').value;
         }
 
+        function setStat(id, text) {
+            const el = document.getElementById(id);
+            if (el.textContent === text) return;
+            el.textContent = text;
+            if (typeof reduced === 'function' && reduced()) return;
+            el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+        }
+
         function updateProperties(matrix = currentMatrix) {
             const det = determinant3x3(matrix);
             const tr = trace3x3(matrix);
@@ -1340,11 +1456,11 @@
             const positiveDefinite = isPositiveDefiniteMatrix(matrix);
             const singular = rank < 3;
 
-            document.getElementById('determinant').textContent = formatMetric(det);
-            document.getElementById('trace').textContent = formatMetric(tr);
-            document.getElementById('rank').textContent = `${rank} / ${3 - rank}`;
-            document.getElementById('conditionNumber').textContent = formatMetric(conditionNumber);
-            document.getElementById('singularValues').textContent = singularValues.map(formatMetric).join(' · ');
+            setStat('determinant', formatMetric(det));
+            setStat('trace', formatMetric(tr));
+            setStat('rank', `${rank} / ${3 - rank}`);
+            setStat('conditionNumber', formatMetric(conditionNumber));
+            setStat('singularValues', singularValues.map(formatMetric).join(' · '));
 
             // Determine matrix type
             let type = 'General';
@@ -1527,10 +1643,9 @@
                 return;
             }
             targetMatrix = parsed.map(row => [...row]);
-            currentMatrix = parsed.map(row => [...row]);
             document.getElementById('tSlider').value = 1;
             document.getElementById('tValueDisplay').textContent = '1.00';
-            updateVisualization();
+            animateToMatrix(parsed, 520);
             updateMatrixStatus(true, 'Applied · visualization and URL are in sync');
             syncMatrixToUrl(currentMatrix);
         }
@@ -1583,7 +1698,7 @@
             const identity = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
 
             const animateStep = () => {
-                t += 0.02;
+                t += reduced() ? 1 : 0.02;
                 if (t > 1) {
                     t = 1;
                     isAnimating = false;
@@ -1591,7 +1706,8 @@
 
                 document.getElementById('tSlider').value = t;
                 document.getElementById('tValueDisplay').textContent = t.toFixed(2);
-                currentMatrix = interpolateMatrix(identity, targetMatrix, t);
+                const te = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                currentMatrix = interpolateMatrix(identity, targetMatrix, te);
                 updateVisualization();
                 if (t === 1) syncMatrixToUrl(currentMatrix);
 
@@ -1628,86 +1744,151 @@
             document.getElementById('visualization3d').style.display = mode === '3d' ? 'block' : 'none';
             const canvas2d = document.getElementById('visualization2d');
             canvas2d.style.display = mode === '2d' ? 'block' : 'none';
-            if (mode === '2d') {
-                canvas2d.width = canvas2d.parentElement.clientWidth - 48;
-                canvas2d.height = 450;
-                ctx2d = canvas2d.getContext('2d');
-                draw2D();
-            }
+            if (mode === '2d') { sizeCanvas2D(); draw2D(); }
+        }
+
+        let handleHover = -1, handleDrag = -1, handleActive = 0;
+        const H2 = { scale: 50, cx: 0, cy: 0 };
+
+        function sizeCanvas2D() {
+            const c = $('visualization2d'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = c.clientWidth || (c.parentElement.clientWidth - 48), h = c.clientHeight || 450;
+            c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+            ctx2d = c.getContext('2d'); ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function handlePos(col) {
+            const m = currentMatrix;
+            return [H2.cx + m[0][col] * H2.scale, H2.cy - m[1][col] * H2.scale];
         }
 
         function draw2D() {
             if (!ctx2d) return;
-            const w = ctx2d.canvas.width, h = ctx2d.canvas.height;
-            const cx = w / 2, cy = h / 2;
-            const scale = Math.min(w, h) / 8;
+            const c = ctx2d.canvas, dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = c.width / dpr, h = c.height / dpr;
+            const cx = w / 2, cy = h / 2, scale = Math.min(w, h) / 8;
+            H2.scale = scale; H2.cx = cx; H2.cy = cy;
+            ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx2d.clearRect(0, 0, w, h);
-            // Background
-            ctx2d.fillStyle = '#0a0e14';
-            ctx2d.fillRect(0, 0, w, h);
-            // Grid
-            ctx2d.strokeStyle = 'rgba(0,212,255,0.08)';
-            ctx2d.lineWidth = 1;
+            ctx2d.fillStyle = '#070a10'; ctx2d.fillRect(0, 0, w, h);
+            const m = [[currentMatrix[0][0], currentMatrix[0][1]], [currentMatrix[1][0], currentMatrix[1][1]]];
+            const T = (x, y) => [cx + (m[0][0] * x + m[0][1] * y) * scale, cy - (m[1][0] * x + m[1][1] * y) * scale];
+            const showT = $('showTransformed').checked;
+
+            // original grid
+            ctx2d.strokeStyle = 'rgba(0,188,212,0.08)'; ctx2d.lineWidth = 1;
             for (let i = -4; i <= 4; i++) {
                 ctx2d.beginPath(); ctx2d.moveTo(cx + i * scale, 0); ctx2d.lineTo(cx + i * scale, h); ctx2d.stroke();
                 ctx2d.beginPath(); ctx2d.moveTo(0, cy + i * scale); ctx2d.lineTo(w, cy + i * scale); ctx2d.stroke();
             }
-            // Axes
-            ctx2d.strokeStyle = 'rgba(255,255,255,0.2)'; ctx2d.lineWidth = 1.5;
+            // transformed grid: the image of every grid line
+            if (showT) {
+                ctx2d.strokeStyle = 'rgba(0,229,255,0.28)'; ctx2d.lineWidth = 1;
+                const R = 8;
+                for (let i = -R; i <= R; i++) {
+                    let p = T(i, -R), q = T(i, R);
+                    ctx2d.beginPath(); ctx2d.moveTo(p[0], p[1]); ctx2d.lineTo(q[0], q[1]); ctx2d.stroke();
+                    p = T(-R, i); q = T(R, i);
+                    ctx2d.beginPath(); ctx2d.moveTo(p[0], p[1]); ctx2d.lineTo(q[0], q[1]); ctx2d.stroke();
+                }
+            }
+            // axes
+            ctx2d.strokeStyle = 'rgba(255,255,255,0.22)'; ctx2d.lineWidth = 1.5;
             ctx2d.beginPath(); ctx2d.moveTo(0, cy); ctx2d.lineTo(w, cy); ctx2d.stroke();
             ctx2d.beginPath(); ctx2d.moveTo(cx, 0); ctx2d.lineTo(cx, h); ctx2d.stroke();
-            // Axis labels
-            ctx2d.fillStyle = 'rgba(255,255,255,0.4)'; ctx2d.font = '12px JetBrains Mono';
+            ctx2d.fillStyle = 'rgba(255,255,255,0.5)'; ctx2d.font = '12px "Fira Code", monospace';
             ctx2d.fillText('x', w - 16, cy - 8); ctx2d.fillText('y', cx + 8, 16);
             for (let i = -3; i <= 3; i++) { if (i === 0) continue; ctx2d.fillText(i, cx + i * scale - 4, cy + 16); ctx2d.fillText(i, cx + 8, cy - i * scale + 4); }
 
-            const m = [[currentMatrix[0][0], currentMatrix[0][1]], [currentMatrix[1][0], currentMatrix[1][1]]];
-            // Unit square (original)
-            if (document.getElementById('showUnitCube').checked) {
-                ctx2d.strokeStyle = 'rgba(255,255,255,0.15)'; ctx2d.lineWidth = 1; ctx2d.setLineDash([4, 4]);
-                const sq = [[0,0],[1,0],[1,1],[0,1]];
-                ctx2d.beginPath();
-                sq.forEach((p, i) => { const px = cx + p[0]*scale, py = cy - p[1]*scale; i===0? ctx2d.moveTo(px,py): ctx2d.lineTo(px,py); });
+            // unit square and its image
+            if ($('showUnitCube').checked) {
+                const sq = [[0, 0], [1, 0], [1, 1], [0, 1]];
+                ctx2d.strokeStyle = 'rgba(255,255,255,0.22)'; ctx2d.lineWidth = 1; ctx2d.setLineDash([4, 4]);
+                ctx2d.beginPath(); sq.forEach((p, i) => { const px = cx + p[0] * scale, py = cy - p[1] * scale; i === 0 ? ctx2d.moveTo(px, py) : ctx2d.lineTo(px, py); });
                 ctx2d.closePath(); ctx2d.stroke(); ctx2d.setLineDash([]);
-                // Transformed square
-                ctx2d.strokeStyle = 'rgba(0,212,255,0.5)'; ctx2d.lineWidth = 2;
-                ctx2d.fillStyle = 'rgba(0,212,255,0.06)';
-                ctx2d.beginPath();
-                sq.forEach((p, i) => { const tv = [m[0][0]*p[0]+m[0][1]*p[1], m[1][0]*p[0]+m[1][1]*p[1]]; const px = cx+tv[0]*scale, py = cy-tv[1]*scale; i===0? ctx2d.moveTo(px,py): ctx2d.lineTo(px,py); });
+                ctx2d.strokeStyle = 'rgba(0,229,255,0.9)'; ctx2d.lineWidth = 2; ctx2d.fillStyle = 'rgba(0,229,255,0.12)';
+                ctx2d.beginPath(); sq.forEach((p, i) => { const q = T(p[0], p[1]); i === 0 ? ctx2d.moveTo(q[0], q[1]) : ctx2d.lineTo(q[0], q[1]); });
                 ctx2d.closePath(); ctx2d.fill(); ctx2d.stroke();
             }
-            // Basis vectors
-            const drawArrow2D = (vx, vy, color, lw) => {
-                const ex = cx + vx*scale, ey = cy - vy*scale;
+            const arrow = (vx, vy, color, lw) => {
+                const ex = cx + vx * scale, ey = cy - vy * scale;
                 ctx2d.strokeStyle = color; ctx2d.lineWidth = lw; ctx2d.fillStyle = color;
                 ctx2d.beginPath(); ctx2d.moveTo(cx, cy); ctx2d.lineTo(ex, ey); ctx2d.stroke();
-                const ang = Math.atan2(-vy, vx); const hs = 10;
+                const ang = Math.atan2(-vy, vx), hs = 10;
                 ctx2d.beginPath(); ctx2d.moveTo(ex, ey);
-                ctx2d.lineTo(ex - hs*Math.cos(ang-0.4), ey + hs*Math.sin(ang-0.4));
-                ctx2d.lineTo(ex - hs*Math.cos(ang+0.4), ey + hs*Math.sin(ang+0.4));
+                ctx2d.lineTo(ex - hs * Math.cos(ang - 0.4), ey + hs * Math.sin(ang - 0.4));
+                ctx2d.lineTo(ex - hs * Math.cos(ang + 0.4), ey + hs * Math.sin(ang + 0.4));
                 ctx2d.closePath(); ctx2d.fill();
             };
-            if (document.getElementById('showBasis').checked) { drawArrow2D(1,0,'#ff4136',2.5); drawArrow2D(0,1,'#2ecc40',2.5); }
-            if (document.getElementById('showTransformed').checked) {
-                drawArrow2D(m[0][0], m[1][0], '#ff851b', 3); drawArrow2D(m[0][1], m[1][1], '#ffdc00', 3);
+            if ($('showBasis').checked) { arrow(1, 0, '#ff4136', 2.5); arrow(0, 1, '#2ecc40', 2.5); }
+            if (showT) { arrow(m[0][0], m[1][0], '#b388ff', 3); arrow(m[0][1], m[1][1], '#e0ccff', 3); }
+            if ($('showEigenvectors').checked) {
+                const eg = calculateEigen2x2(m);
+                if (eg.eigenvectors) eg.eigenvectors.forEach(v => arrow(v[0] * 2, v[1] * 2, '#f1f5f9', 2));
             }
-            if (document.getElementById('showEigenvectors').checked) {
-                const eigen = calculateEigen2x2(m);
-                if (eigen.eigenvectors) { eigen.eigenvectors.forEach(v => drawArrow2D(v[0]*2, v[1]*2, '#b10dc9', 2)); }
+            ctx2d.font = '11px "Fira Code", monospace';
+            if ($('showBasis').checked) { ctx2d.fillStyle = '#ff4136'; ctx2d.fillText('e₁', cx + scale + 6, cy + 4); ctx2d.fillStyle = '#2ecc40'; ctx2d.fillText('e₂', cx + 6, cy - scale - 6); }
+            if (showT) {
+                ctx2d.fillStyle = '#b388ff'; ctx2d.fillText('Te₁', cx + m[0][0] * scale + 10, cy - m[1][0] * scale - 8);
+                ctx2d.fillStyle = '#e0ccff'; ctx2d.fillText('Te₂', cx + m[0][1] * scale + 10, cy - m[1][1] * scale - 8);
+                // drag handles
+                [0, 1].forEach(col => {
+                    const hp = handlePos(col), on = handleHover === col || handleDrag === col || (document.activeElement === c && handleActive === col);
+                    ctx2d.beginPath(); ctx2d.arc(hp[0], hp[1], on ? 11 : 8, 0, 6.2832);
+                    ctx2d.fillStyle = on ? 'rgba(0,229,255,0.35)' : 'rgba(10,14,20,0.9)'; ctx2d.fill();
+                    ctx2d.strokeStyle = on ? '#00e5ff' : (col ? '#e0ccff' : '#b388ff'); ctx2d.lineWidth = 2; ctx2d.stroke();
+                });
             }
-            // Labels
-            ctx2d.font = '11px JetBrains Mono';
-            if (document.getElementById('showBasis').checked) { ctx2d.fillStyle='#ff4136'; ctx2d.fillText('e₁',cx+scale+6,cy+4); ctx2d.fillStyle='#2ecc40'; ctx2d.fillText('e₂',cx+6,cy-scale-6); }
-            if (document.getElementById('showTransformed').checked) { ctx2d.fillStyle='#ff851b'; ctx2d.fillText('Te₁',cx+m[0][0]*scale+6,cy-m[1][0]*scale); ctx2d.fillStyle='#ffdc00'; ctx2d.fillText('Te₂',cx+m[0][1]*scale+6,cy-m[1][1]*scale); }
-            // Det info
-            const det2 = m[0][0]*m[1][1] - m[0][1]*m[1][0];
-            ctx2d.fillStyle = 'rgba(255,255,255,0.6)'; ctx2d.font = '13px Space Grotesk';
+            const det2 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+            ctx2d.fillStyle = 'rgba(255,255,255,0.7)'; ctx2d.font = '13px "Space Grotesk", sans-serif';
             ctx2d.fillText(`det = ${det2.toFixed(3)}`, 12, 24);
             ctx2d.fillText(`Area factor = |${Math.abs(det2).toFixed(3)}|`, 12, 44);
         }
 
+        // Direct manipulation: drag the transformed basis tips in the 2D view
+        function applyHandle(col, x, y, snap) {
+            const q = v => (snap ? Math.round(v / 0.05) * 0.05 : v);
+            const nx = Math.max(-4, Math.min(4, q(x))), ny = Math.max(-4, Math.min(4, q(y)));
+            const next = currentMatrix.map(r => [...r]);
+            next[0][col] = +nx.toFixed(3); next[1][col] = +ny.toFixed(3);
+            currentMatrix = next; targetMatrix = next.map(r => [...r]);
+            $('matrixInput').value = formatMatrixForInput(next);
+            $('tSlider').value = 1; $('tValueDisplay').textContent = '1.00';
+            updateMatrixStatus(true, 'Edited by dragging in the 2D view');
+            updateVisualization();
+            syncMatrixToUrl(currentMatrix);
+        }
+        function wire2D() {
+            const c = $('visualization2d');
+            const pos = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+            const hit = e => {
+                if (!$('showTransformed').checked) return -1;
+                const [px, py] = pos(e);
+                for (const col of [1, 0]) { const hp = handlePos(col); if (Math.hypot(px - hp[0], py - hp[1]) < 18) return col; }
+                return -1;
+            };
+            c.addEventListener('pointermove', e => {
+                if (handleDrag >= 0) { const [px, py] = pos(e); applyHandle(handleDrag, (px - H2.cx) / H2.scale, -(py - H2.cy) / H2.scale, !e.shiftKey); return; }
+                const h = hit(e); if (h !== handleHover) { handleHover = h; c.style.cursor = h >= 0 ? 'grab' : 'default'; draw2D(); }
+            });
+            c.addEventListener('pointerdown', e => { const h = hit(e); if (h < 0) return; handleDrag = h; handleActive = h; c.setPointerCapture(e.pointerId); c.classList.add('dragging'); e.preventDefault(); });
+            const end = () => { if (handleDrag >= 0) { handleDrag = -1; c.classList.remove('dragging'); draw2D(); } };
+            c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
+            c.addEventListener('pointerleave', () => { if (handleDrag < 0 && handleHover >= 0) { handleHover = -1; draw2D(); } });
+            c.addEventListener('keydown', e => {
+                if (e.key === '1' || e.key === '2') { handleActive = +e.key - 1; draw2D(); e.preventDefault(); return; }
+                const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
+                if (!d) return;
+                e.preventDefault();
+                const step = e.shiftKey ? 0.5 : 0.1, col = handleActive;
+                applyHandle(col, currentMatrix[0][col] + d[0] * step, currentMatrix[1][col] + d[1] * step, false);
+            });
+            c.addEventListener('focus', draw2D); c.addEventListener('blur', draw2D);
+            window.addEventListener('resize', () => { if (viewMode === '2d') { sizeCanvas2D(); draw2D(); } });
+        }
+
         const origUpdateVis = updateVisualization;
-        updateVisualization = function() { origUpdateVis(); if (viewMode === '2d') draw2D(); };
+        updateVisualization = function() { origUpdateVis(); if (viewMode === '2d') draw2D(); if (window.LabUI) window.LabUI.refresh(); };
 
         // ============ DECOMPOSITION ANIMATIONS ============
         let decompAnimTimer = null;
@@ -1922,12 +2103,626 @@
             return diff === 'easy' ? easy : diff === 'medium' ? medium : hard;
         }
 
+        // ============ MATH LAB CORE ============
+// ============ MATH LAB CORE (pure functions, no DOM) ============
+const LabMath = (() => {
+    const I3 = () => [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    const clone = m => m.map(r => [...r]);
+    const mul = (a, b) => a.map((row, i) => b[0].map((_, j) => row.reduce((s, _x, k) => s + a[i][k] * b[k][j], 0)));
+    const tr = m => m[0].map((_, c) => m.map(r => r[c]));
+    const add = (a, b) => a.map((r, i) => r.map((v, j) => v + b[i][j]));
+    const scale = (a, s) => a.map(r => r.map(v => v * s));
+    const sub = (a, b) => add(a, scale(b, -1));
+    const maxAbs = m => Math.max(0, ...m.flat().map(Math.abs));
+    const fro = m => Math.sqrt(m.flat().reduce((s, v) => s + v * v, 0));
+    const det3 = m => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    const trace = m => m[0][0] + m[1][1] + m[2][2];
+    const matVec = (m, v) => m.map(r => r.reduce((s, x, j) => s + x * v[j], 0));
+    const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+    const norm = v => Math.sqrt(dot(v, v));
+    const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
+    // ---- Row reduction with recorded steps. M is an r x c matrix (augmented allowed).
+    // Returns { rref, pivots, steps:[{text, m}] }. Uses partial pivoting, relative tolerance.
+    function rref(M, opts = {}) {
+        const a = clone(M), rows = a.length, cols = a[0].length;
+        const ncoef = opts.coefCols || cols;           // pivots only searched in the first ncoef columns
+        const tol = (opts.tol || 1e-10) * Math.max(1, maxAbs(a));
+        const steps = [{ text: 'Start', m: clone(a) }];
+        const pivots = [];
+        let r = 0;
+        for (let c = 0; c < ncoef && r < rows; c++) {
+            let p = r;
+            for (let i = r + 1; i < rows; i++) if (Math.abs(a[i][c]) > Math.abs(a[p][c])) p = i;
+            if (Math.abs(a[p][c]) <= tol) { for (let i = r; i < rows; i++) a[i][c] = 0; continue; }
+            if (p !== r) { [a[p], a[r]] = [a[r], a[p]]; steps.push({ text: `Swap R${r + 1} and R${p + 1}`, m: clone(a) }); }
+            const piv = a[r][c];
+            if (Math.abs(piv - 1) > 1e-12) { for (let j = 0; j < cols; j++) a[r][j] /= piv; steps.push({ text: `R${r + 1} ← R${r + 1} / ${fmt(piv)}`, m: clone(a) }); }
+            for (let i = 0; i < rows; i++) {
+                if (i === r) continue;
+                const f = a[i][c];
+                if (Math.abs(f) <= tol) { a[i][c] = 0; continue; }
+                for (let j = 0; j < cols; j++) a[i][j] -= f * a[r][j];
+                a[i][c] = 0;
+                steps.push({ text: `R${i + 1} ← R${i + 1} − (${fmt(f)}) R${r + 1}`, m: clone(a) });
+            }
+            pivots.push(c); r++;
+        }
+        for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) if (Math.abs(a[i][j]) <= tol) a[i][j] = 0;
+        return { rref: a, pivots, steps, tol };
+    }
+    function fmt(x) { const v = Math.abs(x) < 5e-10 ? 0 : x; return Number.isInteger(v) ? String(v) : (+v.toFixed(4)).toString(); }
+
+    // ---- Null space basis (columns of A x = 0) from RREF
+    function nullSpace(A, tolOpt) {
+        const n = A[0].length;
+        const { rref: R, pivots } = rref(A, { tol: tolOpt });
+        const free = [];
+        for (let c = 0; c < n; c++) if (!pivots.includes(c)) free.push(c);
+        return free.map(f => {
+            const v = new Array(n).fill(0); v[f] = 1;
+            pivots.forEach((pc, row) => { v[pc] = -R[row][f]; });
+            return v;
+        });
+    }
+
+    // ---- Fundamental subspaces
+    function subspaces(A) {
+        const { rref: R, pivots } = rref(A);
+        const colSpace = pivots.map(c => A.map(r => r[c]));
+        const rowSpace = R.filter(r => r.some(v => v !== 0)).map(r => [...r]);
+        const nul = nullSpace(A);
+        const leftNull = nullSpace(tr(A));
+        return { rank: pivots.length, pivots, colSpace, rowSpace, nullSpace: nul, leftNull };
+    }
+
+    // ---- Solve A x = b with classification
+    function solve(A, b) {
+        const aug = A.map((r, i) => [...r, b[i]]);
+        const res = rref(aug, { coefCols: 3 });
+        const R = res.rref, tol = res.tol;
+        const inconsistent = R.some(r => r.slice(0, 3).every(v => v === 0) && Math.abs(r[3]) > tol);
+        const rank = res.pivots.length;
+        let kind, particular = null, basis = [];
+        if (inconsistent) kind = 'none';
+        else if (rank === 3) { kind = 'unique'; particular = [R[0][3], R[1][3], R[2][3]]; }
+        else {
+            kind = 'infinite';
+            particular = [0, 0, 0];
+            res.pivots.forEach((pc, row) => { particular[pc] = R[row][3]; });
+            basis = nullSpace(A);
+        }
+        let residual = null;
+        if (particular) residual = norm(matVec(A, particular).map((v, i) => v - b[i]));
+        return { kind, rank, particular, basis, residual, steps: res.steps, rref: R, pivots: res.pivots };
+    }
+
+    // ---- Characteristic polynomial and 3x3 eigen-analysis
+    function charPoly(A) {
+        const c2 = trace(A);
+        const c1 = (A[0][0] * A[1][1] - A[0][1] * A[1][0]) + (A[0][0] * A[2][2] - A[0][2] * A[2][0]) + (A[1][1] * A[2][2] - A[1][2] * A[2][1]);
+        const c0 = det3(A);
+        return [1, -c2, c1, -c0];   // lambda^3 - tr lambda^2 + c1 lambda - det
+    }
+    function cubicRoots(poly) {
+        const [, b, c, d] = poly;
+        const p = c - b * b / 3;
+        const q = 2 * b * b * b / 27 - b * c / 3 + d;
+        const shift = -b / 3;
+        const disc = (q / 2) ** 2 + (p / 3) ** 3;
+        const scaleTol = 1e-12 * Math.max(1, Math.abs(p), Math.abs(q));
+        let roots;   // each: {re, im}
+        if (Math.abs(p) < scaleTol && Math.abs(q) < scaleTol) {
+            roots = [{ re: shift, im: 0 }, { re: shift, im: 0 }, { re: shift, im: 0 }];
+        } else if (disc > scaleTol) {
+            const sq = Math.sqrt(disc);
+            const u = Math.cbrt(-q / 2 + sq), v = Math.cbrt(-q / 2 - sq);
+            roots = [{ re: u + v + shift, im: 0 }, { re: -(u + v) / 2 + shift, im: Math.sqrt(3) / 2 * (u - v) }, { re: -(u + v) / 2 + shift, im: -Math.sqrt(3) / 2 * (u - v) }];
+        } else {
+            const m = 2 * Math.sqrt(Math.max(0, -p / 3));
+            let arg = m === 0 ? 0 : (3 * q) / (p * m);
+            arg = Math.max(-1, Math.min(1, arg));
+            const th = Math.acos(arg) / 3;
+            roots = [0, 1, 2].map(k => ({ re: m * Math.cos(th - 2 * Math.PI * k / 3) + shift, im: 0 }));
+        }
+        // Newton polish on real roots
+        const f = x => ((x + b) * x + c) * x + d, df = x => (3 * x + 2 * b) * x + c;
+        roots.forEach(r => { if (r.im === 0) for (let i = 0; i < 80; i++) { const s = df(r.re); if (Math.abs(s) < 1e-300) break; const nx = r.re - f(r.re) / s; if (!Number.isFinite(nx)) break; const step = Math.abs(nx - r.re); r.re = nx; if (step < 1e-15 * Math.max(1, Math.abs(nx))) break; } });
+        return roots;
+    }
+    function eigen3(A) {
+        const poly = charPoly(A);
+        const roots = cubicRoots(poly);
+        const sc = Math.max(1, maxAbs(A));
+        // group real eigenvalues
+        const real = roots.filter(r => Math.abs(r.im) < 1e-9 * sc).map(r => r.re).sort((x, y) => y - x);
+        const complex = roots.filter(r => Math.abs(r.im) >= 1e-9 * sc);
+        const groups = [];
+        real.forEach(v => {
+            const g = groups.find(g => Math.abs(g.value - v) <= 1e-5 * sc);
+            if (g) { g.alg++; g.value = (g.value * (g.alg - 1) + v) / g.alg; } else groups.push({ value: v, alg: 1 });
+        });
+        groups.forEach(g => {
+            const shifted = sub(A, scale(I3(), g.value));
+            const ns = nullSpace(shifted, 1e-6);
+            g.vectors = ns.map(v => { const n = norm(v) || 1; return v.map(x => x / n); });
+            g.geo = ns.length;
+        });
+        const diagonalizable = complex.length === 0 && groups.every(g => g.geo === g.alg);
+        return { poly, groups, complex: complex.length ? { re: complex[0].re, im: Math.abs(complex[0].im) } : null, diagonalizable };
+    }
+
+    // ---- Symmetric Jacobi eigen-decomposition (with eigenvectors)
+    function jacobiSym(S) {
+        const a = clone(S), V = I3();
+        for (let sweep = 0; sweep < 50; sweep++) {
+            let off = 0;
+            for (let p = 0; p < 3; p++) for (let q = p + 1; q < 3; q++) off += a[p][q] * a[p][q];
+            if (off < 1e-26) break;
+            for (let p = 0; p < 3; p++) for (let q = p + 1; q < 3; q++) {
+                if (Math.abs(a[p][q]) < 1e-300) continue;
+                const th = (a[q][q] - a[p][p]) / (2 * a[p][q]);
+                const t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1));
+                const c = 1 / Math.sqrt(t * t + 1), s = t * c;
+                for (let k = 0; k < 3; k++) { const akp = a[k][p], akq = a[k][q]; a[k][p] = c * akp - s * akq; a[k][q] = s * akp + c * akq; }
+                for (let k = 0; k < 3; k++) { const apk = a[p][k], aqk = a[q][k]; a[p][k] = c * apk - s * aqk; a[q][k] = s * apk + c * aqk; }
+                for (let k = 0; k < 3; k++) { const vkp = V[k][p], vkq = V[k][q]; V[k][p] = c * vkp - s * vkq; V[k][q] = s * vkp + c * vkq; }
+            }
+        }
+        const idx = [0, 1, 2].sort((i, j) => a[j][j] - a[i][i]);
+        return { values: idx.map(i => a[i][i]), V: [0, 1, 2].map(r => idx.map(i => V[r][i])) };
+    }
+
+    // ---- Full SVD of 3x3: A = U diag(s) V^T
+    function svd3(A) {
+        const { values, V } = jacobiSym(mul(tr(A), A));
+        const s = values.map(v => Math.sqrt(Math.max(0, v)));
+        const tol = Math.max(1e-300, s[0]) * 1e-7;
+        const cols = [];
+        for (let i = 0; i < 3; i++) {
+            const v = [V[0][i], V[1][i], V[2][i]];
+            if (s[i] > tol) { const u = matVec(A, v).map(x => x / s[i]); cols.push(u); } else cols.push(null);
+        }
+        // complete U to an orthonormal basis
+        const known = cols.filter(Boolean);
+        const completeWith = (existing) => {
+            const cands = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+            for (const cand of cands) {
+                let w = cand.slice();
+                existing.forEach(e => { const d = dot(w, e); w = w.map((x, i) => x - d * e[i]); });
+                const n = norm(w);
+                if (n > 1e-6) return w.map(x => x / n);
+            }
+            return [0, 0, 0];
+        };
+        for (let i = 0; i < 3; i++) if (!cols[i]) {
+            const ex = cols.filter(Boolean);
+            if (ex.length === 2) { cols[i] = cross(ex[0], ex[1]); const n = norm(cols[i]); cols[i] = cols[i].map(x => x / n); }
+            else cols[i] = completeWith(ex);
+        }
+        const U = [0, 1, 2].map(r => [cols[0][r], cols[1][r], cols[2][r]]);
+        return { U, s, V, Vt: tr(V) };
+    }
+    function lowRank(sv, k) {
+        let out = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        for (let i = 0; i < k; i++) {
+            const u = [sv.U[0][i], sv.U[1][i], sv.U[2][i]], v = [sv.V[0][i], sv.V[1][i], sv.V[2][i]];
+            out = add(out, u.map(ui => v.map(vj => sv.s[i] * ui * vj)));
+        }
+        return out;
+    }
+    function pinv(sv) {
+        const tol = Math.max(1e-300, sv.s[0]) * 1e-7;
+        let out = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        for (let i = 0; i < 3; i++) {
+            if (sv.s[i] <= tol) continue;
+            const u = [sv.U[0][i], sv.U[1][i], sv.U[2][i]], v = [sv.V[0][i], sv.V[1][i], sv.V[2][i]];
+            out = add(out, v.map(vj => u.map(ui => vj * ui / sv.s[i])));
+        }
+        return out;
+    }
+
+    // ---- Powers and matrix exponential (scaling and squaring + Taylor)
+    function power(A, n) { let r = I3(); for (let i = 0; i < n; i++) r = mul(r, A); return r; }
+    function expm(A) {
+        const nrm = Math.max(1e-300, ...A.map(r => r.reduce((s, v) => s + Math.abs(v), 0)));
+        const s = Math.max(0, Math.ceil(Math.log2(nrm)) + 1);
+        const B = scale(A, 1 / Math.pow(2, s));
+        let term = I3(), sum = I3();
+        for (let k = 1; k <= 20; k++) { term = scale(mul(term, B), 1 / k); sum = add(sum, term); }
+        for (let i = 0; i < s; i++) sum = mul(sum, sum);
+        return sum;
+    }
+    function norms(A, sv) {
+        return {
+            frobenius: fro(A),
+            one: Math.max(...[0, 1, 2].map(c => A.reduce((s, r) => s + Math.abs(r[c]), 0))),
+            inf: Math.max(...A.map(r => r.reduce((s, v) => s + Math.abs(v), 0))),
+            spectral: sv.s[0]
+        };
+    }
+
+    // ---- Inverse (Gauss-Jordan) and QR (Gram-Schmidt) for 3x3
+    function inv3(A) {
+        const d = det3(A);
+        if (Math.abs(d) < 1e-12 * Math.max(1, maxAbs(A)) ** 3) return null;
+        const m = A;
+        return [
+            [(m[1][1] * m[2][2] - m[1][2] * m[2][1]) / d, -(m[0][1] * m[2][2] - m[0][2] * m[2][1]) / d, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / d],
+            [-(m[1][0] * m[2][2] - m[1][2] * m[2][0]) / d, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / d, -(m[0][0] * m[1][2] - m[0][2] * m[1][0]) / d],
+            [(m[1][0] * m[2][1] - m[1][1] * m[2][0]) / d, -(m[0][0] * m[2][1] - m[0][1] * m[2][0]) / d, (m[0][0] * m[1][1] - m[0][1] * m[1][0]) / d]
+        ];
+    }
+    function qr3(A) {
+        const cols = [0, 1, 2].map(c => A.map(r => r[c]));
+        const q = [], R = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        cols.forEach((a, j) => {
+            let v = a.slice();
+            q.forEach((qi, i) => { const rij = dot(qi, a); R[i][j] = rij; v = v.map((x, k) => x - rij * qi[k]); });
+            const n = norm(v); R[j][j] = n;
+            q.push(n > 1e-14 ? v.map(x => x / n) : [0, 0, 0]);
+        });
+        return { Q: [0, 1, 2].map(r => [q[0][r], q[1][r], q[2][r]]), R };
+    }
+    function qrIterations(A, n) {
+        const out = [clone(A)]; let M = clone(A);
+        for (let i = 0; i < n; i++) { const { Q, R } = qr3(M); M = mul(R, Q); out.push(clone(M)); }
+        return out;
+    }
+    // evaluate characteristic polynomial at matrix A (Cayley-Hamilton): A^3 - tr A^2 + c1 A - det I
+    function charPolyAt(A) {
+        const p = charPoly(A);
+        const A2 = mul(A, A), A3 = mul(A2, A);
+        return add(add(add(A3, scale(A2, p[1])), scale(A, p[2])), scale(I3(), p[3]));
+    }
+    return { inv3, qr3, qrIterations, charPolyAt, I3, clone, mul, tr, add, sub, scale, fro, det3, trace, matVec, norm, dot, cross, rref, nullSpace, subspaces, solve, charPoly, cubicRoots, eigen3, jacobiSym, svd3, lowRank, pinv, power, expm, norms, fmt };
+})();
+
+        // ============ SHARED UI HELPERS ============
+        const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const reduced = () => RM.matches;
+        const $ = id => document.getElementById(id);
+        const z0 = v => (Math.abs(v) < 5e-10 ? 0 : v);
+        const fm = (m, d = 3) => m.map(r => '[ ' + r.map(v => z0(v).toFixed(d).padStart(d + 4)).join('  ') + ' ]').join('\n');
+        const fv = (v, d = 3) => '(' + v.map(x => z0(x).toFixed(d)).join(', ') + ')';
+        const fnum = (x, d = 4) => (Math.abs(x) >= 1e5 || (Math.abs(x) < 1e-3 && x !== 0)) ? z0(x).toExponential(2) : (+z0(x).toFixed(d)).toString();
+        function setFill(el) { el.style.setProperty('--fill', ((el.value - el.min) / (el.max - el.min) * 100) + '%'); }
+        function setMatrix(m) { $('matrixInput').value = formatMatrixForInput(m); applyInputMatrix(); }
+
+        // Smooth morph of the visualizer from the current matrix to `to`
+        let morphRaf = 0;
+        function animateToMatrix(to, ms = 520, done) {
+            cancelAnimationFrame(morphRaf);
+            const target = to.map(r => [...r]);
+            if (reduced()) { currentMatrix = target; updateVisualization(); if (done) done(); return; }
+            const from = currentMatrix.map(r => [...r]), t0 = performance.now();
+            const step = now => {
+                const p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+                currentMatrix = from.map((r, i) => r.map((v, j) => v + (target[i][j] - v) * e));
+                if (p >= 1) currentMatrix = target.map(r => [...r]);
+                updateVisualization();
+                if (p < 1) morphRaf = requestAnimationFrame(step); else if (done) done();
+            };
+            morphRaf = requestAnimationFrame(step);
+        }
+
+        // ============ MATH LAB UI ============
+        const Lab = (() => {
+            const L = LabMath;
+            const TABS = ['eigen', 'solve', 'space', 'svd', 'power'];
+            let tab = 'eigen', timer = 0, solveTimer = 0, qrTimer = 0, flowRaf = 0;
+            const M = () => currentMatrix;
+
+            function moveInd() {
+                const b = $('labtab-' + tab), ind = $('labInd');
+                if (!b || !b.offsetWidth) return;
+                ind.style.width = b.offsetWidth + 'px'; ind.style.transform = 'translateX(' + b.offsetLeft + 'px)';
+            }
+            function select(name, focus) {
+                if (!TABS.includes(name)) return;
+                tab = name;
+                TABS.forEach(t => {
+                    const on = t === name, btn = $('labtab-' + t);
+                    btn.setAttribute('aria-selected', on ? 'true' : 'false'); btn.tabIndex = on ? 0 : -1;
+                    $('lab-' + t).classList.toggle('active', on);
+                });
+                if (focus) $('labtab-' + name).focus();
+                $('labtab-' + name).scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+                moveInd(); render();
+            }
+            function refresh() { clearTimeout(timer); timer = setTimeout(render, 90); }
+            function render() {
+                if (tab === 'eigen') renderEigen();
+                else if (tab === 'solve') renderSolve(false);
+                else if (tab === 'space') renderSpace();
+                else if (tab === 'svd') renderSvd();
+                else if (tab === 'power') renderPower();
+            }
+            const tex = (el, s) => { try { katex.render(s, el, { displayMode: true, throwOnError: false }); } catch (e) { el.textContent = s; } };
+            const sgn = (v, first) => (v < 0 ? (first ? '-' : ' - ') : (first ? '' : ' + '));
+
+            // ---------- Eigen ----------
+            function polyTex(p) {
+                const t = [['\\lambda^3', p[0]], ['\\lambda^2', p[1]], ['\\lambda', p[2]], ['', p[3]]];
+                let s = 'p(\\lambda)=', first = true;
+                t.forEach(([v, c]) => {
+                    if (Math.abs(c) < 5e-10) return;
+                    const a = Math.abs(c);
+                    const num = (a === 1 && v) ? '' : (+a.toFixed(4)).toString();
+                    s += sgn(c, first) + num + v; first = false;
+                });
+                return s === 'p(\\lambda)=' ? s + '0' : s;
+            }
+            function renderEigen() {
+                const A = M(), e = L.eigen3(A);
+                tex($('eigTex'), polyTex(e.poly) + '\;=\;\\det(\\lambda I - A)');
+                const cards = [];
+                e.groups.forEach(g => {
+                    cards.push(`<div class="lab-card"><h4>λ = ${fnum(g.value)}</h4><div class="v">${g.vectors.length ? g.vectors.map(v => 'v = ' + fv(v)).join('\n') : 'no eigenvector found'}</div><div class="m">algebraic ${g.alg} · geometric ${g.geo}</div></div>`);
+                });
+                if (e.complex) cards.push(`<div class="lab-card"><h4>λ = ${fnum(e.complex.re)} ± ${fnum(e.complex.im)}i</h4><div class="v">complex conjugate pair</div><div class="m">a rotation-like part: no real eigenvector in that plane</div></div>`);
+                $('eigCards').innerHTML = cards.join('');
+                // diagonalization check
+                let diag = '';
+                if (e.diagonalizable) {
+                    const vecs = [], vals = [];
+                    e.groups.forEach(g => g.vectors.forEach(v => { vecs.push(v); vals.push(g.value); }));
+                    const P = [0, 1, 2].map(r => vecs.map(v => v[r]));
+                    const Pi = L.inv3(P);
+                    if (Pi) {
+                        const D = [[vals[0], 0, 0], [0, vals[1], 0], [0, 0, vals[2]]];
+                        const resid = L.fro(L.sub(A, L.mul(L.mul(P, D), Pi)));
+                        diag = `<span class="chip ok">A = P D P⁻¹ holds · residual ${resid.toExponential(1)}</span>`;
+                    }
+                }
+                const ch = L.fro(L.charPolyAt(A));
+                $('eigFacts').innerHTML =
+                    (e.diagonalizable ? '<span class="chip ok">diagonalizable over ℝ</span>' : '<span class="chip warn">not diagonalizable over ℝ</span>') + diag +
+                    `<span class="chip sig">Cayley-Hamilton: ‖p(A)‖ = ${ch.toExponential(1)}</span>` +
+                    `<span class="chip">tr = Σλ · det = Πλ</span>`;
+            }
+            $('eigShow3d').addEventListener('click', () => { $('showEigenvectors').checked = true; updateVisualization(); $('visualization3d').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'center' }); });
+            $('qrRun').addEventListener('click', () => {
+                clearInterval(qrTimer);
+                const e = L.eigen3(M()), out = $('qrOut');
+                if (e.complex) { out.innerHTML = '<div class="lab-note">This matrix has complex eigenvalues. The unshifted QR iteration does not settle to a diagonal; it converges to a 2×2 block instead.</div>'; return; }
+                const its = L.qrIterations(M(), 40), want = e.groups.flatMap(g => Array(g.alg).fill(g.value));
+                const scaleMax = Math.max(1e-9, ...want.map(Math.abs), ...its[0].flat().map(Math.abs)) * 1.05;
+                out.innerHTML = [0, 1, 2].map(i => `<div class="qr-row"><span>d${i + 1}</span><div class="qr-bar"><i id="qrb${i}" style="width:0"></i></div><span id="qrv${i}">–</span></div>`).join('') + '<div class="qr-row"><span>off</span><div></div><span id="qroff">–</span></div><div class="lab-note" id="qrNote" style="margin:0"></div>';
+                let k = 0;
+                const draw = () => {
+                    const m = its[k];
+                    [0, 1, 2].forEach(i => { $('qrb' + i).style.width = (Math.min(1, Math.abs(m[i][i]) / scaleMax) * 100) + '%'; $('qrv' + i).textContent = fnum(m[i][i], 3); });
+                    const off = Math.sqrt([0, 1, 2].reduce((s, i) => s + [0, 1, 2].filter(j => j !== i).reduce((t, j) => t + m[i][j] ** 2, 0), 0));
+                    $('qroff').textContent = off.toExponential(1);
+                    $('qrNote').textContent = `iteration ${k} of 40: A ← R Q, the diagonal drifts toward the eigenvalues ${fv(want, 3)}`;
+                };
+                if (reduced()) { k = 40; draw(); return; }
+                draw();
+                qrTimer = setInterval(() => { k++; draw(); if (k >= 40) clearInterval(qrTimer); }, 110);
+            });
+
+            // ---------- Solve ----------
+            const getB = () => [0, 1, 2].map(i => { const v = parseFloat($('b' + i).value); return Number.isFinite(v) ? v : 0; });
+            function renderSolve(play) {
+                clearTimeout(solveTimer);
+                const A = M(), b = getB(), res = L.solve(A, b);
+                $('solveSystem').textContent = A.map((r, i) => '[ ' + r.map(v => z0(v).toFixed(2).padStart(7)).join(' ') + ' ] [x' + (i + 1) + ']   [ ' + z0(b[i]).toFixed(2).padStart(7) + ' ]').join('\n').replace(/\[x(\d)\]/g, (m, n) => '[x' + n + ']');
+                const stepsEl = $('solveSteps');
+                const stepHtml = s => `<div class="lab-step"><div class="op">${s.text}</div><pre>${fm(s.m.map(r => r.slice(0, 3)), 2).split('\n').map((ln, i) => ln + '  | ' + z0(s.m[i][3]).toFixed(2).padStart(7)).join('\n')}</pre></div>`;
+                const result = () => {
+                    let h;
+                    if (res.kind === 'unique') {
+                        const d = L.det3(A);
+                        const cr = [0, 1, 2].map(i => { const Ai = A.map((r, ri) => r.map((v, ci) => (ci === i ? b[ri] : v))); return L.det3(Ai) / d; });
+                        h = `<b>Unique solution.</b> x = <span class="mono">${fv(res.particular)}</span>. Residual ‖Ax − b‖ = <span class="mono">${res.residual.toExponential(1)}</span>.<br>Cramer's rule gives the same: x<sub>i</sub> = det(A<sub>i</sub>) / det(A) = <span class="mono">${fv(cr)}</span>.`;
+                    } else if (res.kind === 'infinite') {
+                        const dim = res.basis.length;
+                        h = `<b>Infinitely many solutions</b> (${dim}-parameter family, rank ${res.rank}). x = <span class="mono">${fv(res.particular)}</span> + ${res.basis.map((v, i) => `s<sub>${i + 1}</sub> <span class="mono">${fv(v)}</span>`).join(' + ')}. Residual ‖Ax − b‖ = <span class="mono">${res.residual.toExponential(1)}</span>.`;
+                    } else {
+                        h = `<b>No solution.</b> After elimination a row reads 0 = nonzero, so b is not in the column space of A (rank ${res.rank}).`;
+                    }
+                    $('solveResult').innerHTML = h;
+                };
+                if (!play) { stepsEl.innerHTML = ''; result(); return; }
+                stepsEl.innerHTML = ''; $('solveResult').innerHTML = '';
+                if (reduced()) { stepsEl.innerHTML = res.steps.map(stepHtml).join(''); result(); return; }
+                let i = 0;
+                const next = () => {
+                    if (i >= res.steps.length) { result(); return; }
+                    stepsEl.insertAdjacentHTML('beforeend', stepHtml(res.steps[i])); i++;
+                    stepsEl.lastElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    solveTimer = setTimeout(next, 520);
+                };
+                next();
+            }
+            $('solveRun').addEventListener('click', () => renderSolve(true));
+            ['b0', 'b1', 'b2'].forEach(id => $(id).addEventListener('input', () => renderSolve(false)));
+            $('solveRandom').addEventListener('click', () => {
+                const x = [0, 1, 2].map(() => Math.floor(Math.random() * 7) - 3);
+                const b = L.matVec(M(), x);
+                [0, 1, 2].forEach(i => { $('b' + i).value = +b[i].toFixed(3); });
+                renderSolve(false);
+            });
+
+            // ---------- Subspaces ----------
+            function renderSpace() {
+                const A = M(), s = L.subspaces(A);
+                const card = (title, dim, vecs, note) => `<div class="lab-card"><h4>${title} · dim ${dim}</h4><div class="v">${vecs.length ? vecs.map(v => fv(v)).join('\n') : '{ 0 }'}</div><div class="m">${note}</div></div>`;
+                $('spaceCards').innerHTML =
+                    card('Column space C(A)', s.rank, s.colSpace, 'pivot columns of A: the reachable outputs') +
+                    card('Row space C(Aᵀ)', s.rank, s.rowSpace, 'nonzero rows of the reduced form') +
+                    card('Null space N(A)', 3 - s.rank, s.nullSpace, 'inputs the transformation flattens to 0') +
+                    card('Left null space N(Aᵀ)', 3 - s.rank, s.leftNull, 'directions orthogonal to every output');
+                const orth = s.nullSpace.every(n => s.rowSpace.every(r => Math.abs(L.dot(n, r)) < 1e-8));
+                $('spaceFacts').innerHTML = `<span class="chip sig">rank ${s.rank} + nullity ${3 - s.rank} = 3</span>` + (orth ? '<span class="chip ok">null space ⟂ row space</span>' : '') + (s.rank === 3 ? '<span class="chip ok">invertible: A x = b has one solution for every b</span>' : '<span class="chip warn">singular: the image is a lower-dimensional subspace</span>');
+            }
+
+            // ---------- SVD ----------
+            function renderSvd() {
+                const A = M(), sv = L.svd3(A), k = +$('kSlider').value;
+                const smax = Math.max(sv.s[0], 1e-12);
+                $('svdBars').innerHTML = sv.s.map((v, i) => `<div class="sv-row${i >= k ? ' dropped' : ''}"><span>σ${i + 1}</span><div class="sv-track"><div class="sv-fill" style="width:${(v / smax * 100).toFixed(1)}%"></div></div><span class="val">${fnum(v, 4)}</span></div>`).join('');
+                $('svdU').textContent = fm(sv.U); $('svdVt').textContent = fm(sv.Vt);
+                const Ak = L.lowRank(sv, k), err = L.fro(L.sub(A, Ak)), pred = Math.sqrt(sv.s.slice(k).reduce((a, v) => a + v * v, 0));
+                $('svdAk').textContent = fm(Ak); $('svdPinv').textContent = fm(L.pinv(sv));
+                const n = L.norms(A, sv);
+                $('svdFacts').innerHTML =
+                    `<span class="chip sig">‖A − A<sub>k</sub>‖<sub>F</sub> = ${fnum(err)}</span><span class="chip ${Math.abs(err - pred) < 1e-7 * Math.max(1, pred) ? 'ok' : 'warn'}">√(Σ dropped σ²) = ${fnum(pred)} (Eckart-Young)</span>` +
+                    `<span class="chip">‖A‖<sub>F</sub> ${fnum(n.frobenius, 3)}</span><span class="chip">‖A‖₁ ${fnum(n.one, 3)}</span><span class="chip">‖A‖<sub>∞</sub> ${fnum(n.inf, 3)}</span><span class="chip">‖A‖₂ = σ₁ ${fnum(n.spectral, 3)}</span>`;
+            }
+            $('kSlider').addEventListener('input', () => { $('kOut').textContent = $('kSlider').value; setFill($('kSlider')); renderSvd(); });
+            $('loadLowRank').addEventListener('click', () => { const sv = L.svd3(M()); const Ak = L.lowRank(sv, +$('kSlider').value); setMatrix(Ak.map(r => r.map(v => +z0(v).toFixed(6)))); });
+
+            // ---------- Powers & flow ----------
+            function renderPower() {
+                const A = M(), n = +$('nSlider').value, t = +$('tFlow').value;
+                const P = L.power(A, n);
+                $('powOut').textContent = fm(P);
+                const d = L.det3(A);
+                $('powFacts').innerHTML = `<span class="chip sig">det(Aⁿ) = ${fnum(L.det3(P))}</span><span class="chip ${Math.abs(L.det3(P) - Math.pow(d, n)) < 1e-6 * Math.max(1, Math.abs(Math.pow(d, n))) ? 'ok' : 'warn'}">det(A)ⁿ = ${fnum(Math.pow(d, n))}</span>`;
+                const E = L.expm(L.scale(A, t));
+                $('expOut').textContent = fm(E);
+                const tr = L.trace(A) * t;
+                $('expFacts').innerHTML = `<span class="chip sig">det(e<sup>tA</sup>) = ${fnum(L.det3(E))}</span><span class="chip ${Math.abs(L.det3(E) - Math.exp(tr)) < 1e-6 * Math.max(1, Math.exp(tr)) ? 'ok' : 'warn'}">e<sup>t·tr A</sup> = ${fnum(Math.exp(tr))}</span>`;
+            }
+            $('nSlider').addEventListener('input', () => { $('nOut').textContent = $('nSlider').value; setFill($('nSlider')); renderPower(); });
+            $('tFlow').addEventListener('input', () => { $('tFlowOut').textContent = (+$('tFlow').value).toFixed(2); setFill($('tFlow')); renderPower(); });
+            $('loadPow').addEventListener('click', () => setMatrix(L.power(M(), +$('nSlider').value).map(r => r.map(v => +z0(v).toFixed(6)))));
+            $('loadExp').addEventListener('click', () => setMatrix(L.expm(L.scale(M(), +$('tFlow').value)).map(r => r.map(v => +z0(v).toFixed(6)))));
+            let flowBase = null;
+            function stopFlow() { cancelAnimationFrame(flowRaf); flowRaf = 0; $('playFlow').textContent = 'Play flow'; }
+            $('playFlow').addEventListener('click', () => {
+                if (flowRaf) { stopFlow(); return; }
+                const A = (flowBase || targetMatrix || M()).map(r => [...r]);
+                const T = +$('tFlow').value;
+                if (reduced()) { currentMatrix = L.expm(L.scale(A, T)); updateVisualization(); return; }
+                const t0 = performance.now(), dur = 2600;
+                $('playFlow').textContent = 'Stop';
+                const step = now => {
+                    const p = Math.min(1, (now - t0) / dur);
+                    currentMatrix = L.expm(L.scale(A, T * p));
+                    updateVisualization();
+                    if (p < 1) flowRaf = requestAnimationFrame(step); else stopFlow();
+                };
+                flowRaf = requestAnimationFrame(step);
+            });
+
+            // tabs: click + arrow keys
+            $('labTabs').querySelectorAll('.lab-tab').forEach(b => b.addEventListener('click', () => select(b.dataset.tab)));
+            $('labTabs').addEventListener('keydown', e => {
+                const i = TABS.indexOf(tab); let n = -1;
+                if (e.key === 'ArrowRight') n = (i + 1) % TABS.length; else if (e.key === 'ArrowLeft') n = (i - 1 + TABS.length) % TABS.length;
+                else if (e.key === 'Home') n = 0; else if (e.key === 'End') n = TABS.length - 1;
+                if (n >= 0) { e.preventDefault(); select(TABS[n], true); }
+            });
+            window.addEventListener('resize', moveInd);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInd);
+            ['kSlider', 'nSlider', 'tFlow'].forEach(id => setFill($(id)));
+            return { select, refresh, render, moveInd, renderSolve };
+        })();
+        window.LabUI = Lab;
+
+        // ============ HISTORY ============
+        const Hist = (() => {
+            const E = [
+                { y: 100, label: 'c. 100', t: 'Elimination, without matrices', who: 'The Nine Chapters on the Mathematical Art (China)',
+                  what: 'The eighth chapter, fangcheng, solves systems of linear equations by arranging the coefficients in a grid on a counting board and subtracting columns until each unknown stands alone.',
+                  why: 'That is row reduction in everything but notation. Solve a system below and the steps it shows are the same procedure.',
+                  go: 'Row-reduce a system', act: () => { setMatrix([[2, 1, -1], [-3, -1, 2], [-2, 1, 2]]); jumpLab('solve', () => { $('b0').value = 8; $('b1').value = -11; $('b2').value = -3; Lab.renderSolve(true); }); } },
+                { y: 1750, label: '1750', t: 'A formula for the unknowns', who: 'Gabriel Cramer',
+                  what: 'Cramer published the rule that writes each unknown of a square system as a ratio of two determinants.',
+                  why: 'It is elegant and slow for large systems, but it ties the determinant to solvability: the denominator is zero exactly when the matrix is singular. The solver prints the Cramer values next to the elimination result.',
+                  go: 'Compare with elimination', act: () => { setMatrix([[2, 1, -1], [-3, -1, 2], [-2, 1, 2]]); jumpLab('solve', () => { $('b0').value = 8; $('b1').value = -11; $('b2').value = -3; Lab.renderSolve(false); }); } },
+                { y: 1809, label: '1809', t: 'Elimination meets least squares', who: 'Carl Friedrich Gauss',
+                  what: 'Gauss used systematic elimination on the normal equations of his orbit calculations, and the method that now carries his name spread from there.',
+                  why: 'Elimination on a singular system reveals a whole line of solutions, or none. Change b and watch the classification change.',
+                  go: 'Try a singular system', act: () => { setMatrix([[1, 2, 3], [2, 4, 6], [1, 1, 1]]); jumpLab('solve', () => { $('b0').value = 1; $('b1').value = 2; $('b2').value = 0; Lab.renderSolve(true); }); } },
+                { y: 1844, label: '1844', t: 'Vector spaces from scratch', who: 'Hermann Grassmann, Die lineale Ausdehnungslehre',
+                  what: 'Grassmann built an algebra of extension that treats points, lines and planes as elements combined by linear operations, in any number of dimensions.',
+                  why: 'The notion of a subspace and its dimension starts here. The Subspaces tool splits a matrix into the four spaces it acts on.',
+                  go: 'Open the four subspaces', act: () => { setMatrix([[1, 2, 3], [2, 4, 6], [1, 1, 1]]); jumpLab('space'); } },
+                { y: 1858, label: '1858', t: 'Matrices become objects', who: 'Arthur Cayley, A Memoir on the Theory of Matrices',
+                  what: 'Cayley defined addition, multiplication and inverse for arrays of numbers and stated that a matrix satisfies its own characteristic equation, a result now called the Cayley-Hamilton theorem.',
+                  why: 'The Eigen tab evaluates p(A) on whatever matrix you load and reports how close to zero it is.',
+                  go: 'Check Cayley-Hamilton', act: () => { setMatrix([[2, 1, 0], [1, 3, 1], [0, 1, 4]]); jumpLab('eigen'); } },
+                { y: 1873, label: '1873', t: 'The singular value decomposition', who: 'Eugenio Beltrami (1873) and Camille Jordan (1874)',
+                  what: 'Working independently, Beltrami and Jordan showed that a real square matrix can be written as a rotation, a stretch along axes, and another rotation.',
+                  why: 'Every matrix in the visualizer is such a composition. The SVD tab shows the stretches, the two rotations, and the cube they carry.',
+                  go: 'Decompose a shear', act: () => { setMatrix([[1, 0.5, 0], [0.5, 1, 0], [0, 0, 1]]); jumpLab('svd'); } },
+                { y: 1936, label: '1936', t: 'The best low-rank approximation', who: 'Carl Eckart and Gale Young, Psychometrika',
+                  what: 'Eckart and Young proved that truncating the SVD after k terms gives the closest rank-k matrix, and that the error is set by the singular values that were dropped.',
+                  why: 'Move the k slider: the measured Frobenius error and the formula from the dropped singular values agree.',
+                  go: 'Drop one singular value', act: () => { setMatrix([[3, 1, 0], [1, 2, 1], [0, 1, 0.5]]); jumpLab('svd', () => { $('kSlider').value = 2; $('kOut').textContent = '2'; setFill($('kSlider')); Lab.render(); }); } },
+                { y: 1955, label: '1955', t: 'An inverse for every matrix', who: 'Roger Penrose, A generalized inverse for matrices',
+                  what: 'Penrose characterized the pseudo-inverse by four equations; it gives the least-squares answer even when the matrix is singular or not square.',
+                  why: 'The SVD tab prints A⁺ built from the reciprocals of the nonzero singular values. For an invertible matrix it equals A⁻¹.',
+                  go: 'Pseudo-inverse of a projection', act: () => { setMatrix([[1, 0, 0], [0, 1, 0], [0, 0, 0]]); jumpLab('svd'); } },
+                { y: 1961, label: '1961', t: 'Eigenvalues by iteration', who: 'John Francis (and Vera Kublanovskaya)',
+                  what: 'The QR algorithm factors A = QR, forms RQ, and repeats. The iterates converge toward a triangular matrix whose diagonal holds the eigenvalues, and it became the standard method for computing them.',
+                  why: 'Press Run QR algorithm and the three diagonal entries drift to the eigenvalues listed above them.',
+                  go: 'Run the QR algorithm', act: () => { setMatrix([[2, 1, 0], [1, 3, 1], [0, 1, 4]]); jumpLab('eigen', () => $('qrRun').click()); } }
+            ];
+            const nodes = $('histNodes'), card = $('histCard'), yearEl = $('histYear'), fill = $('histFill'), tryBtn = $('histTry');
+            let idx = 0, shown = E[0].y, raf = 0;
+            function jumpLab(tabName, after) {
+                Lab.select(tabName);
+                $('lab').scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
+                if (after) setTimeout(after, reduced() ? 0 : 250);
+            }
+            E.forEach((e, i) => {
+                const li = document.createElement('li'), b = document.createElement('button');
+                b.type = 'button'; b.className = 'hist-node'; b.textContent = e.label;
+                b.setAttribute('aria-label', e.label + ': ' + e.t);
+                b.addEventListener('click', () => select(i));
+                li.appendChild(b); nodes.appendChild(li);
+            });
+            const btns = () => nodes.querySelectorAll('.hist-node');
+            function tween(to) {
+                cancelAnimationFrame(raf);
+                if (reduced()) { yearEl.textContent = to; shown = to; return; }
+                const from = shown, t0 = performance.now(), dur = 700;
+                const tick = now => {
+                    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+                    shown = Math.round(from + (to - from) * e); yearEl.textContent = shown;
+                    if (p < 1) raf = requestAnimationFrame(tick);
+                };
+                raf = requestAnimationFrame(tick);
+            }
+            function select(i, noScroll) {
+                idx = i; const e = E[i];
+                btns().forEach((b, j) => { b.classList.toggle('past', j <= i); if (j === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+                fill.style.transform = 'scaleX(' + (i / (E.length - 1)) + ')';
+                tween(e.y);
+                $('histTitle').textContent = e.t; $('histWho').textContent = e.who; $('histWhat').textContent = e.what; $('histWhy').textContent = e.why;
+                tryBtn.textContent = e.go;
+                card.classList.remove('swap'); void card.offsetWidth; if (!reduced()) card.classList.add('swap');
+                $('histPrev').disabled = i === 0; $('histNext').disabled = i === E.length - 1;
+                if (!noScroll) btns()[i].scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+            }
+            tryBtn.addEventListener('click', () => E[idx].act());
+            $('histPrev').addEventListener('click', () => select(Math.max(0, idx - 1)));
+            $('histNext').addEventListener('click', () => select(Math.min(E.length - 1, idx + 1)));
+            $('histTrack').addEventListener('keydown', e => {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                const n = Math.max(0, Math.min(E.length - 1, idx + (e.key === 'ArrowRight' ? 1 : -1)));
+                if (n === idx) return;
+                e.preventDefault(); select(n); btns()[n].focus();
+            });
+            select(0, true);
+            return { select };
+        })();
+
         // ============ INITIALIZATION ============
         window.onload = function () {
             initializeMatrixFromUrl();
             initLearningLibrary();
             init3D();
             updateVisualization();
+            wire2D();
+            setFill(document.getElementById('tSlider'));
+            document.getElementById('tSlider').addEventListener('input', e => setFill(e.target));
+            window.LabUI.moveInd();
         };
     </script>
 </body>
